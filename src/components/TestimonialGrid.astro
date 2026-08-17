@@ -1,0 +1,24 @@
+---
+import type { Testimonial } from '../data/testimonials';
+
+interface Props {
+  testimonials: Testimonial[];
+  limit?: number;
+  size?: 'default' | 'large';
+}
+const { testimonials, limit, size = 'default' } = Astro.props;
+const visible = limit ? testimonials.slice(0, limit) : testimonials;
+const isSingle = visible.length === 1;
+---
+<section class="bordered tight">
+  <div class="wrap">
+    <div class={`testi-grid${isSingle ? ' single' : ''}`}>
+      {visible.map((t) => (
+        <div class={`testi-card${size === 'large' ? ' large' : ''}${isSingle ? ' centered' : ''}`}>
+          <q>{t.quote}</q>
+          <span class="testi-tag">{t.role}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

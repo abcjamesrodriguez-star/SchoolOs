@@ -1,0 +1,49 @@
+---
+// ============================================================
+// SchoolOS — Planes de Suscripción (/es/app/super-admin/plans)
+// ============================================================
+import AppLayout from '../../../../layouts/AppLayout.astro';
+import { getMockPlans } from '../../../../data/app/mock-data';
+
+const lang = 'es';
+const plans = getMockPlans(lang);
+---
+
+<AppLayout
+  title="Planes"
+  pageTitle="Planes de Suscripción"
+  activeSection="plans"
+  lang={lang}
+  activeRoute="/app/super-admin/plans"
+  breadcrumbs={[{ label: 'Sistema' }, { label: 'Planes' }]}
+>
+  <div class="panel">
+    <div class="panel-header">
+      <h2>Configuración de Planes Comerciales</h2>
+    </div>
+    <div class="panel-body">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Nivel de Plan</th>
+            <th>Límite de Alumnos</th>
+            <th>Precio Base</th>
+            <th>Escuelas Activas</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {plans.map((p) => (
+            <tr>
+              <td class="cell-name"><span class="plan-tag">{p.name}</span></td>
+              <td class="cell-muted">{p.limit}</td>
+              <td style="font-family:var(--mono); font-weight:500;">{p.price}</td>
+              <td>{p.schoolsCount}</td>
+              <td><span class="badge badge-active">{p.status}</span></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</AppLayout>

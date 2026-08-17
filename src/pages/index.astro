@@ -1,0 +1,29 @@
+---
+// Root redirect — checks localStorage or browser language and redirects to /es/ or /en/
+// Static HTML shell compatible with ALL static hosting (Vercel, Netlify, Cloudflare Pages, GitHub Pages)
+---
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>SchoolOS</title>
+    <script is:inline>
+      (function () {
+        var saved = null;
+        try { saved = localStorage.getItem('schoolos-lang'); } catch (_) {}
+        if (saved === 'en' || saved === 'es') {
+          window.location.replace('/' + saved + '/');
+          return;
+        }
+        var browserLang = (navigator.language || navigator.userLanguage || 'es').toLowerCase();
+        var target = browserLang.startsWith('es') ? 'es' : 'en';
+        try { localStorage.setItem('schoolos-lang', target); } catch (_) {}
+        window.location.replace('/' + target + '/');
+      })();
+    </script>
+    <noscript>
+      <meta http-equiv="refresh" content="0;url=/es/" />
+    </noscript>
+  </head>
+  <body></body>
+</html>

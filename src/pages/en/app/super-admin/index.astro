@@ -1,0 +1,106 @@
+---
+// ============================================================
+// SchoolOS — Super Admin Dashboard (/en/app/super-admin)
+// ============================================================
+import AppLayout from '../../../../layouts/AppLayout.astro';
+import { getMockDashboardStats, getMockSchools, getMockAuditLogs } from '../../../../data/app/mock-data';
+
+const lang = 'en';
+const stats = getMockDashboardStats(lang);
+const recentSchools = getMockSchools(lang).slice(0, 3);
+const recentLogs = getMockAuditLogs(lang);
+---
+
+<AppLayout
+  title="Dashboard"
+  pageTitle="Dashboard"
+  activeSection="dashboard"
+  lang={lang}
+  activeRoute="/app/super-admin"
+  breadcrumbs={[{ label: 'System' }, { label: 'Dashboard' }]}
+>
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-label">Active Schools</div>
+      <div class="stat-num">{stats.activeSchools}</div>
+      <div class="stat-sub">{stats.activeSchoolsSub}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Students</div>
+      <div class="stat-num">{stats.totalStudents}</div>
+      <div class="stat-sub">{stats.totalStudentsSub}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Trial Schools</div>
+      <div class="stat-num accent">{stats.trialSchools}</div>
+      <div class="stat-sub">{stats.trialSchoolsSub}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Past Due / Suspended</div>
+      <div class="stat-num accent">{stats.suspendedSchools}</div>
+      <div class="stat-sub">{stats.suspendedSchoolsSub}</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <h2>Recently created schools</h2>
+      <a class="panel-link" href={`/${lang}/app/super-admin/schools`}>View all →</a>
+    </div>
+    <div class="panel-body">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>School</th>
+            <th>Plan</th>
+            <th>Status</th>
+            <th>Students</th>
+            <th>Created</th>
+          </tr>
+        </thead>
+        <tbody>
+          {recentSchools.map((s) => (
+            <tr>
+              <td class="cell-name">
+                <a href={`/${lang}/app/super-admin/schools/${s.id}`}>{s.name}</a>
+              </td>
+              <td><span class="plan-tag">{s.planName}</span></td>
+              <td><span class={`badge badge-${s.status}`}>{s.status.charAt(0).toUpperCase() + s.status.slice(1)}</span></td>
+              <td>{s.studentCount.toLocaleString()}</td>
+              <td class="cell-muted">{s.createdAt}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <h2>Recent activity</h2>
+      <a class="panel-link" href={`/${lang}/app/super-admin/audit-log`}>View all →</a>
+    </div>
+    <div class="panel-body">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Action</th>
+            <th>Target</th>
+            <th>Actor</th>
+            <th>Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          {recentLogs.map((log) => (
+            <tr>
+              <td style="font-family:var(--mono); font-size:12.5px;">{log.action}</td>
+              <td class="cell-name">{log.targetName}</td>
+              <td class="cell-muted">{log.actorEmail}</td>
+              <td class="cell-muted">{log.timestamp}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</AppLayout>

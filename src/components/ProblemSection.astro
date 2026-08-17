@@ -1,0 +1,46 @@
+---
+interface Tool {
+  name: string;
+  note: string;
+}
+interface Props {
+  tools: Tool[];
+  convergeLabel: string;
+  platformLabel: string;
+  eyebrow?: string;
+  heading?: string;
+  copy?: string;
+}
+const {
+  tools,
+  convergeLabel,
+  platformLabel,
+  eyebrow = 'The problem',
+  heading = 'One school. Many tools.<br />One place.',
+  copy    = 'Schools often rely on disconnected tools for classes, assignments, evaluations and communication. This platform brings them together in one environment.',
+} = Astro.props;
+---
+<section class="bordered tight">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">{eyebrow}</span>
+      <h2 set:html={heading} />
+      <p>{copy}</p>
+    </div>
+
+    <div class="tool-grid">
+      {tools.map((tool) => (
+        <div class="tool-cell">
+          {tool.name}
+          <small>{tool.note}</small>
+        </div>
+      ))}
+    </div>
+
+    <div class="converge">
+      <span>{convergeLabel}</span>
+      <span class="arrow">→</span>
+      <span class="platform-pill">{platformLabel}</span>
+    </div>
+  </div>
+</section>

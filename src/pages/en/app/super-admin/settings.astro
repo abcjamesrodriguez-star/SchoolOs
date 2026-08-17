@@ -1,0 +1,43 @@
+---
+// ============================================================
+// SchoolOS — Global Settings (/en/app/super-admin/settings)
+// ============================================================
+import AppLayout from '../../../../layouts/AppLayout.astro';
+
+const lang = 'en';
+---
+
+<AppLayout
+  title="Settings"
+  pageTitle="System Global Parameters"
+  activeSection="settings"
+  lang={lang}
+  activeRoute="/app/super-admin/settings"
+  breadcrumbs={[{ label: 'System' }, { label: 'Settings' }]}
+>
+  <div class="panel" style="max-width: 800px;">
+    <div class="panel-header">
+      <h2>Platform Global Parameters</h2>
+    </div>
+    <div class="panel-body padded">
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Platform Name</label>
+          <input type="text" value="SchoolOS Multi-Tenant" readonly />
+        </div>
+        <div class="form-field">
+          <label>System Version</label>
+          <input type="text" value="v1.0.4-preview" readonly />
+        </div>
+        <div class="form-field full">
+          <label>Default Data Retention Policy</label>
+          <input type="text" value="7 Years (Statutory Educational Records)" readonly />
+        </div>
+        <div class="form-field full">
+          <label>Judicial Access Verification Rule</label>
+          <input type="text" value="Strict Two-Person Super Admin Confirmation Required" readonly />
+        </div>
+      </div>
+    </div>
+  </div>
+</AppLayout>

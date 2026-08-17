@@ -1,0 +1,68 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import FeatureSlider from '../../components/FeatureSlider';
+import LocationDiagram from '../../components/LocationDiagram.astro';
+import Card from '../../components/Card.astro';
+import CTAFinal from '../../components/CTAFinal.astro';
+import { useTranslations } from '../../i18n';
+import { getFeatures } from '../../data/features';
+
+const lang = 'es';
+const t = useTranslations(lang);
+const { platform: p } = t;
+---
+<BaseLayout title={p.meta.title} description={p.meta.description} activeRoute="/platform" lang={lang}>
+
+  <!-- Page head -->
+  <section class="page-head">
+    <div class="wrap">
+      <span class="eyebrow">{p.head.eyebrow}</span>
+      <h1 set:html={p.head.h1.replace('\n', '<br />')} />
+      <p>{p.head.lede}</p>
+    </div>
+  </section>
+
+  <!-- Feature Slider — único React island del sitio -->
+  <FeatureSlider features={getFeatures(lang)} client:visible />
+
+  <!-- Location Diagram -->
+  <LocationDiagram
+    eyebrow={p.diagram.eyebrow}
+    heading={p.diagram.h2}
+    copy={p.diagram.copy}
+    nodes={p.diagram.nodes}
+  />
+
+  <!-- Everything Connected showcase -->
+  <section class="bordered">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">{p.showcase.eyebrow}</span>
+        <h2>{p.showcase.h2}</h2>
+      </div>
+      <div class="showcase">
+        <Card
+          label={p.showcase.cards.school.label}
+          className="card-top"
+          lines={p.showcase.cards.school.lines.map(text => ({ text }))}
+        />
+        <div class="showcase-bottom">
+          <Card label={p.showcase.cards.student.label} lines={p.showcase.cards.student.lines.map(text => ({ text }))} />
+          <Card label={p.showcase.cards.teacher.label} lines={p.showcase.cards.teacher.lines.map(text => ({ text }))} />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Final -->
+  <CTAFinal
+    eyebrow={p.cta.eyebrow}
+    heading={p.cta.heading}
+    copy={p.cta.copy}
+    buttons={[
+      { label: p.cta.btn1, href: `/${lang}/pricing`,     variant: 'primary'   },
+      { label: p.cta.btn2, href: `/${lang}/for-schools`, variant: 'secondary' },
+    ]}
+  />
+
+</BaseLayout>

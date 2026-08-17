@@ -1,0 +1,76 @@
+---
+// ============================================================
+// SchoolOS — System-wide Judicial Access (/en/app/super-admin/judicial-access)
+// ============================================================
+import AppLayout from '../../../../layouts/AppLayout.astro';
+import { getMockJudicialGrants } from '../../../../data/app/mock-data';
+
+const lang = 'en';
+const grants = getMockJudicialGrants(lang);
+---
+
+<AppLayout
+  title="Judicial Access"
+  pageTitle="Judicial Access Requests"
+  activeSection="judicial-access"
+  lang={lang}
+  activeRoute="/app/super-admin/judicial-access"
+  breadcrumbs={[{ label: 'Compliance' }, { label: 'Judicial Access' }]}
+>
+  <div class="notice restricted">
+    <span class="notice-icon">⚠</span>
+    <div>
+      <strong>Restricted Compliance Environment.</strong> Individual student records,
+      communications and academic activity across all schools are strictly private by default.
+      Access is only permitted with an approved <strong>JudicialAccessGrant</strong> under the two-person verification rule.
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <h2>Active and Pending Judicial Grants</h2>
+    </div>
+    <div class="panel-body">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>School</th>
+            <th>Case Reference</th>
+            <th>Issuing Authority</th>
+            <th>Authorized Scope</th>
+            <th>Status</th>
+            <th>Requested by</th>
+            <th>Verified by</th>
+            <th>Expires</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {grants.map((g) => (
+            <tr>
+              <td class="cell-name">
+                <a href={`/${lang}/app/super-admin/schools/${g.schoolId}`}>{g.schoolName}</a>
+              </td>
+              <td style="font-family:var(--mono);">{g.caseReference}</td>
+              <td class="cell-muted">{g.issuingAuthority}</td>
+              <td class="cell-muted">{g.scope}</td>
+              <td>
+                <span class={`badge badge-${g.status}`}>
+                  {g.status === 'pending_verification' ? 'Pending Verification' : g.status.charAt(0).toUpperCase() + g.status.slice(1)}
+                </span>
+              </td>
+              <td class="cell-muted">{g.requestedBy}</td>
+              <td class="cell-muted">{g.verifiedBy || '—'}</td>
+              <td class="cell-muted">{g.expiresAt}</td>
+              <td class="cell-actions">
+                <a class="btn btn-secondary btn-sm" href={`/${lang}/app/super-admin/schools/${g.schoolId}`}>
+                  View School
+                </a>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</AppLayout>

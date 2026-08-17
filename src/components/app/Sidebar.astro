@@ -1,0 +1,55 @@
+---
+import type { Lang } from '../../i18n';
+import { useTranslations } from '../../i18n';
+
+interface Props {
+  activeSection: 'dashboard' | 'schools' | 'users' | 'plans' | 'judicial-access' | 'audit-log' | 'settings';
+  lang?: Lang;
+}
+
+const { activeSection, lang = 'es' } = Astro.props;
+const t = useTranslations(lang).app.sidebar;
+---
+
+<aside class="app-sidebar">
+  <div class="brand">
+    <a href={`/${lang}/app/super-admin`}>School<span>OS</span></a>
+    <span class="role-tag">{t.brandRole}</span>
+  </div>
+
+  <nav class="app-nav">
+    <div class="group-label">{t.systemGroup}</div>
+    <a href={`/${lang}/app/super-admin`} class={activeSection === 'dashboard' ? 'active' : ''}>
+      <span class="nav-dot"></span>{t.dashboard}
+    </a>
+    <a href={`/${lang}/app/super-admin/schools`} class={activeSection === 'schools' ? 'active' : ''}>
+      <span class="nav-dot"></span>{t.schools}
+    </a>
+    <a href={`/${lang}/app/super-admin/users`} class={activeSection === 'users' ? 'active' : ''}>
+      <span class="nav-dot"></span>{t.users}
+    </a>
+    <a href={`/${lang}/app/super-admin/plans`} class={activeSection === 'plans' ? 'active' : ''}>
+      <span class="nav-dot"></span>{t.plans}
+    </a>
+
+    <div class="group-label">{t.complianceGroup}</div>
+    <a href={`/${lang}/app/super-admin/judicial-access`} class={activeSection === 'judicial-access' ? 'active' : ''}>
+      <span class="nav-dot"></span>{t.judicialAccess}
+    </a>
+    <a href={`/${lang}/app/super-admin/audit-log`} class={activeSection === 'audit-log' ? 'active' : ''}>
+      <span class="nav-dot"></span>{t.auditLog}
+    </a>
+
+    <div class="group-label">{t.configGroup}</div>
+    <a href={`/${lang}/app/super-admin/settings`} class={activeSection === 'settings' ? 'active' : ''}>
+      <span class="nav-dot"></span>{t.settings}
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <span>{t.version}</span>
+    <a href={`/${lang}/`} style="color:var(--rust); font-size:10.5px; font-weight:600;" title={lang === 'es' ? 'Ver Sitio Web' : 'View Main Website'}>
+      {t.webLink}
+    </a>
+  </div>
+</aside>

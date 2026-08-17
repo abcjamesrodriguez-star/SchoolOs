@@ -1,0 +1,36 @@
+---
+// FlowSteps — pasos horizontales del flujo escolar
+// Usado en for-schools.astro
+interface FlowStep {
+  number: string;
+  title: string;
+  description: string;
+}
+interface Props {
+  steps: FlowStep[];
+  eyebrow?: string;
+  heading?: string;
+}
+const {
+  steps,
+  eyebrow = 'How it works',
+  heading = 'From school to student',
+} = Astro.props;
+---
+<section class="bordered">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">{eyebrow}</span>
+      <h2>{heading}</h2>
+    </div>
+    <div class="flow-row">
+      {steps.map((step) => (
+        <div class="flow-step">
+          <span class="fnum">{step.number}</span>
+          <h4>{step.title}</h4>
+          <p>{step.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

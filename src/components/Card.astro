@@ -1,0 +1,31 @@
+---
+interface CardLine {
+  text: string;
+}
+interface Props {
+  variant?: 'default' | 'dark' | 'flat';
+  label: string;
+  lines: CardLine[];
+  className?: string;
+}
+const { variant = 'default', label, lines, className = '' } = Astro.props;
+
+const classes = [
+  'card',
+  variant === 'dark' ? 'card-dark' : '',
+  variant === 'flat' ? 'flat' : '',
+  className,
+].filter(Boolean).join(' ');
+---
+<div class={classes}>
+  <div class="card-label">
+    <span>{label}</span>
+    <span>●</span>
+  </div>
+  {lines.map((line) => (
+    <div class="card-line">
+      <span class="dot"></span>
+      {line.text}
+    </div>
+  ))}
+</div>

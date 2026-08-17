@@ -1,0 +1,14 @@
+---
+interface Props {
+  eyebrow: string;
+  heading: string;
+  copy?: string;
+  maxWidth?: string;
+}
+const { eyebrow, heading, copy, maxWidth = '640px' } = Astro.props;
+---
+<div class="section-head" style={`max-width: ${maxWidth};`}>
+  <span class="eyebrow">{eyebrow}</span>
+  <h2 set:html={heading} />
+  {copy && <p>{copy}</p>}
+</div>

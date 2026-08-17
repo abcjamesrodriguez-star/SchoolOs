@@ -1,0 +1,658 @@
+/* =========================================================
+   SchoolOS — Design Tokens & Global Styles
+   ========================================================= */
+
+/* ----------------------------------------------------------
+   1. Custom Properties
+   ---------------------------------------------------------- */
+:root {
+  /* Color */
+  --cream:        #F3EFE4;
+  --paper:        #FBF9F3;
+  --ink:          #16140F;
+  --ink-soft:     #4A473E;
+  --rust:         #C1571A;
+  --rust-dim:     #E9C9AE;
+  --olive:        #4B5320;
+  --line:         #D8D2C2;
+  --line-strong:  #B9B29C;
+
+  /* Typography */
+  --serif: 'Fraunces', serif;
+  --sans:  'Inter', sans-serif;
+  --mono:  'IBM Plex Mono', monospace;
+}
+
+/* ----------------------------------------------------------
+   2. Reset
+   ---------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--sans);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+img, video { display: block; max-width: 100%; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* ----------------------------------------------------------
+   3. Layout Utilities
+   ---------------------------------------------------------- */
+.wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+/* ----------------------------------------------------------
+   4. Typography Utilities
+   ---------------------------------------------------------- */
+h1, h2, h3 {
+  font-family: var(--serif);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--rust);
+}
+
+/* ----------------------------------------------------------
+   5. Buttons
+   ---------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 14px 22px;
+  border: 1px solid var(--ink);
+  transition: background .18s ease, color .18s ease, border-color .18s ease, transform .18s ease;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.btn-primary { background: var(--ink); color: var(--cream); }
+.btn-primary:hover { background: var(--rust); border-color: var(--rust); transform: translateY(-1px); }
+.btn-secondary { background: transparent; color: var(--ink); }
+.btn-secondary:hover { background: var(--ink); color: var(--cream); transform: translateY(-1px); }
+
+/* ----------------------------------------------------------
+   6. Navbar
+   ---------------------------------------------------------- */
+header.nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(243, 239, 228, .92);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--line);
+}
+.nav-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 32px;
+}
+.logo {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+}
+.logo span { color: var(--rust); }
+.nav-links {
+  display: flex;
+  gap: 36px;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.nav-links a:hover { color: var(--rust); }
+.nav-links a.current {
+  color: var(--ink);
+  border-bottom: 1px solid var(--rust);
+  padding-bottom: 2px;
+}
+.nav-actions { display: flex; align-items: center; gap: 20px; }
+.nav-login {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.nav-login:hover { color: var(--rust); }
+.nav-toggle {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+}
+.nav-toggle span { width: 22px; height: 1.5px; background: var(--ink); display: block; }
+
+/* ----------------------------------------------------------
+   7. Section Shared
+   ---------------------------------------------------------- */
+section { padding: 90px 0; }
+section.bordered { border-top: 1px solid var(--line); }
+section.tight { padding: 64px 0; }
+
+.section-head { max-width: 640px; margin-bottom: 56px; }
+.section-head h2 {
+  font-size: clamp(28px, 3.2vw, 44px);
+  margin-top: 14px;
+  line-height: 1.05;
+}
+.section-head p {
+  color: var(--ink-soft);
+  font-size: 16px;
+  margin-top: 16px;
+  max-width: 520px;
+}
+
+/* ----------------------------------------------------------
+   8. Dashboard Cards
+   ---------------------------------------------------------- */
+.card {
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  padding: 22px 24px;
+  box-shadow: 6px 6px 0 var(--rust-dim);
+}
+.card.flat { box-shadow: none; border-color: var(--line-strong); }
+.card-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--rust);
+  margin-bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+}
+.card-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+}
+.card-line:first-of-type { border-top: none; }
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--olive);
+  flex-shrink: 0;
+}
+.card-dark { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+.card-dark .card-line { border-top-color: #3a382f; }
+.card-dark .card-label { color: var(--rust); }
+.card-dark .dot { background: var(--rust); }
+
+/* ----------------------------------------------------------
+   9. Hero (Home only)
+   ---------------------------------------------------------- */
+.hero { padding: 88px 0 96px; }
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 64px;
+  align-items: center;
+}
+.hero h1 {
+  font-size: clamp(42px, 5.4vw, 76px);
+  line-height: 0.98;
+  margin: 18px 0 26px;
+}
+.hero h1 em { font-style: italic; color: var(--rust); font-weight: 450; }
+.hero p.lede {
+  font-size: 18px;
+  color: var(--ink-soft);
+  max-width: 440px;
+  margin-bottom: 34px;
+}
+.hero-ctas { display: flex; gap: 14px; flex-wrap: wrap; }
+.dash-stack { position: relative; min-height: 420px; }
+.card-student { position: absolute; top: 0; left: 0; width: 78%; z-index: 2; }
+.card-teacher { position: absolute; bottom: 0; right: 0; width: 70%; z-index: 3; }
+
+/* ----------------------------------------------------------
+   10. Problem Section
+   ---------------------------------------------------------- */
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  margin-bottom: 40px;
+}
+.tool-cell {
+  background: var(--paper);
+  padding: 26px 24px;
+  font-family: var(--serif);
+  font-size: 19px;
+}
+.tool-cell small {
+  display: block;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-top: 6px;
+}
+.converge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--ink-soft);
+  letter-spacing: .06em;
+  flex-wrap: wrap;
+}
+.converge .arrow { font-size: 20px; color: var(--rust); }
+.converge .platform-pill {
+  border: 1px solid var(--ink);
+  padding: 10px 20px;
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--ink);
+}
+
+/* ----------------------------------------------------------
+   11. Audience Grid
+   ---------------------------------------------------------- */
+/* Full variant (For Schools) */
+.audience-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  border: 1px solid var(--ink);
+}
+.audience-col { padding: 36px 30px; border-left: 1px solid var(--ink); }
+.audience-col:first-child { border-left: none; }
+.audience-col h3 { font-size: 24px; margin-bottom: 6px; }
+.audience-tag {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--rust);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.audience-col p.tagline { color: var(--ink-soft); font-size: 15px; margin: 14px 0 20px; }
+.audience-col ul { list-style: none; }
+.audience-col li {
+  font-size: 14.5px;
+  padding: 9px 0;
+  border-top: 1px solid var(--line);
+  display: flex;
+  gap: 10px;
+}
+.audience-col li::before { content: "—"; color: var(--rust); flex-shrink: 0; }
+.audience-col .explore {
+  display: inline-block;
+  margin-top: 22px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--ink);
+  padding-bottom: 2px;
+  transition: color .18s ease, border-color .18s ease;
+}
+.audience-col .explore:hover { color: var(--rust); border-color: var(--rust); }
+
+/* Mini variant (Home) */
+.audience-mini { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.mini-card { border: 1px solid var(--line-strong); padding: 24px; }
+.mini-card h4 { font-family: var(--serif); font-size: 19px; margin: 8px 0 6px; }
+.mini-card p { font-size: 14px; color: var(--ink-soft); }
+
+.audience-mini-footer { margin-top: 32px; }
+.audience-mini-footer a {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--ink);
+  padding-bottom: 2px;
+  transition: color .18s ease, border-color .18s ease;
+}
+.audience-mini-footer a:hover { color: var(--rust); border-color: var(--rust); }
+
+/* ----------------------------------------------------------
+   12. Testimonials
+   ---------------------------------------------------------- */
+.testi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+}
+.testi-grid.single { grid-template-columns: 1fr; }
+.testi-card { background: var(--paper); padding: 34px 28px; }
+.testi-card q {
+  font-family: var(--serif);
+  font-size: 19px;
+  line-height: 1.35;
+  display: block;
+  margin-bottom: 20px;
+  font-style: italic;
+}
+.testi-card.large q { font-size: 24px; }
+.testi-card.centered { text-align: center; padding: 48px 40px; }
+.testi-tag {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--rust);
+}
+
+/* ----------------------------------------------------------
+   13. CTA Final
+   ---------------------------------------------------------- */
+.cta-final {
+  background: var(--ink);
+  color: var(--cream);
+  text-align: center;
+  padding: 100px 0;
+}
+.cta-final .eyebrow { color: var(--rust); }
+.cta-final h2 {
+  font-size: clamp(32px, 4.4vw, 56px);
+  margin: 16px 0 18px;
+  line-height: 1.04;
+}
+.cta-final p {
+  color: #C9C5B7;
+  max-width: 480px;
+  margin: 0 auto 34px;
+  font-size: 16px;
+}
+.cta-final .btn-primary { background: var(--rust); border-color: var(--rust); color: var(--ink); }
+.cta-final .btn-primary:hover { background: var(--cream); border-color: var(--cream); }
+.cta-final .btn-secondary { border-color: var(--cream); color: var(--cream); }
+.cta-final .btn-secondary:hover { background: var(--cream); color: var(--ink); }
+.cta-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+/* ----------------------------------------------------------
+   14. Footer
+   ---------------------------------------------------------- */
+footer {
+  padding: 50px 0;
+  border-top: 1px solid var(--line);
+}
+.footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.footer-links {
+  display: flex;
+  gap: 26px;
+  font-family: var(--mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--ink-soft);
+}
+.footer-links a:hover { color: var(--rust); }
+
+/* ----------------------------------------------------------
+   15. Page Head (páginas internas)
+   ---------------------------------------------------------- */
+.page-head { padding: 64px 0 48px; border-bottom: 1px solid var(--line); }
+.page-head h1 { font-size: clamp(34px, 4.4vw, 56px); margin: 14px 0 16px; line-height: 1.02; }
+.page-head p { color: var(--ink-soft); font-size: 17px; max-width: 560px; }
+
+/* ----------------------------------------------------------
+   16. Responsive — único breakpoint: 900px
+   ---------------------------------------------------------- */
+/* ----------------------------------------------------------
+   Feature Slider (Platform page)
+   ---------------------------------------------------------- */
+.feature-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border: 1px solid var(--ink);
+}
+.feature-tab {
+  flex: 1 1 auto;
+  min-width: 150px;
+  padding: 16px 18px;
+  border: none;
+  border-left: 1px solid var(--ink);
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  background: var(--paper);
+  transition: background .15s ease, color .15s ease;
+  text-align: left;
+}
+.feature-tab:first-child { border-left: none; }
+.feature-tab .num { color: var(--rust); margin-right: 6px; }
+.feature-tab.active { background: var(--ink); color: var(--cream); }
+.feature-tab.active .num { color: var(--rust); }
+.feature-panel {
+  border: 1px solid var(--ink);
+  border-top: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 300px;
+}
+.feature-copy {
+  padding: 44px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.feature-copy h3 { font-size: 28px; margin-bottom: 14px; }
+.feature-copy p { color: var(--ink-soft); font-size: 15.5px; }
+.feature-visual {
+  background: var(--paper);
+  border-left: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+}
+.feature-visual .card { width: 100%; max-width: 320px; }
+
+/* ----------------------------------------------------------
+   Location Diagram (Platform page)
+   ---------------------------------------------------------- */
+.location-diagram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+.loc-node {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  border: 1px solid var(--ink);
+  padding: 18px 26px;
+  background: var(--paper);
+  text-align: center;
+}
+.loc-connector {
+  width: 64px;
+  height: 1px;
+  background: var(--line-strong);
+  position: relative;
+}
+.loc-connector::after {
+  content: "→";
+  position: absolute;
+  right: -2px;
+  top: -9px;
+  color: var(--rust);
+}
+.loc-center {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 18px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--cream);
+  padding: 22px 30px;
+  margin: 0 8px;
+}
+
+/* ----------------------------------------------------------
+   Connected Showcase (Platform page)
+   ---------------------------------------------------------- */
+.showcase { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+.showcase .card-top { width: 100%; max-width: 560px; }
+.showcase-bottom {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+  max-width: 700px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.showcase-bottom .card { flex: 1 1 260px; }
+
+/* ----------------------------------------------------------
+   Flow Steps (For Schools page)
+   ---------------------------------------------------------- */
+.flow-row { display: flex; align-items: stretch; gap: 0; flex-wrap: wrap; }
+.flow-step {
+  flex: 1 1 220px;
+  padding: 28px 24px;
+  border: 1px solid var(--line-strong);
+  position: relative;
+}
+.flow-step + .flow-step { border-left: none; }
+.flow-step .fnum { font-family: var(--mono); font-size: 12px; color: var(--rust); }
+.flow-step h4 { font-family: var(--serif); font-size: 20px; margin: 10px 0 8px; }
+.flow-step p { font-size: 14px; color: var(--ink-soft); }
+
+/* ----------------------------------------------------------
+   Pricing (Pricing page)
+   ---------------------------------------------------------- */
+.price-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.price-card {
+  border: 1px solid var(--ink);
+  padding: 34px 28px;
+  display: flex;
+  flex-direction: column;
+}
+.price-card.featured { background: var(--ink); color: var(--cream); }
+.price-card.featured .price-note { color: var(--rust-dim); }
+.price-card.featured .btn-primary { background: var(--rust); border-color: var(--rust); color: var(--ink); }
+.price-card h3 { font-size: 22px; margin-bottom: 8px; }
+.price-note { font-size: 14px; color: var(--ink-soft); margin-bottom: 22px; }
+.price-card ul { list-style: none; margin-bottom: 26px; flex: 1; }
+.price-card li { font-size: 14px; padding: 8px 0; border-top: 1px solid var(--line); }
+.price-card.featured li { border-top-color: #3a382f; }
+.price-card li:first-child { border-top: none; }
+.price-faq { border-top: 1px solid var(--line); margin-top: 70px; padding-top: 50px; }
+.price-faq-item { padding: 22px 0; border-top: 1px solid var(--line); }
+.price-faq-item:first-child { border-top: none; }
+.price-faq-item h4 { font-family: var(--serif); font-size: 18px; margin-bottom: 8px; }
+.price-faq-item p { color: var(--ink-soft); font-size: 14.5px; max-width: 640px; }
+
+/* ----------------------------------------------------------
+   About page
+   ---------------------------------------------------------- */
+.about-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 1px solid var(--ink);
+}
+.stat { padding: 30px 26px; border-left: 1px solid var(--ink); }
+.stat:first-child { border-left: none; }
+.stat .num { font-family: var(--serif); font-size: 38px; color: var(--rust); }
+.stat .label {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--ink-soft);
+  margin-top: 6px;
+}
+.values-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.value-card .vnum { font-family: var(--mono); font-size: 12px; color: var(--rust); }
+.value-card h4 { font-family: var(--serif); font-size: 20px; margin: 10px 0 8px; }
+.value-card p { font-size: 14.5px; color: var(--ink-soft); }
+.about-copy {
+  max-width: 680px;
+  font-size: 16.5px;
+  color: var(--ink-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.about-copy strong { color: var(--ink); font-weight: 600; }
+
+/* ----------------------------------------------------------
+   Responsive — único breakpoint: 900px
+   ---------------------------------------------------------- */
+@media (max-width: 900px) {
+  .nav-links { display: none; }
+  .nav-toggle { display: flex; }
+
+  .hero-grid { grid-template-columns: 1fr; gap: 48px; }
+  .dash-stack { min-height: 320px; }
+
+  .tool-grid,
+  .audience-grid,
+  .testi-grid,
+  .price-grid,
+  .about-stats,
+  .values-grid,
+  .audience-mini { grid-template-columns: 1fr; }
+
+  .audience-col { border-left: none; border-top: 1px solid var(--ink); }
+  .audience-col:first-child { border-top: none; }
+  .stat { border-left: none; border-top: 1px solid var(--ink); }
+  .stat:first-child { border-top: none; }
+
+  .feature-panel { grid-template-columns: 1fr; }
+  .feature-visual { border-left: none; border-top: 1px solid var(--line); }
+
+  .location-diagram { flex-direction: column; }
+  .loc-connector { width: 1px; height: 32px; }
+  .loc-connector::after { content: "↓"; left: -9px; top: auto; bottom: -4px; right: auto; }
+
+  .flow-row { flex-direction: column; }
+  .flow-step + .flow-step { border-left: 1px solid var(--line-strong); border-top: none; }
+}

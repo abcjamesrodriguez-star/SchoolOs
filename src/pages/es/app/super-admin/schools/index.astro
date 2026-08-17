@@ -1,0 +1,104 @@
+---
+// ============================================================
+// SchoolOS — Listado de Escuelas (/es/app/super-admin/schools)
+// ============================================================
+import AppLayout from '../../../../../layouts/AppLayout.astro';
+import { getMockSchools } from '../../../../../data/app/mock-data';
+
+const lang = 'es';
+const schools = getMockSchools(lang);
+
+function getAuditBadge(auditStatus: string) {
+  if (auditStatus === 'under_investigation') {
+    return { class: 'badge-investigation', label: 'Bajo investigación' };
+  }
+  if (auditStatus === 'flagged') {
+    return { class: 'badge-flagged', label: 'Marcado' };
+  }
+  return { class: 'badge-none', label: 'Ninguno' };
+}
+
+function getStatusLabel(status: string) {
+  switch (status) {
+    case 'active': return 'Activa';
+    case 'trial': return 'En Prueba';
+    case 'suspended': return 'Suspendida';
+    case 'cancelled': return 'Cancelada';
+    default: return status;
+  }
+}
+---
+
+<AppLayout
+  title="Escuelas"
+  pageTitle="Gestión de Escuelas"
+  activeSection="schools"
+  lang={lang}
+  activeRoute="/app/super-admin/schools"
+  breadcrumbs={[{ label: 'Sistema' }, { label: 'Escuelas' }]}
+>
+  <div class="panel">
+    <div class="table-toolbar">
+      <div class="filter-row">
+        <select class="filter-select" aria-label="Filtrar por estado">
+          <option>Todos los estados</option>
+          <option>Activa</option>
+          <option>En Prueba</option>
+          <option>Suspendida</option>
+          <option>Cancelada</option>
+        </select>
+        <select class="filter-select" aria-label="Filtrar por plan">
+          <option>Todos los planes</option>
+          <option>Starter</option>
+          <option>Professional</option>
+          <option>Enterprise</option>
+        </select>
+      </div>
+      <a class="btn btn-primary" href={`/${lang}/app/super-admin/schools/new`}>+ Nueva Escuela</a>
+    </div>
+
+    <div class="panel-body">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Escuela</th>
+            <th>Plan</th>
+            <th>Estado</th>
+            <th>Auditoría Judicial</th>
+            <th>Estudiantes</th>
+            <th>Fecha de Creación</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {schools.map((school) => {
+            const audit = getAuditBadge(school.auditStatus);
+            return (
+              <tr>
+                <td class="cell-name">
+                  <a href={`/${lang}/app/super-admin/schools/${school.id}`}>{school.name}</a>
+                </td>
+                <td><span class="plan-tag">{school.planName}</span></td>
+                <td>
+                  <span class={`badge badge-${school.status}`}>
+                    {getStatusLabel(school.status)}
+                  </span>
+                </td>
+                <td>
+                  <span class={`badge ${audit.class}`}>{audit.label}</span>
+                </td>
+                <td>{school.studentCount.toLocaleString()}</td>
+                <td class="cell-muted">{school.createdAt}</td>
+                <td class="cell-actions">
+                  <a class="btn btn-secondary btn-sm" href={`/${lang}/app/super-admin/schools/${school.id}`}>
+                    Ver Detalle
+                  </a>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</AppLayout>

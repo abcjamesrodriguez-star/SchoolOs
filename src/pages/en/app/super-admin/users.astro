@@ -1,0 +1,51 @@
+---
+// ============================================================
+// SchoolOS — System Users (/en/app/super-admin/users)
+// ============================================================
+import AppLayout from '../../../../layouts/AppLayout.astro';
+import { getMockUsers } from '../../../../data/app/mock-data';
+
+const lang = 'en';
+const users = getMockUsers(lang);
+---
+
+<AppLayout
+  title="Users"
+  pageTitle="System Users"
+  activeSection="users"
+  lang={lang}
+  activeRoute="/app/super-admin/users"
+  breadcrumbs={[{ label: 'System' }, { label: 'Users' }]}
+>
+  <div class="panel">
+    <div class="panel-header">
+      <h2>User Directory (Cross-School Search)</h2>
+    </div>
+    <div class="panel-body">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Institution / Scope</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Last login</th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.map((u) => (
+            <tr>
+              <td class="cell-name">{u.name}</td>
+              <td class="cell-muted">{u.email}</td>
+              <td>{u.school}</td>
+              <td><span class="plan-tag">{u.role}</span></td>
+              <td><span class={`badge badge-active`}>{u.status}</span></td>
+              <td class="cell-muted">{u.lastLogin}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</AppLayout>

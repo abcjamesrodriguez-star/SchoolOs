@@ -1,0 +1,28 @@
+---
+import type { Lang } from '../../i18n';
+import { useTranslations } from '../../i18n';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const links = [
+  { label: t.footer.platform,   href: `/${lang}/platform`    },
+  { label: t.footer.forSchools, href: `/${lang}/for-schools`  },
+  { label: t.footer.pricing,    href: `/${lang}/pricing`     },
+  { label: t.footer.about,      href: `/${lang}/about`       },
+  { label: t.footer.contact,    href: '#'                    },
+];
+---
+<footer>
+  <div class="wrap footer-row">
+    <a class="logo" href={`/${lang}/`} style="font-size: 16px;">School<span>OS</span></a>
+    <nav class="footer-links" aria-label="Footer navigation">
+      {links.map(({ label, href }) => (
+        <a href={href}>{label}</a>
+      ))}
+    </nav>
+  </div>
+</footer>

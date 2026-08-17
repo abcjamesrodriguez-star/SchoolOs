@@ -1,0 +1,49 @@
+---
+// ============================================================
+// SchoolOS — Gestión de Planes Comerciales (Español)
+// ============================================================
+import AppLayout from '../../../layouts/AppLayout.astro';
+
+const plans = [
+  { name: 'Starter', limit: 'Hasta 200 estudiantes', price: '$199 USD / mes', schoolsCount: 42, status: 'Activo' },
+  { name: 'Professional', limit: 'Hasta 1,500 estudiantes', price: '$499 USD / mes', schoolsCount: 118, status: 'Activo' },
+  { name: 'Enterprise', limit: 'Estudiantes ilimitados', price: 'Cotización a Medida', schoolsCount: 24, status: 'Activo' },
+];
+---
+
+<AppLayout
+  title="Planes"
+  pageTitle="Planes de Suscripción"
+  activeSection="plans"
+  breadcrumbs={[{ label: 'Sistema' }, { label: 'Planes' }]}
+>
+  <div class="panel">
+    <div class="panel-header">
+      <h2>Configuración de Planes Comerciales</h2>
+    </div>
+    <div class="panel-body">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Nivel de Plan</th>
+            <th>Límite de Alumnos</th>
+            <th>Precio Base</th>
+            <th>Escuelas Activas</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {plans.map((p) => (
+            <tr>
+              <td class="cell-name"><span class="plan-tag">{p.name}</span></td>
+              <td class="cell-muted">{p.limit}</td>
+              <td style="font-family:var(--mono); font-weight:500;">{p.price}</td>
+              <td>{p.schoolsCount}</td>
+              <td><span class="badge badge-active">{p.status}</span></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</AppLayout>

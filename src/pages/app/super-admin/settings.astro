@@ -1,0 +1,39 @@
+---
+// ============================================================
+// SchoolOS — Configuración Global del Sistema (Español)
+// ============================================================
+import AppLayout from '../../../layouts/AppLayout.astro';
+---
+
+<AppLayout
+  title="Configuración"
+  pageTitle="Configuración Global del Sistema"
+  activeSection="settings"
+  breadcrumbs={[{ label: 'Sistema' }, { label: 'Configuración' }]}
+>
+  <div class="panel" style="max-width: 800px;">
+    <div class="panel-header">
+      <h2>Parámetros Globales de la Plataforma</h2>
+    </div>
+    <div class="panel-body padded">
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Nombre de la Plataforma</label>
+          <input type="text" value="SchoolOS Multi-Tenant" readonly />
+        </div>
+        <div class="form-field">
+          <label>Versión del Sistema</label>
+          <input type="text" value="v1.0.4-preview" readonly />
+        </div>
+        <div class="form-field full">
+          <label>Política de Retención de Datos</label>
+          <input type="text" value="7 Años (Cumplimiento Estatutario de Registros Educativos)" readonly />
+        </div>
+        <div class="form-field full">
+          <label>Regla de Verificación de Acceso Judicial</label>
+          <input type="text" value="Confirmación Estricta Obligatoria de Dos Super Administradores" readonly />
+        </div>
+      </div>
+    </div>
+  </div>
+</AppLayout>

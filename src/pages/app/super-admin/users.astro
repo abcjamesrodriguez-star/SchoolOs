@@ -1,0 +1,53 @@
+---
+// ============================================================
+// SchoolOS — Directorio de Usuarios del Sistema (Español)
+// ============================================================
+import AppLayout from '../../../layouts/AppLayout.astro';
+
+const mockUsers = [
+  { name: 'Diana Restrepo', email: 'diana.restrepo@colegionorte.edu.co', school: 'Colegio Norte', role: 'Administrador Escolar', status: 'Activo', lastLogin: 'Hoy, 8:12 AM' },
+  { name: 'Jorge Salas', email: 'jorge.salas@colegionorte.edu.co', school: 'Colegio Norte', role: 'Administrador Escolar', status: 'Activo', lastLogin: '15 de agosto, 2026' },
+  { name: 'Elena Morales', email: 'elena.morales@sanmarcos.edu.co', school: 'Colegio San Marcos', role: 'Administrador Escolar', status: 'Activo', lastLogin: 'Ayer' },
+  { name: 'Carlos Rodríguez', email: 'carlos.r@schoolos.com', school: 'Sistema Global', role: 'Super Admin', status: 'Activo', lastLogin: 'Hace 10 min' },
+  { name: 'Maria P.', email: 'maria.p@schoolos.com', school: 'Sistema Global', role: 'Super Admin', status: 'Activo', lastLogin: 'Ahora mismo' },
+];
+---
+
+<AppLayout
+  title="Usuarios"
+  pageTitle="Directorio de Usuarios"
+  activeSection="users"
+  breadcrumbs={[{ label: 'Sistema' }, { label: 'Usuarios' }]}
+>
+  <div class="panel">
+    <div class="panel-header">
+      <h2>Directorio de Cuentas (Búsqueda Multi-Escuela)</h2>
+    </div>
+    <div class="panel-body">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Nombre Completo</th>
+            <th>Correo Electrónico</th>
+            <th>Institución / Alcance</th>
+            <th>Rol</th>
+            <th>Estado</th>
+            <th>Último Ingreso</th>
+          </tr>
+        </thead>
+        <tbody>
+          {mockUsers.map((u) => (
+            <tr>
+              <td class="cell-name">{u.name}</td>
+              <td class="cell-muted">{u.email}</td>
+              <td>{u.school}</td>
+              <td><span class="plan-tag">{u.role}</span></td>
+              <td><span class="badge badge-active">{u.status}</span></td>
+              <td class="cell-muted">{u.lastLogin}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</AppLayout>

@@ -1,0 +1,74 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CTAFinal from '../../components/CTAFinal.astro';
+import { useTranslations } from '../../i18n';
+
+const lang = 'es';
+const t = useTranslations(lang);
+const { about: p } = t;
+---
+<BaseLayout title={p.meta.title} description={p.meta.description} activeRoute="/about" lang={lang}>
+
+  <!-- Page head -->
+  <section class="page-head">
+    <div class="wrap">
+      <span class="eyebrow">{p.head.eyebrow}</span>
+      <h1 set:html={p.head.h1} />
+      <p>{p.head.lede}</p>
+    </div>
+  </section>
+
+  <!-- Mission copy -->
+  <section class="tight">
+    <div class="wrap">
+      <div class="about-copy">
+        {p.copy.map(paragraph => <p set:html={paragraph} />)}
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <section class="bordered tight">
+    <div class="wrap">
+      <div class="about-stats">
+        {p.stats.map(stat => (
+          <div class="stat">
+            <div class="num">{stat.num}</div>
+            <div class="label">{stat.label}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Values -->
+  <section class="bordered">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">{p.values.eyebrow}</span>
+        <h2>{p.values.h2}</h2>
+      </div>
+      <div class="values-grid">
+        {p.values.items.map(item => (
+          <div class="value-card">
+            <span class="vnum">{item.num}</span>
+            <h4>{item.h4}</h4>
+            <p>{item.p}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Final -->
+  <CTAFinal
+    eyebrow={p.cta.eyebrow}
+    heading={p.cta.heading}
+    copy={p.cta.copy}
+    buttons={[
+      { label: p.cta.btn1, href: `/${lang}/pricing`,  variant: 'primary'   },
+      { label: p.cta.btn2, href: `/${lang}/platform`, variant: 'secondary' },
+    ]}
+  />
+
+</BaseLayout>

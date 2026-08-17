@@ -1,0 +1,26 @@
+---
+interface CTAButton {
+  label: string;
+  href: string;
+  variant: 'primary' | 'secondary';
+}
+interface Props {
+  eyebrow: string;
+  heading: string;
+  copy: string;
+  buttons: CTAButton[];
+}
+const { eyebrow, heading, copy, buttons } = Astro.props;
+---
+<section class="cta-final">
+  <div class="wrap">
+    <span class="eyebrow">{eyebrow}</span>
+    <h2 set:html={heading} />
+    <p>{copy}</p>
+    <div class="cta-row">
+      {buttons.map((btn) => (
+        <a class={`btn btn-${btn.variant}`} href={btn.href}>{btn.label}</a>
+      ))}
+    </div>
+  </div>
+</section>

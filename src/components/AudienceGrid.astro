@@ -1,0 +1,67 @@
+---
+import type { Audience } from '../data/audiences';
+
+interface Props {
+  variant: 'mini' | 'full';
+  audiences: Audience[];
+  miniHeading?: string;
+  miniSubheading?: string;
+  miniLinkLabel?: string;
+  miniLinkHref?: string;
+}
+const {
+  variant,
+  audiences,
+  miniHeading    = 'Built for the whole school',
+  miniSubheading = 'Students, teachers and schools — in one system',
+  miniLinkLabel  = 'See the full breakdown for schools →',
+  miniLinkHref   = '#',
+} = Astro.props;
+---
+
+{variant === 'mini' && (
+  <section class="bordered tight">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">{miniHeading}</span>
+        <h2>{miniSubheading}</h2>
+      </div>
+
+      <div class="audience-mini">
+        {audiences.map((a) => (
+          <div class="mini-card">
+            <span class="audience-tag">{a.tag}</span>
+            <h4>{a.headline}</h4>
+            <p>{a.tagline}</p>
+          </div>
+        ))}
+      </div>
+
+      <div class="audience-mini-footer">
+        <a href={miniLinkHref}>{miniLinkLabel}</a>
+      </div>
+    </div>
+  </section>
+)}
+
+{variant === 'full' && (
+  <section class="bordered">
+    <div class="wrap">
+      <div class="audience-grid">
+        {audiences.map((a) => (
+          <div class="audience-col">
+            <span class="audience-tag">{a.tag}</span>
+            <h3>{a.headline}</h3>
+            <p class="tagline">{a.tagline}</p>
+            <ul>
+              {a.bullets.map((bullet) => (
+                <li>{bullet}</li>
+              ))}
+            </ul>
+            <a class="explore" href={a.exploreHref}>{a.exploreLabel}</a>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+)}

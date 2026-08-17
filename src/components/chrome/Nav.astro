@@ -1,0 +1,111 @@
+---
+import type { Lang } from '../../i18n';
+import { useTranslations, switchLang } from '../../i18n';
+
+interface Props {
+  activeRoute: string;
+  lang: Lang;
+}
+const { activeRoute, lang } = Astro.props;
+const t = useTranslations(lang);
+
+const links = [
+  { label: t.nav.home,       href: `/${lang}/`           },
+  { label: t.nav.platform,   href: `/${lang}/platform`   },
+  { label: t.nav.forSchools, href: `/${lang}/for-schools` },
+  { label: t.nav.pricing,    href: `/${lang}/pricing`    },
+  { label: t.nav.about,      href: `/${lang}/about`      },
+];
+
+// Build the alternate lang URL for the switcher
+const altLang: Lang = lang === 'en' ? 'es' : 'en';
+const currentPath = `/${lang}${activeRoute === '/' ? '' : activeRoute}`;
+const altPath = switchLang(currentPath, altLang);
+---
+<header class="nav">
+  <div class="nav-row wrap">
+    <a class="logo" href={`/${lang}/`}>School<span>OS</span></a>
+
+    <nav class="nav-links" aria-label="Main navigation">
+      {links.map(({ label, href }) => (
+        <a href={href} class={activeRoute !== '/' && href.endsWith(activeRoute) || (activeRoute === '/' && href === `/${lang}/`) ? 'current' : ''}>
+          {label}
+        </a>
+      ))}
+    </nav>
+
+    <div class="nav-actions">
+      <a class="nav-login" href="/login">{t.nav.login}</a>
+      <a class="btn btn-primary" href={`/${lang}/pricing`}>{t.nav.demo}</a>
+
+      <!-- Language Switcher -->
+      <a
+        class="lang-switcher"
+        href={altPath}
+        data-target-lang={altLang}
+        aria-label={`Switch to ${altLang === 'en' ? 'English' : 'Español'}`}
+      >
+        <span class={lang === 'en' ? 'ls-active' : ''}>EN</span>
+        <span class="ls-divider">|</span>
+        <span class={lang === 'es' ? 'ls-active' : ''}>ES</span>
+      </a>
+
+      <button class="nav-toggle" aria-label="Open menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<script is:inline>
+  document.querySelectorAll('.lang-switcher').forEach(function(el) {
+    el.addEventListener('click', function() {
+      var target = el.getAttribute('data-target-lang');
+      if (target) {
+        try { localStorage.setItem('schoolos-lang', target); } catch (_) {}
+      }
+    });
+  });
+</script>
+
+<style>
+  .lang-switcher {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-muted, #888);
+    text-decoration: none;
+    padding: 0.3rem 0.6rem;
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: 999px;
+    transition: border-color 0.18s, color 0.18s, background 0.18s;
+    white-space: nowrap;
+  }
+
+  .lang-switcher:hover {
+    border-color: var(--color-ink, #111);
+    color: var(--color-ink, #111);
+    background: transparent;
+  }
+
+  .lang-switcher .ls-active {
+    color: var(--color-ink, #111);
+    font-weight: 600;
+  }
+
+  .lang-switcher .ls-divider {
+    opacity: 0.3;
+    font-weight: 400;
+  }
+
+  @media (max-width: 768px) {
+    .lang-switcher { order: -1; }
+  }
+</style>

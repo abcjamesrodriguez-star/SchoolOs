@@ -1,0 +1,83 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Card from '../../components/Card.astro';
+import AudienceGrid from '../../components/AudienceGrid.astro';
+import ProblemSection from '../../components/ProblemSection.astro';
+import TestimonialGrid from '../../components/TestimonialGrid.astro';
+import CTAFinal from '../../components/CTAFinal.astro';
+import { useTranslations } from '../../i18n';
+import { getAudiences } from '../../data/audiences';
+import { getTestimonials } from '../../data/testimonials';
+
+const lang = 'es';
+const t = useTranslations(lang);
+const { index: p } = t;
+---
+<BaseLayout title={p.meta.title} description={p.meta.description} activeRoute="/" lang={lang}>
+
+  <!-- ① Hero -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="eyebrow">{p.hero.eyebrow}</span>
+        <h1>{p.hero.h1a}<br />{p.hero.h1b} <em>{p.hero.h1em}</em></h1>
+        <p class="lede">{p.hero.lede}</p>
+        <div class="hero-ctas">
+          <a class="btn btn-primary"   href={`/${lang}/pricing`}>{p.hero.ctaPrimary}</a>
+          <a class="btn btn-secondary" href={`/${lang}/platform`}>{p.hero.ctaSecondary}</a>
+        </div>
+      </div>
+
+      <!-- Dashboard cards stack -->
+      <div class="dash-stack">
+        <Card
+          variant="default"
+          label={p.cards.student.label}
+          className="card-student"
+          lines={p.cards.student.lines.map(text => ({ text }))}
+        />
+        <Card
+          variant="dark"
+          label={p.cards.teacher.label}
+          className="card-teacher"
+          lines={p.cards.teacher.lines.map(text => ({ text }))}
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- ② The Problem -->
+  <ProblemSection
+    eyebrow={p.problem.eyebrow}
+    heading={p.problem.heading}
+    copy={p.problem.copy}
+    tools={p.problem.tools}
+    convergeLabel={p.problem.convergeLabel}
+    platformLabel={p.problem.platformLabel}
+  />
+
+  <!-- ③ Audience Mini -->
+  <AudienceGrid
+    variant="mini"
+    audiences={getAudiences(lang)}
+    miniHeading={p.audienceMini.eyebrow}
+    miniSubheading={p.audienceMini.h2}
+    miniLinkLabel={p.audienceMini.linkLabel}
+    miniLinkHref={`/${lang}/for-schools`}
+  />
+
+  <!-- ④ Testimonial -->
+  <TestimonialGrid testimonials={getTestimonials(lang)} limit={1} size="large" />
+
+  <!-- ⑤ CTA Final -->
+  <CTAFinal
+    eyebrow={p.cta.eyebrow}
+    heading={p.cta.heading}
+    copy={p.cta.copy}
+    buttons={[
+      { label: p.cta.btn1, href: `/${lang}/pricing`,  variant: 'primary'   },
+      { label: p.cta.btn2, href: `/${lang}/platform`, variant: 'secondary' },
+    ]}
+  />
+
+</BaseLayout>

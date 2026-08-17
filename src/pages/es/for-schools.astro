@@ -1,0 +1,61 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AudienceGrid from '../../components/AudienceGrid.astro';
+import FlowSteps from '../../components/FlowSteps.astro';
+import CTAFinal from '../../components/CTAFinal.astro';
+import { useTranslations } from '../../i18n';
+import { getAudiences } from '../../data/audiences';
+import { getTestimonials } from '../../data/testimonials';
+
+const lang = 'es';
+const t = useTranslations(lang);
+const { forSchools: p } = t;
+const testimonials = getTestimonials(lang);
+---
+<BaseLayout title={p.meta.title} description={p.meta.description} activeRoute="/for-schools" lang={lang}>
+
+  <!-- Page head -->
+  <section class="page-head">
+    <div class="wrap">
+      <span class="eyebrow">{p.head.eyebrow}</span>
+      <h1>{p.head.h1}</h1>
+      <p>{p.head.lede}</p>
+    </div>
+  </section>
+
+  <!-- Audience Grid — full variant -->
+  <AudienceGrid variant="full" audiences={getAudiences(lang)} />
+
+  <!-- Flow Steps -->
+  <FlowSteps steps={p.flow} eyebrow={p.flowHead.eyebrow} heading={p.flowHead.h2} />
+
+  <!-- Testimonials -->
+  <section class="bordered">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">{p.testimonials.eyebrow}</span>
+        <h2>{p.testimonials.h2}</h2>
+      </div>
+      <div class="testi-grid">
+        {testimonials.map((tst) => (
+          <div class="testi-card">
+            <q>{tst.quote}</q>
+            <span class="testi-tag">{tst.role}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Final -->
+  <CTAFinal
+    eyebrow={p.cta.eyebrow}
+    heading={p.cta.heading}
+    copy={p.cta.copy}
+    buttons={[
+      { label: p.cta.btn1, href: `/${lang}/pricing`, variant: 'primary'   },
+      { label: p.cta.btn2, href: `/${lang}/pricing`, variant: 'secondary' },
+    ]}
+  />
+
+</BaseLayout>

@@ -1,0 +1,79 @@
+---
+import type { Lang } from '../../i18n';
+import { useTranslations, switchLang } from '../../i18n';
+
+interface BreadcrumbItem {
+  label: string;
+  href?: string;
+}
+
+interface Props {
+  title: string;
+  breadcrumbs: BreadcrumbItem[];
+  lang?: Lang;
+  activeRoute?: string;
+}
+
+const { title, breadcrumbs, lang = 'es', activeRoute = '/app/super-admin' } = Astro.props;
+const t = useTranslations(lang).app.topbar;
+
+const altLang: Lang = lang === 'en' ? 'es' : 'en';
+const currentPath = `/${lang}${activeRoute.startsWith('/') ? activeRoute : '/' + activeRoute}`;
+const altPath = switchLang(currentPath, altLang);
+---
+
+<header class="app-topbar">
+  <div>
+    <div class="breadcrumb">
+      {breadcrumbs.map((b, i) => (
+        <span>
+          {b.href ? <a href={b.href}>{b.label}</a> : b.label}
+          {i < breadcrumbs.length - 1 && ' / '}
+        </span>
+      ))}
+    </div>
+    <h1>{title}</h1>
+  </div>
+
+  <div class="topbar-right">
+    <input class="search-input" type="text" placeholder={t.searchPlaceholder} />
+
+    <!-- Dual Language Switcher pill with exact route preservation -->
+    <a
+      class="topbar-lang-switcher"
+      href={altPath}
+      data-target-lang={altLang}
+      style="display:inline-flex; align-items:center; gap:4px; font-family:var(--mono); font-size:11px; padding:3px 10px; border:1px solid var(--line-strong); border-radius:999px; background:var(--paper); color:var(--ink-soft); text-decoration:none;"
+      title={lang === 'es' ? 'Switch to English' : 'Cambiar a Español'}
+    >
+      <span style={lang === 'en' ? 'color:var(--rust); font-weight:700;' : 'color:var(--ink-soft);'}>EN</span>
+      <span style="opacity:0.3;">|</span>
+      <span style={lang === 'es' ? 'color:var(--rust); font-weight:700;' : 'color:var(--ink-soft);'}>ES</span>
+    </a>
+
+    <div class="user-chip">
+      <div class="avatar">MP</div>
+      <span>Maria P.</span>
+    </div>
+
+    <button id="logoutBtn" class="logout-btn" title="Cerrar sesión">{t.logout}</button>
+  </div>
+</header>
+
+<script is:inline>
+  document.querySelectorAll('.topbar-lang-switcher').forEach(function(el) {
+    el.addEventListener('click', function() {
+      var target = el.getAttribute('data-target-lang');
+      if (target) {
+        try { localStorage.setItem('schoolos-lang', target); } catch (_) {}
+      }
+    });
+  });
+
+  document.getElementById('logoutBtn')?.addEventListener('click', function() {
+    try {
+      localStorage.removeItem('schoolos-auth');
+    } catch (_) {}
+    window.location.href = '/login';
+  });
+</script>

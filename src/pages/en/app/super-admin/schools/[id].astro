@@ -1,0 +1,200 @@
+---
+// ============================================================
+// SchoolOS — School Detail (/en/app/super-admin/schools/[id])
+// ============================================================
+import AppLayout from '../../../../../layouts/AppLayout.astro';
+import { getMockSchools, getMockSchoolAdmins, getMockJudicialGrants } from '../../../../../data/app/mock-data';
+
+export function getStaticPaths() {
+  const schools = getMockSchools('en');
+  return schools.map((school) => ({
+    params: { id: school.id },
+    props: { school },
+  }));
+}
+
+const lang = 'en';
+const { school } = Astro.props;
+const admins = getMockSchoolAdmins(school.id, lang);
+const grants = getMockJudicialGrants(lang).filter((g) => g.schoolId === school.id);
+const hasActiveOrPendingGrant = grants.some((g) => g.status === 'active' || g.status === 'pending_verification');
+
+function getAuditBadge(auditStatus: string) {
+  if (auditStatus === 'under_investigation') {
+    return { class: 'badge-investigation', label: 'Under investigation' };
+  }
+  if (auditStatus === 'flagged') {
+    return { class: 'badge-flagged', label: 'Flagged' };
+  }
+  return { class: 'badge-none', label: 'None' };
+}
+
+const audit = getAuditBadge(school.auditStatus);
+---
+
+<AppLayout
+  title={school.name}
+  pageTitle="School detail"
+  activeSection="schools"
+  lang={lang}
+  activeRoute={`/app/super-admin/schools/${school.id}`}
+  breadcrumbs={[
+    { label: 'Schools', href: `/${lang}/app/super-admin/schools` },
+    { label: school.name },
+  ]}
+>
+  <a class="back-link" href={`/${lang}/app/super-admin/schools`}>← Back to Schools</a>
+
+  <div class="detail-header">
+    <div>
+      <div class="title-row">
+        <h1>{school.name}</h1>
+        <span class={`badge badge-${school.status}`}>
+          {school.status.charAt(0).toUpperCase() + school.status.slice(1)}
+        </span>
+        <span class="plan-tag">{school.planName}</span>
+        <span class={`badge ${audit.class}`}>{audit.label}</span>
+      </div>
+      <div class="sub">
+        {school.domain} · {school.location} · Created {school.createdAt}
+      </div>
+    </div>
+    <div class="detail-actions">
+      <button class="btn btn-secondary">Change Plan</button>
+      <button class="btn btn-secondary">Edit Details</button>
+      <button class="btn btn-danger">Suspend</button>
+    </div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-label">Students</div>
+      <div class="stat-num">{school.studentCount}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Teachers</div>
+      <div class="stat-num">{school.teacherCount}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Active Classes</div>
+      <div class="stat-num">{school.activeClassesCount}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Audit Status</div>
+      <div class={`stat-num ${school.auditStatus !== 'none' ? 'accent' : ''}`} style="font-size:20px; margin-top:12px;">
+        {audit.label}
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <h2>School administrators</h2>
+      <a class="panel-link" href="#">+ Invite admin</a>
+    </div>
+    <div class="panel-body">
+      {admins.length > 0 ? (
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Status</th>
+              <th>Last login</th>
+            </tr>
+          </thead>
+          <tbody>
+            {admins.map((adm) => (
+              <tr>
+                <td class="cell-name">{adm.name}</td>
+                <td class="cell-muted">{adm.email}</td>
+                <td>
+                  <span class={`badge badge-${adm.status}`}>
+                    {adm.status.charAt(0).toUpperCase() + adm.status.slice(1)}
+                  </span>
+                </td>
+                <td class="cell-muted">{adm.lastLoginAt || 'Never'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <div class="empty-state">No administrators registered for this school yet.</div>
+      )}
+    </div>
+  </div>
+
+  <details class="collapsible" open={school.auditStatus !== 'none'}>
+    <summary>
+      <div class="summary-meta">
+        <span>Judicial Access</span>
+        <span class={`badge ${audit.class}`}>{audit.label}</span>
+      </div>
+      <span class="chevron">▾</span>
+    </summary>
+    <div class="panel-body padded">
+      <div class="notice restricted">
+        <span class="notice-icon">⚠</span>
+        <div>
+          <strong>Restricted by design.</strong> Individual student records,
+          communications and academic activity for this school are not visible
+          here unless a Judicial Access Grant is <strong>active</strong> and the
+          data requested falls within its authorized scope. Every view under an
+          active grant is separately logged.
+        </div>
+      </div>
+
+      {grants.length > 0 ? (
+        <table class="data-table" style="margin-bottom: 20px;">
+          <thead>
+            <tr>
+              <th>Case Reference</th>
+              <th>Authority</th>
+              <th>Scope</th>
+              <th>Status</th>
+              <th>Requested by</th>
+              <th>Verified by</th>
+              <th>Expires</th>
+            </tr>
+          </thead>
+          <tbody>
+            {grants.map((g) => (
+              <tr>
+                <td class="cell-name">{g.caseReference}</td>
+                <td class="cell-muted">{g.issuingAuthority}</td>
+                <td class="cell-muted">{g.scope}</td>
+                <td>
+                  <span class={`badge badge-${g.status}`}>
+                    {g.status === 'pending_verification' ? 'Pending' : g.status.charAt(0).toUpperCase() + g.status.slice(1)}
+                  </span>
+                </td>
+                <td class="cell-muted">{g.requestedBy}</td>
+                <td class="cell-muted">{g.verifiedBy || '—'}</td>
+                <td class="cell-muted">{g.expiresAt}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <div class="empty-state" style="padding: 20px 0;">
+          No judicial access grants registered for this school.
+        </div>
+      )}
+
+      <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+        <button
+          class="btn btn-secondary"
+          disabled={hasActiveOrPendingGrant}
+          title={hasActiveOrPendingGrant ? 'An active or pending grant already exists for this school' : ''}
+        >
+          + Request Judicial Access
+        </button>
+        {hasActiveOrPendingGrant && (
+          <span class="hint" style="font-size:12px; color:var(--ink-soft);">
+            Disabled — an active or pending grant already exists for this school.
+          </span>
+        )}
+      </div>
+    </div>
+  </details>
+</AppLayout>

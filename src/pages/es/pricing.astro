@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PricingGrid from '../../components/PricingGrid.astro';
+import CTAFinal from '../../components/CTAFinal.astro';
+import { useTranslations } from '../../i18n';
+import { getPricingPlans } from '../../data/pricing';
+
+const lang = 'es';
+const t = useTranslations(lang);
+const { pricing: p } = t;
+---
+<BaseLayout title={p.meta.title} description={p.meta.description} activeRoute="/pricing" lang={lang}>
+
+  <!-- Page head -->
+  <section class="page-head">
+    <div class="wrap">
+      <span class="eyebrow">{p.head.eyebrow}</span>
+      <h1 set:html={p.head.h1.replace('\n', '<br />')} />
+      <p>{p.head.lede}</p>
+    </div>
+  </section>
+
+  <!-- Pricing grid + FAQ -->
+  <PricingGrid
+    plans={getPricingPlans(lang)}
+    faq={p.faq}
+    faqEyebrow={p.faqHead.eyebrow}
+    faqHeading={p.faqHead.h2}
+  />
+
+  <!-- CTA Final -->
+  <CTAFinal
+    eyebrow={p.cta.eyebrow}
+    heading={p.cta.heading}
+    copy={p.cta.copy}
+    buttons={[
+      { label: p.cta.btn1, href: '#',                  variant: 'primary'   },
+      { label: p.cta.btn2, href: `/${lang}/for-schools`, variant: 'secondary' },
+    ]}
+  />
+
+</BaseLayout>

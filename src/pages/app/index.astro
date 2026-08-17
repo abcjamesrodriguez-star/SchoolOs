@@ -1,0 +1,22 @@
+---
+// Redirect /app to /[lang]/app/super-admin
+---
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>SchoolOS</title>
+    <script is:inline>
+      (function () {
+        var saved = null;
+        try { saved = localStorage.getItem('schoolos-lang'); } catch (_) {}
+        var target = (saved === 'en' || saved === 'es') ? saved : ((navigator.language || '').toLowerCase().startsWith('en') ? 'en' : 'es');
+        window.location.replace('/' + target + '/app/super-admin');
+      })();
+    </script>
+    <noscript>
+      <meta http-equiv="refresh" content="0;url=/es/app/super-admin" />
+    </noscript>
+  </head>
+  <body></body>
+</html>

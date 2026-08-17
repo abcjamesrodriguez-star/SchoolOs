@@ -1,0 +1,87 @@
+---
+// ============================================================
+// SchoolOS — Formulario de Registro de Nueva Escuela (/es/app/super-admin/schools/new)
+// ============================================================
+import AppLayout from '../../../../../layouts/AppLayout.astro';
+
+const lang = 'es';
+---
+
+<AppLayout
+  title="Nueva Escuela"
+  pageTitle="Registrar Nueva Escuela"
+  activeSection="schools"
+  lang={lang}
+  activeRoute="/app/super-admin/schools/new"
+  breadcrumbs={[
+    { label: 'Escuelas', href: `/${lang}/app/super-admin/schools` },
+    { label: 'Nueva Escuela' },
+  ]}
+>
+  <div class="panel" style="max-width: 800px;">
+    <div class="panel-header">
+      <h2>Datos de la Institución</h2>
+    </div>
+    <div class="panel-body padded">
+      <form id="newSchoolForm">
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="schoolName">Nombre de la Escuela / Institución *</label>
+            <input type="text" id="schoolName" placeholder="ej. Colegio San Rafael" required />
+            <span class="hint">Nombre legal o comercial de la institución educativa.</span>
+          </div>
+
+          <div class="form-field">
+            <label for="schoolSlug">Identificador de Subdominio (Slug) *</label>
+            <input type="text" id="schoolSlug" placeholder="san-rafael" required />
+            <span class="hint">Utilizado para la URL del tenant: slug.schoolos.com</span>
+          </div>
+
+          <div class="form-field">
+            <label for="country">País y Ciudad *</label>
+            <input type="text" id="country" placeholder="ej. Bogotá, Colombia" required />
+          </div>
+
+          <div class="form-field">
+            <label for="timezone">Zona Horaria</label>
+            <select id="timezone">
+              <option value="America/Bogota">America/Bogota (UTC-5)</option>
+              <option value="America/Mexico_City">America/Mexico_City (UTC-6)</option>
+              <option value="America/Lima">America/Lima (UTC-5)</option>
+              <option value="America/Santiago">America/Santiago (UTC-4)</option>
+              <option value="America/Argentina/Buenos_Aires">America/Buenos_Aires (UTC-3)</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="plan">Plan de Suscripción Inicial *</label>
+            <select id="plan" required>
+              <option value="Starter">Starter (Hasta 200 estudiantes)</option>
+              <option value="Professional" selected>Professional (Hasta 1,500 estudiantes)</option>
+              <option value="Enterprise">Enterprise (Escala institucional personalizada)</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="adminEmail">Correo Electrónico del Primer Administrador *</label>
+            <input type="email" id="adminEmail" placeholder="admin@sanrafael.edu.co" required />
+            <span class="hint">Se enviará un enlace automático de activación e invitación a este correo.</span>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Crear Escuela</button>
+          <a class="btn btn-secondary" href={`/${lang}/app/super-admin/schools`}>Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script is:inline define:vars={{ lang }}>
+    document.getElementById('newSchoolForm')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      alert('Mock: Escuela creada con éxito. Redirigiendo al listado de escuelas.');
+      window.location.href = '/' + lang + '/app/super-admin/schools';
+    });
+  </script>
+</AppLayout>

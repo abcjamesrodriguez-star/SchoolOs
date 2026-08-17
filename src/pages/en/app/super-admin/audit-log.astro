@@ -1,0 +1,49 @@
+---
+// ============================================================
+// SchoolOS — Audit Log (/en/app/super-admin/audit-log)
+// ============================================================
+import AppLayout from '../../../../layouts/AppLayout.astro';
+import { getMockAuditLogs } from '../../../../data/app/mock-data';
+
+const lang = 'en';
+const logs = getMockAuditLogs(lang);
+---
+
+<AppLayout
+  title="Audit Log"
+  pageTitle="System Audit Log"
+  activeSection="audit-log"
+  lang={lang}
+  activeRoute="/app/super-admin/audit-log"
+  breadcrumbs={[{ label: 'Compliance' }, { label: 'Audit Log' }]}
+>
+  <div class="panel">
+    <div class="panel-header">
+      <h2>Immutable Action History</h2>
+    </div>
+    <div class="panel-body">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Action Event</th>
+            <th>Target Entity</th>
+            <th>Target Type</th>
+            <th>Actor Email</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          {logs.map((log) => (
+            <tr>
+              <td style="font-family:var(--mono); font-size:12.5px; font-weight:500;">{log.action}</td>
+              <td class="cell-name">{log.targetName}</td>
+              <td><span class="badge badge-none">{log.targetType}</span></td>
+              <td class="cell-muted">{log.actorEmail}</td>
+              <td class="cell-muted">{log.timestamp}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</AppLayout>

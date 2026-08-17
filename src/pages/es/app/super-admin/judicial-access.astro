@@ -1,0 +1,86 @@
+---
+// ============================================================
+// SchoolOS — Acceso Judicial Centralizado (/es/app/super-admin/judicial-access)
+// ============================================================
+import AppLayout from '../../../../layouts/AppLayout.astro';
+import { getMockJudicialGrants } from '../../../../data/app/mock-data';
+
+const lang = 'es';
+const grants = getMockJudicialGrants(lang);
+
+function getGrantStatusLabel(status: string) {
+  switch (status) {
+    case 'active': return 'Activo';
+    case 'pending_verification': return 'Pendiente de Verificación';
+    case 'expired': return 'Expirado';
+    case 'revoked': return 'Revocado';
+    default: return status;
+  }
+}
+---
+
+<AppLayout
+  title="Acceso Judicial"
+  pageTitle="Solicitudes y Órdenes de Acceso Judicial"
+  activeSection="judicial-access"
+  lang={lang}
+  activeRoute="/app/super-admin/judicial-access"
+  breadcrumbs={[{ label: 'Cumplimiento' }, { label: 'Acceso Judicial' }]}
+>
+  <div class="notice restricted">
+    <span class="notice-icon">⚠</span>
+    <div>
+      <strong>Entorno Restringido de Cumplimiento Legal.</strong> Los datos personales de estudiantes,
+      comunicaciones y actividad académica están protegidos por diseño. El acceso únicamente se otorga mediante una
+      <strong>Orden de Acceso Judicial</strong> verificada bajo la regla estricta de confirmación de dos administradores independientes.
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <h2>Órdenes Judiciales Activas y Pendientes</h2>
+    </div>
+    <div class="panel-body">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Institución Escolar</th>
+            <th>Nº Expediente / Caso</th>
+            <th>Autoridad Emisora</th>
+            <th>Alcance Autorizado</th>
+            <th>Estado</th>
+            <th>Radicado por</th>
+            <th>Verificado por</th>
+            <th>Vigencia</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {grants.map((g) => (
+            <tr>
+              <td class="cell-name">
+                <a href={`/${lang}/app/super-admin/schools/${g.schoolId}`}>{g.schoolName}</a>
+              </td>
+              <td style="font-family:var(--mono);">{g.caseReference}</td>
+              <td class="cell-muted">{g.issuingAuthority}</td>
+              <td class="cell-muted">{g.scope}</td>
+              <td>
+                <span class={`badge badge-${g.status}`}>
+                  {getGrantStatusLabel(g.status)}
+                </span>
+              </td>
+              <td class="cell-muted">{g.requestedBy}</td>
+              <td class="cell-muted">{g.verifiedBy || '—'}</td>
+              <td class="cell-muted">{g.expiresAt}</td>
+              <td class="cell-actions">
+                <a class="btn btn-secondary btn-sm" href={`/${lang}/app/super-admin/schools/${g.schoolId}`}>
+                  Ver Escuela
+                </a>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</AppLayout>
