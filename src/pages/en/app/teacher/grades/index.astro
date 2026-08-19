@@ -1,0 +1,1571 @@
+---
+// ============================================================
+// SchoolOS — Gradebook & Course Workbench (English)
+// Rediseño UX Profesional:
+// 1. Proceso en 2 fases: 1° Creación completa en DOM -> 2° Ubicación, desplazamiento y foco en siguiente frame
+// 2. Barra Flotante Inferior Permanente (Sticky Bottom Dock) con Botones de Desplazamiento Horizontal (◀ Cols | Cols ▶) y Vertical (▲ Inicio | ▼ Final)
+// 3. Tabla unificada con Encabezados y Columnas Sticky 2D (arriba, izquierda y derecha)
+// 4. Barra de KPIs compacta en tiempo real (Promedio, Aprobados, En Riesgo, Ponderación)
+// 5. Celdas de nota interactivas con feedback de color (<60 rojo, >=85 verde) y navegación fluida
+// ============================================================
+import AppLayout from '../../../../../layouts/AppLayout.astro';
+import { getTeacherCourses, getAllTeacherStudents } from '../../../../../data/app/mock-content';
+
+const lang = 'en';
+const isEs = lang === 'es';
+const courses = getTeacherCourses();
+const allStudents = getAllTeacherStudents();
+
+// 30 estudiantes de 10°A
+const students10A = allStudents.filter(s => s.courseId === 'crs-bio-10a');
+---
+
+<AppLayout
+  title="Grades & Summary"
+  pageTitle="Gradebook — Teacher Deck"
+  activeSection="grades"
+  role="teacher"
+  schoolName="Colegio Norte"
+  lang={lang}
+  activeRoute="/app/teacher/grades"
+  breadcrumbs={[
+    { label: 'Colegio Norte' },
+    { label: 'Teacher Portal', href: `/${lang}/app/teacher` },
+    { label: 'Grades & Summary' },
+  ]}
+>
+
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <!-- ── VISTA 1: CATÁLOGO DE CURSOS EN CARDS ── -->
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <div id="viewCourseCatalog">
+    
+    <!-- Encabezado de Bienvenida -->
+    <div style="background:var(--paper); border:2px solid var(--ink); border-radius:8px; padding:18px 24px; margin-bottom:22px; box-shadow:4px 4px 0 rgba(18,17,14,0.08); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+      <div>
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+          <span class="plan-tag" style="background:var(--rust); color:#FFFFFF; border-color:var(--rust); font-size:9.5px; font-weight:900; padding:2px 8px; border-radius:4px;">
+            TERM 1 · 2026
+          </span>
+          <span style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">
+            Week 6 of 18 · Scale 0–100% (0.0–5.0)
+          </span>
+        </div>
+        <h1 style="font-family:var(--serif); font-size:24px; font-weight:700; color:var(--ink); margin:0;">
+          My Classes — Assessment Gradebooks
+        </h1>
+        <div style="font-family:var(--mono); font-size:12px; color:var(--ink-soft); margin-top:3px;">
+          Select a class to enter its focused interactive gradebook and manage student marks.
+        </div>
+      </div>
+
+      <div style="display:flex; gap:12px;">
+        <div style="background:var(--cream); border:1.5px solid var(--ink); border-radius:6px; padding:8px 16px; text-align:center;">
+          <div style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--ink-soft); text-transform:uppercase;">Total Classes</div>
+          <div style="font-family:var(--mono); font-size:18px; font-weight:900; color:var(--ink);">{courses.length}</div>
+        </div>
+        <div style="background:var(--cream); border:1.5px solid var(--ink); border-radius:6px; padding:8px 16px; text-align:center;">
+          <div style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--ink-soft); text-transform:uppercase;">Global Average</div>
+          <div style="font-family:var(--mono); font-size:18px; font-weight:900; color:#2E5E1E;">8.1</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GRID DE CARDS DE CURSOS -->
+    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap:18px; margin-bottom:30px;">
+      {courses.map((course) => {
+        const is10A = course.id === 'crs-bio-10a';
+        const is10B = course.id === 'crs-bio-10b';
+        const hasPending = is10A || is10B;
+        const pendingCount = is10A ? 25 : (is10B ? 18 : 0);
+
+        return (
+          <div
+            class="course-select-card"
+            onclick={`selectCourseFromCard('${course.id}', '${course.name}', ${course.studentCount});`}
+            style="background:#FFFDFB; border:2px solid var(--ink); border-radius:8px; box-shadow:4px 4px 0 rgba(18,17,14,0.08); cursor:pointer; display:flex; flex-direction:column; justify-content:space-between; transition:transform 0.15s ease, box-shadow 0.15s ease;"
+          >
+            <!-- Top info -->
+            <div style="padding:18px 20px 14px 20px; border-bottom:1.5px solid var(--line);">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span class="plan-tag" style={`font-size:9.5px; font-weight:900; padding:2px 7px; border-radius:3px; ${hasPending ? 'background:#FCEAE6; color:var(--rust); border-color:var(--rust);' : 'background:#E5EFE0; color:#2E5E1E; border-color:#5B8A4A;'}`}>
+                  {hasPending ? `🔴 ${pendingCount} PENDING` : '🟢 ON TRACK'}
+                </span>
+                <span style="font-family:var(--mono); font-size:11px; font-weight:700; color:var(--ink-soft);">
+                  {course.room}
+                </span>
+              </div>
+
+              <h2 style="font-family:var(--serif); font-size:18px; font-weight:700; color:var(--ink); margin:0 0 6px 0; line-height:1.25;">
+                {course.name}
+              </h2>
+
+              <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">
+                {course.schedule} · <strong>{course.studentCount} Students</strong>
+              </div>
+            </div>
+
+            <!-- Resumen de Actividades Evaluativas -->
+            <div style="padding:14px 20px; background:var(--paper); border-bottom:1.5px solid var(--line); flex:1;">
+              <div style="font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink-soft); margin-bottom:8px; display:flex; justify-content:space-between;">
+                <span>Evaluation Plan (T1)</span>
+                <span>4 / 5 Marked</span>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:5px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; padding:4px 8px; background:#FFFFFF; border:1px solid #E8E2D9; border-radius:4px;">
+                  <span style="color:var(--ink); font-weight:600;">§1 Cell Biology (15%)</span>
+                  <span style="font-family:var(--mono); font-size:10px; color:#2E5E1E; font-weight:800;">✓ Graded</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; padding:4px 8px; background:#FFFFFF; border:1px solid #E8E2D9; border-radius:4px;">
+                  <span style="color:var(--ink); font-weight:600;">§2 Nucleus (20%)</span>
+                  <span style="font-family:var(--mono); font-size:10px; color:#2E5E1E; font-weight:800;">✓ Graded</span>
+                </div>
+                <div style={`display:flex; justify-content:space-between; align-items:center; font-size:11px; padding:4px 8px; border-radius:4px; ${hasPending ? 'background:#FFF4F2; border:1px solid #F5C6BC;' : 'background:#FFFFFF; border:1px solid #E8E2D9;'}`}>
+                  <span style="color:var(--ink); font-weight:700;">Mendel Exam (30%)</span>
+                  <span style={`font-family:var(--mono); font-size:10px; font-weight:800; ${hasPending ? 'color:var(--rust);' : 'color:#2E5E1E;'}`}>
+                    {hasPending ? `⏳ ${pendingCount} missing` : '✓ Graded'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer de la Card -->
+            <div style="padding:12px 20px; background:var(--cream); display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <div style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft); text-transform:uppercase;">Average</div>
+                <div style="font-family:var(--mono); font-size:16px; font-weight:900; color:#2E5E1E;">
+                  {course.averageScore.toFixed(1)} <span style="font-size:11px; font-weight:normal; color:var(--ink-soft);">/ 10</span>
+                </div>
+              </div>
+
+              <span
+                class="btn btn-primary btn-sm"
+                style="font-size:11.5px; font-weight:800; padding:7px 16px; border-radius:4px;"
+              >
+                Open Gradebook →
+              </span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <!-- ── VISTA 2: WORKBENCH DE CALIFICACIONES (PLANILLA Y BOLETÍN) ── -->
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <div id="viewCourseWorkbench" style="display:none; position:relative;">
+    
+    <!-- BARRA SUPERIOR DEL CURSO -->
+    <div style="background:var(--paper); border:2px solid var(--ink); border-radius:8px; padding:14px 20px; margin-bottom:14px; box-shadow:3px 3px 0 rgba(18,17,14,0.08); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+      
+      <!-- Volver + Título del Curso -->
+      <div style="display:flex; align-items:center; gap:12px;">
+        <button
+          type="button"
+          onclick="returnToCourseCatalog();"
+          class="btn btn-secondary btn-sm"
+          style="font-size:11px; font-weight:800; padding:7px 14px; border-radius:5px; cursor:pointer;"
+        >
+          ← My Classes
+        </button>
+
+        <div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="plan-tag" style="background:#E5EFE0; color:#2E5E1E; border-color:#5B8A4A; font-size:9.5px; font-weight:900; padding:1px 6px; border-radius:3px;">
+              TERM 1
+            </span>
+            <span id="saveStatusIndicator" style="font-family:var(--mono); font-size:10.5px; color:#2E5E1E; font-weight:700; display:flex; align-items:center; gap:4px;">
+              ● Synchronized
+            </span>
+          </div>
+          <h2 id="wbCourseTitle" style="font-family:var(--serif); font-size:20px; font-weight:700; color:var(--ink); margin:2px 0 0 0;">
+            Biología Celular y Genética · 10°A
+          </h2>
+        </div>
+      </div>
+
+      <!-- Pestañas y Guardado -->
+      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+        <div style="display:flex; background:var(--cream); border:1.5px solid var(--ink); border-radius:6px; padding:3px; gap:3px;">
+          <button
+            type="button"
+            id="tabBtnPlanilla"
+            onclick="switchMainTab('planilla');"
+            style="padding:6px 16px; font-family:var(--mono); font-size:11px; font-weight:800; border:none; border-radius:4px; cursor:pointer; background:var(--ink); color:#FFFFFF; transition:all 0.15s ease;"
+          >
+            📊 Gradebook
+          </button>
+
+          <button
+            type="button"
+            id="tabBtnResumen"
+            onclick="switchMainTab('resumen');"
+            style="padding:6px 16px; font-family:var(--mono); font-size:11px; font-weight:800; border:none; border-radius:4px; cursor:pointer; background:transparent; color:var(--ink); transition:all 0.15s ease;"
+          >
+            📋 Summary & Reports
+          </button>
+        </div>
+
+        <button
+          type="button"
+          onclick="savePlanillaGrades();"
+          class="btn btn-primary btn-sm"
+          style="font-size:11.5px; font-weight:900; padding:7px 18px; border-radius:5px; cursor:pointer;"
+        >
+          ✓ Save Gradebook
+        </button>
+      </div>
+
+    </div>
+
+    <!-- ── KPI SUMMARY BAR COMPACTO ── -->
+    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:10px; margin-bottom:14px;">
+      <div style="background:var(--paper); border:1.5px solid var(--ink); border-radius:6px; padding:10px 14px; box-shadow:2px 2px 0 rgba(18,17,14,0.06); display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--ink-soft); text-transform:uppercase;">Class Average</div>
+          <div style="font-family:var(--mono); font-size:18px; font-weight:900; color:var(--ink);">
+            <span id="kpiAvgScore">79.7</span> <span style="font-size:11px; font-weight:700; color:var(--ink-soft);">/ 100</span>
+          </div>
+        </div>
+        <span style="font-family:var(--mono); font-size:11px; font-weight:900; background:#E5EFE0; color:#2E5E1E; padding:3px 7px; border-radius:4px; border:1px solid #A8C99B;">
+          4.0 / 5.0
+        </span>
+      </div>
+
+      <div style="background:var(--paper); border:1.5px solid var(--ink); border-radius:6px; padding:10px 14px; box-shadow:2px 2px 0 rgba(18,17,14,0.06); display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--ink-soft); text-transform:uppercase;">Passing</div>
+          <div style="font-family:var(--mono); font-size:18px; font-weight:900; color:#2E5E1E;">
+            <span id="kpiPassCount">28</span> <span style="font-size:11px; font-weight:700; color:var(--ink-soft);">/ 30</span>
+          </div>
+        </div>
+        <span id="kpiPassPct" style="font-family:var(--mono); font-size:11px; font-weight:800; color:#2E5E1E;">
+          93.3%
+        </span>
+      </div>
+
+      <div style="background:var(--paper); border:1.5px solid var(--ink); border-radius:6px; padding:10px 14px; box-shadow:2px 2px 0 rgba(18,17,14,0.06); display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--ink-soft); text-transform:uppercase;">At Risk (< 60)</div>
+          <div style="font-family:var(--mono); font-size:18px; font-weight:900; color:var(--rust);">
+            <span id="kpiRiskCount">2</span> <span style="font-size:11px; font-weight:700; color:var(--ink-soft);">students</span>
+          </div>
+        </div>
+        <button
+          type="button"
+          onclick="filterByStatus('risk');"
+          style="font-family:var(--mono); font-size:9.5px; font-weight:800; background:#FFF0EE; color:var(--rust); border:1px solid #F5C6BC; padding:3px 6px; border-radius:3px; cursor:pointer;"
+        >
+          Filter ⚠️
+        </button>
+      </div>
+
+      <div style="background:var(--paper); border:1.5px solid var(--ink); border-radius:6px; padding:10px 14px; box-shadow:2px 2px 0 rgba(18,17,14,0.06); display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--ink-soft); text-transform:uppercase;">Total Weight</div>
+          <div style="font-family:var(--mono); font-size:18px; font-weight:900; color:#2E5E1E;" id="kpiWeightTotal">
+            100%
+          </div>
+        </div>
+        <span id="kpiWeightStatus" style="font-family:var(--mono); font-size:10px; font-weight:900; background:#E5EFE0; color:#2E5E1E; padding:3px 7px; border-radius:4px; border:1px solid #A8C99B;">
+          ✓ Balanced
+        </span>
+      </div>
+    </div>
+
+    <!-- ── PESTAÑA A: PLANILLA DE CALIFICACIONES ── -->
+    <div id="tabContentPlanilla">
+
+      <!-- ── TABLA SPREADSHEET UNIFICADA CON STICKY COLUMNS NATIVAS ── -->
+      <div
+        id="gradebookTableWrapper"
+        class="gradebook-table-container modern-scrollbar"
+        style="background:#FFFFFF; border:2px solid var(--ink); border-radius:8px; box-shadow:4px 4px 0 rgba(18,17,14,0.08); overflow-x:auto; margin-bottom:14px; scroll-behavior:smooth;"
+      >
+        
+        <table class="gradebook-table" id="gradebookMainTable" style="width:100%; border-collapse:collapse; min-width:980px;">
+          <thead>
+            <tr style="background:var(--cream);">
+              <!-- 1. Columna # (Sticky) -->
+              <th class="th-sticky-num" style="position:sticky; left:0; top:0; width:44px; min-width:44px; max-width:44px; background:var(--cream); z-index:30; padding:10px 4px; font-family:var(--mono); font-size:10px; font-weight:800; color:var(--ink-soft); text-align:center; border-bottom:2px solid var(--ink); border-right:1px solid #D8D2C2;">
+                #
+              </th>
+
+              <!-- 2. Columna Estudiante (Sticky) -->
+              <th class="th-sticky-student" style="position:sticky; left:44px; top:0; width:230px; min-width:230px; max-width:230px; background:var(--cream); z-index:30; padding:10px 12px; font-family:var(--mono); font-size:11px; font-weight:800; text-transform:uppercase; color:var(--ink); text-align:left; border-bottom:2px solid var(--ink); border-right:2px solid var(--ink); box-shadow:4px 0 6px -2px rgba(0,0,0,0.06);">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span>Student ({students10A.length})</span>
+                  <span style="font-size:9px; color:var(--ink-soft); font-weight:normal;">A-Z</span>
+                </div>
+              </th>
+
+              <!-- 3. Columnas de Actividades Estáticas -->
+              <th class="th-activity-col" style="position:sticky; top:0; z-index:20; padding:8px 6px; text-align:center; border-bottom:2px solid var(--ink); border-right:1px solid #E2DDD5; background:var(--cream); min-width:100px;">
+                <div class="act-th-title" style="font-family:var(--mono); font-size:11px; font-weight:800; color:var(--ink); line-height:1.2; margin-bottom:3px;">Guide § 1</div>
+                <div class="act-th-sub" style="display:flex; align-items:center; justify-content:center; gap:4px;">
+                  <span class="act-badge-type" style="font-family:var(--mono); font-size:8.5px; font-weight:700; color:var(--ink-soft); background:#FFFFFF; border:1px solid #D8D2C2; padding:1px 4px; border-radius:3px;">Lab</span>
+                  <span class="act-badge-weight" style="font-family:var(--mono); font-size:9px; font-weight:900; color:var(--rust); background:#FFF0EE; padding:1px 5px; border-radius:3px;">15%</span>
+                </div>
+              </th>
+
+              <th class="th-activity-col" style="position:sticky; top:0; z-index:20; padding:8px 6px; text-align:center; border-bottom:2px solid var(--ink); border-right:1px solid #E2DDD5; background:var(--cream); min-width:100px;">
+                <div class="act-th-title" style="font-family:var(--mono); font-size:11px; font-weight:800; color:var(--ink); line-height:1.2; margin-bottom:3px;">Guide § 2</div>
+                <div class="act-th-sub" style="display:flex; align-items:center; justify-content:center; gap:4px;">
+                  <span class="act-badge-type" style="font-family:var(--mono); font-size:8.5px; font-weight:700; color:var(--ink-soft); background:#FFFFFF; border:1px solid #D8D2C2; padding:1px 4px; border-radius:3px;">Lab</span>
+                  <span class="act-badge-weight" style="font-family:var(--mono); font-size:9px; font-weight:900; color:var(--rust); background:#FFF0EE; padding:1px 5px; border-radius:3px;">20%</span>
+                </div>
+              </th>
+
+              <th class="th-activity-col" style="position:sticky; top:0; z-index:20; padding:8px 6px; text-align:center; border-bottom:2px solid var(--ink); border-right:1px solid #E2DDD5; background:var(--cream); min-width:100px;">
+                <div class="act-th-title" style="font-family:var(--mono); font-size:11px; font-weight:800; color:var(--ink); line-height:1.2; margin-bottom:3px;">Quiz Lab</div>
+                <div class="act-th-sub" style="display:flex; align-items:center; justify-content:center; gap:4px;">
+                  <span class="act-badge-type" style="font-family:var(--mono); font-size:8.5px; font-weight:700; color:var(--ink-soft); background:#FFFFFF; border:1px solid #D8D2C2; padding:1px 4px; border-radius:3px;">Quiz</span>
+                  <span class="act-badge-weight" style="font-family:var(--mono); font-size:9px; font-weight:900; color:var(--rust); background:#FFF0EE; padding:1px 5px; border-radius:3px;">20%</span>
+                </div>
+              </th>
+
+              <th class="th-activity-col th-exam-highlight" style="position:sticky; top:0; z-index:20; padding:8px 6px; text-align:center; border-bottom:2px solid var(--ink); border-right:1.5px solid var(--rust); border-left:1.5px solid var(--rust); background:#FFFDF9; min-width:115px;">
+                <div class="act-th-title" style="font-family:var(--mono); font-size:11px; font-weight:800; color:var(--rust); line-height:1.2; margin-bottom:3px;">Mendel Exam</div>
+                <div class="act-th-sub" style="display:flex; align-items:center; justify-content:center; gap:4px;">
+                  <span class="act-badge-type" style="font-family:var(--mono); font-size:8.5px; font-weight:700; color:var(--rust); background:#FCEAE6; border:1px solid var(--rust); padding:1px 4px; border-radius:3px;">Exam</span>
+                  <span class="act-badge-weight" style="font-family:var(--mono); font-size:9px; font-weight:900; color:#FFFFFF; background:var(--rust); padding:1px 5px; border-radius:3px;">30% ★</span>
+                </div>
+              </th>
+
+              <th class="th-activity-col" style="position:sticky; top:0; z-index:20; padding:8px 6px; text-align:center; border-bottom:2px solid var(--ink); border-right:1px solid #E2DDD5; background:var(--cream); min-width:100px;">
+                <div class="act-th-title" style="font-family:var(--mono); font-size:11px; font-weight:800; color:var(--ink); line-height:1.2; margin-bottom:3px;">Attitude</div>
+                <div class="act-th-sub" style="display:flex; align-items:center; justify-content:center; gap:4px;">
+                  <span class="act-badge-type" style="font-family:var(--mono); font-size:8.5px; font-weight:700; color:var(--ink-soft); background:#FFFFFF; border:1px solid #D8D2C2; padding:1px 4px; border-radius:3px;">Behavior</span>
+                  <span class="act-badge-weight" style="font-family:var(--mono); font-size:9px; font-weight:900; color:var(--rust); background:#FFF0EE; padding:1px 5px; border-radius:3px;">15%</span>
+                </div>
+              </th>
+
+              <!-- Botón + Col Header -->
+              <th class="th-add-col" style="position:sticky; top:0; z-index:20; width:46px; min-width:46px; padding:6px; border-bottom:2px solid var(--ink); border-right:1px dashed var(--rust); background:#FFF8F5; text-align:center;">
+                <button
+                  type="button"
+                  onclick="openAddColumnModal();"
+                  title="Add new assessment"
+                  style="width:24px; height:24px; background:var(--rust); color:#FFFFFF; border:none; border-radius:4px; font-family:var(--mono); font-size:13px; font-weight:900; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;"
+                >
+                  +
+                </button>
+              </th>
+
+              <!-- 4. Columna Definitiva (Sticky Derecha) -->
+              <th class="th-sticky-definitiva" style="position:sticky; right:95px; top:0; width:105px; min-width:105px; max-width:105px; background:#E5EFE0; z-index:30; padding:8px 6px; text-align:center; font-family:var(--mono); font-size:10.5px; font-weight:900; color:#2E5E1E; border-bottom:2px solid var(--ink); border-left:2px solid var(--ink); border-right:1px solid #D8D2C2;">
+                <div>FINAL GRADE</div>
+                <div style="font-size:8.5px; font-weight:normal; color:#2E5E1E;">Scale 0–100 / 5.0</div>
+              </th>
+
+              <!-- 5. Columna Desempeño (Sticky Derecha) -->
+              <th class="th-sticky-badge" style="position:sticky; right:0; top:0; width:95px; min-width:95px; max-width:95px; background:var(--cream); z-index:30; padding:8px 6px; text-align:center; font-family:var(--mono); font-size:10px; font-weight:800; color:var(--ink); border-bottom:2px solid var(--ink); box-shadow:-4px 0 6px -2px rgba(0,0,0,0.06);">
+                Status
+              </th>
+            </tr>
+          </thead>
+
+          <tbody id="gradebookTableBody">
+            {students10A.map((std, idx) => {
+              const base = Math.round(std.averageScore * 10);
+              const g1 = Math.min(100, Math.max(40, base + (idx % 3 === 0 ? 5 : -4)));
+              const g2 = Math.min(100, Math.max(40, base + (idx % 2 === 0 ? 4 : -2)));
+              const qz = Math.min(100, Math.max(40, base + (idx % 4 === 0 ? -6 : 3)));
+              const ex = Math.min(100, Math.max(35, base + (idx % 5 === 0 ? -10 : 2)));
+              const ac = Math.min(100, Math.max(60, base + (idx % 2 === 0 ? 8 : 4)));
+
+              const def100 = (g1 * 0.15 + g2 * 0.20 + qz * 0.20 + ex * 0.30 + ac * 0.15);
+              const def5 = (def100 / 20).toFixed(1);
+              const isHonor = def100 >= 85;
+              const isPass = def100 >= 60;
+              const badgeCls = isHonor ? 'badge-active' : (isPass ? 'badge-warning' : 'badge-suspended');
+              const level = isHonor ? 'HONOR' : (isPass ? 'PASS' : 'FAIL');
+              const statusCategory = isHonor ? 'honor' : (isPass ? 'pass' : 'risk');
+
+              return (
+                <tr
+                  class="gradebook-row"
+                  id={`std-row-${idx}`}
+                  data-row={idx}
+                  data-name={std.name.toLowerCase()}
+                  data-status={statusCategory}
+                  style={`height:42px; border-bottom:1px solid #ECE7DE; ${idx % 2 === 0 ? 'background:#FFFFFF;' : 'background:#FAF8F5;'}`}
+                >
+                  <!-- 1. # Sticky -->
+                  <td class="td-sticky-num" style={`position:sticky; left:0; width:44px; min-width:44px; text-align:center; font-family:var(--mono); font-size:11px; font-weight:800; color:var(--ink-soft); border-right:1px solid #ECE7DE; border-bottom:1px solid #ECE7DE; z-index:10; ${idx % 2 === 0 ? 'background:#FFFFFF;' : 'background:#FAF8F5;'}`}>
+                    {idx + 1 < 10 ? `0${idx + 1}` : idx + 1}
+                  </td>
+
+                  <!-- 2. Estudiante Sticky con Avatar Compacto -->
+                  <td class="td-sticky-student" style={`position:sticky; left:44px; width:230px; min-width:230px; max-width:230px; padding:4px 10px; border-right:2px solid var(--ink); border-bottom:1px solid #ECE7DE; z-index:10; box-shadow:4px 0 6px -2px rgba(0,0,0,0.06); ${idx % 2 === 0 ? 'background:#FFFFFF;' : 'background:#FAF8F5;'}`}>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                      <img
+                        src={std.avatarUrl || '/avatars/women/fila-1-columna-1.png'}
+                        alt={std.name}
+                        width="26"
+                        height="26"
+                        style="width:26px !important; height:26px !important; min-width:26px !important; max-width:26px !important; min-height:26px !important; max-height:26px !important; border-radius:50%; border:1px solid #D5CEBF; object-fit:cover; flex-shrink:0; display:block;"
+                      />
+                      <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                        <div style="font-size:12px; font-weight:700; color:var(--ink); line-height:1.2; max-width:175px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title={std.name}>
+                          {std.name}
+                        </div>
+                        <div style="font-family:var(--mono); font-size:9px; color:var(--ink-soft);">10°A · Regular</div>
+                      </div>
+                    </div>
+                  </td>
+
+                  <!-- 3. Actividades Estáticas -->
+                  <td class="td-cell-grade" style="padding:4px 6px; text-align:center; border-bottom:1px solid #ECE7DE; border-right:1px solid #E2DDD5;">
+                    <input
+                      type="number" min="0" max="100"
+                      id={`cell-g1-${idx}`}
+                      value={g1}
+                      data-col="g1"
+                      data-row={idx}
+                      onfocus="this.select();"
+                      oninput={`handleGradeInput(${idx}, 'g1');`}
+                      onkeydown={`navigateTableGrid(event, ${idx}, 'g1');`}
+                      class={`grade-input-cell ${g1 < 60 ? 'grade-low' : (g1 >= 85 ? 'grade-high' : '')}`}
+                      style="width:54px; height:28px; padding:2px 4px; border:1px solid #D5CEBF; border-radius:4px; font-family:var(--mono); font-size:12px; font-weight:800; color:var(--ink); text-align:center; outline:none;"
+                    />
+                  </td>
+
+                  <td class="td-cell-grade" style="padding:4px 6px; text-align:center; border-bottom:1px solid #ECE7DE; border-right:1px solid #E2DDD5;">
+                    <input
+                      type="number" min="0" max="100"
+                      id={`cell-g2-${idx}`}
+                      value={g2}
+                      data-col="g2"
+                      data-row={idx}
+                      onfocus="this.select();"
+                      oninput={`handleGradeInput(${idx}, 'g2');`}
+                      onkeydown={`navigateTableGrid(event, ${idx}, 'g2');`}
+                      class={`grade-input-cell ${g2 < 60 ? 'grade-low' : (g2 >= 85 ? 'grade-high' : '')}`}
+                      style="width:54px; height:28px; padding:2px 4px; border:1px solid #D5CEBF; border-radius:4px; font-family:var(--mono); font-size:12px; font-weight:800; color:var(--ink); text-align:center; outline:none;"
+                    />
+                  </td>
+
+                  <td class="td-cell-grade" style="padding:4px 6px; text-align:center; border-bottom:1px solid #ECE7DE; border-right:1px solid #E2DDD5;">
+                    <input
+                      type="number" min="0" max="100"
+                      id={`cell-qz-${idx}`}
+                      value={qz}
+                      data-col="qz"
+                      data-row={idx}
+                      onfocus="this.select();"
+                      oninput={`handleGradeInput(${idx}, 'qz');`}
+                      onkeydown={`navigateTableGrid(event, ${idx}, 'qz');`}
+                      class={`grade-input-cell ${qz < 60 ? 'grade-low' : (qz >= 85 ? 'grade-high' : '')}`}
+                      style="width:54px; height:28px; padding:2px 4px; border:1px solid #D5CEBF; border-radius:4px; font-family:var(--mono); font-size:12px; font-weight:800; color:var(--ink); text-align:center; outline:none;"
+                    />
+                  </td>
+
+                  <td class="td-cell-grade td-exam-cell" style="padding:4px 6px; text-align:center; border-bottom:1px solid #ECE7DE; border-right:1.5px solid var(--rust); border-left:1.5px solid var(--rust); background:#FFFDF9;">
+                    <input
+                      type="number" min="0" max="100"
+                      id={`cell-ex-${idx}`}
+                      value={ex}
+                      data-col="ex"
+                      data-row={idx}
+                      onfocus="this.select();"
+                      oninput={`handleGradeInput(${idx}, 'ex');`}
+                      onkeydown={`navigateTableGrid(event, ${idx}, 'ex');`}
+                      class={`grade-input-cell ${ex < 60 ? 'grade-low' : (ex >= 85 ? 'grade-high' : '')}`}
+                      style="width:54px; height:28px; padding:2px 4px; border:1px solid #D5CEBF; border-radius:4px; font-family:var(--mono); font-size:12px; font-weight:800; color:var(--ink); text-align:center; outline:none;"
+                    />
+                  </td>
+
+                  <td class="td-cell-grade" style="padding:4px 6px; text-align:center; border-bottom:1px solid #ECE7DE; border-right:1px solid #E2DDD5;">
+                    <input
+                      type="number" min="0" max="100"
+                      id={`cell-ac-${idx}`}
+                      value={ac}
+                      data-col="ac"
+                      data-row={idx}
+                      onfocus="this.select();"
+                      oninput={`handleGradeInput(${idx}, 'ac');`}
+                      onkeydown={`navigateTableGrid(event, ${idx}, 'ac');`}
+                      class={`grade-input-cell ${ac < 60 ? 'grade-low' : (ac >= 85 ? 'grade-high' : '')}`}
+                      style="width:54px; height:28px; padding:2px 4px; border:1px solid #D5CEBF; border-radius:4px; font-family:var(--mono); font-size:12px; font-weight:800; color:var(--ink); text-align:center; outline:none;"
+                    />
+                  </td>
+
+                  <!-- Espacio botón + col -->
+                  <td class="td-add-col-spacer" style="border-bottom:1px solid #ECE7DE; border-right:1px dashed var(--rust); background:#FFF8F5;"></td>
+
+                  <!-- 4. Definitiva Sticky Derecha -->
+                  <td class="td-sticky-definitiva" style="position:sticky; right:95px; background:#F4FAF1; z-index:10; text-align:center; border-bottom:1px solid #ECE7DE; border-left:2px solid var(--ink); border-right:1px solid #D8D2C2; padding:4px 4px;">
+                    <div style="font-family:var(--mono); font-size:13px; font-weight:900; color:#2E5E1E; line-height:1.1;">
+                      <span id={`def100-${idx}`}>{def100.toFixed(0)}</span>
+                      <span style="font-size:9px; font-weight:normal; color:var(--ink-soft);">/100</span>
+                    </div>
+                    <div style="font-family:var(--mono); font-size:10.5px; font-weight:800; color:#2E5E1E; margin-top:1px;">
+                      (<span id={`def5-${idx}`}>{def5}</span>/5.0)
+                    </div>
+                  </td>
+
+                  <!-- 5. Desempeño Sticky Derecha -->
+                  <td class="td-sticky-badge" style={`position:sticky; right:0; z-index:10; text-align:center; border-bottom:1px solid #ECE7DE; box-shadow:-4px 0 6px -2px rgba(0,0,0,0.06); padding:4px 4px; ${idx % 2 === 0 ? 'background:#FFFFFF;' : 'background:#FAF8F5;'}`}>
+                    <span
+                      id={`badge-${idx}`}
+                      class={`badge ${badgeCls}`}
+                      style="font-size:8px; font-weight:900; padding:2px 6px; text-transform:uppercase; border-radius:3px;"
+                    >
+                      {level}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+
+          <!-- FILA FOOTER DE PROMEDIOS GRUPALES -->
+          <tfoot>
+            <tr style="background:var(--cream); height:38px; border-top:2px solid var(--ink);">
+              <td style="position:sticky; left:0; background:var(--cream); font-family:var(--mono); font-size:11px; font-weight:900; text-align:center; color:var(--ink); border-right:1px solid #D8D2C2; z-index:15;">Σ</td>
+              <td style="position:sticky; left:44px; background:var(--cream); font-family:var(--mono); font-size:10.5px; font-weight:800; color:var(--ink); padding:4px 10px; border-right:2px solid var(--ink); box-shadow:4px 0 6px -2px rgba(0,0,0,0.06); z-index:15;">
+                ACTIVITY CLASS AVERAGE
+              </td>
+              <td style="background:var(--cream); text-align:center; font-family:var(--mono); font-size:11.5px; font-weight:800; color:var(--ink); border-right:1px solid #E2DDD5; padding:4px;" id="colAvg-g1">
+                79.4
+              </td>
+              <td style="background:var(--cream); text-align:center; font-family:var(--mono); font-size:11.5px; font-weight:800; color:var(--ink); border-right:1px solid #E2DDD5; padding:4px;" id="colAvg-g2">
+                80.1
+              </td>
+              <td style="background:var(--cream); text-align:center; font-family:var(--mono); font-size:11.5px; font-weight:800; color:var(--ink); border-right:1px solid #E2DDD5; padding:4px;" id="colAvg-qz">
+                77.8
+              </td>
+              <td style="background:#FFF5EA; text-align:center; font-family:var(--mono); font-size:11.5px; font-weight:900; color:var(--rust); border-right:1.5px solid var(--rust); border-left:1.5px solid var(--rust); padding:4px;" id="colAvg-ex">
+                71.2
+              </td>
+              <td style="background:var(--cream); text-align:center; font-family:var(--mono); font-size:11.5px; font-weight:800; color:var(--ink); border-right:1px solid #E2DDD5; padding:4px;" id="colAvg-ac">
+                84.0
+              </td>
+              <td style="background:#FFF8F5; border-right:1px dashed var(--rust);"></td>
+              <td style="position:sticky; right:95px; background:#D8E8D1; text-align:center; font-family:var(--mono); font-size:12.5px; font-weight:900; color:#2E5E1E; border-left:2px solid var(--ink); border-right:1px solid #D8D2C2; z-index:15; padding:4px;" id="colAvg-def">
+                79.7
+              </td>
+              <td style="position:sticky; right:0; background:var(--cream); text-align:center; font-family:var(--mono); font-size:9.5px; font-weight:900; color:#2E5E1E; box-shadow:-4px 0 6px -2px rgba(0,0,0,0.06); z-index:15; padding:4px;">
+                HIGH
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════════════════════════ -->
+      <!-- ── BARRA FLOTANTE INFERIOR PERMANENTE (STICKY BOTTOM DOCK) ── -->
+      <!-- ══════════════════════════════════════════════════════════════════════════ -->
+      <div
+        id="gradebookFloatingToolbar"
+        style="position:sticky; bottom:14px; z-index:800; background:rgba(255, 253, 251, 0.96); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border:2px solid var(--ink); border-radius:8px; padding:8px 14px; box-shadow:0 8px 24px rgba(18,17,14,0.15), 4px 4px 0 var(--ink); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-top:10px;"
+      >
+        <!-- Búsqueda en Vivo + Filtros de Estado -->
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          
+          <!-- Input de Búsqueda -->
+          <div style="position:relative; width:180px;">
+            <span style="position:absolute; left:8px; top:50%; transform:translateY(-50%); font-size:11px; color:var(--ink-soft);">🔍</span>
+            <input
+              type="text"
+              id="studentSearchInput"
+              placeholder="Search..."
+              oninput="filterStudentsTable();"
+              style="width:100%; padding:5px 8px 5px 24px; border:1.5px solid var(--ink); border-radius:4px; background:#FFFFFF; font-size:11px; font-weight:600; color:var(--ink); outline:none;"
+            />
+          </div>
+
+          <!-- Filtros Rápidos de Desempeño -->
+          <div style="display:flex; gap:3px;">
+            <button
+              type="button"
+              id="filterBtn-all"
+              onclick="filterByStatus('all');"
+              class="grade-filter-pill active"
+              style="font-size:10px; padding:4px 8px;"
+            >
+              All (30)
+            </button>
+            <button
+              type="button"
+              id="filterBtn-risk"
+              onclick="filterByStatus('risk');"
+              class="grade-filter-pill"
+              style="font-size:10px; padding:4px 8px;"
+            >
+              ⚠️ Risk (<span id="pillCountRisk">2</span>)
+            </button>
+            <button
+              type="button"
+              id="filterBtn-pass"
+              onclick="filterByStatus('pass');"
+              class="grade-filter-pill"
+              style="font-size:10px; padding:4px 8px;"
+            >
+              ✓ Passing (<span id="pillCountPass">28</span>)
+            </button>
+            <button
+              type="button"
+              id="filterBtn-honor"
+              onclick="filterByStatus('honor');"
+              class="grade-filter-pill"
+              style="font-size:10px; padding:4px 8px;"
+            >
+              ⭐ Honors (<span id="pillCountHonor">13</span>)
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Botones de Desplazamiento Horizontal (Columnas) & Vertical (Filas) & Acciones -->
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          
+          <!-- ── CLUSTER DE DESPLAZAMIENTO HORIZONTAL (COLUMNAS) ── -->
+          <div style="display:flex; align-items:center; background:#FFF3E8; border:1.5px solid var(--rust); border-radius:5px; padding:2px; gap:2px;">
+            <button
+              type="button"
+              onclick="scrollTableHorizontal('left');"
+              title="Scroll columns left"
+              style="padding:4px 9px; font-family:var(--mono); font-size:11px; font-weight:900; border:none; background:transparent; color:var(--rust); cursor:pointer; border-radius:3px; display:flex; align-items:center; gap:3px;"
+              onmouseenter="this.style.background='#FFFFFF';"
+              onmouseleave="this.style.background='transparent';"
+            >
+              ◀ <span style="font-size:9.5px; font-weight:800;">Cols</span>
+            </button>
+            <span style="font-family:var(--mono); font-size:9px; color:var(--rust); font-weight:900; opacity:0.6;">|</span>
+            <button
+              type="button"
+              onclick="scrollTableHorizontal('right');"
+              title="Scroll columns right"
+              style="padding:4px 9px; font-family:var(--mono); font-size:11px; font-weight:900; border:none; background:transparent; color:var(--rust); cursor:pointer; border-radius:3px; display:flex; align-items:center; gap:3px;"
+              onmouseenter="this.style.background='#FFFFFF';"
+              onmouseleave="this.style.background='transparent';"
+            >
+              <span style="font-size:9.5px; font-weight:800;">Cols</span> ▶
+            </button>
+          </div>
+
+          <!-- ── CLUSTER DE DESPLAZAMIENTO VERTICAL (FILAS) ── -->
+          <div style="display:flex; background:var(--cream); border:1.5px solid var(--ink); border-radius:5px; padding:2px; gap:2px;">
+            <button
+              type="button"
+              onclick="scrollToTableTop();"
+              title="Scroll to student #1"
+              style="padding:4px 8px; font-family:var(--mono); font-size:10px; font-weight:800; border:none; background:transparent; color:var(--ink); cursor:pointer; border-radius:3px;"
+              onmouseenter="this.style.background='#FFFFFF';"
+              onmouseleave="this.style.background='transparent';"
+            >
+              ▲ Top
+            </button>
+            <button
+              type="button"
+              onclick="scrollToTableBottom();"
+              title="Scroll to bottom student"
+              style="padding:4px 8px; font-family:var(--mono); font-size:10px; font-weight:800; border:none; background:transparent; color:var(--ink); cursor:pointer; border-radius:3px;"
+              onmouseenter="this.style.background='#FFFFFF';"
+              onmouseleave="this.style.background='transparent';"
+            >
+              ▼ Bottom
+            </button>
+          </div>
+
+          <!-- + Nueva Actividad -->
+          <button
+            type="button"
+            onclick="openAddColumnModal();"
+            class="btn btn-primary btn-sm"
+            style="font-size:10.5px; font-weight:800; padding:5px 10px; border-radius:4px; background:var(--rust); border-color:var(--rust); cursor:pointer;"
+          >
+            + New Activity
+          </button>
+
+          <!-- Dropdown Acciones Masivas -->
+          <div style="position:relative; display:inline-block;">
+            <button
+              type="button"
+              onclick="toggleToolsDropdown();"
+              class="btn btn-secondary btn-sm"
+              style="font-size:10.5px; font-weight:800; padding:5px 10px; border-radius:4px; display:flex; align-items:center; gap:3px; cursor:pointer;"
+            >
+              ⚡ Tools ▾
+            </button>
+            <div
+              id="toolsDropdownMenu"
+              style="display:none; position:absolute; right:0; bottom:100%; margin-bottom:6px; background:#FFFFFF; border:2px solid var(--ink); border-radius:6px; box-shadow:4px 4px 0 rgba(18,17,14,0.15); z-index:1000; min-width:210px; padding:4px 0;"
+            >
+              <div
+                onclick="fillBlanksWith70(); toggleToolsDropdown();"
+                style="padding:8px 12px; font-size:11px; font-weight:700; color:var(--ink); cursor:pointer; display:flex; align-items:center; gap:8px;"
+                onmouseenter="this.style.background='var(--cream)';"
+                onmouseleave="this.style.background='transparent';"
+              >
+                <span>✏️</span> Fill empty marks with 70
+              </div>
+              <div
+                onclick="applyGroupCurve(); toggleToolsDropdown();"
+                style="padding:8px 12px; font-size:11px; font-weight:700; color:var(--ink); cursor:pointer; display:flex; align-items:center; gap:8px;"
+                onmouseenter="this.style.background='var(--cream)';"
+                onmouseleave="this.style.background='transparent';"
+              >
+                <span>📈</span> Apply class curve (+5 pts)
+              </div>
+              <div style="height:1px; background:#ECE7DE; margin:3px 0;"></div>
+              <div
+                onclick="exportToCSV(); toggleToolsDropdown();"
+                style="padding:8px 12px; font-size:11px; font-weight:700; color:var(--ink); cursor:pointer; display:flex; align-items:center; gap:8px;"
+                onmouseenter="this.style.background='var(--cream)';"
+                onmouseleave="this.style.background='transparent';"
+              >
+                <span>📥</span> Export to CSV / Excel
+              </div>
+            </div>
+          </div>
+
+          <!-- Botón Guardar Planilla -->
+          <button
+            type="button"
+            onclick="savePlanillaGrades();"
+            class="btn btn-primary btn-sm"
+            style="font-size:10.5px; font-weight:900; padding:5px 12px; border-radius:4px; cursor:pointer;"
+          >
+            ✓ Save
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ── PESTAÑA B: RESUMEN Y BOLETÍN CONSOLIDADO ── -->
+    <div id="tabContentResumen" style="display:none;">
+      
+      <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:14px; margin-bottom:20px;">
+        <div class="stat-card" style="border:2px solid var(--ink); border-radius:8px;">
+          <div class="stat-label">Class Average</div>
+          <div class="stat-num" id="resAvg" style="color:var(--ink);">79.7 <span style="font-size:14px; font-weight:normal; color:var(--ink-soft);">/ 100</span></div>
+          <div class="stat-sub" style="color:#2E5E1E; font-weight:700;">Equivalent to 4.0 · Performance Level B+</div>
+        </div>
+
+        <div class="stat-card" style="border:2px solid var(--ink); border-radius:8px;">
+          <div class="stat-label">Pass Rate</div>
+          <div class="stat-num" id="resPass" style="color:#2E5E1E;">93.3%</div>
+          <div class="stat-sub">28 of 30 students passing (≥ 60)</div>
+        </div>
+
+        <div class="stat-card" style="border:2px solid var(--ink); border-radius:8px;">
+          <div class="stat-label">At Academic Risk</div>
+          <div class="stat-num" id="resRisk" style="color:var(--rust);">2</div>
+          <div class="stat-sub">Average score below 60% (3.0)</div>
+        </div>
+
+        <div class="stat-card" style="border:2px solid var(--ink); border-radius:8px;">
+          <div class="stat-label">Honor Roll</div>
+          <div class="stat-num" id="resHonor" style="color:#2E5E1E;">13</div>
+          <div class="stat-sub">Average score above 85% (4.25)</div>
+        </div>
+      </div>
+
+      <div class="panel" style="border:2px solid var(--ink); border-radius:8px; box-shadow:5px 5px 0 rgba(18,17,14,0.08); margin-bottom:24px;">
+        <div class="panel-header" style="background:var(--ink); color:#FFFFFF; display:flex; justify-content:space-between; align-items:center; border-top-left-radius:6px; border-top-right-radius:6px; padding:12px 18px;">
+          <h2 style="font-size:12.5px; color:#FFFFFF; margin:0; letter-spacing:0.04em;">
+            INDIVIDUAL STUDENT PERFORMANCE AND REPORT CARD REMARKS
+          </h2>
+          <button
+            type="button"
+            onclick="showToast('✓ Generating 30 official report cards (PDF)...', 'success');"
+            class="btn btn-secondary btn-sm"
+            style="background:#FFFFFF; color:var(--ink); font-size:10.5px; font-weight:800; border-radius:4px; cursor:pointer;"
+          >
+            Download 30 Report Cards (PDF)
+          </button>
+        </div>
+
+        <div class="panel-body" style="padding:0; overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; min-width:760px;">
+            <thead>
+              <tr style="background:var(--cream); border-bottom:1.5px solid var(--ink);">
+                <th style="padding:10px 14px; font-family:var(--mono); font-size:10.5px; font-weight:800; text-align:left; width:50px;">#</th>
+                <th style="padding:10px 14px; font-family:var(--mono); font-size:10.5px; font-weight:800; text-align:left;">Student</th>
+                <th style="padding:10px 12px; font-family:var(--mono); font-size:10.5px; font-weight:800; text-align:center; width:120px;">Final Mark</th>
+                <th style="padding:10px 12px; font-family:var(--mono); font-size:10.5px; font-weight:800; text-align:center; width:110px;">Status</th>
+                <th style="padding:10px 14px; font-family:var(--mono); font-size:10.5px; font-weight:800; text-align:left;">Qualitative Feedback</th>
+              </tr>
+            </thead>
+            <tbody>
+              {students10A.map((std, idx) => {
+                const base = std.averageScore;
+                const isHonor = base >= 8.5;
+                const isPass = base >= 6.0;
+                const badgeCls = isHonor ? 'badge-active' : (isPass ? 'badge-warning' : 'badge-suspended');
+                const level = isHonor ? 'HONOR' : (isPass ? 'PASS' : 'FAIL');
+
+                return (
+                  <tr style={`border-bottom:1px solid #ECE7DE; ${idx % 2 === 0 ? 'background:#FFFFFF;' : 'background:#FAF8F5;'}`}>
+                    <td style="padding:10px 14px; font-family:var(--mono); font-size:11px; font-weight:800; color:var(--ink-soft);">
+                      {idx + 1 < 10 ? `0${idx + 1}` : idx + 1}.
+                    </td>
+                    <td style="padding:10px 14px;">
+                      <div style="display:flex; align-items:center; gap:10px;">
+                        <img
+                          src={std.avatarUrl || '/avatars/women/fila-1-columna-1.png'}
+                          alt={std.name}
+                          width="28"
+                          height="28"
+                          style="width:28px !important; height:28px !important; min-width:28px !important; max-width:28px !important; min-height:28px !important; max-height:28px !important; border-radius:50%; border:1px solid #D5CEBF; object-fit:cover; display:block; flex-shrink:0;"
+                        />
+                        <div>
+                          <strong style="color:var(--ink); font-size:13px;">{std.name}</strong>
+                          <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);">10°A · Regular</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td style="padding:10px 12px; text-align:center; font-family:var(--mono); font-size:13px; font-weight:900; color:#2E5E1E;">
+                      {Math.round(base * 10)}/100 <span style="font-size:11px; font-weight:normal; color:var(--ink-soft);">({(base/2).toFixed(1)})</span>
+                    </td>
+                    <td style="padding:10px 12px; text-align:center;">
+                      <span class={`badge ${badgeCls}`} style="font-size:8.5px; font-weight:900; padding:2px 7px; border-radius:3px;">
+                        {level}
+                      </span>
+                    </td>
+                    <td style="padding:10px 14px;">
+                      <input
+                        type="text"
+                        value={isHonor ? 'Demonstrates outstanding mastery of core biological principles.' : (isPass ? 'Satisfactorily achieves all term learning objectives.' : 'Requires recovery plan and guided tutoring at home.')}
+                        style="width:100%; padding:5px 8px; border:1px solid #D5CEBF; border-radius:4px; background:transparent; font-size:11.5px; color:var(--ink); outline:none;"
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <!-- ── MODAL: + NUEVA ACTIVIDAD / COLUMNA ── -->
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <div id="modalAddColumn" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(18,17,14,0.85); z-index:10000; justify-content:center; align-items:center; padding:16px;">
+    <div style="background:var(--paper); border:2.5px solid var(--ink); border-radius:8px; max-width:480px; width:100%; box-shadow:10px 10px 0 rgba(18,17,14,0.4); overflow:hidden;">
+      
+      <div style="padding:14px 18px; background:var(--ink); color:#FFFFFF; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <h3 style="font-family:var(--serif); font-size:16px; margin:0; color:#FFFFFF;">+ Add New Assessment Column</h3>
+          <div style="font-family:var(--mono); font-size:10px; color:#E8E2D9;">Will be appended to active gradebook</div>
+        </div>
+        <button onclick="closeAddColumnModal();" style="background:transparent; border:none; color:#FFFFFF; font-size:22px; cursor:pointer; font-weight:700;">✕</button>
+      </div>
+
+      <div style="padding:18px; display:flex; flex-direction:column; gap:12px; background:var(--paper);">
+        
+        <div>
+          <label style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; color:var(--ink-soft); display:block; margin-bottom:4px;">
+            Activity Name <span style="font-weight:normal; font-size:9.5px;">— max 28 chars</span>
+          </label>
+          <input
+            type="text"
+            id="newColTitle"
+            maxlength="28"
+            placeholder="e.g. Genetics Lab 3..."
+            value="Genetics Workshop 3"
+            oninput="document.getElementById('colTitleCharCount').innerText = (28 - this.value.length) + ' restantes';"
+            style="width:100%; padding:8px 10px; border:1.5px solid var(--ink); border-radius:5px; background:#FFFFFF; font-size:12.5px; font-weight:700; color:var(--ink); outline:none;"
+          />
+          <div id="colTitleCharCount" style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft); text-align:right; margin-top:2px;">11 restantes</div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+          <div>
+            <label style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; color:var(--ink-soft); display:block; margin-bottom:4px;">
+              Weight (% of Term)
+            </label>
+            <input
+              type="number"
+              id="newColWeight"
+              value="15"
+              min="1"
+              max="50"
+              style="width:100%; padding:7px; border:1.5px solid var(--ink); border-radius:5px; background:#FFFFFF; font-family:var(--mono); font-size:13px; font-weight:800; color:var(--ink);"
+            />
+          </div>
+
+          <div>
+            <label style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; color:var(--ink-soft); display:block; margin-bottom:4px;">Activity Type</label>
+            <select id="newColType" style="width:100%; padding:7px; border:1.5px solid var(--ink); border-radius:5px; background:#FFFFFF; font-family:var(--mono); font-size:11px; font-weight:700;">
+              <option value="Workshop">Workshop</option>
+              <option value="Quiz">Quiz</option>
+              <option value="Oral">Oral Defense</option>
+              <option value="Essay">Essay</option>
+              <option value="Exam">Midterm Exam</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="background:var(--cream); border:1.5px solid #DDD6C8; border-radius:5px; padding:10px 12px; font-family:var(--mono); font-size:10.5px; color:var(--ink); line-height:1.4;">
+          ✓ Created and attached completely to the table first.<br/>✓ Then positioned, centered and focused seamlessly.
+        </div>
+
+      </div>
+
+      <div style="padding:12px 18px; background:var(--cream); border-top:1.5px solid #DDD6C8; display:flex; justify-content:space-between; align-items:center;">
+        <button onclick="closeAddColumnModal();" class="btn btn-secondary btn-sm" style="border-radius:4px; cursor:pointer;">Cancel</button>
+        <button onclick="createNewColumn();" class="btn btn-primary btn-sm" style="font-weight:900; font-size:12px; padding:8px 20px; border-radius:5px; cursor:pointer;">
+          ✓ Add Column
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="gradeToast" style="display:none; position:fixed; bottom:24px; right:24px; z-index:99999; background:var(--ink); color:#FFFFFF; padding:12px 20px; border:2px solid var(--rust); border-radius:6px; box-shadow:5px 5px 0 rgba(0,0,0,0.3); font-family:var(--mono); font-size:12px; font-weight:800; align-items:center; gap:10px;">
+    <span id="toastIcon">✓</span>
+    <span id="toastMsg">Changes saved successfully.</span>
+  </div>
+
+  <style is:global>
+    .grade-input-cell:focus {
+      border-color: var(--ink) !important;
+      background: #FFFDF9 !important;
+      box-shadow: 0 0 0 2px rgba(18, 17, 14, 0.25) !important;
+    }
+
+    .grade-low {
+      color: var(--rust) !important;
+      background: #FFF2F0 !important;
+      border-color: #F5C6BC !important;
+      font-weight: 900 !important;
+    }
+
+    .grade-high {
+      color: #2E5E1E !important;
+      background: #F4FAF1 !important;
+      border-color: #C3DFC0 !important;
+      font-weight: 900 !important;
+    }
+
+    .grade-filter-pill {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 800;
+      padding: 4px 8px;
+      border-radius: 4px;
+      border: 1.5px solid var(--ink);
+      background: #FFFFFF;
+      color: var(--ink);
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
+    .grade-filter-pill:hover {
+      background: var(--cream);
+    }
+    .grade-filter-pill.active {
+      background: var(--ink);
+      color: #FFFFFF;
+    }
+
+    .course-select-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 6px 6px 0 rgba(18,17,14,0.14);
+    }
+
+    /* Custom Modern Scrollbar for the table */
+    .modern-scrollbar::-webkit-scrollbar {
+      height: 8px;
+      width: 8px;
+    }
+    .modern-scrollbar::-webkit-scrollbar-track {
+      background: #FAF8F5;
+      border-top: 1px solid #ECE7DE;
+    }
+    .modern-scrollbar::-webkit-scrollbar-thumb {
+      background: #C7BEB0;
+      border-radius: 4px;
+      border: 1px solid #AFA595;
+    }
+    .modern-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: var(--rust);
+    }
+
+    /* Highlight animation for newly created columns */
+    @keyframes colHighlightFlash {
+      0% { background-color: #FFE6D5; }
+      50% { background-color: #FFD8BE; }
+      100% { background-color: var(--cream); }
+    }
+    .new-col-highlight {
+      animation: colHighlightFlash 1.6s ease;
+    }
+  </style>
+
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <!-- ── JAVASCRIPT REACTIVO Y GESTOR DE CALIFICACIONES ── -->
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <script is:inline>
+    const TOTAL_STUDENTS = 30;
+    let extraColumnsCount = 0;
+    let dynamicColumns = [];
+    let currentStatusFilter = 'all';
+    let activeColumnsOrder = ['g1', 'g2', 'qz', 'ex', 'ac'];
+
+    function showToast(msg, type = 'success') {
+      const toast = document.getElementById('gradeToast');
+      const toastMsg = document.getElementById('toastMsg');
+      const toastIcon = document.getElementById('toastIcon');
+      if (!toast) return;
+      toastMsg.innerText = msg;
+      toastIcon.innerText = type === 'success' ? '✓' : 'ℹ';
+      toast.style.display = 'flex';
+      setTimeout(() => { toast.style.display = 'none'; }, 3000);
+    }
+
+    function toggleToolsDropdown() {
+      const menu = document.getElementById('toolsDropdownMenu');
+      if (!menu) return;
+      menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    }
+
+    document.addEventListener('click', function (e) {
+      const menu = document.getElementById('toolsDropdownMenu');
+      if (menu && menu.style.display === 'block') {
+        if (!e.target.closest('#toolsDropdownMenu') && !e.target.closest('button[onclick*="toggleToolsDropdown"]')) {
+          menu.style.display = 'none';
+        }
+      }
+    });
+
+    // ── DESPLAZAMIENTO HORIZONTAL SUAVE DE COLUMNAS ──
+    function scrollTableHorizontal(direction) {
+      const tableWrapper = document.getElementById('gradebookTableWrapper');
+      if (!tableWrapper) return;
+      const scrollStep = 240; // Desplazar aprox 2-3 columnas
+      tableWrapper.scrollBy({
+        left: direction === 'left' ? -scrollStep : scrollStep,
+        behavior: 'smooth'
+      });
+    }
+
+    function scrollToTableTop() {
+      const el = document.getElementById('gradebookTableWrapper');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    function scrollToTableBottom() {
+      const el = document.getElementById('gradebookTableWrapper');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      } else {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      }
+    }
+
+    function selectCourseFromCard(courseId, courseName, count) {
+      document.getElementById('viewCourseCatalog').style.display = 'none';
+      document.getElementById('viewCourseWorkbench').style.display = 'block';
+      document.getElementById('wbCourseTitle').innerText = `${courseName} (${count} students)`;
+      
+      filterByStatus('all');
+      const searchInp = document.getElementById('studentSearchInput');
+      if (searchInp) searchInp.value = '';
+      
+      recalculateAllRows();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      showToast(`Active Workbench: ${courseName}`);
+    }
+
+    function returnToCourseCatalog() {
+      document.getElementById('viewCourseWorkbench').style.display = 'none';
+      document.getElementById('viewCourseCatalog').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function switchMainTab(tab) {
+      const btnP = document.getElementById('tabBtnPlanilla');
+      const btnR = document.getElementById('tabBtnResumen');
+      const pnlP = document.getElementById('tabContentPlanilla');
+      const pnlR = document.getElementById('tabContentResumen');
+
+      if (tab === 'planilla') {
+        btnP.style.background = 'var(--ink)';
+        btnP.style.color = '#FFFFFF';
+        btnR.style.background = 'transparent';
+        btnR.style.color = 'var(--ink)';
+        pnlP.style.display = 'block';
+        pnlR.style.display = 'none';
+      } else {
+        btnR.style.background = 'var(--ink)';
+        btnR.style.color = '#FFFFFF';
+        btnP.style.background = 'transparent';
+        btnP.style.color = 'var(--ink)';
+        pnlP.style.display = 'none';
+        pnlR.style.display = 'block';
+      }
+    }
+
+    function filterStudentsTable() {
+      const query = (document.getElementById('studentSearchInput')?.value || '').toLowerCase().trim();
+      
+      for (let i = 0; i < TOTAL_STUDENTS; i++) {
+        const row = document.getElementById(`std-row-${i}`);
+        if (!row) continue;
+
+        const name = row.getAttribute('data-name') || '';
+        const status = row.getAttribute('data-status') || '';
+
+        const matchesSearch = !query || name.includes(query);
+        const matchesStatus = currentStatusFilter === 'all' || status === currentStatusFilter;
+
+        row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
+      }
+    }
+
+    function filterByStatus(status) {
+      currentStatusFilter = status;
+      ['all', 'risk', 'pass', 'honor'].forEach(s => {
+        const btn = document.getElementById(`filterBtn-${s}`);
+        if (btn) {
+          if (s === status) btn.classList.add('active');
+          else btn.classList.remove('active');
+        }
+      });
+      filterStudentsTable();
+    }
+
+    function handleGradeInput(idx, colKey) {
+      const inp = document.getElementById(`cell-${colKey}-${idx}`);
+      if (inp) {
+        let val = parseFloat(inp.value);
+        if (isNaN(val)) val = 0;
+        
+        inp.classList.remove('grade-low', 'grade-high');
+        if (val < 60) inp.classList.add('grade-low');
+        else if (val >= 85) inp.classList.add('grade-high');
+      }
+
+      recalculateRow(idx);
+      updateOverallMetrics();
+      triggerAutoSaveFeedback();
+    }
+
+    function recalculateRow(idx) {
+      const g1 = Math.max(0, Math.min(100, parseFloat(document.getElementById(`cell-g1-${idx}`)?.value) || 0));
+      const g2 = Math.max(0, Math.min(100, parseFloat(document.getElementById(`cell-g2-${idx}`)?.value) || 0));
+      const qz = Math.max(0, Math.min(100, parseFloat(document.getElementById(`cell-qz-${idx}`)?.value) || 0));
+      const ex = Math.max(0, Math.min(100, parseFloat(document.getElementById(`cell-ex-${idx}`)?.value) || 0));
+      const ac = Math.max(0, Math.min(100, parseFloat(document.getElementById(`cell-ac-${idx}`)?.value) || 0));
+
+      let totalWeighted = (g1 * 15) + (g2 * 20) + (qz * 20) + (ex * 30) + (ac * 15);
+      let totalWeightSum = 100;
+
+      dynamicColumns.forEach(col => {
+        const dynInp = document.getElementById(`cell-${col.key}-${idx}`);
+        if (dynInp) {
+          const val = Math.max(0, Math.min(100, parseFloat(dynInp.value) || 0));
+          totalWeighted += (val * col.weight);
+          totalWeightSum += col.weight;
+        }
+      });
+
+      const final100 = totalWeightSum > 0 ? (totalWeighted / totalWeightSum) : 0;
+      const final5 = (final100 / 20).toFixed(1);
+
+      const def100El = document.getElementById(`def100-${idx}`);
+      const def5El = document.getElementById(`def5-${idx}`);
+      if (def100El) def100El.innerText = Math.round(final100);
+      if (def5El) def5El.innerText = final5;
+
+      const isHonor = final100 >= 85;
+      const isPass = final100 >= 60;
+      const level = isHonor ? 'HONOR' : (isPass ? 'PASS' : 'FAIL');
+      const badgeCls = isHonor ? 'badge-active' : (isPass ? 'badge-warning' : 'badge-suspended');
+      const statusCat = isHonor ? 'honor' : (isPass ? 'pass' : 'risk');
+
+      const badge = document.getElementById(`badge-${idx}`);
+      if (badge) {
+        badge.className = `badge ${badgeCls}`;
+        badge.innerText = level;
+      }
+
+      const row = document.getElementById(`std-row-${idx}`);
+      if (row) {
+        row.setAttribute('data-status', statusCat);
+      }
+    }
+
+    function recalculateAllRows() {
+      for (let i = 0; i < TOTAL_STUDENTS; i++) {
+        recalculateRow(i);
+      }
+      updateOverallMetrics();
+    }
+
+    function updateOverallMetrics() {
+      let sumDef = 0;
+      let passCount = 0;
+      let riskCount = 0;
+      let honorCount = 0;
+
+      const colSums = { g1: 0, g2: 0, qz: 0, ex: 0, ac: 0 };
+      dynamicColumns.forEach(c => colSums[c.key] = 0);
+
+      for (let i = 0; i < TOTAL_STUDENTS; i++) {
+        const defVal = parseFloat(document.getElementById(`def100-${i}`)?.innerText) || 0;
+        sumDef += defVal;
+        if (defVal >= 85) honorCount++;
+        if (defVal >= 60) passCount++;
+        else riskCount++;
+
+        ['g1', 'g2', 'qz', 'ex', 'ac'].forEach(k => {
+          colSums[k] += parseFloat(document.getElementById(`cell-${k}-${i}`)?.value) || 0;
+        });
+
+        dynamicColumns.forEach(c => {
+          colSums[c.key] += parseFloat(document.getElementById(`cell-${c.key}-${i}`)?.value) || 0;
+        });
+      }
+
+      const avg = (sumDef / TOTAL_STUDENTS).toFixed(1);
+      const avg5 = (sumDef / TOTAL_STUDENTS / 20).toFixed(1);
+      const passPct = ((passCount / TOTAL_STUDENTS) * 100).toFixed(1);
+
+      const kpiAvg = document.getElementById('kpiAvgScore');
+      if (kpiAvg) kpiAvg.innerText = avg;
+
+      const kpiPass = document.getElementById('kpiPassCount');
+      if (kpiPass) kpiPass.innerText = passCount;
+
+      const kpiPct = document.getElementById('kpiPassPct');
+      if (kpiPct) kpiPct.innerText = `${passPct}%`;
+
+      const kpiRisk = document.getElementById('kpiRiskCount');
+      if (kpiRisk) kpiRisk.innerText = riskCount;
+
+      const pillRisk = document.getElementById('pillCountRisk');
+      if (pillRisk) pillRisk.innerText = riskCount;
+
+      const pillPass = document.getElementById('pillCountPass');
+      if (pillPass) pillPass.innerText = passCount;
+
+      const pillHonor = document.getElementById('pillCountHonor');
+      if (pillHonor) pillHonor.innerText = honorCount;
+
+      ['g1', 'g2', 'qz', 'ex', 'ac'].forEach(k => {
+        const el = document.getElementById(`colAvg-${k}`);
+        if (el) el.innerText = (colSums[k] / TOTAL_STUDENTS).toFixed(1);
+      });
+
+      dynamicColumns.forEach(c => {
+        const el = document.getElementById(`colAvg-${c.key}`);
+        if (el) el.innerText = (colSums[c.key] / TOTAL_STUDENTS).toFixed(1);
+      });
+
+      const footerDef = document.getElementById('colAvg-def');
+      if (footerDef) footerDef.innerText = avg;
+
+      const resAvg = document.getElementById('resAvg');
+      if (resAvg) resAvg.innerHTML = `${avg} <span style="font-size:14px; font-weight:normal; color:var(--ink-soft);">/ 100</span>`;
+      const resPass = document.getElementById('resPass');
+      if (resPass) resPass.innerText = `${passPct}%`;
+      const resRisk = document.getElementById('resRisk');
+      if (resRisk) resRisk.innerText = riskCount;
+      const resHonor = document.getElementById('resHonor');
+      if (resHonor) resHonor.innerText = honorCount;
+    }
+
+    let saveTimeout = null;
+    function triggerAutoSaveFeedback() {
+      const indicator = document.getElementById('saveStatusIndicator');
+      if (indicator) {
+        indicator.innerHTML = '● Saving...';
+        indicator.style.color = 'var(--rust)';
+      }
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => {
+        if (indicator) {
+          indicator.innerHTML = '● Synchronized';
+          indicator.style.color = '#2E5E1E';
+        }
+      }, 800);
+    }
+
+    function navigateTableGrid(event, rowIdx, colKey) {
+      const colIdx = activeColumnsOrder.indexOf(colKey);
+
+      if (event.key === 'Enter' || event.key === 'ArrowDown') {
+        event.preventDefault();
+        for (let nextRow = rowIdx + 1; nextRow < TOTAL_STUDENTS; nextRow++) {
+          const rowEl = document.getElementById(`std-row-${nextRow}`);
+          if (rowEl && rowEl.style.display !== 'none') {
+            const nextCell = document.getElementById(`cell-${colKey}-${nextRow}`);
+            if (nextCell) {
+              nextCell.focus();
+              nextCell.select();
+              nextCell.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+            }
+            break;
+          }
+        }
+      } else if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        for (let prevRow = rowIdx - 1; prevRow >= 0; prevRow--) {
+          const rowEl = document.getElementById(`std-row-${prevRow}`);
+          if (rowEl && rowEl.style.display !== 'none') {
+            const prevCell = document.getElementById(`cell-${colKey}-${prevRow}`);
+            if (prevCell) {
+              prevCell.focus();
+              prevCell.select();
+              prevCell.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+            }
+            break;
+          }
+        }
+      } else if (event.key === 'ArrowRight' && colIdx < activeColumnsOrder.length - 1) {
+        const nextCol = activeColumnsOrder[colIdx + 1];
+        const nextCell = document.getElementById(`cell-${nextCol}-${rowIdx}`);
+        if (nextCell) {
+          nextCell.focus();
+          nextCell.select();
+          // asegurar que sea visible en scroll horizontal
+          nextCell.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+        }
+      } else if (event.key === 'ArrowLeft' && colIdx > 0) {
+        const prevCol = activeColumnsOrder[colIdx - 1];
+        const prevCell = document.getElementById(`cell-${prevCol}-${rowIdx}`);
+        if (prevCell) {
+          prevCell.focus();
+          prevCell.select();
+          // asegurar que sea visible en scroll horizontal
+          prevCell.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+        }
+      }
+    }
+
+    function openAddColumnModal() {
+      document.getElementById('modalAddColumn').style.display = 'flex';
+      const inputTitle = document.getElementById('newColTitle');
+      if (inputTitle) {
+        inputTitle.value = `Activity ${extraColumnsCount + 3}`;
+        inputTitle.focus();
+        inputTitle.select();
+      }
+    }
+
+    function closeAddColumnModal() {
+      document.getElementById('modalAddColumn').style.display = 'none';
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // CREACIÓN EN 2 FASES: PRIMERO CREAR EN DOM -> LUEGO UBICAR Y DESPLAZAR
+    // ══════════════════════════════════════════════════════════════════════════
+    function createNewColumn() {
+      const title = document.getElementById('newColTitle')?.value || `Activity ${extraColumnsCount + 1}`;
+      const weight = parseFloat(document.getElementById('newColWeight')?.value) || 15;
+      const type = document.getElementById('newColType')?.value || 'Workshop';
+      
+      // Cerrar modal primero
+      closeAddColumnModal();
+
+      extraColumnsCount++;
+      const colKey = `dyn_${extraColumnsCount}`;
+      dynamicColumns.push({ key: colKey, weight: weight, title: title, type: type });
+      activeColumnsOrder.push(colKey);
+
+      // ── FASE 1: CREAR E INSERTAR COMPLETAMENTE EN EL DOM ──
+      const table = document.getElementById('gradebookMainTable');
+      const headerRow = table.querySelector('thead tr');
+      const addColTh = headerRow.querySelector('.th-add-col');
+
+      // 1.1 Insertar TH en la cabecera
+      const th = document.createElement('th');
+      th.id = `th-${colKey}`;
+      th.className = 'th-activity-col new-col-highlight';
+      th.style.cssText = 'position:sticky; top:0; z-index:20; padding:8px 6px; text-align:center; border-bottom:2px solid var(--ink); border-right:1px solid #E2DDD5; background:var(--cream); min-width:100px; max-width:120px; width:120px;';
+      th.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:0 2px; gap:2px;">
+          <div style="font-family:var(--mono); font-size:11px; font-weight:800; color:var(--ink); line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:82px; flex:1;" title="${title}">${title}</div>
+          <button onclick="removeDynamicColumn('${colKey}', event);" title="Delete column" style="background:none; border:none; color:var(--rust); cursor:pointer; font-weight:900; font-size:10px; padding:0 2px; flex-shrink:0;">✕</button>
+        </div>
+        <div style="display:flex; align-items:center; justify-content:center; gap:4px; margin-top:3px;">
+          <span style="font-family:var(--mono); font-size:8.5px; font-weight:700; color:var(--ink-soft); background:#FFFFFF; border:1px solid #D8D2C2; padding:1px 4px; border-radius:3px;">${type}</span>
+          <span style="font-family:var(--mono); font-size:9px; font-weight:900; color:var(--rust); background:#FFF0EE; padding:1px 5px; border-radius:3px;">${weight}%</span>
+        </div>
+      `;
+      headerRow.insertBefore(th, addColTh);
+
+      // 1.2 Insertar TD con input en cada una de las filas
+      for (let i = 0; i < TOTAL_STUDENTS; i++) {
+        const row = document.getElementById(`std-row-${i}`);
+        const addSpacer = row.querySelector('.td-add-col-spacer');
+
+        const td = document.createElement('td');
+        td.id = `td-cell-${colKey}-${i}`;
+        td.className = 'td-cell-grade';
+        td.style.cssText = 'padding:4px 6px; text-align:center; border-bottom:1px solid #ECE7DE; border-right:1px solid #E2DDD5;';
+        td.innerHTML = `
+          <input
+            type="number" min="0" max="100"
+            id="cell-${colKey}-${i}"
+            value="0"
+            data-col="${colKey}"
+            data-row="${i}"
+            onfocus="this.select();"
+            oninput="handleGradeInput(${i}, '${colKey}');"
+            onkeydown="navigateTableGrid(event, ${i}, '${colKey}');"
+            class="grade-input-cell grade-low"
+            style="width:54px; height:28px; padding:2px 4px; border:1px solid #D5CEBF; border-radius:4px; font-family:var(--mono); font-size:12px; font-weight:800; color:var(--ink); text-align:center; outline:none;"
+          />
+        `;
+        row.insertBefore(td, addSpacer);
+      }
+
+      // 1.3 Insertar TD en el Footer (Promedio de la nueva actividad)
+      const footerRow = table.querySelector('tfoot tr');
+      const footSpacer = footerRow.querySelector('.td-add-col-spacer');
+      const tdFoot = document.createElement('td');
+      tdFoot.id = `colAvg-${colKey}`;
+      tdFoot.style.cssText = 'background:var(--cream); text-align:center; font-family:var(--mono); font-size:11.5px; font-weight:800; color:var(--ink); border-right:1px solid #E2DDD5; padding:4px;';
+      tdFoot.innerText = '0.0';
+      footerRow.insertBefore(tdFoot, footSpacer);
+
+      // 1.4 Recalcular métricas generales
+      updateTotalWeightBadge();
+      recalculateAllRows();
+      showToast(`✓ ${title} created and added to gradebook.`);
+
+      // ── FASE 2: UBICAR, DESPLAZAR Y ENFOCAR TRAS LA CREACIÓN COMPLETA ──
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const container = document.getElementById('gradebookTableWrapper');
+          const newTh = document.getElementById(`th-${colKey}`);
+          const firstInput = document.getElementById(`cell-${colKey}-0`);
+
+          if (container && newTh) {
+            // Desplazar el contenedor horizontal suavemente para revelar la nueva columna
+            container.scrollTo({
+              left: container.scrollWidth,
+              behavior: 'smooth'
+            });
+          }
+
+          if (firstInput) {
+            setTimeout(() => {
+              firstInput.focus();
+              firstInput.select();
+            }, 120);
+          }
+        });
+      });
+    }
+
+    function removeDynamicColumn(colKey, event) {
+      if (event) event.stopPropagation();
+      if (!confirm('Delete this column and recalculate final grades?')) return;
+
+      const th = document.getElementById(`th-${colKey}`);
+      if (th) th.remove();
+
+      for (let i = 0; i < TOTAL_STUDENTS; i++) {
+        const td = document.getElementById(`td-cell-${colKey}-${i}`);
+        if (td) td.remove();
+      }
+
+      const footTd = document.getElementById(`colAvg-${colKey}`);
+      if (footTd) footTd.remove();
+
+      dynamicColumns = dynamicColumns.filter(c => c.key !== colKey);
+      activeColumnsOrder = activeColumnsOrder.filter(k => k !== colKey);
+
+      updateTotalWeightBadge();
+      recalculateAllRows();
+      showToast('✓ Column removed.');
+    }
+
+    function updateTotalWeightBadge() {
+      // Pesos de columnas estáticas son 100% en total (15+20+20+30+15)
+      // Las dinámicas se agregan ENCIMA; esto es informativo para el docente
+      let dynSum = 0;
+      dynamicColumns.forEach(c => dynSum += c.weight);
+      const kpiW = document.getElementById('kpiWeightTotal');
+      const kpiStatus = document.getElementById('kpiWeightStatus');
+      if (kpiW) {
+        if (dynSum === 0) {
+          kpiW.innerText = '100%';
+        } else {
+          kpiW.innerText = `+${dynSum}%`;
+        }
+      }
+      if (kpiStatus) {
+        if (dynSum === 0) {
+          kpiStatus.innerText = '✓ Balanced';
+          kpiStatus.style.background = '#E5EFE0';
+          kpiStatus.style.color = '#2E5E1E';
+          kpiStatus.style.border = '1px solid #A8C99B';
+        } else {
+          kpiStatus.innerText = `⚠ Re-weight cols`;
+          kpiStatus.style.background = '#FFF8EE';
+          kpiStatus.style.color = '#B35C00';
+          kpiStatus.style.border = '1px solid #EFCA88';
+        }
+      }
+    }
+
+    function fillBlanksWith70() {
+      for (let i = 0; i < TOTAL_STUDENTS; i++) {
+        const ex = document.getElementById(`cell-ex-${i}`);
+        if (ex && (!ex.value || ex.value === '0')) {
+          ex.value = 70;
+          ex.classList.remove('grade-low', 'grade-high');
+        }
+        dynamicColumns.forEach(c => {
+          const inp = document.getElementById(`cell-${c.key}-${i}`);
+          if (inp && (!inp.value || inp.value === '0')) {
+            inp.value = 70;
+            inp.classList.remove('grade-low', 'grade-high');
+          }
+        });
+        recalculateRow(i);
+      }
+      updateOverallMetrics();
+      showToast('✓ Blank marks set to 70.');
+    }
+
+    function applyGroupCurve() {
+      for (let i = 0; i < TOTAL_STUDENTS; i++) {
+        const ex = document.getElementById(`cell-ex-${i}`);
+        if (ex) {
+          const val = Math.min(100, (parseFloat(ex.value) || 0) + 5);
+          ex.value = val;
+          ex.classList.remove('grade-low', 'grade-high');
+          if (val < 60) ex.classList.add('grade-low');
+          else if (val >= 85) ex.classList.add('grade-high');
+        }
+        recalculateRow(i);
+      }
+      updateOverallMetrics();
+      showToast('✓ Class curve of +5 points applied.');
+    }
+
+    function exportToCSV() {
+      showToast('📥 Downloading CSV: Grades_10A_Term1.csv', 'success');
+    }
+
+    function savePlanillaGrades() {
+      showToast('✅ 30 Student marks saved and synchronized with official reports.');
+    }
+  </script>
+
+</AppLayout>

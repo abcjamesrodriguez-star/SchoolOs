@@ -1,0 +1,146 @@
+---
+// ============================================================
+// SchoolOS — My Students (Teacher - English)
+// Phase 3 | Roster directory for assigned courses
+// ============================================================
+import AppLayout from '../../../../../layouts/AppLayout.astro';
+import { getAllTeacherStudents, getTeacherCourses } from '../../../../../data/app/mock-content';
+
+const lang = 'en';
+const allStudents = getAllTeacherStudents();
+const courses = getTeacherCourses();
+---
+
+<AppLayout
+  title="My Students"
+  pageTitle="Student Roster Directory"
+  activeSection="students"
+  role="teacher"
+  schoolName="Colegio Norte"
+  lang={lang}
+  activeRoute="/app/teacher/students"
+  breadcrumbs={[{ label: 'Colegio Norte' }, { label: 'Teacher Panel', href: `/${lang}/app/teacher` }, { label: 'My Students' }]}
+>
+
+  <!-- ── HEADER & SEARCH FILTERS ── -->
+  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; margin-bottom:20px;">
+    <div>
+      <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-bottom:4px;">
+        Total: <strong style="color:var(--ink);">{allStudents.length} students displayed</strong> of 83 enrolled in your courses
+      </div>
+      <p style="font-size:12.5px; color:var(--ink-soft); margin:0;">Includes students across your 3 active classes. For global school rosters, contact administration.</p>
+    </div>
+
+    <!-- Filters -->
+    <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+      <input
+        type="text"
+        placeholder="Search student..."
+        style="padding:8px 14px; border:2px solid var(--ink); background:var(--paper); font-family:var(--mono); font-size:12px; color:var(--ink); outline:none; width:200px;"
+      />
+      <select style="padding:8px 14px; border:2px solid var(--ink); background:var(--paper); font-family:var(--mono); font-size:12px; color:var(--ink); outline:none;">
+        <option value="">All Courses</option>
+        {courses.map((c) => (
+          <option value={c.id}>{c.name}</option>
+        ))}
+      </select>
+    </div>
+  </div>
+
+  <!-- ── ACADEMIC RISK ALERT ── -->
+  {(() => {
+    const atRisk = allStudents.filter((s) => s.status === 'risk');
+    return atRisk.length > 0 ? (
+      <div style="background:var(--cream); border:2px solid var(--rust); border-left:6px solid var(--rust); padding:12px 18px; margin-bottom:20px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+        <span class="plan-tag" style="background:var(--rust); color:#FFFFFF; border-color:var(--rust); font-size:10px; font-weight:900; white-space:nowrap;">⚠ ACADEMIC ALERT</span>
+        <span style="font-size:12.5px; color:var(--ink);">
+          <strong>{atRisk.length} students</strong> currently fall below the course passing threshold. Individual pedagogical follow-up recommended.
+        </span>
+      </div>
+    ) : null;
+  })()}
+
+  <!-- ── STUDENT ROSTER TABLE ── -->
+  <div class="panel" style="border:2px solid var(--ink); box-shadow:6px 6px 0 rgba(18,17,14,0.08);">
+    <div class="panel-header" style="background:var(--ink);">
+      <h2 style="font-size:12px; color:#FFFFFF; letter-spacing:0.08em;">ENROLLED STUDENTS DIRECTORY</h2>
+    </div>
+    <div class="panel-body" style="padding:0; overflow-x:auto;">
+      <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
+        <thead>
+          <tr style="border-bottom:2px solid var(--ink); background:var(--cream);">
+            <th style="text-align:left; padding:10px 16px; font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink);">Student</th>
+            <th style="text-align:left; padding:10px 12px; font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink);">Course</th>
+            <th style="text-align:left; padding:10px 12px; font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink);">Class Average</th>
+            <th style="text-align:center; padding:10px 12px; font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink);">Pending Submissions</th>
+            <th style="text-align:center; padding:10px 12px; font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink);">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {allStudents.map((student, i) => {
+            const barWidth = Math.round(student.averageScore * 10);
+            return (
+              <tr style={`border-bottom:1.5px solid var(--line); ${i % 2 === 0 ? 'background:var(--paper);' : 'background:var(--cream);'}`}>
+                <td style="padding:12px 16px;">
+                  <div style="display:flex; align-items:center; gap:10px;">
+                    <div style={`width:32px; height:32px; border:1.5px solid var(--ink); border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:9px; font-weight:800; flex-shrink:0; background:${student.status === 'honor' ? 'var(--ink)' : student.status === 'risk' ? '#FFF0EE' : 'var(--cream)'}; color:${student.status === 'honor' ? '#fff' : 'var(--ink)'};`}>
+                      {student.name.split(' ').map((n: string) => n[0]).slice(0,2).join('')}
+                    </div>
+                    <div>
+                      <div style="font-weight:600; color:var(--ink); font-size:13px;">{student.name}</div>
+                      <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);">Section {student.groupCode}</div>
+                    </div>
+                  </div>
+                </td>
+                <td style="padding:12px;">
+                  <div style="font-size:12px; color:var(--ink);">{student.courseName}</div>
+                </td>
+                <td style="padding:12px;">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <span style={`font-family:var(--mono); font-size:14px; font-weight:800; min-width:32px; color:${student.averageScore >= 8 ? 'var(--ink)' : student.averageScore >= 6 ? '#8B7355' : 'var(--rust)'};`}>
+                      {student.averageScore.toFixed(1)}
+                    </span>
+                    <div style="flex:1; height:5px; background:var(--cream); border:1px solid var(--ink); min-width:60px; max-width:100px;">
+                      <div style={`width:${barWidth}%; height:100%; background:${student.averageScore >= 8 ? '#5B8A4A' : student.averageScore >= 6 ? '#8B7355' : 'var(--rust)'};`}></div>
+                    </div>
+                    <span style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft);">/ 10</span>
+                  </div>
+                </td>
+                <td style="padding:12px; text-align:center;">
+                  {student.pendingCount === 0 ? (
+                    <span style="font-family:var(--mono); font-size:12px; color:var(--ink-soft);">—</span>
+                  ) : (
+                    <span style={`font-family:var(--mono); font-size:12px; font-weight:800; color:${student.pendingCount >= 3 ? 'var(--rust)' : '#8B7355'};`}>
+                      {student.pendingCount} pending
+                    </span>
+                  )}
+                </td>
+                <td style="padding:12px; text-align:center;">
+                  <span
+                    class={student.status === 'honor' ? 'badge badge-active' : student.status === 'risk' ? 'badge badge-suspended' : 'badge'}
+                    style={`font-size:9.5px; font-weight:800; ${student.status === 'normal' ? 'background:var(--cream); border:1.5px solid var(--ink); color:var(--ink);' : ''}`}
+                  >
+                    {student.status === 'honor' ? 'HONOR' : student.status === 'risk' ? 'AT RISK' : 'REGULAR'}
+                  </span>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Table Footer -->
+    <div style="padding:12px 16px; border-top:1.5px solid var(--ink); background:var(--cream); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+      <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft);">
+        Showing {allStudents.length} of 83 students · Full school database managed by school admin
+      </div>
+      <div style="display:flex; gap:12px; font-family:var(--mono); font-size:10.5px;">
+        <span style="color:var(--ink-soft);">⬛ Honor: {allStudents.filter(s => s.status === 'honor').length}</span>
+        <span style="color:var(--ink-soft);">Regular: {allStudents.filter(s => s.status === 'normal').length}</span>
+        <span style="color:var(--rust);">⚠ Risk: {allStudents.filter(s => s.status === 'risk').length}</span>
+      </div>
+    </div>
+  </div>
+
+</AppLayout>

@@ -1,0 +1,189 @@
+---
+// ============================================================
+// SchoolOS — Evaluation Results (Teacher - English)
+// Phase 3 | Grade breakdown table per student
+// ============================================================
+import AppLayout from '../../../../../../layouts/AppLayout.astro';
+import { getEvaluationById, getResultsByEvaluation } from '../../../../../../data/app/mock-content';
+
+export async function getStaticPaths() {
+  return [
+    { params: { id: 'eval-1' } },
+    { params: { id: 'eval-2' } },
+  ];
+}
+
+const lang = 'en';
+const { id } = Astro.params;
+const evaluation = getEvaluationById(id!);
+const results = getResultsByEvaluation(id!);
+
+const gradedResults = results.filter((r) => r.status === 'graded' || r.status === 'failed');
+const avgScore = gradedResults.length > 0 ? gradedResults.reduce((sum, r) => sum + r.score, 0) / gradedResults.length : 0;
+const passedCount = results.filter((r) => r.status === 'graded').length;
+const highScore = gradedResults.length > 0 ? Math.max(...gradedResults.map((r) => r.score)) : 0;
+const lowScore = gradedResults.length > 0 ? Math.min(...gradedResults.map((r) => r.score)) : 0;
+const passRate = gradedResults.length > 0 ? Math.round((passedCount / gradedResults.length) * 100) : 0;
+---
+
+{evaluation ? (
+  <AppLayout
+    title={`Results — ${evaluation.title}`}
+    pageTitle={`Results: ${evaluation.title}`}
+    activeSection="courses"
+    role="teacher"
+    schoolName="Colegio Norte"
+    lang={lang}
+    activeRoute={`/app/teacher/evaluations/${id}/results`}
+    breadcrumbs={[
+      { label: 'Colegio Norte' },
+      { label: 'Teacher Panel', href: `/${lang}/app/teacher` },
+      { label: evaluation.guideTitle, href: `/${lang}/app/teacher/guides/${evaluation.guideId}` },
+      { label: 'Results' },
+    ]}
+  >
+
+    <!-- ── HEADER ── -->
+    <div style="background:var(--paper); border:2px solid var(--ink); padding:16px 20px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; box-shadow:4px 4px 0 rgba(18,17,14,0.08);">
+      <div>
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+          <span class={evaluation.mode === 'virtual' ? 'badge badge-active' : 'badge badge-warning'} style="font-size:10px; font-weight:800;">
+            {evaluation.mode === 'virtual' ? 'VIRTUAL' : 'IN-PERSON'}
+          </span>
+          {evaluation.mode === 'virtual' && (
+            <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">{evaluation.timeLimitMinutes} min · {evaluation.maxAttempts} attempts max</span>
+          )}
+        </div>
+        <h1 style="font-family:var(--serif); font-size:22px; font-weight:700; color:var(--ink); margin:0 0 4px 0;">{evaluation.title}</h1>
+        <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">Guide: {evaluation.guideTitle} · Passing: {evaluation.passingScore}%</div>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <a href={`/${lang}/app/teacher/guides/${evaluation.guideId}`} class="btn btn-secondary btn-sm" style="font-size:11px;">← Return to Guide</a>
+        {evaluation.mode === 'in_person' && (
+          <a href={`/${lang}/app/teacher/evaluations/${id}/grade`} class="btn btn-primary btn-sm" style="font-size:11.5px; font-weight:700;">Input Grades →</a>
+        )}
+      </div>
+    </div>
+
+    <!-- ── STAT CARDS ── -->
+    <div class="stat-grid" style="margin-bottom:24px;">
+      <div class="stat-card" style="border:2px solid var(--ink);">
+        <div class="stat-label">CLASS AVERAGE</div>
+        <div class="stat-num" style={`color:${avgScore >= (evaluation.passingScore || 70) ? 'var(--ink)' : 'var(--rust)'}; font-size:30px;`}>
+          {gradedResults.length > 0 ? `${avgScore.toFixed(1)}%` : '—'}
+        </div>
+        <div class="stat-sub">{gradedResults.length} graded submissions</div>
+      </div>
+      <div class="stat-card" style="border:2px solid var(--ink);">
+        <div class="stat-label">PASS RATE</div>
+        <div class="stat-num" style={`color:${passRate >= 70 ? 'var(--ink)' : 'var(--rust)'}; font-size:30px;`}>
+          {gradedResults.length > 0 ? `${passRate}%` : '—'}
+        </div>
+        <div class="stat-sub">{passedCount} passed · Threshold: {evaluation.passingScore}%</div>
+      </div>
+      <div class="stat-card" style="border:2px solid var(--ink);">
+        <div class="stat-label">HIGHEST SCORE</div>
+        <div class="stat-num" style="color:var(--ink); font-size:30px;">{gradedResults.length > 0 ? `${highScore}%` : '—'}</div>
+        <div class="stat-sub">Top performer</div>
+      </div>
+      <div class="stat-card" style="border:2px solid var(--ink);">
+        <div class="stat-label">LOWEST SCORE</div>
+        <div class="stat-num accent" style={`color:${lowScore < (evaluation.passingScore || 70) ? 'var(--rust)' : 'var(--ink)'}; font-size:30px;`}>
+          {gradedResults.length > 0 ? `${lowScore}%` : '—'}
+        </div>
+        <div class="stat-sub">Needs review</div>
+      </div>
+    </div>
+
+    <!-- ── RESULTS TABLE ── -->
+    <div class="panel" style="border:2px solid var(--ink); box-shadow:6px 6px 0 rgba(18,17,14,0.08); margin-bottom:20px;">
+      <div class="panel-header" style="background:var(--ink);">
+        <h2 style="font-size:12px; color:#FFFFFF; letter-spacing:0.08em;">STUDENT PERFORMANCE BREAKDOWN — {results.length} ENTRIES</h2>
+      </div>
+      <div class="panel-body" style="padding:0; overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
+          <thead>
+            <tr style="border-bottom:2px solid var(--ink); background:var(--cream);">
+              <th style="text-align:left; padding:10px 16px; font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink);">Student</th>
+              <th style="text-align:center; padding:10px 12px; font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink);">Attempt</th>
+              <th style="text-align:left; padding:10px 16px; font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink);">Score</th>
+              <th style="text-align:center; padding:10px 12px; font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink);">Status</th>
+              <th style="text-align:right; padding:10px 16px; font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink);">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {results.map((r, i) => (
+              <tr style={`border-bottom:1.5px solid var(--line); ${i % 2 === 0 ? 'background:var(--paper);' : 'background:var(--cream);'}`}>
+                <td style="padding:12px 16px;">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <div style="width:28px; height:28px; background:var(--cream); border:1.5px solid var(--ink); border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:9px; font-weight:800; flex-shrink:0;">
+                      {r.studentName.split(' ').map((n: string) => n[0]).slice(0,2).join('')}
+                    </div>
+                    <div>
+                      <div style="font-weight:600; color:var(--ink);">{r.studentName}</div>
+                      <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);">Section {r.groupCode}</div>
+                    </div>
+                  </div>
+                </td>
+                <td style="padding:12px; text-align:center; font-family:var(--mono); font-size:12px; color:var(--ink);">#{r.attemptNumber}</td>
+                <td style="padding:12px 16px;">
+                  {r.status === 'pending' ? (
+                    <span style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">Pending</span>
+                  ) : (
+                    <div style="display:flex; align-items:center; gap:8px;">
+                      <span style="font-family:var(--mono); font-size:13px; font-weight:800; color:var(--ink); min-width:40px;">{r.score}%</span>
+                      <div style="flex:1; height:6px; background:var(--cream); border:1px solid var(--ink); min-width:80px; max-width:120px;">
+                        <div style={`width:${r.score}%; height:100%; background:${r.score >= (evaluation.passingScore || 70) ? '#5B8A4A' : 'var(--rust)'};`}></div>
+                      </div>
+                    </div>
+                  )}
+                </td>
+                <td style="padding:12px; text-align:center;">
+                  <span class={r.status === 'graded' ? 'badge badge-active' : r.status === 'failed' ? 'badge badge-suspended' : 'badge badge-warning'} style="font-size:9.5px; font-weight:800;">
+                    {r.status === 'graded' ? 'PASSED' : r.status === 'failed' ? 'FAILED' : 'PENDING'}
+                  </span>
+                </td>
+                <td style="padding:12px 16px; text-align:right; font-family:var(--mono); font-size:10.5px; color:var(--ink-soft);">
+                  {r.submittedAt ? new Date(r.submittedAt).toLocaleDateString('en-US', {day:'2-digit', month:'short'}) : '—'}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── FREQUENT ERROR QUESTIONS ── -->
+    {id === 'eval-1' && (
+      <div class="panel" style="border:1.5px solid var(--ink); padding:18px;">
+        <div style="font-family:var(--mono); font-size:11px; font-weight:800; text-transform:uppercase; color:var(--ink); margin-bottom:12px; border-bottom:1.5px solid var(--ink); padding-bottom:6px;">
+          QUESTIONS WITH HIGHEST ERROR RATE
+        </div>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:var(--cream); border:1.5px solid var(--line-strong); border-left:4px solid var(--rust);">
+            <div>
+              <div style="font-family:var(--mono); font-size:10px; color:var(--rust); font-weight:700; margin-bottom:2px;">Question 1 · Reference: § 2 (Plasma Membrane)</div>
+              <div style="font-size:12.5px; color:var(--ink);">Which cellular structure controls the entry and exit of substances?</div>
+            </div>
+            <div style="font-family:var(--mono); font-size:14px; font-weight:800; color:var(--rust); margin-left:16px; white-space:nowrap;">30% error</div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:var(--cream); border:1.5px solid var(--line-strong); border-left:4px solid #8B7355;">
+            <div>
+              <div style="font-family:var(--mono); font-size:10px; color:#8B7355; font-weight:700; margin-bottom:2px;">Question 3 · Reference: § 4 (Key Fact — Nuclear Membrane)</div>
+              <div style="font-size:12.5px; color:var(--ink);">Eukaryotic cells have a nuclear membrane. (T/F)</div>
+            </div>
+            <div style="font-family:var(--mono); font-size:14px; font-weight:800; color:#8B7355; margin-left:16px; white-space:nowrap;">25% error</div>
+          </div>
+        </div>
+      </div>
+    )}
+
+  </AppLayout>
+) : (
+  <AppLayout title="Evaluation Not Found" pageTitle="Error" activeSection="courses" role="teacher" schoolName="Colegio Norte" lang={lang} activeRoute="/app/teacher" breadcrumbs={[{ label: 'Error' }]}>
+    <div style="padding:40px; text-align:center;">
+      <h2>Evaluation not found</h2>
+      <a href={`/${lang}/app/teacher/courses`} class="btn btn-primary">Return to Courses</a>
+    </div>
+  </AppLayout>
+)}

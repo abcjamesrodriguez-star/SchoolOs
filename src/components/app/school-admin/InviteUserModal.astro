@@ -1,0 +1,87 @@
+---
+// ============================================================
+// SchoolOS — Modal de Invitación / Registro de Usuarios
+// ============================================================
+import type { Lang } from '../../../i18n';
+
+interface Props {
+  id?: string;
+  defaultRole?: 'teacher' | 'student';
+  lang?: Lang;
+}
+
+const { id = 'inviteModal', defaultRole = 'teacher', lang = 'es' } = Astro.props;
+---
+
+<div id={id} class="custom-modal-backdrop" style="display:none; position:fixed; inset:0; background:rgba(18, 17, 14, 0.6); z-index:9999; align-items:center; justify-content:center; padding:20px;">
+  <div class="panel" style="width:100%; max-width:520px; background:var(--paper); box-shadow:8px 8px 0 rgba(18, 17, 14, 0.3);">
+    <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+      <h2 style="font-family:var(--mono); font-size:12px; letter-spacing:0.08em; text-transform:uppercase;">
+        {lang === 'es' ? '＋ Invitar a la Comunidad Escolar' : '＋ Invite to School Community'}
+      </h2>
+      <button type="button" class="close-modal-btn" style="background:none; border:none; font-family:var(--mono); font-size:16px; cursor:pointer; font-weight:700; color:var(--ink);">✕</button>
+    </div>
+
+    <div class="panel-body padded">
+      <form id={`${id}Form`} onsubmit="event.preventDefault(); alert(this.getAttribute('data-success-msg')); document.getElementById(this.getAttribute('data-modal-id')).style.display='none';" data-modal-id={id} data-success-msg={lang === 'es' ? '¡Invitación enviada con éxito por correo electrónico!' : 'Invitation successfully sent via email!'}>
+        <div class="form-grid">
+          <div class="form-field full">
+            <label>{lang === 'es' ? 'Rol en la Institución' : 'School Role'}</label>
+            <select style="border:1px solid var(--ink); background:var(--cream); padding:8px 10px; font-family:var(--mono); font-size:12px; width:100%;">
+              <option value="teacher" selected={defaultRole === 'teacher'}>{lang === 'es' ? 'Docente / Profesor' : 'Teacher / Faculty'}</option>
+              <option value="student" selected={defaultRole === 'student'}>{lang === 'es' ? 'Estudiante / Alumno' : 'Student'}</option>
+            </select>
+          </div>
+
+          <div class="form-field full">
+            <label>{lang === 'es' ? 'Nombre Completo' : 'Full Name'}</label>
+            <input type="text" placeholder={lang === 'es' ? 'Ej. Andrés Camargo' : 'E.g. Andres Camargo'} required style="border:1px solid var(--ink); background:var(--cream); padding:8px 10px; width:100%;" />
+          </div>
+
+          <div class="form-field full">
+            <label>{lang === 'es' ? 'Correo Electrónico Institucional' : 'Institutional Email'}</label>
+            <input type="email" placeholder="usuario@colegionorte.edu.co" required style="border:1px solid var(--ink); background:var(--cream); padding:8px 10px; width:100%; font-family:var(--mono);" />
+            <span class="hint" style="font-size:11px; color:var(--ink-soft); margin-top:4px; display:block;">
+              {lang === 'es' ? 'Se enviará un enlace seguro de activación con credenciales temporales.' : 'A secure activation link with temporary credentials will be sent.'}
+            </span>
+          </div>
+
+          <div class="form-field full">
+            <label>{lang === 'es' ? 'Asignar a Cursos / Grado' : 'Assign to Courses / Grade'}</label>
+            <select style="border:1px solid var(--ink); background:var(--cream); padding:8px 10px; width:100%;">
+              <option>{lang === 'es' ? 'Biología Celular (10° A)' : 'Cell Biology (10th A)'}</option>
+              <option>{lang === 'es' ? 'Matemáticas Avanzadas (11° B)' : 'Advanced Math (11th B)'}</option>
+              <option>{lang === 'es' ? 'Literatura Hispanoamericana (9° C)' : 'Literature (9th C)'}</option>
+              <option>{lang === 'es' ? 'Física Mecánica (11° A)' : 'Physics (11th A)'}</option>
+              <option>{lang === 'es' ? 'Historia Universal (8° A)' : 'World History (8th A)'}</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px; border-top:1px solid var(--line); padding-top:16px;">
+          <button type="button" class="btn btn-secondary close-modal-btn">{lang === 'es' ? 'Cancelar' : 'Cancel'}</button>
+          <button type="submit" class="btn btn-primary">{lang === 'es' ? 'Enviar Invitación →' : 'Send Invitation →'}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script is:inline define:vars={{ id }}>
+  (function() {
+    var modal = document.getElementById(id);
+    if (!modal) return;
+
+    modal.querySelectorAll('.close-modal-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        modal.style.display = 'none';
+      });
+    });
+
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) {
+        modal.style.display = 'none';
+      }
+    });
+  })();
+</script>

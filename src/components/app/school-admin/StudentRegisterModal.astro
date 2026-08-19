@@ -1,0 +1,200 @@
+---
+// ============================================================
+// SchoolOS — Modal de Matrícula Integral de Estudiante
+// ============================================================
+import type { Lang } from '../../../i18n';
+
+interface Props {
+  id?: string;
+  lang?: Lang;
+}
+
+const { id = 'studentRegisterModal', lang = 'es' } = Astro.props;
+---
+
+<div
+  id={id}
+  class="custom-modal-backdrop student-register-modal"
+  style="display:none; position:fixed; inset:0; background:rgba(18, 17, 14, 0.75); z-index:9999; align-items:center; justify-content:center; padding:20px; overflow-y:auto;"
+  role="dialog"
+  aria-modal="true"
+>
+  <div class="panel" style="width:100%; max-width:680px; background:var(--paper); border:2px solid var(--ink); box-shadow:8px 8px 0 rgba(18, 17, 14, 0.35); max-height:90vh; display:flex; flex-direction:column;">
+    
+    <!-- HEADER -->
+    <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center; padding:14px 20px; background:var(--cream); border-bottom:2px solid var(--ink); flex-shrink:0;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-size:10px; font-weight:900;">
+          {lang === 'es' ? 'MATRÍCULA ACADÉMICA' : 'STUDENT ENROLLMENT'}
+        </span>
+        <h2 style="font-family:var(--serif); font-size:16px; margin:0; font-weight:700; color:var(--ink);">
+          {lang === 'es' ? 'Ficha Oficial de Matrícula Integral' : 'Official Student Registration Record'}
+        </h2>
+      </div>
+
+      <button type="button" class="close-modal-btn" onclick={`document.getElementById('${id}').style.display='none';`} style="background:none; border:none; font-family:var(--mono); font-size:18px; font-weight:700; cursor:pointer; color:var(--ink);">✕</button>
+    </div>
+
+    <!-- BODY WITH SCROLL -->
+    <div class="panel-body padded" style="background:#FFFDF9; padding:20px; overflow-y:auto; flex:1;">
+      
+      <form id={`${id}Form`} onsubmit={`event.preventDefault(); alert(document.documentElement.lang === 'en' ? '✓ Student successfully enrolled. Academic profile created, official DANE registry logged, and notification sent to guardian.' : '✓ Estudiante matriculado exitosamente. Se creó el expediente académico, se generó código DANE y se envió credencial de acceso al acudiente.'); document.getElementById('${id}').style.display='none';`}>
+        
+        <!-- SECCIÓN 1: DATOS PERSONALES Y ACADÉMICOS -->
+        <div style="border-bottom:1.5px solid var(--line); padding-bottom:14px; margin-bottom:16px;">
+          <div style="font-family:var(--mono); font-size:11px; font-weight:800; text-transform:uppercase; color:var(--rust); margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+            <span>1.</span> {lang === 'es' ? 'Identificación & Asignación Académica' : 'Identity & Academic Placement'}
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:12px; margin-bottom:10px;">
+            <div>
+              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
+                {lang === 'es' ? 'Nombre Completo del Alumno *' : 'Student Full Name *'}
+              </label>
+              <input type="text" required placeholder="Ej: Santiago Mendoza Vargas" style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:7px 10px; font-size:12.5px;" />
+            </div>
+
+            <div>
+              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
+                {lang === 'es' ? 'Documento (T.I. / R.C.) *' : 'ID Document (T.I. / R.C.) *'}
+              </label>
+              <input type="text" required placeholder="1029384910" style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:7px 10px; font-size:12.5px; font-family:var(--mono);" />
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px;">
+            <div>
+              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
+                {lang === 'es' ? 'Grado y Sección *' : 'Grade & Section *'}
+              </label>
+              <select style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:7px 10px; font-size:12px; font-family:var(--mono);">
+                <option>8° Grado A (8-1)</option>
+                <option>8° Grado B (8-2)</option>
+                <option>9° Grado A (9-1)</option>
+                <option>9° Grado B (9-2)</option>
+                <option>9° Grado C (9-3)</option>
+                <option selected>10° Grado A (10-1)</option>
+                <option>10° Grado B (10-2)</option>
+                <option>10° Grado C (10-3)</option>
+                <option>11° Grado A (11-1)</option>
+                <option>11° Grado B (11-2)</option>
+                <option>11° Grado C (11-3)</option>
+              </select>
+            </div>
+
+            <div>
+              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
+                {lang === 'es' ? 'Tipo de Matrícula' : 'Enrollment Type'}
+              </label>
+              <select style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:7px 10px; font-size:12px; font-family:var(--mono);">
+                <option value="regular">{lang === 'es' ? 'Regular' : 'Regular'}</option>
+                <option value="conditional">{lang === 'es' ? 'Condicional / Observación' : 'Conditional'}</option>
+                <option value="scholarship">{lang === 'es' ? 'Becado / Cobertura' : 'Scholarship'}</option>
+              </select>
+            </div>
+
+            <div>
+              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
+                {lang === 'es' ? 'Correo Institucional' : 'School Email'}
+              </label>
+              <input type="email" placeholder="alumno@colegionorte.edu.co" style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:7px 10px; font-size:12px; font-family:var(--mono);" />
+            </div>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 2: INFORMACIÓN DE CONTACTO & ACUDIENTES -->
+        <div style="border-bottom:1.5px solid var(--line); padding-bottom:14px; margin-bottom:16px;">
+          <div style="font-family:var(--mono); font-size:11px; font-weight:800; text-transform:uppercase; color:var(--rust); margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+            <span>2.</span> {lang === 'es' ? 'Acudiente Principal & Contacto Inmediato' : 'Primary Guardian & Direct Contact'}
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1.2fr 1fr 1fr; gap:12px; margin-bottom:10px;">
+            <div>
+              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
+                {lang === 'es' ? 'Nombre Acudiente *' : 'Guardian Name *'}
+              </label>
+              <input type="text" required placeholder="Ej: Patricia Vargas Gómez" style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:7px 10px; font-size:12.5px;" />
+            </div>
+
+            <div>
+              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
+                {lang === 'es' ? 'Parentesco' : 'Relationship'}
+              </label>
+              <select style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:7px 10px; font-size:12px;">
+                <option>{lang === 'es' ? 'Madre' : 'Mother'}</option>
+                <option>{lang === 'es' ? 'Padre' : 'Father'}</option>
+                <option>{lang === 'es' ? 'Tío(a) / Tutor' : 'Guardian / Uncle/Aunt'}</option>
+                <option>{lang === 'es' ? 'Abuelo(a)' : 'Grandparent'}</option>
+              </select>
+            </div>
+
+            <div>
+              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
+                {lang === 'es' ? 'Celular / WhatsApp *' : 'Mobile / WhatsApp *'}
+              </label>
+              <input type="tel" required placeholder="+57 312 456 7890" style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:7px 10px; font-size:12.5px; font-family:var(--mono);" />
+            </div>
+          </div>
+
+          <div>
+            <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
+              {lang === 'es' ? 'Correo Electrónico del Acudiente' : 'Guardian Email'}
+            </label>
+            <input type="email" placeholder="acudiente@gmail.com" style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:7px 10px; font-size:12px; font-family:var(--mono);" />
+          </div>
+        </div>
+
+        <!-- SECCIÓN 3: FICHA MÉDICA & EMERGENCIAS -->
+        <div style="margin-bottom:20px;">
+          <div style="font-family:var(--mono); font-size:11px; font-weight:800; text-transform:uppercase; color:var(--rust); margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+            <span>3.</span> {lang === 'es' ? 'Ficha de Salud, EPS & Urgencias' : 'Health Record, EPS & Emergency'}
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 100px 1.5fr; gap:12px; margin-bottom:10px;">
+            <div>
+              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
+                {lang === 'es' ? 'Entidad de Salud (EPS) *' : 'Health Insurance (EPS) *'}
+              </label>
+              <input type="text" required placeholder="Ej: Sura / Sanitas / Compensar" style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:7px 10px; font-size:12.5px;" />
+            </div>
+
+            <div>
+              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
+                {lang === 'es' ? 'RH' : 'Blood'}
+              </label>
+              <select style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:7px 10px; font-size:12px; font-family:var(--mono);">
+                <option>O+</option>
+                <option>O-</option>
+                <option>A+</option>
+                <option>A-</option>
+                <option>B+</option>
+                <option>B-</option>
+                <option>AB+</option>
+                <option>AB-</option>
+              </select>
+            </div>
+
+            <div>
+              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
+                {lang === 'es' ? 'Alergias o Condiciones Especiales' : 'Allergies / Medical Conditions'}
+              </label>
+              <input type="text" placeholder="Ej: Ninguna / Penicilina / Asma" style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:7px 10px; font-size:12.5px;" />
+            </div>
+          </div>
+        </div>
+
+        <!-- FOOTER ACTIONS -->
+        <div style="display:flex; justify-content:flex-end; gap:10px; border-top:1.5px solid var(--line); padding-top:16px;">
+          <button type="button" class="btn btn-secondary" onclick={`document.getElementById('${id}').style.display='none';`}>
+            {lang === 'es' ? 'Cancelar' : 'Cancel'}
+          </button>
+          <button type="submit" class="btn btn-primary" style="font-weight:700;">
+            {lang === 'es' ? '✓ Completar Matrícula Oficial' : '✓ Complete Official Enrollment'}
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+</div>

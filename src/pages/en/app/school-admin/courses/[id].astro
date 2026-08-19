@@ -1,0 +1,178 @@
+---
+// ============================================================
+// SchoolOS — Course Detail (/en/app/school-admin/courses/[id])
+// ============================================================
+import AppLayout from '../../../../../layouts/AppLayout.astro';
+import InviteUserModal from '../../../../../components/app/school-admin/InviteUserModal.astro';
+import { getCourses, getCourse, getStudents, getTeachers } from '../../../../../data/app/mock-academic';
+
+export function getStaticPaths() {
+  const courses = getCourses('en');
+  return courses.map((course) => ({
+    params: { id: course.id },
+  }));
+}
+
+const { id } = Astro.params;
+const lang = 'en';
+const course = getCourse(id!, lang);
+const allStudents = getStudents(lang);
+const allTeachers = getTeachers(lang);
+
+if (!course) {
+  return Astro.redirect(`/${lang}/app/school-admin/courses`);
+}
+
+const enrolledStudents = allStudents.filter((s) =>
+  s.enrolledCourses.some((c) => c.id === course.id)
+);
+---
+
+<AppLayout
+  title={course.name}
+  pageTitle={`Course Profile: ${course.name}`}
+  activeSection="courses"
+  role="school_admin"
+  schoolName="Colegio Norte"
+  lang={lang}
+  activeRoute={`/app/school-admin/courses/${course.id}`}
+  breadcrumbs={[
+    { label: 'Colegio Norte', href: `/${lang}/app/school-admin` },
+    { label: 'Courses', href: `/${lang}/app/school-admin/courses` },
+    { label: course.level },
+  ]}
+>
+  <a href={`/${lang}/app/school-admin/courses`} class="btn btn-secondary btn-sm" style="margin-bottom:20px; display:inline-block;">
+    ← Back to Courses
+  </a>
+
+  <!-- DETAIL HEADER -->
+  <div class="detail-header" style="margin-bottom:24px;">
+    <div>
+      <div class="title-row">
+        <h1>{course.name}</h1>
+        <span class="plan-tag" style="font-weight:700;">{course.level}</span>
+        <span class="badge badge-active">{course.status.toUpperCase()}</span>
+      </div>
+      <div class="sub">
+        {course.subject} · {course.schedule} · {course.period} · Created on {course.createdAt}
+      </div>
+    </div>
+    <div class="detail-actions">
+      <button class="btn btn-secondary" onclick="alert('Mock: Opening teacher assignment picker');">Reassign Teacher</button>
+      <button class="btn btn-primary" onclick="document.getElementById('inviteModal').style.display='flex';">＋ Enroll Student</button>
+    </div>
+  </div>
+
+  <!-- STATS GRID -->
+  <div class="stat-grid" style="margin-bottom:28px;">
+    <div class="stat-card">
+      <div class="stat-label">Enrolled Students</div>
+      <div class="stat-num">{course.studentCount} / {course.maxCapacity}</div>
+      <div class="stat-sub">{course.maxCapacity - course.studentCount} available slots</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-label">Learning Guides</div>
+      <div class="stat-num">{course.guidesCount}</div>
+      <div class="stat-sub">{course.evaluationsCount} active assessments</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-label">Average Performance</div>
+      <div class="stat-num accent" style="color:var(--rust);">{course.averageGrade} / 10</div>
+      <div class="stat-sub">Full diagnostic evaluation complete</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-label">Assigned Faculty</div>
+      <div class="stat-num" style="font-size:18px; margin-top:6px;">{course.teacherNames.join(', ')}</div>
+      <div class="stat-sub">Colegio Norte · Main Campus</div>
+    </div>
+  </div>
+
+  <!-- PANELS: TEACHERS & STUDENTS -->
+  <div style="display:grid; grid-template-columns: 1fr 2fr; gap:24px; margin-bottom:28px;">
+    
+    <!-- LEFT: TEACHER INFO -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2>FACULTY LEAD</h2>
+      </div>
+      <div class="panel-body padded">
+        {allTeachers.filter(t => course.teacherNames.includes(t.name)).map(teacher => (
+          <div>
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
+              <div style="width:40px; height:40px; background:var(--ink); color:#FFFFFF; font-family:var(--mono); font-size:14px; font-weight:700; display:flex; align-items:center; justify-content:center;">
+                {teacher.avatarInitials}
+              </div>
+              <div>
+                <h4 style="font-family:var(--serif); font-size:16px; margin:0 0 2px 0;">{teacher.name}</h4>
+                <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">{teacher.email}</div>
+              </div>
+            </div>
+            <div style="font-size:12.5px; color:var(--ink-soft); line-height:1.45; margin-bottom:14px;">
+              {teacher.roleTitle}
+            </div>
+            <a href={`/${lang}/app/school-admin/teachers/${teacher.id}`} class="btn btn-secondary btn-sm" style="width:100%; text-align:center;">
+              View Full Faculty Profile →
+            </a>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- RIGHT: ENROLLED STUDENTS TABLE -->
+    <div class="panel">
+      <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+        <h2>ENROLLED STUDENTS ({enrolledStudents.length || course.studentCount})</h2>
+        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('inviteModal').style.display='flex';">＋ Enroll</button>
+      </div>
+      <div class="panel-body">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Guardian / Contact</th>
+              <th>Current Grade</th>
+              <th>Attendance</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {(enrolledStudents.length > 0 ? enrolledStudents : allStudents.slice(0, 4)).map((std) => {
+              const courseRecord = std.enrolledCourses.find(c => c.id === course.id);
+              const grade = courseRecord ? courseRecord.grade : 8.5;
+              return (
+                <tr>
+                  <td class="cell-name">
+                    <a href={`/${lang}/app/school-admin/students/${std.id}`}>
+                      {std.name}
+                    </a>
+                    <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft);">{std.email}</div>
+                  </td>
+                  <td class="cell-muted" style="font-size:11.5px;">
+                    <div>{std.guardianName}</div>
+                    <span style="font-size:10px; color:var(--ink-soft);">{std.guardianEmail}</span>
+                  </td>
+                  <td style="font-family:var(--mono); font-weight:700; color:var(--rust); font-size:13px;">
+                    {grade} / 10
+                  </td>
+                  <td style="font-family:var(--mono); font-size:12px; font-weight:600; color:var(--olive-dark);">
+                    {std.attendanceRate}%
+                  </td>
+                  <td class="cell-actions">
+                    <a href={`/${lang}/app/school-admin/students/${std.id}`} class="btn btn-secondary btn-sm" style="font-size:10.5px;">Profile</a>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <InviteUserModal id="inviteModal" defaultRole="student" lang={lang} />
+</AppLayout>

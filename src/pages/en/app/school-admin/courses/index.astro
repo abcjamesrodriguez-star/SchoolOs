@@ -1,0 +1,62 @@
+---
+// ============================================================
+// SchoolOS — Courses & Subjects (Leadership)
+// Design: Layered Navigation (Cards > 80% Modal > Schedule & Highlight)
+// ============================================================
+import AppLayout from '../../../../../layouts/AppLayout.astro';
+import SubjectDepartmentGrid from '../../../../../components/app/school-admin/SubjectDepartmentGrid.astro';
+import { getDepartments } from '../../../../../data/app/mock-academic';
+
+const lang = 'en';
+const departments = getDepartments(lang);
+
+const totalTeachers = departments.reduce((acc, d) => acc + d.teachersCount, 0);
+const totalGroups = departments.reduce((acc, d) => acc + d.totalGroupsCount, 0);
+const totalStudents = departments.reduce((acc, d) => acc + d.totalStudents, 0);
+---
+
+<AppLayout
+  title="Courses & Curriculum"
+  pageTitle="Subject Catalog & Faculty Schedule"
+  activeSection="courses"
+  role="school_admin"
+  schoolName="Colegio Norte"
+  lang={lang}
+  activeRoute="/app/school-admin/courses"
+  breadcrumbs={[{ label: 'Colegio Norte', href: `/${lang}/app/school-admin` }, { label: 'Courses & Subjects' }]}
+>
+  <!-- STATS -->
+  <div class="stat-grid" style="margin-bottom:24px;">
+    <div class="stat-card">
+      <div class="stat-label">Academic Departments</div>
+      <div class="stat-num">{departments.length}</div>
+      <div class="stat-sub">Active curriculum branches</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Assigned Faculty</div>
+      <div class="stat-num">{totalTeachers}</div>
+      <div class="stat-sub">100% active class assignments</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Groups & Sections</div>
+      <div class="stat-num">{totalGroups}</div>
+      <div class="stat-sub">Middle & High School (8th to 11th)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Active Enrollment</div>
+      <div class="stat-num accent" style="color:var(--rust);">{totalStudents}</div>
+      <div class="stat-sub">Students in 2026-1 term</div>
+    </div>
+  </div>
+
+  <!-- SUBJECT CARDS CATALOG -->
+  <div class="panel">
+    <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+      <h2>SUBJECT CATALOG (SELECT ANY SUBJECT TO VIEW FACULTY & SCHEDULES)</h2>
+      <a href={`/${lang}/app/school-admin/courses/new`} class="btn btn-primary btn-sm">＋ New Course / Section</a>
+    </div>
+    <div class="panel-body padded">
+      <SubjectDepartmentGrid departments={departments} lang={lang} id="coursesGridEn" />
+    </div>
+  </div>
+</AppLayout>

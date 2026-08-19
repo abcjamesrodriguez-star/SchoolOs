@@ -1,0 +1,183 @@
+---
+// ============================================================
+// SchoolOS — Panel Docente: Dashboard & Métricas Académicas
+// Fase 3 | Prof. Diana Restrepo | teacherId: usr-1
+// ============================================================
+import AppLayout from '../../../../layouts/AppLayout.astro';
+import { getTeacherCourses, getAllTeacherGuides, getTeacherDashboardStats, getAllTeacherStudents } from '../../../../data/app/mock-content';
+
+const lang = 'es';
+const courses = getTeacherCourses();
+const guides = getAllTeacherGuides();
+const stats = getTeacherDashboardStats();
+const allStudents = getAllTeacherStudents();
+---
+
+<AppLayout
+  title="Dashboard & Métricas"
+  pageTitle="Consolidado Académico — Prof. Diana Restrepo"
+  activeSection="dashboard"
+  role="teacher"
+  schoolName="Colegio Norte"
+  lang={lang}
+  activeRoute="/app/teacher/dashboard"
+  breadcrumbs={[{ label: 'Colegio Norte' }, { label: 'Panel Docente', href: `/${lang}/app/teacher` }, { label: 'Dashboard & Métricas' }]}
+>
+
+  <!-- ── 1. CINTILLO SUPERIOR ── -->
+  <div style="background:var(--paper); border:2px solid var(--ink); padding:14px 20px; margin-bottom:24px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; box-shadow:4px 4px 0 rgba(18,17,14,0.08);">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <span class="plan-tag" style="background:var(--rust); color:#FFFFFF; border-color:var(--rust); font-weight:900; font-size:11px; padding:3px 8px; letter-spacing:0.06em;">
+        CONSOLIDADO GENERAL
+      </span>
+      <span style="font-family:var(--mono); font-size:12.5px; font-weight:700; color:var(--ink);">
+        Biología y Ciencias Naturales · Periodo 1 · Semana 6 de 18
+      </span>
+    </div>
+    <a href={`/${lang}/app/teacher`} class="btn btn-secondary btn-sm" style="font-size:11px; font-weight:800; border-color:var(--rust); color:var(--rust);">
+      ⚡ Volver al Modo Aula en Vivo →
+    </a>
+  </div>
+
+  <!-- ── 2. LAS 4 MÉTRICAS GLOBALES ── -->
+  <div class="stat-grid" style="margin-bottom:24px;">
+    <div class="stat-card" style="border:2px solid var(--ink);">
+      <div class="stat-label">CURSOS ASIGNADOS</div>
+      <div class="stat-num" style="color:var(--ink); font-size:32px;">{stats.activeCourses}</div>
+      <div class="stat-sub"><a href={`/${lang}/app/teacher/courses`} style="color:var(--rust); font-weight:700;">Ver mis cursos →</a></div>
+    </div>
+
+    <div class="stat-card" style="border:2px solid var(--ink);">
+      <div class="stat-label">GUÍAS PUBLICADAS</div>
+      <div class="stat-num" style="color:var(--ink); font-size:32px;">{stats.guidesPublished}</div>
+      <div class="stat-sub">Material pedagógico activo</div>
+    </div>
+
+    <div class="stat-card" style="border:2px solid var(--ink);">
+      <div class="stat-label">TOTAL ESTUDIANTES</div>
+      <div class="stat-num" style="color:var(--ink); font-size:32px;">{stats.totalStudents}</div>
+      <div class="stat-sub"><a href={`/${lang}/app/teacher/students`} style="color:var(--rust); font-weight:700;">Directorio completo →</a></div>
+    </div>
+
+    <div class="stat-card" style="border:2px solid var(--ink);">
+      <div class="stat-label">PENDIENTES POR CALIFICAR</div>
+      <div class="stat-num accent" style="color:var(--rust); font-size:32px;">{stats.pendingToGrade}</div>
+      <div class="stat-sub" style="color:var(--rust); font-weight:700;">1 evaluación física pendiente</div>
+    </div>
+  </div>
+
+  <!-- ── 3. CUERPO: 2 COLUMNAS ── -->
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap:24px; margin-bottom:28px;">
+
+    <!-- COLUMNA IZQUIERDA -->
+    <div style="display:flex; flex-direction:column; gap:20px;">
+
+      <!-- AVANCE CURRICULAR (SYLLABUS) -->
+      <div class="panel" style="border:2px solid var(--ink); box-shadow:6px 6px 0 rgba(18,17,14,0.08);">
+        <div class="panel-header" style="background:var(--cream); display:flex; justify-content:space-between; align-items:center;">
+          <h2 style="font-size:13px; margin:0;">AVANCE CURRICULAR POR GRUPO</h2>
+          <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">Periodo 1 · 2026</span>
+        </div>
+
+        <div class="panel-body" style="padding:0;">
+          {courses.map((course) => (
+            <div style="padding:16px 20px; border-bottom:1.5px solid var(--line);">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <div>
+                  <strong style="font-family:var(--serif); font-size:15.5px; color:var(--ink);">{course.name}</strong>
+                  <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-left:8px;">{course.studentCount} alumnos · {course.room}</span>
+                </div>
+                <span class="badge badge-active" style="font-size:9.5px;">PROMEDIO: {course.averageScore.toFixed(1)}</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px; margin-top:8px;">
+                <div style="flex:1; height:6px; background:var(--cream); border:1px solid var(--ink);">
+                  <div style={`width:${course.averageScore * 10}%; height:100%; background:var(--rust);`}></div>
+                </div>
+                <a href={`/${lang}/app/teacher/courses/${course.id}`} class="btn btn-secondary btn-sm" style="font-size:10.5px;">Detalle →</a>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- MESA DE CALIFICACIONES -->
+      <div class="panel" style="border:2px solid var(--rust); box-shadow:6px 6px 0 rgba(195,83,44,0.12);">
+        <div class="panel-header" style="background:var(--cream); display:flex; justify-content:space-between; align-items:center;">
+          <h2 style="font-size:13px; margin:0; color:var(--rust);">MESA DE EVALUACIONES</h2>
+          <span style="font-family:var(--mono); font-size:11px; font-weight:700; color:var(--rust);">1 POR CALIFICAR</span>
+        </div>
+        <div class="panel-body" style="padding:0;">
+          <div style="padding:16px 20px; border-bottom:1.5px solid var(--line); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; background:#FFFDF9;">
+            <div>
+              <span class="badge badge-warning" style="font-size:9px;">PRESENCIAL</span>
+              <h4 style="font-family:var(--serif); font-size:15px; margin:4px 0 2px 0;">Evaluación: Leyes de Mendel</h4>
+              <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">Biología 10°A · 25 alumnos</div>
+            </div>
+            <a href={`/${lang}/app/teacher/evaluations/eval-2/grade`} class="btn btn-primary btn-sm" style="font-size:11px; font-weight:800;">Cargar Planilla →</a>
+          </div>
+
+          <div style="padding:16px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div>
+              <span class="badge badge-active" style="font-size:9px;">VIRTUAL</span>
+              <h4 style="font-family:var(--serif); font-size:15px; margin:4px 0 2px 0;">Cuestionario: Célula Eucariota</h4>
+              <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">24 entregas · 78.5% prom</div>
+            </div>
+            <a href={`/${lang}/app/teacher/evaluations/eval-1/results`} class="btn btn-secondary btn-sm" style="font-size:11px;">Ver Resultados →</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- COLUMNA DERECHA -->
+    <div style="display:flex; flex-direction:column; gap:20px;">
+
+      <!-- ACCIONES DIRECTAS -->
+      <div class="panel" style="border:2px solid var(--ink); box-shadow:4px 4px 0 rgba(18,17,14,0.08);">
+        <div class="panel-header" style="background:var(--ink); color:#FFFFFF;">
+          <h2 style="font-size:12px; color:#FFFFFF; letter-spacing:0.08em;">ACCIONES DE DOCENCIA</h2>
+        </div>
+        <div class="panel-body padded" style="display:flex; flex-direction:column; gap:10px;">
+          <a href={`/${lang}/app/teacher/grades`} class="btn btn-primary" style="justify-content:space-between; display:flex; font-size:12px; padding:11px 14px; font-weight:700;">
+            <span>Planilla de Calificaciones</span>
+            <span>→</span>
+          </a>
+          <a href={`/${lang}/app/teacher/courses/crs-bio-10a/guides/new`} class="btn btn-secondary" style="justify-content:space-between; display:flex; font-size:12px; padding:10px 12px;">
+            <span>+ Crear Guía con Wizard</span>
+            <span>+</span>
+          </a>
+          <a href={`/${lang}/app/teacher/guides/gd-1/evaluations/new`} class="btn btn-secondary" style="justify-content:space-between; display:flex; font-size:12px; padding:10px 12px;">
+            <span>+ Diseñar Evaluación / Quiz</span>
+            <span>+</span>
+          </a>
+          <a href={`/${lang}/app/teacher/students`} class="btn btn-secondary" style="justify-content:space-between; display:flex; font-size:12px; padding:10px 12px;">
+            <span>Directorio de Alumnos</span>
+            <span>→</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- CRONOGRAMA -->
+      <div class="panel" style="border:1.5px solid var(--ink); background:var(--paper); padding:16px;">
+        <div style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; color:var(--ink); margin-bottom:10px; border-bottom:1.5px solid var(--ink); padding-bottom:4px;">
+          AGENDA INSTITUCIONAL
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px; font-size:12px;">
+          <div style="border-left:3px solid var(--rust); padding-left:8px;">
+            <div style="font-family:var(--mono); font-size:9.5px; color:var(--rust); font-weight:800;">VIERNES 22 AGOSTO</div>
+            <strong style="color:var(--ink);">Jornada Pedagógica</strong>
+            <div style="font-size:11px; color:var(--ink-soft);">Sin estudiantes</div>
+          </div>
+          <div style="border-left:3px solid var(--ink); padding-left:8px;">
+            <div style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft); font-weight:800;">VIERNES 5 SEPTIEMBRE</div>
+            <strong style="color:var(--ink);">Cierre de Calificaciones P1</strong>
+            <div style="font-size:11px; color:var(--ink-soft);">Cierre oficial del periodo</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</AppLayout>

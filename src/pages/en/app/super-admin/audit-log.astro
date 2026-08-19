@@ -11,35 +11,66 @@ const logs = getMockAuditLogs(lang);
 
 <AppLayout
   title="Audit Log"
-  pageTitle="System Audit Log"
+  pageTitle="System Audit & Integrity Ledger"
   activeSection="audit-log"
   lang={lang}
   activeRoute="/app/super-admin/audit-log"
   breadcrumbs={[{ label: 'Compliance' }, { label: 'Audit Log' }]}
 >
-  <div class="panel">
-    <div class="panel-header">
-      <h2>Immutable Action History</h2>
+  <!-- TOP INTEGRITY BANNER -->
+  <div style="background:var(--ink); color:#FFFFFF; padding:18px 24px; border:1px solid var(--ink); margin-bottom:24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <span style="width:8px; height:8px; border-radius:50%; background:#4ADE80; box-shadow:0 0 8px #4ADE80;"></span>
+      <div>
+        <div style="font-family:var(--mono); font-size:12px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;">
+          IMMUTABLE & CRYPTOGRAPHICALLY SEALED LOG (SHA-256)
+        </div>
+        <div style="font-family:var(--mono); font-size:10.5px; color:#A8A28E; margin-top:2px;">
+          All modifications across schools, permissions, quotas, and judicial requests are permanently logged.
+        </div>
+      </div>
     </div>
+    <div style="font-family:var(--mono); font-size:11px; background:#24211A; padding:6px 12px; border:1px solid #383428;">
+      HASH CHECK: <span style="color:var(--orange-vibrant);">VERIFIED OK</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="table-toolbar">
+      <div class="filter-row" style="align-items:center;">
+        <input type="text" placeholder="Filter by action, actor or entity..." style="border:1px solid var(--ink); background:var(--cream); padding:7px 12px; font-family:var(--sans); font-size:12.5px; width:280px; border-radius:2px;" />
+        <select class="filter-select" style="border:1px solid var(--ink);">
+          <option>All event types</option>
+          <option>Schools</option>
+          <option>Judicial Access</option>
+          <option>Users</option>
+        </select>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="alert('Mock: Exporting signed audit report');">Export Audit CSV</button>
+    </div>
+
     <div class="panel-body">
       <table class="data-table">
         <thead>
           <tr>
-            <th>Action Event</th>
+            <th>Event / Action Code</th>
             <th>Target Entity</th>
-            <th>Target Type</th>
-            <th>Actor Email</th>
+            <th>Record Type</th>
+            <th>Actor / Operator</th>
             <th>Timestamp</th>
           </tr>
         </thead>
         <tbody>
           {logs.map((log) => (
             <tr>
-              <td style="font-family:var(--mono); font-size:12.5px; font-weight:500;">{log.action}</td>
+              <td style="font-family:var(--mono); font-size:12px; font-weight:700; color:var(--ink);">
+                <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--orange-vibrant); margin-right:8px;"></span>
+                {log.action}
+              </td>
               <td class="cell-name">{log.targetName}</td>
-              <td><span class="badge badge-none">{log.targetType}</span></td>
-              <td class="cell-muted">{log.actorEmail}</td>
-              <td class="cell-muted">{log.timestamp}</td>
+              <td><span class="plan-tag" style="font-size:10px;">{log.targetType}</span></td>
+              <td class="cell-muted" style="font-family:var(--mono);">{log.actorEmail}</td>
+              <td class="cell-muted" style="font-family:var(--mono); font-weight:600; color:var(--ink);">{log.timestamp}</td>
             </tr>
           ))}
         </tbody>

@@ -1,0 +1,440 @@
+---
+// ============================================================
+// SchoolOS — Modal de Horario Semanal & Salones del Docente
+// Diseño: Brutalista Editorial (Alto contraste, Monospace + Serif)
+// ============================================================
+import type { Lang } from '../../../i18n';
+
+interface Props {
+  id?: string;
+  lang?: Lang;
+}
+
+const { id = 'teacherScheduleModal', lang = 'es' } = Astro.props;
+---
+
+<div
+  id={id}
+  class="custom-modal-backdrop teacher-schedule-modal"
+  style="display:none; position:fixed; inset:0; background:rgba(18, 17, 14, 0.75); z-index:9999; align-items:center; justify-content:center; padding:20px;"
+  role="dialog"
+  aria-modal="true"
+>
+  <div class="panel" style="width:92%; max-width:1150px; height:88vh; background:var(--paper); border:2px solid var(--ink); box-shadow:12px 12px 0 rgba(18, 17, 14, 0.35); display:flex; flex-direction:column; overflow:hidden;">
+    
+    <!-- MODAL HEADER -->
+    <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center; padding:14px 22px; background:var(--paper); border-bottom:2px solid var(--ink); flex-shrink:0;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div id="tsmAvatar" style="width:36px; height:36px; background:var(--ink); color:#FFFFFF; font-family:var(--mono); font-size:14px; font-weight:700; display:flex; align-items:center; justify-content:center;">
+          DR
+        </div>
+        <div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <h2 id="tsmTeacherName" style="font-family:var(--serif); font-size:18px; margin:0; font-weight:700; color:var(--ink);">
+              Prof. Diana Restrepo
+            </h2>
+            <span id="tsmCapacityBadge" class="plan-tag" style="background:var(--cream); color:var(--ink); font-size:10px; font-weight:800;">
+              [CARGA COMPLETA: 18h]
+            </span>
+          </div>
+          <div id="tsmSubtitle" style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:2px;">
+            Ciencias Naturales & Biología · diana.restrepo@colegionorte.edu.co
+          </div>
+        </div>
+      </div>
+
+      <button type="button" id="tsmCloseBtn" class="close-modal-btn" style="background:none; border:1px solid var(--ink); font-family:var(--mono); font-size:12px; font-weight:700; padding:6px 12px; cursor:pointer; background:var(--cream);" title="Cerrar (Esc)">
+        ✕ {lang === 'es' ? 'Cerrar' : 'Close'} (ESC)
+      </button>
+    </div>
+
+    <!-- MODAL BODY -->
+    <div style="flex:1; overflow-y:auto; padding:22px; display:flex; flex-direction:column; gap:18px;">
+      
+      <!-- CINTILLO DE ESTADO EN VIVO & RELOJ INSTITUCIONAL -->
+      <div style="background:var(--cream); border:1.5px solid var(--ink); padding:10px 16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span class="plan-tag" style="background:var(--rust); color:#FFFFFF; border-color:var(--rust); font-weight:900; font-size:10px; letter-spacing:0.06em;">
+            RELOJ INSTITUCIONAL
+          </span>
+          <span id="tsmClockText" style="font-family:var(--mono); font-size:12px; font-weight:700; color:var(--ink);">
+            LUNES · 10:30 - 12:00 (JORNADA MATUTINA)
+          </span>
+        </div>
+
+        <div id="tsmDirectorshipInfo" style="font-family:var(--mono); font-size:11.5px; font-weight:700; color:var(--ink);">
+          <!-- Director de grupo info -->
+        </div>
+      </div>
+
+      <!-- MATRIZ DE HORARIO SEMANAL (LUNES A VIERNES) -->
+      <div class="schedule-table-wrapper" style="border:2px solid var(--ink); background:var(--paper); overflow-x:auto; box-shadow:4px 4px 0 rgba(18, 17, 14, 0.08);">
+        <table class="data-table" style="margin:0; width:100%; border-collapse:collapse;">
+          <thead>
+            <tr style="background:var(--cream); border-bottom:2px solid var(--ink);">
+              <th style="width:14%; border-right:1.5px solid var(--ink); text-align:center; font-family:var(--mono); font-size:11px; padding:10px;">BLOQUE / HORA</th>
+              <th id="tsmTh0" style="width:17%; border-right:1px solid var(--ink); text-align:center; font-family:var(--mono); font-size:11px; padding:10px;">LUNES</th>
+              <th id="tsmTh1" style="width:17%; border-right:1px solid var(--ink); text-align:center; font-family:var(--mono); font-size:11px; padding:10px;">MARTES</th>
+              <th id="tsmTh2" style="width:17%; border-right:1px solid var(--ink); text-align:center; font-family:var(--mono); font-size:11px; padding:10px;">MIÉRCOLES</th>
+              <th id="tsmTh3" style="width:17%; border-right:1px solid var(--ink); text-align:center; font-family:var(--mono); font-size:11px; padding:10px;">JUEVES</th>
+              <th id="tsmTh4" style="width:17%; text-align:center; font-family:var(--mono); font-size:11px; padding:10px;">VIERNES</th>
+            </tr>
+          </thead>
+          <tbody id="tsmGridBody">
+            <!-- Celdas renderizadas dinámicamente -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- HIGHLIGHT DEL SALÓN / INSPECTOR DE AULA SELECCIONADA -->
+      <div id="tsmHighlightBox" style="background:var(--paper); border:2px solid var(--ink); border-left:10px solid var(--rust); padding:18px 22px; box-shadow:6px 6px 0 rgba(18, 17, 14, 0.1);">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px;">
+          <div style="flex:1; min-width:300px;">
+            
+            <!-- Ribbon de Estado -->
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+              <span id="tsmHlBadge" style="font-family:var(--mono); font-size:10px; font-weight:900; background:var(--rust); color:#FFFFFF; padding:2px 8px; border-radius:2px; text-transform:uppercase; letter-spacing:0.06em;">
+                EN CURSO AHORA (CLASE ACTIVA)
+              </span>
+              <span id="tsmHlDayTime" style="font-family:var(--mono); font-size:12px; font-weight:800; color:var(--ink);">
+                LUNES · 10:30 - 12:00
+              </span>
+            </div>
+
+            <!-- Título Asignatura & Grupo -->
+            <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:8px;">
+              <span id="tsmHlGroupCode" style="font-family:var(--mono); font-size:22px; font-weight:900; background:var(--ink); color:#FFFFFF; padding:2px 8px;">
+                10-2
+              </span>
+              <h3 id="tsmHlSubjectName" style="font-family:var(--serif); font-size:20px; font-weight:700; color:var(--ink); margin:0;">
+                Matemáticas 10-2
+              </h3>
+            </div>
+
+            <!-- Ubicación de Salón Físico -->
+            <div style="padding:10px 14px; background:var(--cream); border:1.5px solid var(--ink); margin-bottom:12px;">
+              <span style="font-family:var(--mono); font-size:10px; font-weight:700; text-transform:uppercase; color:var(--ink-soft); display:block; margin-bottom:2px;">UBICACIÓN FÍSICA EN PLANTEL:</span>
+              <strong id="tsmHlRoom" style="font-size:15px; color:var(--ink); font-weight:800;">Salón 205 (Pabellón de Secundaria, Piso 2)</strong>
+            </div>
+
+            <!-- Métricas -->
+            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; font-family:var(--mono); font-size:11.5px;">
+              <div style="border-left:3px solid var(--ink); padding-left:8px;">
+                <span style="color:var(--ink-soft); font-size:9.5px; text-transform:uppercase; display:block;">Estudiantes:</span>
+                <strong id="tsmHlStudents" style="font-size:13px; color:var(--ink);">30 matriculados</strong>
+              </div>
+              <div style="border-left:3px solid var(--ink); padding-left:8px;">
+                <span style="color:var(--ink-soft); font-size:9.5px; text-transform:uppercase; display:block;">Promedio Grupo:</span>
+                <strong id="tsmHlAverage" style="font-size:13px; color:var(--rust);">8.1 / 10</strong>
+              </div>
+              <div style="border-left:3px solid var(--ink); padding-left:8px;">
+                <span style="color:var(--ink-soft); font-size:9.5px; text-transform:uppercase; display:block;">Profesor Titular:</span>
+                <strong id="tsmHlTeacher" style="font-size:13px; color:var(--ink);">Jorge Salas</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Acciones Rectorales del Aula -->
+          <div style="display:flex; flex-direction:column; gap:8px; min-width:180px;">
+            <a id="tsmHlCourseLink" href="#" class="btn btn-primary" style="font-size:11.5px; text-align:center; justify-content:center; font-weight:700; padding:9px 12px;">
+              {lang === 'es' ? 'Abrir Ficha de Curso →' : 'Open Course Profile →'}
+            </a>
+            <a id="tsmHlTeacherProfileLink" href="#" class="btn btn-secondary btn-sm" style="font-size:11px; text-align:center; justify-content:center;">
+              {lang === 'es' ? 'Ver Ficha de Docente' : 'View Faculty Profile'}
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- MODAL FOOTER -->
+    <div style="padding:10px 22px; border-top:1px solid var(--line); background:var(--paper); display:flex; justify-content:space-between; align-items:center; flex-shrink:0; font-family:var(--mono); font-size:11px; color:var(--ink-soft);">
+      <span>Colegio Norte · Despacho de Rectoría</span>
+      <button type="button" class="btn btn-secondary btn-sm close-modal-btn">
+        ✕ {lang === 'es' ? 'Cerrar Ventana' : 'Close Window'}
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<style>
+  .teacher-schedule-modal .schedule-cell-occupied {
+    background: var(--paper) !important;
+    border: 1.5px solid var(--ink) !important;
+    cursor: pointer;
+    transition: all 0.1s ease;
+  }
+  .teacher-schedule-modal .schedule-cell-occupied:hover {
+    background: #E8E2D5 !important;
+  }
+  .teacher-schedule-modal .schedule-cell-occupied.selected {
+    background: var(--ink) !important;
+    color: #FFFFFF !important;
+    border: 2px solid var(--ink) !important;
+    box-shadow: 0 0 0 2px var(--rust) !important;
+  }
+  .teacher-schedule-modal .schedule-cell-occupied.selected strong {
+    color: var(--orange-vibrant) !important;
+  }
+  .teacher-schedule-modal .schedule-cell-occupied.selected div,
+  .teacher-schedule-modal .schedule-cell-occupied.selected span {
+    color: #FFFFFF !important;
+  }
+
+  .teacher-schedule-modal .schedule-cell-occupied.live-now {
+    background: var(--ink) !important;
+    color: #FFFFFF !important;
+    border: 2px solid var(--rust) !important;
+    box-shadow: 0 0 0 3px var(--rust), 0 4px 12px rgba(193, 87, 26, 0.3) !important;
+  }
+  .teacher-schedule-modal .schedule-cell-occupied.live-now strong {
+    color: var(--orange-vibrant) !important;
+  }
+  .teacher-schedule-modal .schedule-cell-occupied.live-now div,
+  .teacher-schedule-modal .schedule-cell-occupied.live-now span {
+    color: #FFFFFF !important;
+  }
+
+  .teacher-schedule-modal .schedule-cell-free {
+    background: #FAF8F5;
+    color: var(--line-strong);
+    font-family: var(--mono);
+    font-size: 10px;
+    text-align: center;
+    padding: 12px 4px;
+    border: 1px dashed var(--line);
+  }
+</style>
+
+<script is:inline define:vars={{ id, lang }}>
+  (function() {
+    var modal = document.getElementById(id);
+    if (!modal) return;
+
+    var avatar = document.getElementById('tsmAvatar');
+    var teacherName = document.getElementById('tsmTeacherName');
+    var capacityBadge = document.getElementById('tsmCapacityBadge');
+    var subtitle = document.getElementById('tsmSubtitle');
+    var clockText = document.getElementById('tsmClockText');
+    var directorshipInfo = document.getElementById('tsmDirectorshipInfo');
+    var gridBody = document.getElementById('tsmGridBody');
+
+    // Highlight elements
+    var hlBadge = document.getElementById('tsmHlBadge');
+    var hlDayTime = document.getElementById('tsmHlDayTime');
+    var hlGroupCode = document.getElementById('tsmHlGroupCode');
+    var hlSubjectName = document.getElementById('tsmHlSubjectName');
+    var hlRoom = document.getElementById('tsmHlRoom');
+    var hlStudents = document.getElementById('tsmHlStudents');
+    var hlAverage = document.getElementById('tsmHlAverage');
+    var hlTeacher = document.getElementById('tsmHlTeacher');
+    var hlCourseLink = document.getElementById('tsmHlCourseLink');
+    var hlTeacherProfileLink = document.getElementById('tsmHlTeacherProfileLink');
+
+    var now = new Date();
+    var rawDay = now.getDay();
+    var currentDayIdx = (rawDay >= 1 && rawDay <= 5) ? (rawDay - 1) : 0;
+    var dayNames = ['LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES'];
+    var currentDayName = dayNames[currentDayIdx];
+
+    var slotKeys = ['t1', 't2', 't3', 't4'];
+    var timeSlotLabels = ['07:00 - 08:30', '08:30 - 10:00', '10:30 - 12:00', '12:00 - 13:30'];
+    var currentSlotIdx = Math.floor(now.getHours() / 6) % 4;
+    var currentSlotKey = slotKeys[currentSlotIdx];
+    var currentSlotLabel = timeSlotLabels[currentSlotIdx];
+
+    if (clockText) {
+      clockText.textContent = currentDayName + ' · ' + currentSlotLabel + ' (' + (lang === 'es' ? 'JORNADA MATUTINA' : 'MORNING SHIFT') + ')';
+    }
+
+    // Expose global opener
+    window.openTeacherScheduleModal = function(teacher) {
+      if (!teacher) return;
+
+      if (avatar) avatar.textContent = teacher.avatarInitials || 'DOC';
+      if (teacherName) teacherName.textContent = 'Prof. ' + teacher.name;
+      if (capacityBadge) {
+        if (teacher.hasFreeCapacity) {
+          capacityBadge.textContent = lang === 'es' ? `[${teacher.freeHoursCount || 6}h LIBRES PARA SUPLENCIA]` : `[${teacher.freeHoursCount || 6}h FREE FOR COVERAGE]`;
+          capacityBadge.style.color = 'var(--olive-dark)';
+          capacityBadge.style.borderColor = 'var(--olive-dark)';
+        } else {
+          capacityBadge.textContent = lang === 'es' ? `[CARGA COMPLETA: ${teacher.weeklyHours || 18}h/sem]` : `[FULL LOAD: ${teacher.weeklyHours || 18}h/wk]`;
+          capacityBadge.style.color = 'var(--ink)';
+          capacityBadge.style.borderColor = 'var(--ink)';
+        }
+      }
+
+      if (subtitle) {
+        subtitle.textContent = (teacher.departmentName || teacher.roleTitle || '') + ' · ' + teacher.email;
+      }
+
+      if (directorshipInfo) {
+        if (teacher.isGroupDirector && teacher.groupDirectorCode) {
+          directorshipInfo.innerHTML = `<span class="plan-tag" style="background:var(--ink); color:#FFF; font-weight:800; font-size:10.5px; padding:2px 7px;">DIRECTOR DE GRUPO: ${teacher.groupDirectorCode}</span>`;
+        } else {
+          directorshipInfo.innerHTML = `<span style="color:var(--ink-soft); font-size:11px;">Docente de Área</span>`;
+        }
+      }
+
+      // Highlight headers
+      for (var d = 0; d < 5; d++) {
+        var th = document.getElementById('tsmTh' + d);
+        if (th) {
+          if (d === currentDayIdx) {
+            th.style.background = 'var(--ink)';
+            th.style.color = '#FFFFFF';
+            th.innerHTML = dayNames[d] + ' <span style="background:var(--rust); color:#FFF; font-size:9px; padding:1px 4px; border-radius:2px; margin-left:4px;">' + (lang === 'es' ? 'HOY' : 'TODAY') + '</span>';
+          } else {
+            th.style.background = 'var(--cream)';
+            th.style.color = 'var(--ink)';
+            th.textContent = dayNames[d];
+          }
+        }
+      }
+
+      // Render schedule grid
+      renderGrid(teacher);
+      modal.style.display = 'flex';
+    };
+
+    function renderGrid(teacher) {
+      var slots = teacher.scheduleSlots || [];
+      var timeBlocks = [
+        { key: 't1', label: '07:00 - 08:30' },
+        { key: 't2', label: '08:30 - 10:00' },
+        { key: 't3', label: '10:30 - 12:00' },
+        { key: 't4', label: '12:00 - 13:30' },
+      ];
+
+      gridBody.innerHTML = '';
+
+      var liveSlot = slots.find(function(s) {
+        return s.dayIndex === currentDayIdx && s.timeKey === currentSlotKey;
+      });
+      if (!liveSlot) {
+        liveSlot = slots.find(function(s) { return s.dayIndex === currentDayIdx; });
+      }
+      if (!liveSlot && slots.length > 0) {
+        liveSlot = slots[0];
+      }
+
+      timeBlocks.forEach(function(tb) {
+        var tr = document.createElement('tr');
+
+        var tdTime = document.createElement('td');
+        tdTime.style.fontFamily = 'var(--mono)';
+        tdTime.style.fontSize = '11px';
+        tdTime.style.fontWeight = '800';
+        tdTime.style.textAlign = 'center';
+        tdTime.style.background = 'var(--cream)';
+        tdTime.style.borderRight = '1.5px solid var(--ink)';
+        tdTime.style.borderBottom = '1.5px solid var(--ink)';
+        tdTime.textContent = tb.label;
+        tr.appendChild(tdTime);
+
+        for (var dayIdx = 0; dayIdx < 5; dayIdx++) {
+          var tdDay = document.createElement('td');
+          tdDay.style.borderRight = (dayIdx < 4) ? '1px solid var(--ink)' : 'none';
+          tdDay.style.borderBottom = '1px solid var(--ink)';
+          tdDay.style.padding = '8px 10px';
+          tdDay.style.verticalAlign = 'top';
+
+          if (dayIdx === currentDayIdx) {
+            tdDay.style.background = '#FAF5ED';
+          }
+
+          var slot = slots.find(function(s) {
+            return s.timeKey === tb.key && s.dayIndex === dayIdx;
+          });
+
+          if (slot) {
+            var isLive = (slot === liveSlot);
+            tdDay.className = 'schedule-cell-occupied' + (isLive ? ' live-now' : '');
+            
+            var badgeHtml = isLive 
+              ? `<div style="background:var(--rust); color:#FFFFFF; font-size:9px; font-weight:900; font-family:var(--mono); padding:2px 6px; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.04em; display:inline-block; border-radius:2px;">● EN CURSO AHORA</div>`
+              : `<div class="selection-badge" style="display:none; background:var(--ink); color:#FFFFFF; font-size:9px; font-weight:800; font-family:var(--mono); padding:1px 5px; margin-bottom:4px; text-transform:uppercase;">SELECCIONADO</div>`;
+
+            tdDay.innerHTML = `
+              ${badgeHtml}
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
+                <strong style="font-family:var(--mono); font-size:13px; font-weight:900; color:${isLive ? 'var(--orange-vibrant)' : 'var(--rust)'};">${slot.groupCode}</strong>
+                <span style="font-family:var(--mono); font-size:9.5px; opacity:0.85;">${slot.studentCount} alum</span>
+              </div>
+              <div style="font-size:12px; font-weight:700; line-height:1.25; margin-bottom:3px;">${slot.subjectName}</div>
+              <div style="font-family:var(--mono); font-size:10.5px; color:${isLive ? '#FFF' : 'var(--ink-soft)'}; font-weight:600;">Salón: <strong>${slot.room}</strong></div>
+            `;
+
+            tdDay.addEventListener('click', (function(s, cell, tch) {
+              return function() {
+                gridBody.querySelectorAll('.schedule-cell-occupied').forEach(function(c) {
+                  c.classList.remove('selected');
+                  var selBadge = c.querySelector('.selection-badge');
+                  if (selBadge) selBadge.style.display = 'none';
+                });
+
+                cell.classList.add('selected');
+                var currentSelBadge = cell.querySelector('.selection-badge');
+                if (currentSelBadge) currentSelBadge.style.display = 'inline-block';
+
+                updateHighlight(s, tch, (s === liveSlot));
+              };
+            })(slot, tdDay, teacher));
+          } else {
+            tdDay.className = 'schedule-cell-free';
+            tdDay.innerHTML = '<span>— Disponible —</span>';
+          }
+
+          tr.appendChild(tdDay);
+        }
+
+        gridBody.appendChild(tr);
+      });
+
+      if (liveSlot) {
+        updateHighlight(liveSlot, teacher, true);
+      }
+    }
+
+    function updateHighlight(slot, teacher, isLive) {
+      if (hlBadge) {
+        if (isLive) {
+          hlBadge.textContent = lang === 'es' ? '● EN CURSO AHORA (CLASE ACTIVA)' : '● ACTIVE CLASS NOW';
+          hlBadge.style.background = 'var(--rust)';
+        } else {
+          hlBadge.textContent = lang === 'es' ? 'BLOQUE SELECCIONADO' : 'SELECTED TIME BLOCK';
+          hlBadge.style.background = 'var(--ink)';
+        }
+      }
+
+      if (hlDayTime) hlDayTime.textContent = (slot.day ? slot.day.toUpperCase() : '') + ' · ' + slot.time;
+      if (hlGroupCode) hlGroupCode.textContent = slot.groupCode;
+      if (hlSubjectName) hlSubjectName.textContent = slot.subjectName;
+      if (hlRoom) hlRoom.textContent = slot.room + ' (Pabellón de Secundaria, Colegio Norte)';
+      if (hlStudents) hlStudents.textContent = slot.studentCount + (lang === 'es' ? ' alumnos matriculados' : ' enrolled students');
+      if (hlAverage) hlAverage.textContent = (slot.averageGrade || 8.5) + ' / 10';
+      if (hlTeacher) hlTeacher.textContent = teacher.name;
+      if (hlCourseLink) hlCourseLink.setAttribute('href', '/' + lang + '/app/school-admin/courses/' + slot.courseId);
+      if (hlTeacherProfileLink) hlTeacherProfileLink.setAttribute('href', '/' + lang + '/app/school-admin/teachers/' + teacher.id);
+    }
+
+    modal.querySelectorAll('.close-modal-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        modal.style.display = 'none';
+      });
+    });
+
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) modal.style.display = 'none';
+    });
+
+    window.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && modal.style.display === 'flex') {
+        modal.style.display = 'none';
+      }
+    });
+  })();
+</script>

@@ -1,0 +1,128 @@
+---
+// ============================================================
+// SchoolOS — School Communication & News (/en/app/school-admin/news)
+// ============================================================
+import AppLayout from '../../../../../layouts/AppLayout.astro';
+import { getNews } from '../../../../../data/app/mock-academic';
+
+const lang = 'en';
+const news = getNews(lang);
+---
+
+<AppLayout
+  title="News"
+  pageTitle="School Announcements & News Board"
+  activeSection="news"
+  role="school_admin"
+  schoolName="Colegio Norte"
+  lang={lang}
+  activeRoute="/app/school-admin/news"
+  breadcrumbs={[{ label: 'Colegio Norte', href: `/${lang}/app/school-admin` }, { label: 'News' }]}
+>
+  <div style="display:grid; grid-template-columns: 2fr 1.2fr; gap:24px;">
+    
+    <!-- LEFT: NEWS FEED -->
+    <div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+        <h2 style="font-family:var(--mono); font-size:12px; letter-spacing:0.08em; text-transform:uppercase; margin:0;">
+          PUBLISHED BULLETINS & ANNOUNCEMENTS ({news.length})
+        </h2>
+        <div style="display:flex; gap:6px;">
+          <button class="btn btn-secondary btn-sm" style="font-size:11px;">All</button>
+          <button class="btn btn-secondary btn-sm" style="font-size:11px;">Urgent</button>
+          <button class="btn btn-secondary btn-sm" style="font-size:11px;">Academic</button>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        {news.map((item) => (
+          <div style="background:var(--paper); border:1px solid var(--ink); padding:20px 24px; box-shadow:4px 4px 0 rgba(18, 17, 14, 0.08);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class={item.category === 'urgent' ? 'badge badge-suspended' : 'badge badge-active'} style="font-size:10px;">
+                  {item.category.toUpperCase()}
+                </span>
+                {item.pinned && (
+                  <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-size:9.5px; font-weight:700;">
+                    ★ PINNED
+                  </span>
+                )}
+              </div>
+              <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">{item.publishedAt}</span>
+            </div>
+
+            <h3 style="font-family:var(--serif); font-size:19px; font-weight:700; color:var(--ink); margin:0 0 8px 0; line-height:1.3;">
+              {item.title}
+            </h3>
+
+            <p style="font-size:13.5px; color:var(--ink); line-height:1.55; margin:0 0 16px 0;">
+              {item.content}
+            </p>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed var(--line); padding-top:12px; font-family:var(--mono); font-size:11px; color:var(--ink-soft);">
+              <div>
+                Published by: <strong style="color:var(--ink);">{item.authorName}</strong> ({item.authorRole})
+              </div>
+              <div>
+                👁 {item.viewsCount} views
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- RIGHT: QUICK PUBLISHER (CMS EDITOR) -->
+    <div>
+      <div class="panel" style="position:sticky; top:80px;">
+        <div class="panel-header">
+          <h2>COMPOSE NEW ANNOUNCEMENT</h2>
+        </div>
+        <div class="panel-body padded">
+          <form onsubmit="event.preventDefault(); alert('Announcement successfully published on the school news board!'); this.reset();">
+            <div class="form-grid">
+              <div class="form-field full">
+                <label>Category</label>
+                <select required>
+                  <option value="academic">Academic & Curriculum</option>
+                  <option value="urgent">Urgent Notice / Operational</option>
+                  <option value="event">School Event & Activity</option>
+                  <option value="general">General Information</option>
+                </select>
+              </div>
+
+              <div class="form-field full">
+                <label>Headline Title</label>
+                <input type="text" placeholder="E.g. Final Examination Schedule" required />
+              </div>
+
+              <div class="form-field full">
+                <label>Summary Lede</label>
+                <input type="text" placeholder="One sentence summary of the announcement..." required />
+              </div>
+
+              <div class="form-field full">
+                <label>Message Body</label>
+                <textarea rows="5" placeholder="Write the full text of the announcement..." required style="border:1px solid var(--ink); background:var(--cream); padding:10px; width:100%; font-family:var(--sans); font-size:13px;"></textarea>
+              </div>
+
+              <div class="form-field full" style="display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" id="pinCheckEn" />
+                <label for="pinCheckEn" style="margin:0; text-transform:none; font-family:var(--sans); font-size:12.5px; font-weight:500;">
+                  Pin this announcement to top of the board
+                </label>
+              </div>
+            </div>
+
+            <div style="margin-top:20px;">
+              <button type="submit" class="btn btn-primary" style="width:100%;">
+                Publish School Announcement →
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</AppLayout>

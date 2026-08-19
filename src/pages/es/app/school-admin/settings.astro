@@ -1,0 +1,132 @@
+---
+// ============================================================
+// SchoolOS — Configuración del Colegio (/es/app/school-admin/settings)
+// ============================================================
+import AppLayout from '../../../../layouts/AppLayout.astro';
+import { getAcademicStats } from '../../../../data/app/mock-academic';
+
+const lang = 'es';
+const stats = getAcademicStats(lang);
+---
+
+<AppLayout
+  title="Configuración"
+  pageTitle="Configuración Institucional & Plan"
+  activeSection="settings"
+  role="school_admin"
+  schoolName="Colegio Norte"
+  lang={lang}
+  activeRoute="/app/school-admin/settings"
+  breadcrumbs={[{ label: 'Colegio Norte', href: `/${lang}/app/school-admin` }, { label: 'Configuración' }]}
+>
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px;">
+    
+    <!-- PANEL 1: DATOS INSTITUCIONALES -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2>01 · IDENTIDAD Y DATOS DEL COLEGIO</h2>
+      </div>
+      <div class="panel-body padded">
+        <form onsubmit="event.preventDefault(); alert('¡Datos institucionales actualizados!');">
+          <div class="form-grid">
+            <div class="form-field full">
+              <label>Nombre Oficial de la Institución</label>
+              <input type="text" value="Colegio Norte" required />
+            </div>
+
+            <div class="form-field">
+              <label>Código DANE / Registro Educativo</label>
+              <input type="text" value="111001849201" style="font-family:var(--mono);" />
+            </div>
+
+            <div class="form-field">
+              <label>Ciudad y País</label>
+              <input type="text" value="Bogotá, Colombia" required />
+            </div>
+
+            <div class="form-field full">
+              <label>Dirección Sede Principal</label>
+              <input type="text" value="Carrera 15 # 124-30, Bogotá D.C." />
+            </div>
+
+            <div class="form-field full">
+              <label>Correo Electrónico de Rectoría</label>
+              <input type="email" value="rectoria@colegionorte.edu.co" required style="font-family:var(--mono);" />
+            </div>
+          </div>
+
+          <div style="margin-top:20px; text-align:right;">
+            <button type="submit" class="btn btn-primary btn-sm">Guardar Cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- PANEL 2: PLAN Y CAPACIDAD -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2>02 · ESTADO DE SUSCRIPCIÓN & CUPOS</h2>
+      </div>
+      <div class="panel-body padded">
+        <div style="background:var(--cream); border:1px solid var(--ink); padding:16px; margin-bottom:18px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-weight:700;">Plan Professional</span>
+            <span class="badge badge-active">ACTIVO & AL DÍA</span>
+          </div>
+          <div style="font-family:var(--serif); font-size:22px; font-weight:700; margin:6px 0;">$499 USD / mes</div>
+          <div style="font-size:12px; color:var(--ink-soft);">
+            Renovación automática el 2 de julio de 2027.
+          </div>
+        </div>
+
+        <div style="margin-bottom:18px;">
+          <div style="display:flex; justify-content:space-between; font-family:var(--mono); font-size:11.5px; margin-bottom:6px;">
+            <span>Consumo de Matrícula:</span>
+            <strong>{stats.totalStudents} / {stats.maxStudentsPlan} alumnos ({stats.planUsagePercent}%)</strong>
+          </div>
+          <div style="width:100%; height:6px; background:var(--line); overflow:hidden;">
+            <div style={`width:${stats.planUsagePercent}%; height:100%; background:var(--rust);`}></div>
+          </div>
+          <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:4px;">
+            {stats.maxStudentsPlan - stats.totalStudents} cupos restantes disponibles.
+          </div>
+        </div>
+
+        <div style="border-top:1px dashed var(--line); padding-top:16px;">
+          <button class="btn btn-secondary btn-sm" style="width:100%; text-align:center;" onclick="alert('Mock: Solicitando ampliación de cupos a Super Admin');">
+            Solicitar Ampliación de Cupos al Equipo SchoolOS →
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL 3: DOMINIO Y CONECTIVIDAD -->
+    <div class="panel" style="grid-column: span 2;">
+      <div class="panel-header">
+        <h2>03 · DOMINIO WEB & PROTOCOLOS DE ACCESO</h2>
+      </div>
+      <div class="panel-body padded">
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:16px;">
+          <div style="background:var(--cream); border:1px solid var(--line-strong); padding:14px 16px;">
+            <div style="font-family:var(--mono); font-size:10px; text-transform:uppercase; color:var(--ink-soft);">Subdominio Asignado</div>
+            <div style="font-family:var(--mono); font-size:13px; font-weight:700; color:var(--ink); margin-top:4px;">colegio-norte.schoolos.com</div>
+            <div style="font-family:var(--mono); font-size:11px; color:var(--olive-dark); margin-top:2px;">✓ SSL Wildcard Activo</div>
+          </div>
+
+          <div style="background:var(--cream); border:1px solid var(--line-strong); padding:14px 16px;">
+            <div style="font-family:var(--mono); font-size:10px; text-transform:uppercase; color:var(--ink-soft);">Zona Horaria del Tenant</div>
+            <div style="font-family:var(--serif); font-size:15px; font-weight:700; color:var(--ink); margin-top:4px;">America/Bogota (UTC-5)</div>
+            <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:2px;">Sincronizado con Colombia</div>
+          </div>
+
+          <div style="background:var(--cream); border:1px solid var(--line-strong); padding:14px 16px;">
+            <div style="font-family:var(--mono); font-size:10px; text-transform:uppercase; color:var(--ink-soft);">Auditoría del Sistema</div>
+            <div style="font-family:var(--serif); font-size:15px; font-weight:700; color:var(--danger); margin-top:4px;">Under Investigation</div>
+            <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:2px;">Orden EXP-2026-0417</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</AppLayout>

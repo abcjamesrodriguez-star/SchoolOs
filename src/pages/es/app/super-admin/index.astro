@@ -7,7 +7,7 @@ import { getMockDashboardStats, getMockSchools, getMockAuditLogs } from '../../.
 
 const lang = 'es';
 const stats = getMockDashboardStats(lang);
-const recentSchools = getMockSchools(lang).slice(0, 3);
+const recentSchools = getMockSchools(lang).slice(0, 4);
 const recentLogs = getMockAuditLogs(lang);
 
 function getStatusLabel(status: string) {
@@ -23,94 +23,369 @@ function getStatusLabel(status: string) {
 
 <AppLayout
   title="Panel de Control"
-  pageTitle="Panel de Control"
+  pageTitle="Gobernanza del Sistema"
   activeSection="dashboard"
   lang={lang}
   activeRoute="/app/super-admin"
   breadcrumbs={[{ label: 'Sistema' }, { label: 'Panel de Control' }]}
 >
-  <div class="stat-grid">
-    <div class="stat-card">
-      <div class="stat-label">Escuelas Activas</div>
-      <div class="stat-num">{stats.activeSchools}</div>
-      <div class="stat-sub">{stats.activeSchoolsSub}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Estudiantes Totales</div>
-      <div class="stat-num">{stats.totalStudents}</div>
-      <div class="stat-sub">{stats.totalStudentsSub}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Escuelas en Prueba</div>
-      <div class="stat-num accent">{stats.trialSchools}</div>
-      <div class="stat-sub">{stats.trialSchoolsSub}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Vencidas / Suspendidas</div>
-      <div class="stat-num accent">{stats.suspendedSchools}</div>
-      <div class="stat-sub">{stats.suspendedSchoolsSub}</div>
-    </div>
-  </div>
+  <div class="dashboard-grid">
+    <!-- LEFT / MAIN CANVAS -->
+    <div class="main-canvas">
+      
+      <!-- 3 MODULAR METRIC CARDS (01, 02, 03) -->
+      <div class="module-card-grid">
+        <!-- CARD 01: ESCUELAS ACTIVAS (Sage Accent) -->
+        <div class="module-card">
+          <div class="module-card-header">
+            <span class="module-num-badge">01</span>
+            <span class="module-pill-tag" style="color:var(--sage-dark); font-weight:700;">EN PRODUCCIÓN</span>
+          </div>
+          <div class="module-card-body">
+            <h3 class="module-card-title">ESCUELAS ACTIVAS</h3>
+            <div class="module-card-sub">INSTITUCIONES & COLEGIOS</div>
+            
+            <div class="module-card-visual-slot">
+              <!-- Geometric Column / Architectural Iconography -->
+              <svg width="100%" height="48" viewBox="0 0 200 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="10" y="10" width="30" height="38" fill="#BACBB0" opacity="0.6"/>
+                <rect x="50" y="4" width="30" height="44" fill="#BACBB0" opacity="0.8"/>
+                <rect x="90" y="14" width="30" height="34" fill="#BACBB0" opacity="0.5"/>
+                <rect x="130" y="0" width="30" height="48" fill="#BACBB0"/>
+                <line x1="0" y1="47.5" x2="200" y2="47.5" stroke="#12110E" stroke-width="1.5"/>
+              </svg>
+            </div>
 
-  <div class="panel">
-    <div class="panel-header">
-      <h2>Escuelas creadas recientemente</h2>
-      <a class="panel-link" href={`/${lang}/app/super-admin/schools`}>Ver todas →</a>
-    </div>
-    <div class="panel-body">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Institución / Escuela</th>
-            <th>Plan de Suscripción</th>
-            <th>Estado</th>
-            <th>Estudiantes</th>
-            <th>Fecha de Creación</th>
-          </tr>
-        </thead>
-        <tbody>
-          {recentSchools.map((s) => (
-            <tr>
-              <td class="cell-name">
-                <a href={`/${lang}/app/super-admin/schools/${s.id}`}>{s.name}</a>
-              </td>
-              <td><span class="plan-tag">{s.planName}</span></td>
-              <td><span class={`badge badge-${s.status}`}>{getStatusLabel(s.status)}</span></td>
-              <td>{s.studentCount.toLocaleString()}</td>
-              <td class="cell-muted">{s.createdAt}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  </div>
+            <div class="module-card-stat">
+              <div class="module-card-progress-row">
+                <span style="font-family:var(--serif); font-size:24px; font-weight:700;">{stats.activeSchools}</span>
+                <span style="color:var(--sage-dark);">{stats.activeSchoolsSub}</span>
+              </div>
+              <div class="module-progress-track">
+                <div class="module-progress-fill" style="width: 78%; background: var(--sage-dark);"></div>
+              </div>
+            </div>
+          </div>
+          <a class="module-card-footer footer-sage" href={`/${lang}/app/super-admin/schools`}>
+            <span>Gestionar Escuelas</span>
+            <span class="arrow-symbol">→</span>
+          </a>
+        </div>
 
-  <div class="panel">
-    <div class="panel-header">
-      <h2>Actividad reciente del sistema</h2>
-      <a class="panel-link" href={`/${lang}/app/super-admin/audit-log`}>Ver registro completo →</a>
+        <!-- CARD 02: ESTUDIANTES TOTALES (Warm Stone Accent + Graph Grid Texture) -->
+        <div class="module-card graph-grid-bg">
+          <div class="module-card-header">
+            <span class="module-num-badge">02</span>
+            <span class="module-pill-tag">POBLACIÓN ESTUDIANTIL</span>
+          </div>
+          <div class="module-card-body">
+            <h3 class="module-card-title">ESTUDIANTES</h3>
+            <div class="module-card-sub">ALUMNOS MATRICULADOS</div>
+
+            <div class="module-card-visual-slot">
+              <!-- Minimalist Wave / Population Waveform -->
+              <svg width="100%" height="48" viewBox="0 0 200 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M0 35 C 30 10, 60 40, 90 20 C 120 5, 150 30, 200 12" stroke="#12110E" stroke-width="1.5" fill="none"/>
+                <path d="M0 42 C 40 25, 80 45, 120 28 C 160 15, 180 35, 200 22" stroke="#B9B29C" stroke-width="1" stroke-dasharray="3 3" fill="none"/>
+                <circle cx="90" cy="20" r="3" fill="#12110E"/>
+                <circle cx="200" cy="12" r="3" fill="#12110E"/>
+              </svg>
+            </div>
+
+            <div class="module-card-stat">
+              <div class="module-card-progress-row">
+                <span style="font-family:var(--serif); font-size:24px; font-weight:700;">{stats.totalStudents}</span>
+                <span>{stats.totalStudentsSub}</span>
+              </div>
+              <div class="module-progress-track">
+                <div class="module-progress-fill" style="width: 86%;"></div>
+              </div>
+            </div>
+          </div>
+          <a class="module-card-footer footer-stone" href={`/${lang}/app/super-admin/users`}>
+            <span>Ver Directorio</span>
+            <span class="arrow-symbol">→</span>
+          </a>
+        </div>
+
+        <!-- CARD 03: CAPACIDAD & PLANES (Vibrant Orange Accent) -->
+        <div class="module-card">
+          <div class="module-card-header">
+            <span class="module-num-badge">03</span>
+            <span class="module-pill-tag" style="color:var(--orange-vibrant); font-weight:700;">CONVERSIÓN & SLA</span>
+          </div>
+          <div class="module-card-body">
+            <h3 class="module-card-title">PLANES & PRUEBA</h3>
+            <div class="module-card-sub">COBERTURA & LICENCIAMIENTO</div>
+
+            <div class="module-card-visual-slot">
+              <!-- Technical Data Gauge Lines -->
+              <svg width="100%" height="48" viewBox="0 0 200 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <line x1="10" y1="24" x2="190" y2="24" stroke="#D8D2C2" stroke-width="2"/>
+                <line x1="10" y1="24" x2="160" y2="24" stroke="#F25C2B" stroke-width="3"/>
+                <circle cx="160" cy="24" r="6" fill="#F25C2B"/>
+                <circle cx="160" cy="24" r="2" fill="#FFFFFF"/>
+                <text x="10" y="14" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#12110E" font-weight="700">11 EN TRIAL</text>
+                <text x="140" y="42" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#F25C2B" font-weight="700">91% CAPACIDAD</text>
+              </svg>
+            </div>
+
+            <div class="module-card-stat">
+              <div class="module-card-progress-row">
+                <span style="font-family:var(--serif); font-size:24px; font-weight:700; color:var(--orange-vibrant);">{stats.trialSchools} en Prueba</span>
+                <span style="color:var(--danger); font-weight:700;">{stats.suspendedSchools} Susp.</span>
+              </div>
+              <div class="module-progress-track">
+                <div class="module-progress-fill" style="width: 91%; background: var(--orange-vibrant);"></div>
+              </div>
+            </div>
+          </div>
+          <a class="module-card-footer footer-orange" href={`/${lang}/app/super-admin/plans`}>
+            <span>Supervisar Planes</span>
+            <span class="arrow-symbol">→</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- STRIP 04: MISSION CONTROL / ATENCIÓN CRÍTICA (Matching Reference 04 continue learning) -->
+      <div class="mission-strip">
+        <div class="mission-num-box">
+          04
+        </div>
+        <div class="mission-body">
+          <div class="mission-tag">CUMPLIMIENTO & AUDITORÍA LEGAL PRIORITARIA</div>
+          <div class="mission-title">EXP-2026-0417 · COLEGIO NORTE</div>
+          <div class="mission-meta">
+            Fiscalía 14 Seccional Bogotá · Acceso a Registros de Estudiantes y Comunicaciones · <strong>Vence en 28 días</strong>
+          </div>
+        </div>
+        <a class="mission-action-btn" href={`/${lang}/app/super-admin/judicial-access`} title="Revisar Expediente Judicial">
+          →
+        </a>
+      </div>
+
+      <!-- RECENT SCHOOLS TABLE (High hierarchy editorial) -->
+      <div class="panel">
+        <div class="panel-header">
+          <h2>INSTITUCIONES CREADAS RECIENTEMENTE</h2>
+          <a class="panel-link" href={`/${lang}/app/super-admin/schools`}>Ver todas las escuelas →</a>
+        </div>
+        <div class="panel-body">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Institución / Escuela</th>
+                <th>Plan de Suscripción</th>
+                <th>Estado</th>
+                <th>Estudiantes</th>
+                <th>Fecha de Creación</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {recentSchools.map((s) => (
+                <tr>
+                  <td class="cell-name">
+                    <a href={`/${lang}/app/super-admin/schools/${s.id}`}>{s.name}</a>
+                    <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); font-weight:normal;">{s.location}</div>
+                  </td>
+                  <td><span class="plan-tag">{s.planName}</span></td>
+                  <td><span class={`badge badge-${s.status}`}>{getStatusLabel(s.status)}</span></td>
+                  <td style="font-family:var(--mono); font-weight:600;">{s.studentCount.toLocaleString()}</td>
+                  <td class="cell-muted">{s.createdAt}</td>
+                  <td class="cell-actions">
+                    <a class="btn btn-secondary btn-sm" href={`/${lang}/app/super-admin/schools/${s.id}`}>
+                      Detalle →
+                    </a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SYSTEM AUDIT LOG TABLE -->
+      <div class="panel">
+        <div class="panel-header">
+          <h2>REGISTRO DE ACTIVIDAD Y AUDITORÍA EN TIEMPO REAL</h2>
+          <a class="panel-link" href={`/${lang}/app/super-admin/audit-log`}>Ver registro completo →</a>
+        </div>
+        <div class="panel-body">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Evento / Acción</th>
+                <th>Entidad Objetivo</th>
+                <th>Actor Responsable</th>
+                <th>Tiempo</th>
+              </tr>
+            </thead>
+            <tbody>
+              {recentLogs.map((log) => (
+                <tr>
+                  <td style="font-family:var(--mono); font-size:12px; font-weight:600; color:var(--ink);">
+                    <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--orange-vibrant); margin-right:8px;"></span>
+                    {log.action}
+                  </td>
+                  <td class="cell-name">{log.targetName}</td>
+                  <td class="cell-muted">{log.actorEmail}</td>
+                  <td class="cell-muted" style="color:var(--ink); font-weight:500;">{log.timestamp}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
-    <div class="panel-body">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Evento / Acción</th>
-            <th>Entidad Objetivo</th>
-            <th>Responsable (Actor)</th>
-            <th>Tiempo</th>
-          </tr>
-        </thead>
-        <tbody>
-          {recentLogs.map((log) => (
-            <tr>
-              <td style="font-family:var(--mono); font-size:12.5px; font-weight:500;">{log.action}</td>
-              <td class="cell-name">{log.targetName}</td>
-              <td class="cell-muted">{log.actorEmail}</td>
-              <td class="cell-muted">{log.timestamp}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+
+    <!-- RIGHT / INTELLIGENCE RAIL (TELEMETRY, PROFILE, HEALTH, AGENDA, QUOTE) -->
+    <aside class="intel-rail">
+      
+      <!-- SUPER ADMIN PROFILE WIDGET -->
+      <div class="intel-card">
+        <div class="intel-card-header">
+          <span class="intel-card-title">OPERADOR ROOT</span>
+          <span class="intel-badge-orange">NIVEL 0</span>
+        </div>
+        <div class="admin-profile-widget">
+          <div class="admin-avatar-lg">
+            MP
+          </div>
+          <div class="admin-profile-details">
+            <span class="admin-name">MARIA P.</span>
+            <span class="admin-quote">"Gobernanza activa. El sistema opera a plena capacidad. ↗"</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SYSTEM HEALTH & RADIAL SLA GAUGE -->
+      <div class="intel-card">
+        <div class="intel-card-header">
+          <span class="intel-card-title">ESTADO GLOBAL DE INFRAESTRUCTURA</span>
+        </div>
+        <div class="sla-gauge-wrapper">
+          <div class="sla-gauge-visual">
+            <svg width="130" height="130" viewBox="0 0 120 120">
+              <!-- Background Circle Track -->
+              <circle
+                cx="60"
+                cy="60"
+                r="48"
+                fill="none"
+                stroke="#E5DACB"
+                stroke-width="9"
+              />
+              <!-- Active SLA Fill Arc (99.8%) -->
+              <circle
+                cx="60"
+                cy="60"
+                r="48"
+                fill="none"
+                stroke="#12110E"
+                stroke-width="9"
+                stroke-dasharray="301.6"
+                stroke-dashoffset="20"
+                stroke-linecap="square"
+                transform="rotate(-90 60 60)"
+              />
+              <!-- Vibrant Orange Dot Accent at endpoint -->
+              <circle cx="60" cy="12" r="3.5" fill="#F25C2B"/>
+            </svg>
+            <div class="sla-center-text">
+              <div class="sla-center-val">99.8%</div>
+              <div class="sla-center-label">SLA GLOBAL</div>
+            </div>
+          </div>
+
+          <div class="sla-metric-list">
+            <div class="sla-metric-row">
+              <span class="sla-metric-label">Servidores Clúster</span>
+              <span class="sla-metric-val">100.0%</span>
+            </div>
+            <div class="sla-metric-row">
+              <span class="sla-metric-label">Bases de Datos Tenant</span>
+              <span class="sla-metric-val">99.9%</span>
+            </div>
+            <div class="sla-metric-row">
+              <span class="sla-metric-label">Auditoría Criptográfica</span>
+              <span class="sla-metric-val" style="color:var(--orange-vibrant);">VERIFICADA</span>
+            </div>
+            <div class="sla-metric-row">
+              <span class="sla-metric-label">Latencia Promedio</span>
+              <span class="sla-metric-val">24 ms</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRIORITY AGENDA / TASKS OF THE WEEK -->
+      <div class="intel-card">
+        <div class="intel-card-header">
+          <span class="intel-card-title">ESTA SEMANA</span>
+          <span style="font-family:var(--mono); font-size:12px; color:var(--ink-soft);">•••</span>
+        </div>
+        <div class="intel-agenda-list">
+          <a class="intel-agenda-item" href={`/${lang}/app/super-admin/judicial-access`}>
+            <div class="intel-agenda-left">
+              <span class="intel-agenda-icon">⚖️</span>
+              <div>
+                <div class="intel-agenda-title">Revisar Orden Fiscalía</div>
+                <div class="intel-agenda-sub">Expira en 2 días</div>
+              </div>
+            </div>
+            <span class="intel-agenda-arrow">→</span>
+          </a>
+
+          <a class="intel-agenda-item" href={`/${lang}/app/super-admin/schools`}>
+            <div class="intel-agenda-left">
+              <span class="intel-agenda-icon">🏢</span>
+              <div>
+                <div class="intel-agenda-title">Trial Liceo Andino</div>
+                <div class="intel-agenda-sub">Vence en 4 días</div>
+              </div>
+            </div>
+            <span class="intel-agenda-arrow">→</span>
+          </a>
+
+          <a class="intel-agenda-item" href={`/${lang}/app/super-admin/settings`}>
+            <div class="intel-agenda-left">
+              <span class="intel-agenda-icon">🔐</span>
+              <div>
+                <div class="intel-agenda-title">Rotación de Claves API</div>
+                <div class="intel-agenda-sub">Programado en 6 días</div>
+              </div>
+            </div>
+            <span class="intel-agenda-arrow">→</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- EDITORIAL PHILOSOPHY QUOTE BOX IN WARM STONE -->
+      <div class="quote-card-stone">
+        <div class="quote-mark">“</div>
+        <p class="quote-text">
+          La educación no es preparación para la vida; la educación es la vida misma. La gobernanza garantiza que cada aula funcione sin interrupción.
+        </p>
+        <div class="quote-author">— John Dewey · Sistema SchoolOS</div>
+      </div>
+
+      <!-- FOCUS MODE / MISSION CONTROL TRIGGER STRIP -->
+      <div class="focus-mode-dock" onclick="alert('Modo Consola de Monitoreo Activo');">
+        <div class="focus-mode-left">
+          <div class="focus-target-icon"></div>
+          <div>
+            <div class="focus-mode-title">MODO CONSOLA</div>
+            <div class="focus-mode-sub">Monitoreo continuo en vivo</div>
+          </div>
+        </div>
+        <div style="font-family:var(--mono); font-size:11px; font-weight:700;">
+          INICIAR →
+        </div>
+      </div>
+
+    </aside>
   </div>
 </AppLayout>
+

@@ -1,0 +1,272 @@
+---
+// ============================================================
+// SchoolOS — Leadership Office (School Protocols Dashboard)
+// Structure: Daily Operations · Conduct Ley 1620 · Academic Risk Radar
+// ============================================================
+import AppLayout from '../../../../layouts/AppLayout.astro';
+import InviteUserModal from '../../../../components/app/school-admin/InviteUserModal.astro';
+import { getAcademicStats, getNews } from '../../../../data/app/mock-academic';
+
+const lang = 'en';
+const stats = getAcademicStats(lang);
+const news = getNews(lang);
+---
+
+<AppLayout
+  title="Leadership Office"
+  pageTitle="School Command & Governance Protocols"
+  activeSection="dashboard"
+  role="school_admin"
+  schoolName="Colegio Norte"
+  lang={lang}
+  activeRoute="/app/school-admin"
+  breadcrumbs={[{ label: 'Colegio Norte' }, { label: 'Leadership Office' }]}
+>
+
+  <!-- ── 1. LIVE INSTITUTIONAL STATUS RIBBON ─────────────────── -->
+  <div style="background:var(--paper); border:2px solid var(--ink); padding:14px 20px; margin-bottom:24px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; box-shadow:4px 4px 0 rgba(18, 17, 14, 0.08);">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <span class="plan-tag" style="background:var(--rust); color:#FFFFFF; border-color:var(--rust); font-weight:900; font-size:11px; padding:3px 8px; letter-spacing:0.06em;">
+        ACTIVE SCHOOL DAY
+      </span>
+      <span style="font-family:var(--mono); font-size:12.5px; font-weight:700; color:var(--ink);">
+        Monday, August 17, 2026 · Main Campus (DANE: 111001849201)
+      </span>
+    </div>
+
+    <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">
+      Term: <strong>2026 - Period 1</strong> · <strong>Week 6 of 18 (Early Warning Stage)</strong>
+    </div>
+  </div>
+
+  <!-- ── 2. THE 4 PRINCIPAL CONTROL METRICS ───────────────────── -->
+  <div class="stat-grid" style="margin-bottom:24px;">
+    <div class="stat-card" style="border:2px solid var(--ink);">
+      <div class="stat-label">STUDENT ATTENDANCE TODAY</div>
+      <div class="stat-num" style="color:var(--ink); font-size:32px;">96.2%</div>
+      <div class="stat-sub"><strong>860</strong> present · <strong>34</strong> reported absences</div>
+    </div>
+
+    <div class="stat-card" style="border:2px solid var(--ink);">
+      <div class="stat-label">FACULTY ON DUTY</div>
+      <div class="stat-num" style="color:var(--ink); font-size:32px;">51 <span style="font-size:18px; font-weight:400; color:var(--ink-soft);">/ 52</span></div>
+      <div class="stat-sub" style="color:var(--rust); font-weight:800;">1 medical absence (Prof. Salas)</div>
+    </div>
+
+    <div class="stat-card" style="border:2px solid var(--ink);">
+      <div class="stat-label">ACADEMIC RISK (&lt; 7.0)</div>
+      <div class="stat-num accent" style="color:var(--rust); font-size:32px;">42</div>
+      <div class="stat-sub">Students with 2+ failing subjects</div>
+    </div>
+
+    <div class="stat-card" style="border:2px solid var(--ink);">
+      <div class="stat-label">CONDUCT (STEP 4 ESCALATION)</div>
+      <div class="stat-num" style="color:var(--ink); font-size:32px;">2</div>
+      <div class="stat-sub">Cases pending principal endorsement</div>
+    </div>
+  </div>
+
+  <!-- ── 3. MAIN BODY: PROTOCOLS IN ACTION ────────────────────── -->
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap:24px; margin-bottom:28px;">
+    
+    <!-- LEFT: PRIORITY PROTOCOLS DESK -->
+    <div style="display:flex; flex-direction:column; gap:20px;">
+      
+      <!-- PROTOCOL 1: FACULTY SUBSTITUTION -->
+      <div class="panel" style="border:2px solid var(--ink); box-shadow:6px 6px 0 rgba(18, 17, 14, 0.08);">
+        <div class="panel-header" style="background:var(--cream); display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="plan-tag" style="background:var(--rust); color:#FFFFFF; border-color:var(--rust); font-size:10px; font-weight:900;">
+              PROTOCOL 1 · MORNING OPERATIONS
+            </span>
+            <h2 style="font-size:13px; margin:0;">IMMEDIATE FACULTY SUBSTITUTION</h2>
+          </div>
+          <span style="font-family:var(--mono); font-size:11px; font-weight:700; color:var(--rust);">ACTIVE REQUIREMENT</span>
+        </div>
+
+        <div class="panel-body padded" style="background:#FFFDF9;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+            <div>
+              <h3 style="font-family:var(--serif); font-size:16.5px; font-weight:700; color:var(--ink); margin:0 0 4px 0;">
+                Prof. Jorge Salas — Reported 24h Medical Absence
+              </h3>
+              <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">
+                Assigned Section: <strong>Math 10-2 (30 students)</strong> · Block: <strong>Today 10:30 - 12:00</strong> · <strong>Room 205</strong>
+              </div>
+            </div>
+          </div>
+
+          <div style="background:var(--cream); border:1.5px solid var(--ink); padding:12px 14px; margin:12px 0; font-size:12.5px;">
+            <div style="font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--rust); margin-bottom:4px;">
+              AVAILABLE CAMPUS SOLUTION:
+            </div>
+            <div>
+              <strong>Prof. Carlos Gómez</strong> (Mathematics Dept) has a free block today at 10:30 AM (currently has 6 free weekly hours).
+            </div>
+          </div>
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn btn-primary btn-sm" onclick="alert('Coverage assigned to Prof. Carlos Gómez.');" style="font-size:11.5px; font-weight:700;">
+              Assign Coverage to Prof. Carlos Gómez
+            </button>
+            <a href={`/${lang}/app/school-admin/courses`} class="btn btn-secondary btn-sm" style="font-size:11.5px;">
+              View Live Room Schedule →
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROTOCOL 2: STUDENT CONDUCT LEY 1620 -->
+      <div class="panel" style="border:2px solid var(--ink); box-shadow:6px 6px 0 rgba(18, 17, 14, 0.08);">
+        <div class="panel-header" style="background:var(--cream); display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-size:10px; font-weight:900;">
+              PROTOCOL 2 · CONDUCT GOVERNANCE
+            </span>
+            <h2 style="font-size:13px; margin:0;">CASES ESCALATED TO LEADERSHIP (STEP 4)</h2>
+          </div>
+          <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">2 AGREEMENTS PENDING</span>
+        </div>
+
+        <div class="panel-body" style="padding:0;">
+          <div style="padding:16px 20px; border-bottom:1.5px solid var(--line);">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; flex-wrap:wrap; gap:8px;">
+              <div>
+                <span class="badge badge-suspended" style="font-size:9.5px; font-weight:800;">TYPE II CONDUCT OFFENSE</span>
+                <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-left:6px;">Section 10-1 · Student: Mateo Gómez</span>
+              </div>
+              <span style="font-family:var(--mono); font-size:10.5px; color:var(--rust); font-weight:700;">STEP 4: PENDING SIGNATURE</span>
+            </div>
+
+            <h4 style="font-family:var(--serif); font-size:15px; font-weight:700; color:var(--ink); margin:2px 0 6px 0;">
+              Disciplinary Agreement & Restorative Action Plan
+            </h4>
+
+            <p style="font-size:12px; color:var(--ink-soft); line-height:1.45; margin:0 0 10px 0;">
+              Case reviewed by Conduct Coordinator with guardian <strong>Rosa Gómez</strong> and teacher <strong>Diana Restrepo</strong>. Signed agreement requires principal endorsement.
+            </p>
+
+            <div style="display:flex; gap:10px;">
+              <a href={`/${lang}/app/school-admin/students/std-1`} class="btn btn-secondary btn-sm" style="font-size:11px; font-weight:700;">
+                Open File & Endorse Signature →
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROTOCOL 3: ACADEMIC EARLY WARNING -->
+      <div class="panel" style="border:2px solid var(--ink); box-shadow:6px 6px 0 rgba(18, 17, 14, 0.08);">
+        <div class="panel-header" style="background:var(--cream); display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-size:10px; font-weight:900;">
+              PROTOCOL 3 · ACADEMIC EARLY WARNING
+            </span>
+            <h2 style="font-size:13px; margin:0;">MIDTERM EARLY WARNING (WEEK 6)</h2>
+          </div>
+          <span style="font-family:var(--mono); font-size:11px; font-weight:700; color:var(--rust);">42 STUDENTS AT RISK</span>
+        </div>
+
+        <div class="panel-body padded">
+          <p style="font-size:12.5px; color:var(--ink-soft); line-height:1.45; margin:0 0 14px 0;">
+            Midterm grades consolidated. <strong>42 students</strong> have 2 or more subjects below <strong>7.0 / 10</strong>. Official warning notices must be dispatched before finals.
+          </p>
+
+          <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-bottom:16px; font-family:var(--mono); font-size:11px;">
+            <div style="background:var(--cream); border:1px solid var(--line-strong); padding:10px;">
+              <span style="color:var(--ink-soft); font-size:9.5px; display:block;">STUDENTS AT RISK:</span>
+              <strong style="font-size:15px; color:var(--rust);">42 students</strong>
+            </div>
+            <div style="background:var(--cream); border:1px solid var(--line-strong); padding:10px;">
+              <span style="color:var(--ink-soft); font-size:9.5px; display:block;">REMEDIAL PLANS:</span>
+              <strong style="font-size:15px; color:var(--ink);">38 assigned (90%)</strong>
+            </div>
+            <div style="background:var(--cream); border:1px solid var(--line-strong); padding:10px;">
+              <span style="color:var(--ink-soft); font-size:9.5px; display:block;">NOTICES ISSUED:</span>
+              <strong style="font-size:15px; color:var(--ink);">14 / 42 sent</strong>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <a href={`/${lang}/app/school-admin/students`} class="btn btn-primary btn-sm" style="font-size:11.5px; font-weight:700;">
+              View 42 Students at Risk →
+            </a>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="alert('Mass notice dispatched to guardians.');" style="font-size:11.5px;">
+              Issue Mass Notice to Guardians
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: DIRECT EXECUTIVE ACTIONS -->
+    <div style="display:flex; flex-direction:column; gap:20px;">
+      
+      <div class="panel" style="border:2px solid var(--ink); box-shadow:4px 4px 0 rgba(18, 17, 14, 0.08);">
+        <div class="panel-header" style="background:var(--ink); color:#FFFFFF;">
+          <h2 style="font-size:12px; color:#FFFFFF; letter-spacing:0.08em;">DIRECT EXECUTIVE ACTIONS</h2>
+        </div>
+        <div class="panel-body padded" style="display:flex; flex-direction:column; gap:10px;">
+          
+          <a href={`/${lang}/app/school-admin/news`} class="btn btn-primary" style="justify-content:space-between; display:flex; font-size:12px; padding:11px 14px; font-weight:700;">
+            <span>Issue Urgent Circular</span>
+            <span>→</span>
+          </a>
+
+          <button type="button" class="btn btn-secondary" onclick="alert('Evaluation Committee summoned.');" style="justify-content:space-between; display:flex; font-size:12px; padding:10px 12px;">
+            <span>Summon Evaluation Committee</span>
+            <span>👥</span>
+          </button>
+
+          <a href={`/${lang}/app/school-admin/courses`} class="btn btn-secondary" style="justify-content:space-between; display:flex; font-size:12px; padding:10px 12px;">
+            <span>View Live Room Schedule</span>
+            <span>→</span>
+          </a>
+
+          <button type="button" class="btn btn-secondary" onclick="alert('Downloading master grade report...');" style="justify-content:space-between; display:flex; font-size:12px; padding:10px 12px;">
+            <span>Download Master Grade Report</span>
+            <span>↓</span>
+          </button>
+
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('inviteModal').style.display='flex';" style="justify-content:space-between; display:flex; font-size:12px; padding:10px 12px;">
+            <span>Enroll / Invite Member</span>
+            <span>＋</span>
+          </button>
+
+        </div>
+      </div>
+
+      <!-- WEEKLY INSTITUTIONAL AGENDA -->
+      <div class="panel" style="border:1.5px solid var(--ink); background:var(--paper); padding:18px;">
+        <div style="font-family:var(--mono); font-size:11px; font-weight:800; text-transform:uppercase; color:var(--ink); margin-bottom:12px; border-bottom:1.5px solid var(--ink); padding-bottom:6px;">
+          WEEKLY INSTITUTIONAL AGENDA
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:12px; font-size:12px;">
+          <div style="border-left:3px solid var(--rust); padding-left:10px;">
+            <div style="font-family:var(--mono); font-size:10px; font-weight:700; color:var(--rust);">FRIDAY, AUG 22</div>
+            <strong style="color:var(--ink);">Faculty In-Service Day</strong>
+            <div style="color:var(--ink-soft); font-size:11px;">No student attendance (Curriculum workshop).</div>
+          </div>
+
+          <div style="border-left:3px solid var(--ink); padding-left:10px;">
+            <div style="font-family:var(--mono); font-size:10px; font-weight:700; color:var(--ink-soft);">WEDNESDAY, AUG 27</div>
+            <strong style="color:var(--ink);">STEM Science Olympiad</strong>
+            <div style="color:var(--ink-soft); font-size:11px;">8th to 11th grade student projects.</div>
+          </div>
+
+          <div style="border-left:3px solid var(--line-strong); padding-left:10px;">
+            <div style="font-family:var(--mono); font-size:10px; font-weight:700; color:var(--ink-soft);">FRIDAY, SEP 5</div>
+            <strong style="color:var(--ink);">P1 Grade Book Closing</strong>
+            <div style="color:var(--ink-soft); font-size:11px;">Deadline for all 52 faculty submissions.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <InviteUserModal id="inviteModal" defaultRole="teacher" lang={lang} />
+</AppLayout>

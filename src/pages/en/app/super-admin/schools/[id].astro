@@ -21,7 +21,7 @@ const hasActiveOrPendingGrant = grants.some((g) => g.status === 'active' || g.st
 
 function getAuditBadge(auditStatus: string) {
   if (auditStatus === 'under_investigation') {
-    return { class: 'badge-investigation', label: 'Under investigation' };
+    return { class: 'badge-investigation', label: 'Under Investigation' };
   }
   if (auditStatus === 'flagged') {
     return { class: 'badge-flagged', label: 'Flagged' };
@@ -29,118 +29,155 @@ function getAuditBadge(auditStatus: string) {
   return { class: 'badge-none', label: 'None' };
 }
 
+function getStatusLabel(status: string) {
+  switch (status) {
+    case 'active': return 'Active';
+    case 'trial': return 'Trial';
+    case 'suspended': return 'Suspended';
+    case 'cancelled': return 'Cancelled';
+    default: return status;
+  }
+}
+
+function getGrantStatusLabel(status: string) {
+  switch (status) {
+    case 'active': return 'Active';
+    case 'pending_verification': return 'Pending Verification';
+    case 'expired': return 'Expired';
+    case 'revoked': return 'Revoked';
+    default: return status;
+  }
+}
+
 const audit = getAuditBadge(school.auditStatus);
 ---
 
 <AppLayout
   title={school.name}
-  pageTitle="School detail"
+  pageTitle="Institution Overview"
   activeSection="schools"
   lang={lang}
   activeRoute={`/app/super-admin/schools/${school.id}`}
   breadcrumbs={[
-    { label: 'Schools', href: `/${lang}/app/super-admin/schools` },
+    { label: 'Institutions', href: `/${lang}/app/super-admin/schools` },
     { label: school.name },
   ]}
 >
-  <a class="back-link" href={`/${lang}/app/super-admin/schools`}>← Back to Schools</a>
+  <div style="margin-bottom:16px;">
+    <a class="back-link" href={`/${lang}/app/super-admin/schools`} style="font-family:var(--mono); font-size:12px; font-weight:700; color:var(--ink);">
+      ← BACK TO SCHOOL DIRECTORY
+    </a>
+  </div>
 
-  <div class="detail-header">
+  <div class="detail-header" style="background:var(--paper); border:1px solid var(--ink); padding:24px 28px; margin-bottom:24px;">
     <div>
-      <div class="title-row">
-        <h1>{school.name}</h1>
+      <div class="title-row" style="align-items:center; gap:12px;">
+        <h1 style="font-family:var(--serif); font-size:28px; font-weight:700; color:var(--ink);">{school.name}</h1>
         <span class={`badge badge-${school.status}`}>
-          {school.status.charAt(0).toUpperCase() + school.status.slice(1)}
+          {getStatusLabel(school.status)}
         </span>
-        <span class="plan-tag">{school.planName}</span>
+        <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-weight:700;">{school.planName}</span>
         <span class={`badge ${audit.class}`}>{audit.label}</span>
       </div>
-      <div class="sub">
-        {school.domain} · {school.location} · Created {school.createdAt}
+      <div class="sub" style="font-family:var(--mono); font-size:12px; color:var(--ink-soft); margin-top:8px;">
+        {school.domain} · {school.location} · Tenant ID: <span style="color:var(--ink); font-weight:700;">{school.id}</span> · Registered on {school.createdAt}
       </div>
     </div>
     <div class="detail-actions">
-      <button class="btn btn-secondary">Change Plan</button>
-      <button class="btn btn-secondary">Edit Details</button>
-      <button class="btn btn-danger">Suspend</button>
+      <button class="btn btn-secondary" onclick="alert('Mock: Plan change modal opened');">Change Plan</button>
+      <button class="btn btn-secondary" onclick="alert('Mock: Edit profile modal opened');">Edit Data</button>
+      <button class="btn btn-danger" onclick="confirm('Confirm temporary tenant suspension?');">Suspend</button>
     </div>
   </div>
 
-  <div class="stat-grid">
-    <div class="stat-card">
-      <div class="stat-label">Students</div>
-      <div class="stat-num">{school.studentCount}</div>
+  <!-- 4 NUMBERED METRIC CARDS -->
+  <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:24px;">
+    <div style="background:var(--paper); border:1px solid var(--ink); padding:16px 20px; border-bottom:3px solid var(--sage-accent);">
+      <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft);">01 · Students</div>
+      <div style="font-family:var(--serif); font-size:26px; font-weight:700; color:var(--ink); margin-top:4px;">{school.studentCount}</div>
+      <div style="font-family:var(--mono); font-size:10.5px; color:var(--sage-dark); font-weight:600; margin-top:2px;">Active enrolled learners</div>
     </div>
-    <div class="stat-card">
-      <div class="stat-label">Teachers</div>
-      <div class="stat-num">{school.teacherCount}</div>
+    <div style="background:var(--paper); border:1px solid var(--ink); padding:16px 20px; border-bottom:3px solid var(--stone-accent);">
+      <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft);">02 · Faculty & Teachers</div>
+      <div style="font-family:var(--serif); font-size:26px; font-weight:700; color:var(--ink); margin-top:4px;">{school.teacherCount}</div>
+      <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); margin-top:2px;">Academic staff</div>
     </div>
-    <div class="stat-card">
-      <div class="stat-label">Active Classes</div>
-      <div class="stat-num">{school.activeClassesCount}</div>
+    <div style="background:var(--paper); border:1px solid var(--ink); padding:16px 20px; border-bottom:3px solid var(--orange-vibrant);">
+      <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft);">03 · Active Classes</div>
+      <div style="font-family:var(--serif); font-size:26px; font-weight:700; color:var(--orange-vibrant); margin-top:4px;">{school.activeClassesCount}</div>
+      <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); margin-top:2px;">Sections in session</div>
     </div>
-    <div class="stat-card">
-      <div class="stat-label">Audit Status</div>
-      <div class={`stat-num ${school.auditStatus !== 'none' ? 'accent' : ''}`} style="font-size:20px; margin-top:12px;">
+    <div style="background:var(--paper); border:1px solid var(--ink); padding:16px 20px; border-bottom:3px solid var(--danger);">
+      <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft);">04 · Audit Status</div>
+      <div style={`font-family:var(--serif); font-size:20px; font-weight:700; color:${school.auditStatus !== 'none' ? 'var(--danger)' : 'var(--ink)'}; margin-top:6px;`}>
         {audit.label}
       </div>
+      <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); margin-top:2px;">Statutory compliance</div>
     </div>
   </div>
 
-  <div class="panel">
+  <!-- ADMINISTRATORS PANEL -->
+  <div class="panel" style="margin-bottom:24px;">
     <div class="panel-header">
-      <h2>School administrators</h2>
-      <a class="panel-link" href="#">+ Invite admin</a>
+      <h2>INSTITUTION ADMINISTRATORS</h2>
+      <button class="btn btn-secondary btn-sm" onclick="alert('Mock: Administrator invitation sent');">+ Invite Administrator</button>
     </div>
     <div class="panel-body">
       {admins.length > 0 ? (
         <table class="data-table">
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Email</th>
+              <th>Full Name</th>
+              <th>Email Address</th>
               <th>Status</th>
-              <th>Last login</th>
+              <th>Last Active</th>
             </tr>
           </thead>
           <tbody>
             {admins.map((adm) => (
               <tr>
-                <td class="cell-name">{adm.name}</td>
-                <td class="cell-muted">{adm.email}</td>
+                <td class="cell-name">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <div style="width:24px; height:24px; background:#BACBB0; color:#12110E; font-family:var(--mono); font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center;">
+                      {adm.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
+                    </div>
+                    <span style="font-size:13.5px; font-weight:700;">{adm.name}</span>
+                  </div>
+                </td>
+                <td class="cell-muted" style="font-family:var(--mono);">{adm.email}</td>
                 <td>
                   <span class={`badge badge-${adm.status}`}>
-                    {adm.status.charAt(0).toUpperCase() + adm.status.slice(1)}
+                    {adm.status === 'active' ? 'Active' : adm.status}
                   </span>
                 </td>
-                <td class="cell-muted">{adm.lastLoginAt || 'Never'}</td>
+                <td class="cell-muted" style="font-family:var(--mono); font-weight:600; color:var(--ink);">{adm.lastLoginAt || 'Never'}</td>
               </tr>
             ))}
           </tbody>
         </table>
       ) : (
-        <div class="empty-state">No administrators registered for this school yet.</div>
+        <div class="empty-state" style="padding:28px; text-align:center; font-family:var(--mono); color:var(--ink-soft);">
+          No administrators registered for this school yet.
+        </div>
       )}
     </div>
   </div>
 
-  <details class="collapsible" open={school.auditStatus !== 'none'}>
-    <summary>
-      <div class="summary-meta">
-        <span>Judicial Access</span>
+  <!-- JUDICIAL COMPLIANCE PANEL -->
+  <details class="collapsible" open={school.auditStatus !== 'none'} style="border:1px solid var(--ink); background:var(--paper);">
+    <summary style="padding:16px 20px; background:var(--cream); border-bottom:1px solid var(--line); cursor:pointer;">
+      <div class="summary-meta" style="display:flex; align-items:center; gap:12px;">
+        <span style="font-family:var(--mono); font-size:12px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;">Judicial Access With Court Order</span>
         <span class={`badge ${audit.class}`}>{audit.label}</span>
       </div>
       <span class="chevron">▾</span>
     </summary>
-    <div class="panel-body padded">
-      <div class="notice restricted">
-        <span class="notice-icon">⚠</span>
+    <div class="panel-body padded" style="padding:20px;">
+      <div class="notice restricted" style="border:1px solid var(--danger); background:var(--danger-dim); color:#5C2015; border-radius:0; margin-bottom:20px;">
+        <span class="notice-icon" style="font-size:18px;">⚖️</span>
         <div>
-          <strong>Restricted by design.</strong> Individual student records,
-          communications and academic activity for this school are not visible
-          here unless a Judicial Access Grant is <strong>active</strong> and the
-          data requested falls within its authorized scope. Every view under an
-          active grant is separately logged.
+          <strong style="color:#3B120B;">Strict Judicial Protocol.</strong><br />
+          Individual student records, transcripts, and messages are sealed. They are exclusively accessible when a verified court reference order is authenticated by two independent Super Administrators.
         </div>
       </div>
 
@@ -148,36 +185,36 @@ const audit = getAuditBadge(school.auditStatus);
         <table class="data-table" style="margin-bottom: 20px;">
           <thead>
             <tr>
-              <th>Case Reference</th>
-              <th>Authority</th>
-              <th>Scope</th>
+              <th>Case Reference #</th>
+              <th>Issuing Authority</th>
+              <th>Authorized Scope</th>
               <th>Status</th>
-              <th>Requested by</th>
-              <th>Verified by</th>
-              <th>Expires</th>
+              <th>Requested By</th>
+              <th>Verified By</th>
+              <th>Validity</th>
             </tr>
           </thead>
           <tbody>
             {grants.map((g) => (
               <tr>
-                <td class="cell-name">{g.caseReference}</td>
+                <td class="cell-name" style="font-family:var(--mono); font-weight:700;">{g.caseReference}</td>
                 <td class="cell-muted">{g.issuingAuthority}</td>
-                <td class="cell-muted">{g.scope}</td>
+                <td class="cell-muted" style="color:var(--ink); font-weight:500;">{g.scope}</td>
                 <td>
                   <span class={`badge badge-${g.status}`}>
-                    {g.status === 'pending_verification' ? 'Pending' : g.status.charAt(0).toUpperCase() + g.status.slice(1)}
+                    {getGrantStatusLabel(g.status)}
                   </span>
                 </td>
-                <td class="cell-muted">{g.requestedBy}</td>
-                <td class="cell-muted">{g.verifiedBy || '—'}</td>
-                <td class="cell-muted">{g.expiresAt}</td>
+                <td class="cell-muted" style="font-family:var(--mono); font-size:11px;">{g.requestedBy}</td>
+                <td class="cell-muted" style="font-family:var(--mono); font-size:11px;">{g.verifiedBy || '—'}</td>
+                <td class="cell-muted" style="font-family:var(--mono); font-size:11.5px; font-weight:600; color:var(--ink);">{g.expiresAt}</td>
               </tr>
             ))}
           </tbody>
         </table>
       ) : (
-        <div class="empty-state" style="padding: 20px 0;">
-          No judicial access grants registered for this school.
+        <div class="empty-state" style="padding: 20px 0; font-family:var(--mono); color:var(--ink-soft);">
+          No judicial access orders registered for this institution.
         </div>
       )}
 
@@ -185,13 +222,14 @@ const audit = getAuditBadge(school.auditStatus);
         <button
           class="btn btn-secondary"
           disabled={hasActiveOrPendingGrant}
-          title={hasActiveOrPendingGrant ? 'An active or pending grant already exists for this school' : ''}
+          title={hasActiveOrPendingGrant ? 'An active or pending order already exists for this school' : ''}
+          onclick="alert('Mock: Judicial request form opened');"
         >
           + Request Judicial Access
         </button>
         {hasActiveOrPendingGrant && (
-          <span class="hint" style="font-size:12px; color:var(--ink-soft);">
-            Disabled — an active or pending grant already exists for this school.
+          <span class="hint" style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">
+            Disabled — an active judicial order is currently in effect for this school.
           </span>
         )}
       </div>

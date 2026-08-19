@@ -1,0 +1,236 @@
+---
+// ============================================================
+// SchoolOS — Crear Evaluación (Teacher)
+// Fase 3 | Formulario para agregar evaluación vinculada a guía
+// ============================================================
+import AppLayout from '../../../../../../../layouts/AppLayout.astro';
+import { getAllTeacherGuides, getGuideById } from '../../../../../../../data/app/mock-content';
+
+export async function getStaticPaths() {
+  const guides = getAllTeacherGuides();
+  return guides.map((g) => ({ params: { id: g.id } }));
+}
+
+const lang = 'es';
+const { id } = Astro.params;
+const guide = getGuideById(id!);
+---
+
+{guide ? (
+  <AppLayout
+    title={`Nueva Evaluación — ${guide.title}`}
+    pageTitle="Crear Evaluación Pedagógica"
+    activeSection="courses"
+    role="teacher"
+    schoolName="Colegio Norte"
+    lang={lang}
+    activeRoute={`/app/teacher/guides/${id}`}
+    breadcrumbs={[
+      { label: 'Colegio Norte' },
+      { label: 'Panel Docente', href: `/${lang}/app/teacher` },
+      { label: guide.courseName, href: `/${lang}/app/teacher/courses/${guide.courseId}` },
+      { label: guide.title, href: `/${lang}/app/teacher/guides/${guide.id}` },
+      { label: 'Nueva Evaluación' },
+    ]}
+  >
+
+    <!-- ── HEADER ── -->
+    <div style="background:var(--paper); border:2px solid var(--ink); padding:16px 20px; margin-bottom:20px; box-shadow:4px 4px 0 rgba(18,17,14,0.08);">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
+        <div>
+          <div style="font-family:var(--mono); font-size:10.5px; color:var(--rust); font-weight:800; text-transform:uppercase; margin-bottom:4px;">
+            VINCULADA A GUÍA: {guide.title}
+          </div>
+          <h1 style="font-family:var(--serif); font-size:22px; font-weight:700; color:var(--ink); margin:0 0 4px 0;">
+            Diseñar Evaluación con Referencias a Bloques
+          </h1>
+          <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">
+            {guide.courseName} · {guide.blocks.length} bloques disponibles para referenciar
+          </div>
+        </div>
+        <a href={`/${lang}/app/teacher/guides/${guide.id}`} class="btn btn-secondary btn-sm" style="font-size:11px;">
+          ✕ Cancelar
+        </a>
+      </div>
+    </div>
+
+    <!-- ── FORMULARIO DE EVALUACIÓN ── -->
+    <div style="display:grid; grid-template-columns: 2fr 1fr; gap:24px;">
+
+      <!-- COLUMNA PRINCIPAL -->
+      <div style="display:flex; flex-direction:column; gap:20px;">
+
+        <!-- Parámetros Generales -->
+        <div class="panel" style="border:2px solid var(--ink); padding:20px; background:var(--paper); box-shadow:4px 4px 0 rgba(18,17,14,0.06);">
+          <div style="font-family:var(--mono); font-size:11px; font-weight:800; text-transform:uppercase; color:var(--ink); margin-bottom:14px; border-bottom:1.5px solid var(--ink); padding-bottom:6px;">
+            1. PARÁMETROS GENERALES
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:14px;">
+            <div>
+              <label style="display:block; font-family:var(--mono); font-size:11px; font-weight:700; text-transform:uppercase; color:var(--ink); margin-bottom:4px;">
+                Título de la Evaluación *
+              </label>
+              <input
+                type="text"
+                placeholder="ej: Cuestionario de Comprensión: Biología Celular"
+                value={`Evaluación: ${guide.title}`}
+                style="width:100%; padding:9px 12px; border:2px solid var(--ink); background:var(--cream); font-family:var(--serif); font-size:15px; color:var(--ink); outline:none;"
+              />
+            </div>
+
+            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px;">
+              <div>
+                <label style="display:block; font-family:var(--mono); font-size:10px; font-weight:700; text-transform:uppercase; color:var(--ink); margin-bottom:4px;">
+                  Modalidad
+                </label>
+                <select style="width:100%; padding:8px 10px; border:2px solid var(--ink); background:var(--cream); font-family:var(--mono); font-size:12px; color:var(--ink); outline:none;">
+                  <option value="virtual">Virtual (Online)</option>
+                  <option value="in_person">Presencial (Papel/Físico)</option>
+                </select>
+              </div>
+
+              <div>
+                <label style="display:block; font-family:var(--mono); font-size:10px; font-weight:700; text-transform:uppercase; color:var(--ink); margin-bottom:4px;">
+                  Nota Mínima Aprobatoria
+                </label>
+                <input
+                  type="number"
+                  value="70"
+                  min="0"
+                  max="100"
+                  style="width:100%; padding:8px 10px; border:2px solid var(--ink); background:var(--cream); font-family:var(--mono); font-size:13px; color:var(--ink); outline:none;"
+                />
+              </div>
+
+              <div>
+                <label style="display:block; font-family:var(--mono); font-size:10px; font-weight:700; text-transform:uppercase; color:var(--ink); margin-bottom:4px;">
+                  Tiempo Límite (Minutos)
+                </label>
+                <input
+                  type="number"
+                  value="45"
+                  min="5"
+                  max="180"
+                  style="width:100%; padding:8px 10px; border:2px solid var(--ink); background:var(--cream); font-family:var(--mono); font-size:13px; color:var(--ink); outline:none;"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Constructor de Preguntas -->
+        <div class="panel" style="border:2px solid var(--ink); padding:20px; background:var(--paper); box-shadow:4px 4px 0 rgba(18,17,14,0.06);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:1.5px solid var(--ink); padding-bottom:6px;">
+            <div style="font-family:var(--mono); font-size:11px; font-weight:800; text-transform:uppercase; color:var(--ink);">
+              2. BANCO DE PREGUNTAS Y REFERENCIAS
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="alert('Se añade un nuevo casillero de pregunta al formulario.')" style="font-size:10.5px; font-weight:700;">
+              + Agregar Pregunta
+            </button>
+          </div>
+
+          <!-- Pregunta 1 (Muestra) -->
+          <div style="background:var(--cream); border:1.5px solid var(--ink); padding:14px 16px; margin-bottom:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <span style="font-family:var(--mono); font-size:10px; font-weight:800; background:var(--rust); color:#fff; padding:2px 8px;">
+                PREGUNTA 1
+              </span>
+              <span style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);">Opción Múltiple</span>
+            </div>
+
+            <div style="margin-bottom:10px;">
+              <input
+                type="text"
+                placeholder="Enunciado de la pregunta..."
+                value="¿Qué estructura celular controla el ingreso y egreso de sustancias?"
+                style="width:100%; padding:8px 10px; border:1.5px solid var(--ink); background:#fff; font-family:var(--serif); font-size:14px; color:var(--ink); outline:none;"
+              />
+            </div>
+
+            <div style="margin-bottom:10px;">
+              <label style="display:block; font-family:var(--mono); font-size:9.5px; font-weight:800; text-transform:uppercase; color:var(--rust); margin-bottom:3px;">
+                FUNDAMENTACIÓN PEDAGÓGICA (BLOQUE DE REFERENCIA):
+              </label>
+              <select style="width:100%; padding:6px 10px; border:1.5px solid var(--ink); background:#FFF8F5; font-family:var(--mono); font-size:11px; color:var(--ink);">
+                {guide.blocks.map((b) => (
+                  <option value={b.id}>
+                    § {b.order} — {b.type === 'heading' ? b.title : b.type === 'callout' ? `[Recuadro] ${b.title}` : `Párrafo ${b.order}: ${b.content.slice(0, 45)}...`}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+              <div style="display:flex; align-items:center; gap:6px;">
+                <input type="radio" name="p1-correct" />
+                <input type="text" value="Núcleo" style="flex:1; padding:5px 8px; border:1px solid var(--ink); background:#fff; font-size:12px;" />
+              </div>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <input type="radio" name="p1-correct" checked />
+                <input type="text" value="Membrana plasmática" style="flex:1; padding:5px 8px; border:1.5px solid var(--rust); background:#FFF8F5; font-size:12px; font-weight:700;" />
+              </div>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <input type="radio" name="p1-correct" />
+                <input type="text" value="Mitocondria" style="flex:1; padding:5px 8px; border:1px solid var(--ink); background:#fff; font-size:12px;" />
+              </div>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <input type="radio" name="p1-correct" />
+                <input type="text" value="Ribosoma" style="flex:1; padding:5px 8px; border:1px solid var(--ink); background:#fff; font-size:12px;" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Botón de guardar -->
+          <div style="display:flex; gap:12px; margin-top:20px;">
+            <button
+              class="btn btn-primary"
+              onclick="alert('✅ Evaluación vinculada y programada exitosamente para los estudiantes del curso.'); window.location.href=`/${lang}/app/teacher/guides/${guide.id}`;"
+              style="font-size:12.5px; font-weight:800; padding:10px 20px;"
+            >
+              🚀 Guardar y Publicar Evaluación
+            </button>
+            <a href={`/${lang}/app/teacher/guides/${guide.id}`} class="btn btn-secondary" style="font-size:12px;">
+              Guardar como Borrador
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- COLUMNA LATERAL: BLOQUES DISPONIBLES -->
+      <div>
+        <div class="panel" style="border:1.5px solid var(--ink); padding:16px; background:var(--paper);">
+          <div style="font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink); margin-bottom:10px; border-bottom:1.5px solid var(--ink); padding-bottom:6px;">
+            BLOQUES DE LA GUÍA ({guide.blocks.length})
+          </div>
+          <p style="font-size:11.5px; color:var(--ink-soft); line-height:1.45; margin-bottom:12px;">
+            Cada pregunta debe enlazar al bloque correspondiente para permitir el aprendizaje hiper-referenciado del estudiante.
+          </p>
+
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            {guide.blocks.map((b) => (
+              <div style="padding:8px 10px; background:var(--cream); border:1px solid var(--line-strong); font-size:11.5px;">
+                <div style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--rust);">
+                  § {b.order} · {b.type.toUpperCase()}
+                </div>
+                <div style="color:var(--ink); font-weight:600;">
+                  {b.type === 'heading' ? b.title : b.type === 'callout' ? b.title : `${b.content.slice(0, 50)}...`}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </AppLayout>
+) : (
+  <AppLayout title="Error" pageTitle="Guía no encontrada" activeSection="courses" role="teacher" schoolName="Colegio Norte" lang={lang} activeRoute="/app/teacher" breadcrumbs={[{ label: 'Error' }]}>
+    <div style="padding:40px; text-align:center;">
+      <h2>Guía no encontrada</h2>
+      <a href={`/${lang}/app/teacher/courses`} class="btn btn-primary">Volver</a>
+    </div>
+  </AppLayout>
+)}

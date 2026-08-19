@@ -1,6 +1,6 @@
 ---
 // ============================================================
-// SchoolOS — Pantalla de Inicio de Sesión (Mock Auth + Dual i18n)
+// SchoolOS — Pantalla de Inicio de Sesión (Mock Auth Multi-Rol)
 // ============================================================
 import '../styles/tokens.css';
 import { en } from '../i18n/en';
@@ -43,7 +43,7 @@ const i18nData = {
 
       .login-container {
         width: 100%;
-        max-width: 440px;
+        max-width: 480px;
         position: relative;
       }
 
@@ -121,7 +121,7 @@ const i18nData = {
         background: var(--paper);
         border: 1px solid var(--ink);
         box-shadow: 0 4px 20px rgba(22, 20, 15, 0.08);
-        padding: 36px 32px;
+        padding: 32px 28px;
         border-radius: 2px;
       }
 
@@ -129,21 +129,65 @@ const i18nData = {
         font-family: var(--serif);
         font-size: 22px;
         font-weight: 600;
-        margin-bottom: 8px;
+        margin-bottom: 6px;
       }
 
       .login-card p.intro {
-        font-size: 13.5px;
+        font-size: 13px;
         color: var(--ink-soft);
-        margin-bottom: 22px;
+        margin-bottom: 18px;
         line-height: 1.45;
+      }
+
+      .roles-selector-title {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+        margin-bottom: 8px;
+        display: block;
+      }
+
+      .role-pills-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 20px;
+      }
+
+      .role-pill {
+        background: #EDEAE0;
+        border: 1px solid var(--line-strong);
+        padding: 8px 10px;
+        font-size: 11.5px;
+        font-family: var(--mono);
+        color: var(--ink);
+        border-radius: 2px;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        transition: all 0.15s ease;
+        text-align: left;
+      }
+
+      .role-pill:hover, .role-pill.active {
+        background: var(--paper);
+        border-color: var(--ink);
+        box-shadow: 2px 2px 0 rgba(18, 17, 14, 0.15);
+      }
+
+      .role-pill strong {
+        font-size: 12px;
+        color: var(--rust);
       }
 
       .form-group {
         display: flex;
         flex-direction: column;
         gap: 6px;
-        margin-bottom: 18px;
+        margin-bottom: 16px;
       }
 
       .form-group label {
@@ -157,8 +201,8 @@ const i18nData = {
       .form-group input {
         border: 1px solid var(--line-strong);
         background: var(--cream);
-        padding: 12px 14px;
-        font-size: 14.5px;
+        padding: 11px 13px;
+        font-size: 14px;
         border-radius: 2px;
         transition: border-color 0.15s ease, background 0.15s ease;
       }
@@ -169,40 +213,14 @@ const i18nData = {
         background: #fff;
       }
 
-      .demo-pill {
-        background: #EDEAE0;
-        border: 1px solid var(--line-strong);
-        padding: 11px 14px;
-        font-size: 12px;
-        font-family: var(--mono);
-        color: var(--ink);
-        border-radius: 2px;
-        margin-bottom: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        cursor: pointer;
-        transition: background 0.15s ease, border-color 0.15s ease;
-      }
-
-      .demo-pill:hover {
-        background: var(--cream);
-        border-color: var(--ink);
-      }
-
-      .demo-pill code {
-        font-weight: 600;
-        color: var(--rust);
-      }
-
       .error-alert {
         display: none;
         background: #F0D2CB;
         border: 1px solid #A23324;
         color: #5c2015;
-        font-size: 12.5px;
-        padding: 10px 14px;
-        margin-bottom: 18px;
+        font-size: 12px;
+        padding: 10px 12px;
+        margin-bottom: 16px;
         border-radius: 2px;
       }
 
@@ -211,8 +229,8 @@ const i18nData = {
         display: flex;
         justify-content: center;
         align-items: center;
-        padding: 14px;
-        font-size: 13px;
+        padding: 13px;
+        font-size: 12.5px;
         font-family: var(--mono);
         letter-spacing: 0.08em;
         text-transform: uppercase;
@@ -221,8 +239,9 @@ const i18nData = {
         border: 1px solid var(--ink);
         cursor: pointer;
         transition: background 0.15s ease, transform 0.15s ease;
-        margin-top: 8px;
+        margin-top: 6px;
         border-radius: 2px;
+        font-weight: 700;
       }
 
       .btn-submit:hover {
@@ -232,7 +251,7 @@ const i18nData = {
 
       .footer-links {
         text-align: center;
-        margin-top: 24px;
+        margin-top: 22px;
         font-size: 12px;
         font-family: var(--mono);
         color: var(--ink-soft);
@@ -265,32 +284,54 @@ const i18nData = {
 
       <div class="brand-header">
         <a href="/es/" class="brand-logo">School<span>OS</span></a>
-        <div class="brand-subtitle" id="brandSubtitle">Acceso a la Plataforma Interna</div>
+        <div class="brand-subtitle" id="brandSubtitle">Acceso a la Plataforma Educativa</div>
       </div>
 
       <div class="login-card">
         <h2 id="cardTitle">Iniciar Sesión</h2>
-        <p class="intro" id="cardIntro">Accede al panel administrativo y de gestión escolar.</p>
+        <p class="intro" id="cardIntro">Selecciona tu perfil de acceso rápido o ingresa credenciales:</p>
 
-        <!-- Demo credentials helper -->
-        <div class="demo-pill" id="autoFillBtn" title="Clic para autocompletar credenciales">
-          <span id="demoPillText">Demo: <code>admin</code> / <code>123</code></span>
-          <span id="autoFillLabel" style="font-size:10.5px; text-transform:uppercase; color:var(--rust);">Autollenar ↙</span>
+        <!-- Fast Role Selection Pills -->
+        <span class="roles-selector-title">⚡ Perfiles Demo de Acceso Rápido:</span>
+        <div class="role-pills-grid">
+          <!-- RECTOR -->
+          <div class="role-pill active" id="pillRector" title="Iniciar como Rectora del Colegio Norte">
+            <strong>Rectoría / Admin</strong>
+            <span style="color:var(--ink-soft); font-size:10px;">rector / 123</span>
+          </div>
+
+          <!-- SUPER ADMIN -->
+          <div class="role-pill" id="pillSuperAdmin" title="Iniciar como Super Administrador Global">
+            <strong>Super Admin</strong>
+            <span style="color:var(--ink-soft); font-size:10px;">admin / 123</span>
+          </div>
+
+          <!-- DOCENTE -->
+          <div class="role-pill" id="pillTeacher" title="Docente de Biología">
+            <strong>Docente (Profesor)</strong>
+            <span style="color:var(--ink-soft); font-size:10px;">profesor / 123</span>
+          </div>
+
+          <!-- ESTUDIANTE -->
+          <div class="role-pill" id="pillStudent" title="Estudiante de 10°">
+            <strong>Estudiante</strong>
+            <span style="color:var(--ink-soft); font-size:10px;">estudiante / 123</span>
+          </div>
         </div>
 
         <div class="error-alert" id="errorMsg">
-          Credenciales incorrectas. Usa <strong>admin</strong> y contraseña <strong>123</strong>.
+          Credenciales no reconocidas. Usa <strong>rector</strong>, <strong>admin</strong>, <strong>profesor</strong> o <strong>estudiante</strong> con contraseña <strong>123</strong>.
         </div>
 
         <form id="loginForm">
           <div class="form-group">
-            <label for="username" id="labelUser">Usuario o Email</label>
-            <input type="text" id="username" name="username" placeholder="admin" required autofocus />
+            <label for="username" id="labelUser">Usuario o Correo Institucional</label>
+            <input type="text" id="username" name="username" value="rector" required autofocus />
           </div>
 
           <div class="form-group">
-            <label for="password" id="labelPass">Contraseña</label>
-            <input type="password" id="password" name="password" placeholder="••••" required />
+            <label for="password" id="labelPass">Contraseña de Acceso</label>
+            <input type="password" id="password" name="password" value="123" required />
           </div>
 
           <button type="submit" class="btn-submit" id="btnSubmit">Entrar al Sistema →</button>
@@ -327,17 +368,14 @@ const i18nData = {
 
         document.getElementById('htmlRoot').setAttribute('lang', lang);
         document.getElementById('metaTitle').textContent = t.metaTitle;
-        document.getElementById('brandSubtitle').textContent = t.brandSubtitle;
         document.getElementById('cardTitle').textContent = t.title;
         document.getElementById('cardIntro').textContent = t.intro;
-        document.getElementById('autoFillLabel').textContent = t.autoFill;
         document.getElementById('labelUser').textContent = t.userLabel;
         document.getElementById('labelPass').textContent = t.passLabel;
         document.getElementById('btnSubmit').textContent = t.submitBtn;
         document.getElementById('linkBackHome').textContent = t.backHome;
         document.getElementById('linkBackHome').setAttribute('href', '/' + lang + '/');
         document.getElementById('backHomeTop').setAttribute('href', '/' + lang + '/');
-        document.getElementById('errorMsg').innerHTML = t.errorMsg;
 
         // Toggle active button style
         document.getElementById('btnLangEn').classList.toggle('active', lang === 'en');
@@ -351,45 +389,93 @@ const i18nData = {
       document.getElementById('btnLangEn')?.addEventListener('click', () => applyTranslations('en'));
       document.getElementById('btnLangEs')?.addEventListener('click', () => applyTranslations('es'));
 
-      // Autofill button
       const userInput = document.getElementById('username');
       const passInput = document.getElementById('password');
       const errorMsg = document.getElementById('errorMsg');
 
-      document.getElementById('autoFillBtn')?.addEventListener('click', () => {
-        userInput.value = 'admin';
-        passInput.value = '123';
-        userInput.focus();
-      });
+      function setActivePill(pillId, user, pass) {
+        document.querySelectorAll('.role-pill').forEach(p => p.classList.remove('active'));
+        document.getElementById(pillId)?.classList.add('active');
+        userInput.value = user;
+        passInput.value = pass;
+      }
+
+      document.getElementById('pillRector')?.addEventListener('click', () => setActivePill('pillRector', 'rector', '123'));
+      document.getElementById('pillSuperAdmin')?.addEventListener('click', () => setActivePill('pillSuperAdmin', 'admin', '123'));
+      document.getElementById('pillTeacher')?.addEventListener('click', () => setActivePill('pillTeacher', 'profesor', '123'));
+      document.getElementById('pillStudent')?.addEventListener('click', () => setActivePill('pillStudent', 'estudiante', '123'));
 
       // Submit
       document.getElementById('loginForm')?.addEventListener('submit', (e) => {
         e.preventDefault();
-        const username = userInput.value.trim();
+        const username = userInput.value.trim().toLowerCase();
         const password = passInput.value.trim();
 
-        if ((username === 'admin' || username === 'admin@schoolos.com') && password === '123') {
-          try {
-            localStorage.setItem('schoolos-auth', 'true');
-            localStorage.setItem(
-              'schoolos-user',
-              JSON.stringify({
-                name: 'Maria P.',
-                email: 'maria.p@schoolos.com',
-                role: 'super_admin',
-                lang: currentLang,
-              })
-            );
-          } catch (_) {}
-
-          const params = new URLSearchParams(window.location.search);
-          const redirectTo = params.get('redirect') || ('/' + currentLang + '/app/super-admin');
-          window.location.href = redirectTo;
-        } else {
+        if (password !== '123') {
           errorMsg.style.display = 'block';
           passInput.value = '';
           passInput.focus();
+          return;
         }
+
+        let role = 'school_admin';
+        let targetUrl = '/' + currentLang + '/app/school-admin';
+        let userData = {
+          name: 'Diana Restrepo',
+          email: 'diana.restrepo@colegionorte.edu.co',
+          role: 'school_admin',
+          schoolId: 'colegio-norte',
+          schoolName: 'Colegio Norte',
+        };
+
+        if (username === 'admin' || username === 'superadmin' || username.includes('schoolos.com')) {
+          role = 'super_admin';
+          targetUrl = '/' + currentLang + '/app/super-admin';
+          userData = {
+            name: 'Maria P.',
+            email: 'maria.p@schoolos.com',
+            role: 'super_admin',
+            schoolId: null,
+          };
+        } else if (username === 'rector' || username === 'rectoria' || username.includes('diana')) {
+          role = 'school_admin';
+          targetUrl = '/' + currentLang + '/app/school-admin';
+          userData = {
+            name: 'Diana Restrepo',
+            email: 'diana.restrepo@colegionorte.edu.co',
+            role: 'school_admin',
+            schoolId: 'colegio-norte',
+            schoolName: 'Colegio Norte',
+          };
+        } else if (username === 'profesor' || username === 'teacher' || username.includes('restrepo') || username.includes('diana')) {
+          role = 'teacher';
+          targetUrl = '/' + currentLang + '/app/teacher';
+          userData = {
+            name: 'Prof. Diana Restrepo',
+            email: 'diana.restrepo@colegio-norte.edu.co',
+            role: 'teacher',
+            schoolId: 'colegio-norte',
+            schoolName: 'Colegio Norte',
+          };
+        } else if (username === 'estudiante' || username === 'student' || username.includes('mateo')) {
+          role = 'student';
+          targetUrl = '/' + currentLang + '/app/school-admin/students/std-1';
+          userData = {
+            name: 'Mateo Gómez',
+            email: 'mateo.g@colegionorte.edu.co',
+            role: 'student',
+            schoolId: 'colegio-norte',
+          };
+        }
+
+        try {
+          localStorage.setItem('schoolos-auth', 'true');
+          localStorage.setItem('schoolos-user', JSON.stringify(userData));
+        } catch (_) {}
+
+        const params = new URLSearchParams(window.location.search);
+        const redirectTo = params.get('redirect') || targetUrl;
+        window.location.href = redirectTo;
       });
     </script>
   </body>

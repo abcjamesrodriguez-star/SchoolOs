@@ -3,10 +3,11 @@
 // SchoolOS — Listado de Escuelas (/es/app/super-admin/schools)
 // ============================================================
 import AppLayout from '../../../../../layouts/AppLayout.astro';
-import { getMockSchools } from '../../../../../data/app/mock-data';
+import { getMockSchools, getMockDashboardStats } from '../../../../../data/app/mock-data';
 
 const lang = 'es';
 const schools = getMockSchools(lang);
+const stats = getMockDashboardStats(lang);
 
 function getAuditBadge(auditStatus: string) {
   if (auditStatus === 'under_investigation') {
@@ -31,23 +32,48 @@ function getStatusLabel(status: string) {
 
 <AppLayout
   title="Escuelas"
-  pageTitle="Gestión de Escuelas"
+  pageTitle="Directorio de Instituciones"
   activeSection="schools"
   lang={lang}
   activeRoute="/app/super-admin/schools"
-  breadcrumbs={[{ label: 'Sistema' }, { label: 'Escuelas' }]}
+  breadcrumbs={[{ label: 'Sistema' }, { label: 'Instituciones' }]}
 >
+  <!-- TOP SUMMARY RIBBON -->
+  <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:24px;">
+    <div style="background:var(--paper); border:1px solid var(--ink); padding:16px 20px; border-bottom:3px solid var(--sage-accent);">
+      <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft);">Total Instituciones</div>
+      <div style="font-family:var(--serif); font-size:26px; font-weight:700; color:var(--ink); margin-top:4px;">184</div>
+      <div style="font-family:var(--mono); font-size:10.5px; color:var(--sage-dark); font-weight:600; margin-top:2px;">+6 este mes</div>
+    </div>
+    <div style="background:var(--paper); border:1px solid var(--ink); padding:16px 20px; border-bottom:3px solid var(--sage-dark);">
+      <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft);">Escuelas Activas</div>
+      <div style="font-family:var(--serif); font-size:26px; font-weight:700; color:var(--ink); margin-top:4px;">170</div>
+      <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); margin-top:2px;">92.4% del total</div>
+    </div>
+    <div style="background:var(--paper); border:1px solid var(--ink); padding:16px 20px; border-bottom:3px solid var(--orange-vibrant);">
+      <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft);">En Periodo Trial</div>
+      <div style="font-family:var(--serif); font-size:26px; font-weight:700; color:var(--orange-vibrant); margin-top:4px;">{stats.trialSchools}</div>
+      <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); margin-top:2px;">prom. 9 días restantes</div>
+    </div>
+    <div style="background:var(--paper); border:1px solid var(--ink); padding:16px 20px; border-bottom:3px solid var(--danger);">
+      <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft);">Suspendidas</div>
+      <div style="font-family:var(--serif); font-size:26px; font-weight:700; color:var(--danger); margin-top:4px;">{stats.suspendedSchools}</div>
+      <div style="font-family:var(--mono); font-size:10.5px; color:var(--danger); margin-top:2px;">requieren revisión</div>
+    </div>
+  </div>
+
   <div class="panel">
     <div class="table-toolbar">
-      <div class="filter-row">
-        <select class="filter-select" aria-label="Filtrar por estado">
+      <div class="filter-row" style="align-items:center;">
+        <input type="text" placeholder="Filtrar por nombre o dominio..." style="border:1px solid var(--ink); background:var(--cream); padding:7px 12px; font-family:var(--sans); font-size:12.5px; width:240px; border-radius:2px;" />
+        <select class="filter-select" style="border:1px solid var(--ink);" aria-label="Filtrar por estado">
           <option>Todos los estados</option>
           <option>Activa</option>
           <option>En Prueba</option>
           <option>Suspendida</option>
           <option>Cancelada</option>
         </select>
-        <select class="filter-select" aria-label="Filtrar por plan">
+        <select class="filter-select" style="border:1px solid var(--ink);" aria-label="Filtrar por plan">
           <option>Todos los planes</option>
           <option>Starter</option>
           <option>Professional</option>
@@ -61,12 +87,12 @@ function getStatusLabel(status: string) {
       <table class="data-table">
         <thead>
           <tr>
-            <th>Escuela</th>
-            <th>Plan</th>
+            <th>Institución Escolar</th>
+            <th>Plan de Suscripción</th>
             <th>Estado</th>
             <th>Auditoría Judicial</th>
-            <th>Estudiantes</th>
-            <th>Fecha de Creación</th>
+            <th>Estudiantes Matriculados</th>
+            <th>Fecha de Registro</th>
             <th></th>
           </tr>
         </thead>
@@ -76,7 +102,8 @@ function getStatusLabel(status: string) {
             return (
               <tr>
                 <td class="cell-name">
-                  <a href={`/${lang}/app/super-admin/schools/${school.id}`}>{school.name}</a>
+                  <a href={`/${lang}/app/super-admin/schools/${school.id}`} style="font-size:14px; font-weight:700;">{school.name}</a>
+                  <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">{school.domain} · {school.location}</div>
                 </td>
                 <td><span class="plan-tag">{school.planName}</span></td>
                 <td>
@@ -87,11 +114,11 @@ function getStatusLabel(status: string) {
                 <td>
                   <span class={`badge ${audit.class}`}>{audit.label}</span>
                 </td>
-                <td>{school.studentCount.toLocaleString()}</td>
+                <td style="font-family:var(--mono); font-weight:700; font-size:13px;">{school.studentCount.toLocaleString()}</td>
                 <td class="cell-muted">{school.createdAt}</td>
                 <td class="cell-actions">
                   <a class="btn btn-secondary btn-sm" href={`/${lang}/app/super-admin/schools/${school.id}`}>
-                    Ver Detalle
+                    Ver Ficha →
                   </a>
                 </td>
               </tr>
@@ -102,3 +129,4 @@ function getStatusLabel(status: string) {
     </div>
   </div>
 </AppLayout>
+

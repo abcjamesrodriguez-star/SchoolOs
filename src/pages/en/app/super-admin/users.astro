@@ -1,6 +1,6 @@
 ---
 // ============================================================
-// SchoolOS — System Users (/en/app/super-admin/users)
+// SchoolOS — User Directory (/en/app/super-admin/users)
 // ============================================================
 import AppLayout from '../../../../layouts/AppLayout.astro';
 import { getMockUsers } from '../../../../data/app/mock-data';
@@ -11,39 +11,81 @@ const users = getMockUsers(lang);
 
 <AppLayout
   title="Users"
-  pageTitle="System Users"
+  pageTitle="Account Directory"
   activeSection="users"
   lang={lang}
   activeRoute="/app/super-admin/users"
   breadcrumbs={[{ label: 'System' }, { label: 'Users' }]}
 >
-  <div class="panel">
-    <div class="panel-header">
-      <h2>User Directory (Cross-School Search)</h2>
+  <!-- TOP SUMMARY RIBBON -->
+  <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-bottom:24px;">
+    <div style="background:var(--paper); border:1px solid var(--ink); padding:16px 20px; border-bottom:3px solid var(--stone-accent);">
+      <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft);">Total Accounts</div>
+      <div style="font-family:var(--serif); font-size:26px; font-weight:700; color:var(--ink); margin-top:4px;">{users.length} Registered</div>
+      <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); margin-top:2px;">Multi-school access</div>
     </div>
+    <div style="background:var(--paper); border:1px solid var(--ink); padding:16px 20px; border-bottom:3px solid var(--orange-vibrant);">
+      <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft);">Super Administrators</div>
+      <div style="font-family:var(--serif); font-size:26px; font-weight:700; color:var(--orange-vibrant); margin-top:4px;">2</div>
+      <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); margin-top:2px;">Root Global Clearance</div>
+    </div>
+    <div style="background:var(--paper); border:1px solid var(--ink); padding:16px 20px; border-bottom:3px solid var(--sage-accent);">
+      <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft);">School Administrators</div>
+      <div style="font-family:var(--serif); font-size:26px; font-weight:700; color:var(--sage-dark); margin-top:4px;">3</div>
+      <div style="font-family:var(--mono); font-size:10.5px; color:var(--sage-dark); margin-top:2px;">Active tenants</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="table-toolbar">
+      <div class="filter-row" style="align-items:center;">
+        <input type="text" placeholder="Search by name, email or school..." style="border:1px solid var(--ink); background:var(--cream); padding:7px 12px; font-family:var(--sans); font-size:12.5px; width:280px; border-radius:2px;" />
+        <select class="filter-select" style="border:1px solid var(--ink);">
+          <option>All roles</option>
+          <option>Super Admin</option>
+          <option>School Admin</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="alert('Mock: Invitation sent');">+ Invite User</button>
+    </div>
+
     <div class="panel-body">
       <table class="data-table">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Institution / Scope</th>
-            <th>Role</th>
+            <th>Full Name</th>
+            <th>Email Address</th>
+            <th>Assigned Institution</th>
+            <th>Role & Privileges</th>
             <th>Status</th>
-            <th>Last login</th>
+            <th>Last Active</th>
           </tr>
         </thead>
         <tbody>
-          {users.map((u) => (
-            <tr>
-              <td class="cell-name">{u.name}</td>
-              <td class="cell-muted">{u.email}</td>
-              <td>{u.school}</td>
-              <td><span class="plan-tag">{u.role}</span></td>
-              <td><span class={`badge badge-active`}>{u.status}</span></td>
-              <td class="cell-muted">{u.lastLogin}</td>
-            </tr>
-          ))}
+          {users.map((u) => {
+            const isSuper = u.role.toLowerCase().includes('super');
+            return (
+              <tr>
+                <td class="cell-name">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <div style={`width:24px; height:24px; background:${isSuper ? 'var(--ink)' : '#BACBB0'}; color:${isSuper ? '#FFFFFF' : '#12110E'}; font-family:var(--mono); font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center;`}>
+                      {u.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
+                    </div>
+                    <span style="font-size:13.5px; font-weight:700;">{u.name}</span>
+                  </div>
+                </td>
+                <td class="cell-muted" style="font-family:var(--mono); font-size:12px;">{u.email}</td>
+                <td style="font-weight:500;">{u.school}</td>
+                <td>
+                  <span class="plan-tag" style={isSuper ? 'background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-weight:700;' : ''}>
+                    {u.role}
+                  </span>
+                </td>
+                <td><span class="badge badge-active">{u.status}</span></td>
+                <td class="cell-muted" style="font-family:var(--mono); font-size:11.5px; color:var(--ink);">{u.lastLogin}</td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

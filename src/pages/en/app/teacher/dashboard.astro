@@ -1,0 +1,183 @@
+---
+// ============================================================
+// SchoolOS — Teacher Panel: Dashboard & Academic Analytics (English)
+// Phase 3 | Prof. Diana Restrepo | teacherId: usr-1
+// ============================================================
+import AppLayout from '../../../../layouts/AppLayout.astro';
+import { getTeacherCourses, getAllTeacherGuides, getTeacherDashboardStats, getAllTeacherStudents } from '../../../../data/app/mock-content';
+
+const lang = 'en';
+const courses = getTeacherCourses();
+const guides = getAllTeacherGuides();
+const stats = getTeacherDashboardStats();
+const allStudents = getAllTeacherStudents();
+---
+
+<AppLayout
+  title="Dashboard & Analytics"
+  pageTitle="Academic Analytics — Prof. Diana Restrepo"
+  activeSection="dashboard"
+  role="teacher"
+  schoolName="Colegio Norte"
+  lang={lang}
+  activeRoute="/app/teacher/dashboard"
+  breadcrumbs={[{ label: 'Colegio Norte' }, { label: 'Teacher Panel', href: `/${lang}/app/teacher` }, { label: 'Dashboard & Analytics' }]}
+>
+
+  <!-- ── 1. TOP BANNER ── -->
+  <div style="background:var(--paper); border:2px solid var(--ink); padding:14px 20px; margin-bottom:24px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; box-shadow:4px 4px 0 rgba(18,17,14,0.08);">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <span class="plan-tag" style="background:var(--rust); color:#FFFFFF; border-color:var(--rust); font-weight:900; font-size:11px; padding:3px 8px; letter-spacing:0.06em;">
+        ACADEMIC OVERVIEW
+      </span>
+      <span style="font-family:var(--mono); font-size:12.5px; font-weight:700; color:var(--ink);">
+        Biology & Natural Sciences · Term 1 · Week 6 of 18
+      </span>
+    </div>
+    <a href={`/${lang}/app/teacher`} class="btn btn-secondary btn-sm" style="font-size:11px; font-weight:800; border-color:var(--rust); color:var(--rust);">
+      ⚡ Return to Live Classroom Cockpit →
+    </a>
+  </div>
+
+  <!-- ── 2. 4 GLOBAL STAT METRICS ── -->
+  <div class="stat-grid" style="margin-bottom:24px;">
+    <div class="stat-card" style="border:2px solid var(--ink);">
+      <div class="stat-label">ASSIGNED COURSES</div>
+      <div class="stat-num" style="color:var(--ink); font-size:32px;">{stats.activeCourses}</div>
+      <div class="stat-sub"><a href={`/${lang}/app/teacher/courses`} style="color:var(--rust); font-weight:700;">View courses →</a></div>
+    </div>
+
+    <div class="stat-card" style="border:2px solid var(--ink);">
+      <div class="stat-label">PUBLISHED GUIDES</div>
+      <div class="stat-num" style="color:var(--ink); font-size:32px;">{stats.guidesPublished}</div>
+      <div class="stat-sub">Active curricular material</div>
+    </div>
+
+    <div class="stat-card" style="border:2px solid var(--ink);">
+      <div class="stat-label">TOTAL STUDENTS</div>
+      <div class="stat-num" style="color:var(--ink); font-size:32px;">{stats.totalStudents}</div>
+      <div class="stat-sub"><a href={`/${lang}/app/teacher/students`} style="color:var(--rust); font-weight:700;">Roster directory →</a></div>
+    </div>
+
+    <div class="stat-card" style="border:2px solid var(--ink);">
+      <div class="stat-label">PENDING GRADING</div>
+      <div class="stat-num accent" style="color:var(--rust); font-size:32px;">{stats.pendingToGrade}</div>
+      <div class="stat-sub" style="color:var(--rust); font-weight:700;">1 physical exam pending</div>
+    </div>
+  </div>
+
+  <!-- ── 3. BODY: 2 COLUMNS ── -->
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap:24px; margin-bottom:28px;">
+
+    <!-- LEFT COLUMN -->
+    <div style="display:flex; flex-direction:column; gap:20px;">
+
+      <!-- CURRICULAR PROGRESS (SYLLABUS) -->
+      <div class="panel" style="border:2px solid var(--ink); box-shadow:6px 6px 0 rgba(18,17,14,0.08);">
+        <div class="panel-header" style="background:var(--cream); display:flex; justify-content:space-between; align-items:center;">
+          <h2 style="font-size:13px; margin:0;">CURRICULAR PROGRESS BY CLASS</h2>
+          <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">Term 1 · 2026</span>
+        </div>
+
+        <div class="panel-body" style="padding:0;">
+          {courses.map((course) => (
+            <div style="padding:16px 20px; border-bottom:1.5px solid var(--line);">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <div>
+                  <strong style="font-family:var(--serif); font-size:15.5px; color:var(--ink);">{course.name}</strong>
+                  <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-left:8px;">{course.studentCount} students · {course.room}</span>
+                </div>
+                <span class="badge badge-active" style="font-size:9.5px;">AVERAGE: {course.averageScore.toFixed(1)}</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px; margin-top:8px;">
+                <div style="flex:1; height:6px; background:var(--cream); border:1px solid var(--ink);">
+                  <div style={`width:${course.averageScore * 10}%; height:100%; background:var(--rust);`}></div>
+                </div>
+                <a href={`/${lang}/app/teacher/courses/${course.id}`} class="btn btn-secondary btn-sm" style="font-size:10.5px;">Detail →</a>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- GRADING WORKBENCH -->
+      <div class="panel" style="border:2px solid var(--rust); box-shadow:6px 6px 0 rgba(195,83,44,0.12);">
+        <div class="panel-header" style="background:var(--cream); display:flex; justify-content:space-between; align-items:center;">
+          <h2 style="font-size:13px; margin:0; color:var(--rust);">EVALUATION WORKBENCH</h2>
+          <span style="font-family:var(--mono); font-size:11px; font-weight:700; color:var(--rust);">1 PENDING</span>
+        </div>
+        <div class="panel-body" style="padding:0;">
+          <div style="padding:16px 20px; border-bottom:1.5px solid var(--line); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; background:#FFFDF9;">
+            <div>
+              <span class="badge badge-warning" style="font-size:9px;">IN-PERSON</span>
+              <h4 style="font-family:var(--serif); font-size:15px; margin:4px 0 2px 0;">Exam: Mendel's Laws</h4>
+              <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">Biology 10°A · 25 students</div>
+            </div>
+            <a href={`/${lang}/app/teacher/evaluations/eval-2/grade`} class="btn btn-primary btn-sm" style="font-size:11px; font-weight:800;">Grade Sheet →</a>
+          </div>
+
+          <div style="padding:16px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div>
+              <span class="badge badge-active" style="font-size:9px;">VIRTUAL</span>
+              <h4 style="font-family:var(--serif); font-size:15px; margin:4px 0 2px 0;">Quiz: Eukaryotic Cell</h4>
+              <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">24 submissions · 78.5% avg</div>
+            </div>
+            <a href={`/${lang}/app/teacher/evaluations/eval-1/results`} class="btn btn-secondary btn-sm" style="font-size:11px;">View Results →</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div style="display:flex; flex-direction:column; gap:20px;">
+
+      <!-- ACTIONS -->
+      <div class="panel" style="border:2px solid var(--ink); box-shadow:4px 4px 0 rgba(18,17,14,0.08);">
+        <div class="panel-header" style="background:var(--ink); color:#FFFFFF;">
+          <h2 style="font-size:12px; color:#FFFFFF; letter-spacing:0.08em;">TEACHING ACTIONS</h2>
+        </div>
+        <div class="panel-body padded" style="display:flex; flex-direction:column; gap:10px;">
+          <a href={`/${lang}/app/teacher/grades`} class="btn btn-primary" style="justify-content:space-between; display:flex; font-size:12px; padding:11px 14px; font-weight:700;">
+            <span>Master Gradebook</span>
+            <span>→</span>
+          </a>
+          <a href={`/${lang}/app/teacher/courses/crs-bio-10a/guides/new`} class="btn btn-secondary" style="justify-content:space-between; display:flex; font-size:12px; padding:10px 12px;">
+            <span>+ Create Guide (Wizard)</span>
+            <span>+</span>
+          </a>
+          <a href={`/${lang}/app/teacher/guides/gd-1/evaluations/new`} class="btn btn-secondary" style="justify-content:space-between; display:flex; font-size:12px; padding:10px 12px;">
+            <span>+ Design Assessment</span>
+            <span>+</span>
+          </a>
+          <a href={`/${lang}/app/teacher/students`} class="btn btn-secondary" style="justify-content:space-between; display:flex; font-size:12px; padding:10px 12px;">
+            <span>Student Roster</span>
+            <span>→</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- AGENDA -->
+      <div class="panel" style="border:1.5px solid var(--ink); background:var(--paper); padding:16px;">
+        <div style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; color:var(--ink); margin-bottom:10px; border-bottom:1.5px solid var(--ink); padding-bottom:4px;">
+          INSTITUTIONAL AGENDA
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px; font-size:12px;">
+          <div style="border-left:3px solid var(--rust); padding-left:8px;">
+            <div style="font-family:var(--mono); font-size:9.5px; color:var(--rust); font-weight:800;">FRIDAY, AUGUST 22</div>
+            <strong style="color:var(--ink);">Faculty Development Day</strong>
+            <div style="font-size:11px; color:var(--ink-soft);">No students</div>
+          </div>
+          <div style="border-left:3px solid var(--ink); padding-left:8px;">
+            <div style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft); font-weight:800;">FRIDAY, SEPTEMBER 5</div>
+            <strong style="color:var(--ink);">Term 1 Grade Deadline</strong>
+            <div style="font-size:11px; color:var(--ink-soft);">Official term cutoff</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</AppLayout>

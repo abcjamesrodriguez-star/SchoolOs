@@ -1,0 +1,173 @@
+---
+// ============================================================
+// SchoolOS — Detalle de Guía (Teacher)
+// Fase 3 | Vista de lectura de bloques + evaluaciones vinculadas
+// ============================================================
+import AppLayout from '../../../../../layouts/AppLayout.astro';
+import { getAllTeacherGuides, getGuideById, getEvaluationsByGuide } from '../../../../../data/app/mock-content';
+
+export async function getStaticPaths() {
+  const guides = getAllTeacherGuides();
+  return guides.map((g) => ({ params: { id: g.id } }));
+}
+
+const lang = 'es';
+const { id } = Astro.params;
+const guide = getGuideById(id!);
+const evaluations = guide ? getEvaluationsByGuide(guide.id) : [];
+---
+
+{guide ? (
+  <AppLayout
+    title={guide.title}
+    pageTitle={guide.title}
+    activeSection="courses"
+    role="teacher"
+    schoolName="Colegio Norte"
+    lang={lang}
+    activeRoute={`/app/teacher/guides/${id}`}
+    breadcrumbs={[
+      { label: 'Colegio Norte' },
+      { label: 'Panel Docente', href: `/${lang}/app/teacher` },
+      { label: guide.courseName, href: `/${lang}/app/teacher/courses/${guide.courseId}` },
+      { label: guide.title },
+    ]}
+  >
+
+    <!-- ── HEADER DE LA GUÍA ── -->
+    <div style="background:var(--paper); border:2px solid var(--ink); padding:16px 20px; margin-bottom:20px; box-shadow:4px 4px 0 rgba(18,17,14,0.08);">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
+        <div>
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <span class={guide.status === 'published' ? 'badge badge-active' : guide.status === 'draft' ? 'badge badge-warning' : 'badge badge-suspended'} style="font-size:10px; font-weight:800;">
+              {guide.status === 'published' ? 'PUBLICADA' : guide.status === 'draft' ? 'BORRADOR' : 'ARCHIVADA'}
+            </span>
+            <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">{guide.blocks.length} bloques · {guide.estimatedMinutes} min estimados</span>
+          </div>
+          <h1 style="font-family:var(--serif); font-size:24px; font-weight:700; color:var(--ink); margin:0 0 4px 0;">{guide.title}</h1>
+          <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">{guide.courseName} · Prof. {guide.teacherName}</div>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <a href={`/${lang}/app/teacher/courses/${guide.courseId}`} class="btn btn-secondary btn-sm" style="font-size:11px;">← Volver al Curso</a>
+          <button class="btn btn-secondary btn-sm" onclick={`alert('Abriendo editor de la guía "${guide.title}"...')`} style="font-size:11px;">Editar Guía</button>
+          <button class="btn btn-secondary btn-sm" onclick="alert('Generando PDF editorial de la guía... (disponible en Fase 5 con backend)')" style="font-size:11px;">↓ PDF de Muestra</button>
+          {evaluations.length > 0 && (
+            <a href={`/${lang}/app/teacher/evaluations/eval-1/results`} class="btn btn-primary btn-sm" style="font-size:11.5px; font-weight:700;">Ver Resultados →</a>
+          )}
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CUERPO: 2/3 CONTENIDO + 1/3 PANEL LATERAL ── -->
+    <div style="display:grid; grid-template-columns: 2fr 1fr; gap:24px;">
+
+      <!-- COLUMNA PRINCIPAL: VISTA DE BLOQUES -->
+      <div>
+        <div class="panel" style="border:2px solid var(--ink); padding:32px 36px; background:#fff; box-shadow:6px 6px 0 rgba(18,17,14,0.06);">
+          <!-- Encabezado del documento -->
+          <div style="border-bottom:3px solid var(--ink); padding-bottom:16px; margin-bottom:24px;">
+            <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); text-transform:uppercase; margin-bottom:4px;">
+              {guide.courseName} · {guide.estimatedMinutes} min · Colegio Norte
+            </div>
+            <h2 style="font-family:var(--serif); font-size:22px; font-weight:700; color:var(--ink); margin:0 0 6px 0;">{guide.title}</h2>
+            {guide.description && <p style="font-size:12.5px; color:var(--ink-soft); margin:0; line-height:1.5;">{guide.description}</p>}
+          </div>
+
+          <!-- Bloques de contenido -->
+          <div style="display:flex; flex-direction:column; gap:18px;">
+            {guide.blocks.map((block) => (
+              <div>
+                {block.type === 'heading' && (
+                  <div>
+                    <div style="font-family:var(--mono); font-size:10px; color:var(--rust); font-weight:800; margin-bottom:4px;">§ {block.order}</div>
+                    <h3 style="font-family:var(--serif); font-size:19px; font-weight:700; color:var(--ink); margin:0; border-bottom:1.5px solid var(--ink); padding-bottom:4px;">{block.title}</h3>
+                  </div>
+                )}
+                {block.type === 'paragraph' && (
+                  <div style="border-left:3px solid var(--line); padding-left:16px;">
+                    <div style="font-family:var(--mono); font-size:9px; color:var(--ink-soft); margin-bottom:4px;">§ {block.order}</div>
+                    <p style="font-size:14px; line-height:1.75; color:var(--ink); margin:0;">{block.content}</p>
+                  </div>
+                )}
+                {block.type === 'callout' && (
+                  <div style="background:var(--cream); border:2px solid var(--rust); border-left:6px solid var(--rust); padding:14px 18px;">
+                    <div style="font-family:var(--mono); font-size:10px; font-weight:800; color:var(--rust); margin-bottom:6px;">§ {block.order} · {block.title}</div>
+                    <p style="font-size:13.5px; margin:0; color:var(--ink); line-height:1.55;">{block.content}</p>
+                  </div>
+                )}
+                {block.type === 'image' && (
+                  <div style="border:2px dashed var(--ink-soft); padding:24px; text-align:center; background:var(--cream);">
+                    <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">§ {block.order} · [Imagen: {block.content}]</div>
+                    {block.caption && <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); margin-top:6px; font-style:italic;">{block.caption}</div>}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <!-- COLUMNA DERECHA: PANEL LATERAL -->
+      <div style="display:flex; flex-direction:column; gap:16px;">
+
+        <!-- Metadatos -->
+        <div class="panel" style="border:1.5px solid var(--ink); padding:16px;">
+          <div style="font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink); margin-bottom:10px; border-bottom:1.5px solid var(--ink); padding-bottom:6px;">INFORMACIÓN DE LA GUÍA</div>
+          <div style="display:flex; flex-direction:column; gap:8px; font-size:12px;">
+            <div style="display:flex; justify-content:space-between;"><span style="color:var(--ink-soft);">Creada</span><strong style="font-family:var(--mono);">{new Date(guide.createdAt).toLocaleDateString('es-CO', {day:'2-digit', month:'short', year:'numeric'})}</strong></div>
+            <div style="display:flex; justify-content:space-between;"><span style="color:var(--ink-soft);">Actualizada</span><strong style="font-family:var(--mono);">{new Date(guide.updatedAt).toLocaleDateString('es-CO', {day:'2-digit', month:'short', year:'numeric'})}</strong></div>
+            <div style="display:flex; justify-content:space-between;"><span style="color:var(--ink-soft);">Bloques</span><strong style="font-family:var(--mono);">{guide.blocks.length}</strong></div>
+            <div style="display:flex; justify-content:space-between;"><span style="color:var(--ink-soft);">Tiempo estimado</span><strong style="font-family:var(--mono);">{guide.estimatedMinutes} min</strong></div>
+            <div style="display:flex; justify-content:space-between;"><span style="color:var(--ink-soft);">Evaluaciones</span><strong style="font-family:var(--mono);">{evaluations.length}</strong></div>
+          </div>
+        </div>
+
+        <!-- Publicar si es borrador -->
+        {guide.status === 'draft' && (
+          <div class="panel" style="border:2px solid var(--rust); padding:16px; background:#FFF8F5;">
+            <div style="font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--rust); margin-bottom:8px;">BORRADOR — No visible para alumnos</div>
+            <p style="font-size:12px; color:var(--ink-soft); margin:0 0 12px 0; line-height:1.5;">Esta guía aún no ha sido publicada. Los alumnos no pueden verla.</p>
+            <button class="btn btn-primary" onclick="alert('Guía publicada. Los alumnos ya pueden acceder al contenido.')" style="width:100%; font-size:12px; font-weight:700; justify-content:center;">
+              🚀 Publicar Guía
+            </button>
+          </div>
+        )}
+
+        <!-- Evaluaciones vinculadas -->
+        {evaluations.length > 0 ? (
+          <div class="panel" style="border:1.5px solid var(--ink); padding:16px;">
+            <div style="font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink); margin-bottom:10px; border-bottom:1.5px solid var(--ink); padding-bottom:6px;">EVALUACIONES VINCULADAS ({evaluations.length})</div>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              {evaluations.map((ev) => (
+                <div style="padding:10px 12px; background:var(--cream); border:1.5px solid var(--line-strong);">
+                  <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                    <span class={ev.mode === 'virtual' ? 'badge badge-active' : 'badge badge-warning'} style="font-size:9px;">{ev.mode === 'virtual' ? 'VIRTUAL' : 'PRESENCIAL'}</span>
+                  </div>
+                  <div style="font-family:var(--serif); font-size:13px; font-weight:700; color:var(--ink); margin-bottom:4px;">{ev.title}</div>
+                  <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); margin-bottom:8px;">{ev.questions.length} preguntas · Aprobación {ev.passingScore}%</div>
+                  <a href={`/${lang}/app/teacher/evaluations/${ev.id}/results`} class="btn btn-secondary btn-sm" style="font-size:10.5px; display:inline-block;">Ver Resultados →</a>
+                </div>
+              ))}
+            </div>
+            <a href={`/${lang}/app/teacher/guides/${id}/evaluations/new`} class="btn btn-secondary btn-sm" style="width:100%; margin-top:10px; font-size:11px; text-align:center; display:block;">+ Agregar Evaluación</a>
+          </div>
+        ) : (
+          <div class="panel" style="border:1.5px solid var(--ink); padding:16px;">
+            <div style="font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink); margin-bottom:8px;">EVALUACIONES</div>
+            <p style="font-size:12px; color:var(--ink-soft); margin:0 0 12px 0;">Sin evaluaciones vinculadas todavía.</p>
+            <a href={`/${lang}/app/teacher/guides/${id}/evaluations/new`} class="btn btn-secondary btn-sm" style="font-size:11px; display:block; text-align:center;">+ Crear Evaluación</a>
+          </div>
+        )}
+
+      </div>
+    </div>
+
+  </AppLayout>
+) : (
+  <AppLayout title="Guía no encontrada" pageTitle="Error" activeSection="courses" role="teacher" schoolName="Colegio Norte" lang={lang} activeRoute="/app/teacher" breadcrumbs={[{ label: 'Colegio Norte' }, { label: 'Error' }]}>
+    <div style="padding:40px; text-align:center;">
+      <h2>Guía no encontrada</h2>
+      <a href={`/${lang}/app/teacher/courses`} class="btn btn-primary">Volver a Mis Cursos</a>
+    </div>
+  </AppLayout>
+)}

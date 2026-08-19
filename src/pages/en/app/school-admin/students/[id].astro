@@ -1,0 +1,425 @@
+---
+// ============================================================
+// SchoolOS — Comprehensive Student File (/en/app/school-admin/students/[id])
+// Executive Command: Grades, Student Conduct File, Medical Record & Direct Actions
+// ============================================================
+import AppLayout from '../../../../../layouts/AppLayout.astro';
+import StudentCitationModal from '../../../../../components/app/school-admin/StudentCitationModal.astro';
+import { getStudents, getStudent } from '../../../../../data/app/mock-academic';
+
+export function getStaticPaths() {
+  const students = getStudents('en');
+  return students.map((student) => ({
+    params: { id: student.id },
+  }));
+}
+
+const { id } = Astro.params;
+const lang = 'en';
+const student = getStudent(id!, lang);
+
+if (!student) {
+  return Astro.redirect(`/${lang}/app/school-admin/students`);
+}
+
+const enrolledCourses = student.enrolledCourses || [];
+const behaviorRecords = student.behaviorRecords || [];
+const attendanceIncidents = student.attendanceIncidents || [];
+const medicalInfo = student.medicalInfo || {
+  eps: 'Sura EPS',
+  bloodType: 'O+',
+  allergies: 'None reported',
+  emergencyPhone: student.guardianPhone || '+57 310 445 8921',
+  emergencyContactName: student.guardianName,
+  emergencyContactRelation: student.guardianRelation || 'Guardian',
+};
+---
+
+<AppLayout
+  title={student.name}
+  pageTitle={`Student Academic Record: ${student.name}`}
+  activeSection="students"
+  role="school_admin"
+  schoolName="Colegio Norte"
+  lang={lang}
+  activeRoute={`/app/school-admin/students/${student.id}`}
+  breadcrumbs={[
+    { label: 'Colegio Norte', href: `/${lang}/app/school-admin` },
+    { label: 'Students', href: `/${lang}/app/school-admin/students` },
+    { label: student.name },
+  ]}
+>
+
+  <div style="margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+    <a href={`/${lang}/app/school-admin/students`} class="btn btn-secondary btn-sm" style="font-weight:700;">
+      ← Back to Student Directory
+    </a>
+
+    <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">
+      Student ID: <strong>{student.id}</strong> · DANE Registry: <strong>{student.daneCode || '1002900-STD-01'}</strong> · {student.documentType} <strong>{student.documentNumber}</strong>
+    </div>
+  </div>
+
+  <!-- ── 1. EXECUTIVE STUDENT HEADER ───────────────────────────── -->
+  <div class="detail-header" style="margin-bottom:24px; background:var(--paper); border:2px solid var(--ink); padding:24px; box-shadow:6px 6px 0 rgba(18, 17, 14, 0.08);">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px;">
+      
+      <div style="display:flex; align-items:center; gap:18px;">
+        <div style={`width:58px; height:58px; background:${student.academicStatus === 'risk' ? 'var(--rust)' : student.academicStatus === 'honor' ? 'var(--olive-dark)' : 'var(--ink)'}; color:#FFFFFF; font-family:var(--mono); font-size:20px; font-weight:700; display:flex; align-items:center; justify-content:center; box-shadow:3px 3px 0 rgba(18, 17, 14, 0.2);`}>
+          {student.avatarInitials}
+        </div>
+        <div>
+          <div class="title-row" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:4px;">
+            <h1 style="font-family:var(--serif); font-size:24px; margin:0; font-weight:700; color:var(--ink);">{student.name}</h1>
+            <span class="plan-tag" style="background:var(--ink); color:#FFF; font-weight:800; font-size:11px; padding:3px 8px;">
+              {student.gradeLevel}
+            </span>
+            <span class={student.enrollmentType === 'conditional' ? 'badge badge-suspended' : 'badge badge-active'}>
+              {student.enrollmentType === 'conditional' ? 'CONDITIONAL ENROLLMENT' : 'REGULAR STANDING'}
+            </span>
+            {student.academicStatus === 'risk' && (
+              <span class="badge badge-suspended" style="font-size:9.5px;">
+                ACADEMIC RISK P1
+              </span>
+            )}
+            {student.academicStatus === 'honor' && (
+              <span class="badge badge-active" style="font-size:9.5px;">
+                HONOR ROLL
+              </span>
+            )}
+          </div>
+          <div class="sub" style="font-size:13px; color:var(--ink-soft);">
+            {student.email} · ID Document: <strong>{student.documentType} {student.documentNumber}</strong> · Enrolled on {student.registeredAt}
+          </div>
+          <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:4px; display:flex; gap:16px; flex-wrap:wrap;">
+            <span>Guardian: <strong>{student.guardianName} ({student.guardianRelation || 'Guardian'})</strong></span>
+            <span style="color:var(--rust); font-weight:700;">Emergency Mobile: <strong>{student.guardianPhone || '+57 310 445 8921'}</strong></span>
+            <span>Health Provider: <strong>{medicalInfo.eps}</strong> ({medicalInfo.bloodType})</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rectoral Actions -->
+      <div class="detail-actions" style="display:flex; flex-wrap:wrap; gap:8px;">
+        <button
+          type="button"
+          class="btn btn-primary"
+          onclick={`window.openStudentCitationModal('${student.name}', '${student.gradeLevel} · Guardian: ${student.guardianName} (${student.guardianPhone || ''})', '${student.avatarInitials}', '${student.academicStatus === 'risk' ? 'Academic Support Plan' : student.academicStatus === 'honor' ? 'Honor Recognition' : 'Academic Follow-up'}');`}
+          style="font-size:12px; font-weight:700;"
+        >
+          Schedule Parent Meeting
+        </button>
+        <button
+          type="button"
+          class="btn btn-secondary"
+          onclick="alert('Downloading official Term 1 PDF transcript.');"
+          style="font-size:12px;"
+        >
+          Official Report PDF
+        </button>
+        <button
+          type="button"
+          class="btn btn-secondary"
+          onclick="alert('Generating official Certificate of Enrollment with government validation.');"
+          style="font-size:12px;"
+        >
+          Certificate of Study
+        </button>
+        <button
+          type="button"
+          class="btn btn-secondary"
+          onclick="alert('Academic, Financial & Library Clearance Certificate generated.');"
+          style="font-size:12px;"
+        >
+          Clearance Slip
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── 2. METRIC CARDS ─────────────────────────────────────────── -->
+  <div class="stat-grid" style="margin-bottom:24px;">
+    <!-- Average Grade -->
+    <div class="stat-card" style="border:2px solid var(--ink);">
+      <div class="stat-label">CUMULATIVE AVERAGE P1</div>
+      <div class="stat-num accent" style={`color:${student.overallAverage < 8.0 ? 'var(--rust)' : student.overallAverage >= 9.0 ? 'var(--olive-dark)' : 'var(--ink)'}; font-size:28px;`}>
+        {student.overallAverage} <span style="font-size:16px; font-weight:400; color:var(--ink-soft);">/ 10</span>
+      </div>
+      <div class="stat-sub" style={student.overallAverage < 8.0 ? 'color:var(--rust); font-weight:700;' : ''}>
+        {student.overallAverage < 8.0 ? 'Below threshold — Requires recovery plan' : student.overallAverage >= 9.0 ? 'Superior Academic Standing' : 'Satisfactory Standard Progress'}
+      </div>
+    </div>
+
+    <!-- Attendance -->
+    <div class="stat-card" style="border:2px solid var(--ink);">
+      <div class="stat-label">RECORDED ATTENDANCE</div>
+      <div class="stat-num" style={`color:${student.attendanceRate < 92 ? 'var(--rust)' : 'var(--olive-dark)'}; font-size:28px;`}>
+        {student.attendanceRate}%
+      </div>
+      <div class="stat-sub">
+        {student.unexcusedAbsences > 0 ? `${student.unexcusedAbsences} unexcused absences accumulated` : 'Zero unexcused absences'}
+      </div>
+    </div>
+
+    <!-- At-Risk Subjects -->
+    <div class="stat-card" style="border:2px solid var(--ink);">
+      <div class="stat-label">AT-RISK / RECOVERY SUBJECTS</div>
+      <div class="stat-num" style={`color:${student.failedCoursesCount > 0 ? 'var(--rust)' : 'var(--ink)'}; font-size:28px;`}>
+        {student.failedCoursesCount || enrolledCourses.filter(c => c.grade < 8.0).length}
+      </div>
+      <div class="stat-sub">
+        Out of {enrolledCourses.length} enrolled subjects
+      </div>
+    </div>
+
+    <!-- Financial & Library Clearance -->
+    <div class="stat-card" style="border:2px solid var(--ink);">
+      <div class="stat-label">CLEARANCE STATUS</div>
+      <div class="stat-num" style={`color:${student.pazYSalvoStatus === 'al_dia' ? 'var(--olive-dark)' : 'var(--rust)'}; font-size:28px;`}>
+        {student.pazYSalvoStatus === 'al_dia' ? 'All Clear' : 'Pending'}
+      </div>
+      <div class="stat-sub">
+        {student.pazYSalvoStatus === 'al_dia' ? 'No outstanding fees or library holds' : 'Administrative item pending review'}
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 3. EMERGENCY & MEDICAL SAFETY RECORD ────────────────────── -->
+  <div class="panel" style="border:2px solid var(--ink); background:#FFFDF9; box-shadow:4px 4px 0 rgba(18, 17, 14, 0.08); margin-bottom:24px;">
+    <div class="panel-header" style="background:var(--cream); display:flex; justify-content:space-between; align-items:center; padding:12px 18px; border-bottom:1.5px solid var(--ink);">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="plan-tag" style="background:var(--rust); color:#FFFFFF; border-color:var(--rust); font-size:10px; font-weight:900;">
+          STUDENT SAFETY & HEALTH
+        </span>
+        <h3 style="font-family:var(--serif); font-size:15px; margin:0; font-weight:700;">
+          Health Insurance, Blood Type & Emergency Protocol
+        </h3>
+      </div>
+      <span style="font-family:var(--mono); font-size:11px; font-weight:700; color:var(--ink);">
+        Blood Type: <strong style="color:var(--rust); font-size:13px;">{medicalInfo.bloodType}</strong>
+      </span>
+    </div>
+
+    <div class="panel-body padded" style="padding:16px 18px;">
+      <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:16px; flex-wrap:wrap;">
+        <div>
+          <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); text-transform:uppercase;">Health Provider (EPS)</div>
+          <strong style="font-size:13px; color:var(--ink); display:block; margin-top:2px;">{medicalInfo.eps}</strong>
+        </div>
+
+        <div>
+          <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); text-transform:uppercase;">Emergency Contact</div>
+          <strong style="font-size:13px; color:var(--ink); display:block; margin-top:2px;">{medicalInfo.emergencyContactName}</strong>
+        </div>
+
+        <div>
+          <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); text-transform:uppercase;">Mobile / WhatsApp</div>
+          <strong style="font-family:var(--mono); font-size:13px; color:var(--rust); display:block; margin-top:2px;">{medicalInfo.emergencyPhone}</strong>
+        </div>
+
+        <div>
+          <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); text-transform:uppercase;">Allergies / Conditions</div>
+          <strong style="font-size:12px; color:var(--ink); display:block; margin-top:2px;">{medicalInfo.allergies || 'None reported'}</strong>
+        </div>
+      </div>
+
+      {medicalInfo.specialConditions && (
+        <div style="margin-top:12px; padding-top:10px; border-top:1px dashed var(--line); font-size:12px; color:var(--rust);">
+          <strong>Special Health Advisory:</strong> {medicalInfo.specialConditions}
+        </div>
+      )}
+    </div>
+  </div>
+
+  <!-- ── 4. MAIN PANELS: ACADEMIC & CONDUCT RECORD ───────────────── -->
+  <div style="display:grid; grid-template-columns: 1.6fr 1.2fr; gap:24px; margin-bottom:28px;">
+    
+    <!-- LEFT: ENROLLED SUBJECTS & PERFORMANCE -->
+    <div class="panel" style="border:2px solid var(--ink); box-shadow:4px 4px 0 rgba(18, 17, 14, 0.08);">
+      <div class="panel-header" style="background:var(--cream); display:flex; justify-content:space-between; align-items:center; padding:14px 20px; border-bottom:1.5px solid var(--ink);">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-weight:800; font-size:11px;">
+            STUDY PLAN ({enrolledCourses.length} SUBJECTS)
+          </span>
+          <h2 style="font-family:var(--serif); font-size:15px; margin:0; font-weight:700;">
+            Term 1 Performance & Grades
+          </h2>
+        </div>
+        <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">2026 TERM</span>
+      </div>
+
+      <div class="panel-body">
+        <table class="data-table" style="margin:0;">
+          <thead>
+            <tr>
+              <th>Subject & Room</th>
+              <th>Faculty Lead</th>
+              <th>Term 1 Grade</th>
+              <th>Status & Recovery</th>
+            </tr>
+          </thead>
+          <tbody>
+            {enrolledCourses.map((c) => (
+              <tr>
+                <td class="cell-name">
+                  <a href={`/${lang}/app/school-admin/courses/${c.id}`} style="font-weight:700; font-size:13.5px;">
+                    {c.name}
+                  </a>
+                  <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft);">{c.room || 'Classroom'}</div>
+                </td>
+                <td class="cell-muted" style="font-size:12px;">{c.teacherName}</td>
+                <td style={`font-family:var(--mono); font-weight:800; font-size:14px; color:${c.grade < 8.0 ? 'var(--rust)' : 'var(--ink)'};`}>
+                  {c.grade} <span style="font-size:10px; font-weight:400; color:var(--ink-soft);">/ 10</span>
+                </td>
+                <td>
+                  {c.grade >= 8.0 ? (
+                    <span class="badge badge-active" style="font-size:9.5px;">Passing</span>
+                  ) : (
+                    <div>
+                      <span class="badge badge-suspended" style="font-size:9.5px; display:inline-block; margin-bottom:2px;">At Risk</span>
+                      {c.hasRecoveryPlan && (
+                        <div style="font-family:var(--mono); font-size:9.5px; color:var(--rust);">Active Recovery Plan</div>
+                      )}
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- RIGHT: STUDENT CONDUCT / OBSERVADOR RECORD -->
+    <div class="panel" style="border:2px solid var(--ink); box-shadow:4px 4px 0 rgba(18, 17, 14, 0.08);">
+      <div class="panel-header" style="background:var(--cream); display:flex; justify-content:space-between; align-items:center; padding:14px 20px; border-bottom:1.5px solid var(--ink);">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-weight:800; font-size:11px;">
+            STUDENT CONDUCT FILE
+          </span>
+          <h2 style="font-family:var(--serif); font-size:15px; margin:0; font-weight:700;">
+            Behavior & Agreements
+          </h2>
+        </div>
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          onclick="alert('Mock: Log new behavioral record in student observation file.');"
+          style="font-size:10.5px; font-weight:700;"
+        >
+          ＋ Entry
+        </button>
+      </div>
+
+      <div class="panel-body padded" style="background:#FFFDF9; padding:16px;">
+        {behaviorRecords.length > 0 ? (
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            {behaviorRecords.map((b) => (
+              <div style={`border:1.5px solid var(--ink); background:var(--paper); padding:12px; border-left:4px solid ${b.type === 'felicitacion' ? 'var(--olive-dark)' : b.type === 'tipo_2' ? 'var(--rust)' : 'var(--ink)'};`}>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                  <span class="badge" style={`font-size:9px; padding:1px 5px; ${b.type === 'felicitacion' ? 'background:var(--olive-dark); color:#FFF;' : b.type === 'tipo_2' ? 'background:var(--rust); color:#FFF;' : 'background:var(--ink); color:#FFF;'}`}>
+                    {b.type === 'felicitacion' ? 'COMMENDATION' : b.type === 'tipo_2' ? 'TYPE II INFRACTION' : 'ADVISORY WARNING'}
+                  </span>
+                  <span style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);">{b.date}</span>
+                </div>
+
+                <div style="font-weight:700; font-size:12.5px; color:var(--ink); margin-bottom:4px;">
+                  {b.title}
+                </div>
+
+                <p style="font-size:12px; color:var(--ink-soft); line-height:1.4; margin:0 0 8px 0;">
+                  {b.description}
+                </p>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; font-family:var(--mono); font-size:10px; color:var(--ink-soft); border-top:1px dashed var(--line); padding-top:6px;">
+                  <span>Logged by: <strong>{b.teacherName}</strong> ({b.teacherRole})</span>
+                  {b.commitmentSigned ? (
+                    <strong style="color:var(--olive-dark);">Signed Pact</strong>
+                  ) : (
+                    <strong style="color:var(--rust);">Pending Signature</strong>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style="text-align:center; padding:24px 12px; font-family:var(--mono); font-size:12px; color:var(--ink-soft);">
+            Pristine behavioral record without warnings in the 2026 academic cycle.
+          </div>
+        )}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── 5. DETAILED ATTENDANCE INCIDENTS ────────────────────────── -->
+  <div class="panel" style="border:2px solid var(--ink); box-shadow:4px 4px 0 rgba(18, 17, 14, 0.08); margin-bottom:28px;">
+    <div class="panel-header" style="background:var(--paper); display:flex; justify-content:space-between; align-items:center; padding:12px 18px; border-bottom:1.5px solid var(--ink);">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-weight:800; font-size:10.5px;">
+          ATTENDANCE LOG
+        </span>
+        <h3 style="font-family:var(--serif); font-size:15px; margin:0; font-weight:700;">
+          Detailed Absence Records & Excuses
+        </h3>
+      </div>
+      <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">
+        Cumulative Rate: <strong style="color:var(--olive-dark);">{student.attendanceRate}%</strong>
+      </span>
+    </div>
+
+    <div class="panel-body">
+      {attendanceIncidents.length > 0 ? (
+        <table class="data-table" style="margin:0;">
+          <thead>
+            <tr>
+              <th style="width:140px;">Date</th>
+              <th>Reported Reason / Excuse</th>
+              <th style="width:200px;">Subject / Slot</th>
+              <th style="width:130px;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {attendanceIncidents.map((inc) => (
+              <tr>
+                <td style="font-family:var(--mono); font-size:11.5px; font-weight:700;">{inc.date}</td>
+                <td style="font-size:12.5px; color:var(--ink);">{inc.reason}</td>
+                <td style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">{inc.subject || 'Full Day'}</td>
+                <td>
+                  <span class={inc.isJustified ? 'badge badge-active' : 'badge badge-suspended'} style="font-size:9.5px;">
+                    {inc.isJustified ? 'Excused' : 'Unexcused'}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <div style="padding:20px; text-align:center; font-family:var(--mono); font-size:12px; color:var(--ink-soft);">
+          100% recorded attendance without unexcused absences in the current term.
+        </div>
+      )}
+    </div>
+  </div>
+
+  <!-- ── 6. MODALS ───────────────────────────────────────────────── -->
+  <StudentCitationModal id="studentCitationModal" lang={lang} />
+
+</AppLayout>
+
+<script is:inline>
+  window.openStudentCitationModal = function(studentName, studentSub, studentAvatar, studentStatus) {
+    var modal = document.getElementById('studentCitationModal');
+    var nameElem = document.getElementById('citationStudentTargetName');
+    var subElem = document.getElementById('citationStudentTargetSub');
+    var avatarElem = document.getElementById('citationStudentAvatar');
+    var badgeElem = document.getElementById('citationStudentBadge');
+
+    if (nameElem) nameElem.textContent = studentName || 'Student';
+    if (subElem) subElem.textContent = studentSub || 'Guardian details';
+    if (avatarElem) avatarElem.textContent = studentAvatar || 'ST';
+    if (badgeElem) badgeElem.textContent = studentStatus || 'Academic Follow-up';
+    if (modal) modal.style.display = 'flex';
+  };
+</script>

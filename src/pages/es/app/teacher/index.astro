@@ -1,0 +1,909 @@
+---
+// ============================================================
+// SchoolOS — Home de Acción Rápida del Docente (Cockpit de Aula)
+// Fase 3 | Asistencia Swipe con Dropdown Interactivo en Lista Final
+// ============================================================
+import AppLayout from '../../../../layouts/AppLayout.astro';
+import { getAllTeacherStudents } from '../../../../data/app/mock-content';
+
+const lang = 'es';
+const allStudents = getAllTeacherStudents();
+// Los 30 estudiantes de 10°A
+const activeClassStudents = allStudents.filter(s => s.courseId === 'crs-bio-10a');
+---
+
+<AppLayout
+  title="Aula Hoy"
+  pageTitle="Aula Hoy — Acción Rápida"
+  activeSection="today"
+  role="teacher"
+  schoolName="Colegio Norte"
+  lang={lang}
+  activeRoute="/app/teacher"
+  breadcrumbs={[{ label: 'Colegio Norte' }, { label: 'Aula Hoy (Acción Rápida)' }]}
+>
+
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <!-- ── 1. HORARIO DEL DÍA (SIEMPRE VISIBLE ARRIBA) ── -->
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <div style="background:var(--paper); border:2px solid var(--ink); margin-bottom:24px; box-shadow:4px 4px 0 rgba(18,17,14,0.08);">
+    
+    <div style="background:var(--ink); color:#FFFFFF; padding:12px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="background:#5B8A4A; width:8px; height:8px; border-radius:50%; display:inline-block;"></span>
+        <span style="font-family:var(--mono); font-size:12px; font-weight:800; letter-spacing:0.08em; color:#FFFFFF; text-transform:uppercase;">
+          Jornada de Hoy · Martes 18 de Agosto, 2026
+        </span>
+      </div>
+      <div style="display:flex; align-items:center; gap:16px; font-family:var(--mono); font-size:12px; color:#E8E2D9;">
+        <span>Hora en aula: <strong style="color:#FFF8F5; font-size:13px;">08:42 AM</strong></span>
+        <span>·</span>
+        <span>Periodo 1 · Semana 6 de 18</span>
+      </div>
+    </div>
+
+    <!-- Tira de Bloques del Día -->
+    <div style="display:grid; grid-template-columns: repeat(5, 1fr); background:var(--cream);">
+      
+      <div style="padding:12px 16px; border-right:1.5px solid var(--ink); opacity:0.65;">
+        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); font-weight:700; margin-bottom:2px;">07:00 – 08:30</div>
+        <div style="font-family:var(--serif); font-size:14px; font-weight:700; color:var(--ink);">10° Grado B</div>
+        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);">Salón 204 · Concluida</div>
+      </div>
+
+      <div style="padding:12px 16px; border-right:1.5px solid var(--ink); background:#FFFDF9; border-top:3.5px solid var(--rust);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
+          <span style="font-family:var(--mono); font-size:10px; color:var(--rust); font-weight:800;">08:30 – 10:00</span>
+          <span class="plan-tag" style="background:var(--rust); color:#FFFFFF; border-color:var(--rust); font-size:8.5px; font-weight:900; padding:1px 5px;">EN CURSO</span>
+        </div>
+        <div style="font-family:var(--serif); font-size:15px; font-weight:800; color:var(--ink);">10° Grado A</div>
+        <div style="font-family:var(--mono); font-size:10.5px; color:var(--rust); font-weight:700;">Lab. Ciencias 1 · 30 alumnos</div>
+      </div>
+
+      <div style="padding:12px 16px; border-right:1.5px solid var(--ink); opacity:0.75;">
+        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); font-weight:700; margin-bottom:2px;">10:00 – 10:30</div>
+        <div style="font-family:var(--serif); font-size:13.5px; font-weight:700; color:var(--ink-soft);">Receso</div>
+        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);">Sala Profesores</div>
+      </div>
+
+      <div style="padding:12px 16px; border-right:1.5px solid var(--ink); background:var(--paper);">
+        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); font-weight:700; margin-bottom:2px;">10:30 – 12:00</div>
+        <div style="font-family:var(--serif); font-size:14px; font-weight:700; color:var(--ink);">11° Grado A</div>
+        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);">Salón 301 · Siguiente</div>
+      </div>
+
+      <div style="padding:12px 16px; opacity:0.75;">
+        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); font-weight:700; margin-bottom:2px;">12:00 – 13:30</div>
+        <div style="font-family:var(--serif); font-size:13.5px; font-weight:700; color:var(--ink-soft);">Planeación</div>
+        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);">Hora libre</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <!-- ── 2. HERO: CLASE ACTIVA Y BOTONES PRINCIPALES ── -->
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <div style="display:grid; grid-template-columns: 1.85fr 1fr; gap:24px; margin-bottom:24px;">
+
+    <!-- PANEL PRINCIPAL DE CLASE EN VIVO -->
+    <div style="background:#FFFDF9; border:2px solid var(--ink); padding:24px 28px; box-shadow:4px 4px 0 rgba(18,17,14,0.08); display:flex; flex-direction:column; justify-content:space-between;">
+      
+      <div>
+        <!-- Encabezado de la clase -->
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+          <div>
+            <span class="plan-tag" style="background:var(--rust); color:#FFFFFF; border-color:var(--rust); font-size:9.5px; font-weight:900; padding:2px 8px;">
+              CLASE EN CURSO
+            </span>
+            <h1 style="font-family:var(--serif); font-size:24px; font-weight:700; color:var(--ink); margin:6px 0 2px 0;">
+              Biología Celular y Genética · 10° Grado A
+            </h1>
+            <div style="font-family:var(--mono); font-size:12px; color:var(--ink-soft);">
+              Ubicación: <strong>Laboratorio de Ciencias 1</strong> · <strong>30 estudiantes matriculados</strong>
+            </div>
+          </div>
+
+          <div style="text-align:right; font-family:var(--mono);">
+            <div style="font-size:10.5px; color:var(--ink-soft); text-transform:uppercase;">Tiempo Restante</div>
+            <div style="font-size:22px; font-weight:900; color:var(--rust);">38 MIN</div>
+          </div>
+        </div>
+
+        <!-- Tema Activo y Notas de Bitácora -->
+        <div style="background:var(--paper); border:1.5px solid var(--ink); padding:16px 18px; margin:16px 0 20px 0;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid var(--line); padding-bottom:6px;">
+            <span style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; color:var(--rust);">
+              Material Pedagógico de Hoy
+            </span>
+            <span style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft);">Guía Asignada #1</span>
+          </div>
+
+          <h3 style="font-family:var(--serif); font-size:17px; font-weight:700; color:var(--ink); margin:0 0 8px 0;">
+            Estructura y Función de la Célula Eucariota
+          </h3>
+
+          <div style="font-size:12.5px; color:var(--ink); line-height:1.5; background:var(--cream); border-left:3px solid var(--rust); padding:10px 14px;">
+            <div style="font-family:var(--mono); font-size:10px; font-weight:800; color:var(--ink-soft); margin-bottom:2px; text-transform:uppercase;">
+              En qué quedamos la clase pasada:
+            </div>
+            Explicamos hasta el <strong>Bloque § 3 (Núcleo Celular y ADN)</strong>. Hoy corresponde abordar el <strong>Bloque § 4 (Membrana Nuclear)</strong> y realizar la práctica de microscopio del <strong>Bloque § 5 (Mitocondrias)</strong>.
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTONES DE ACCIÓN -->
+      <div style="display:grid; grid-template-columns: 1.15fr 1fr 1fr; gap:10px; margin-top:8px;">
+        
+        <button
+          type="button"
+          class="btn btn-primary"
+          id="btnTriggerSwipe"
+          style="padding:12px 14px; font-size:12px; font-weight:800; justify-content:center; white-space:nowrap;"
+        >
+          Tomar Asistencia (Swipe)
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-secondary"
+          id="btnOpenAttendance"
+          style="padding:12px 14px; font-size:12px; font-weight:700; justify-content:center; white-space:nowrap; border-color:var(--ink);"
+        >
+          Lista Tradicional
+        </button>
+
+        <a
+          href={`/${lang}/app/teacher/guides/gd-1`}
+          class="btn btn-secondary"
+          style="padding:12px 14px; font-size:12px; font-weight:700; justify-content:center; white-space:nowrap; border-color:var(--ink);"
+        >
+          Proyectar Guía
+        </a>
+      </div>
+
+    </div>
+
+    <!-- PANEL LATERAL: OBSERVACIONES DEL GRUPO DE HOY -->
+    <div style="display:flex; flex-direction:column; gap:16px;">
+
+      <div class="panel" style="border:2px solid var(--ink); box-shadow:4px 4px 0 rgba(18,17,14,0.08);">
+        <div class="panel-header" style="background:var(--cream); display:flex; justify-content:space-between; align-items:center;">
+          <h2 style="font-size:11.5px; margin:0; letter-spacing:0.04em;">OBSERVACIONES: 10° GRADO A</h2>
+          <span style="font-family:var(--mono); font-size:9.5px; color:var(--rust); font-weight:800;">3 NOTAS</span>
+        </div>
+
+        <div class="panel-body" style="padding:0;">
+          
+          <div style="padding:11px 14px; border-bottom:1px solid var(--line); font-size:12px; display:flex; gap:10px; align-items:flex-start;">
+            <img src="/avatars/men/fila-1-columna-2.png" alt="Mateo Bedoya" style="width:32px; height:32px; border-radius:50%; border:1px solid var(--ink); object-fit:cover; flex-shrink:0;" />
+            <div style="flex:1;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+                <strong style="color:var(--ink);">Bedoya Castro, Mateo</strong>
+                <span class="badge badge-suspended" style="font-size:8.5px;">CONVIVENCIA</span>
+              </div>
+              <div style="color:var(--ink-soft); font-size:11px; line-height:1.35;">
+                Compromiso firmado con acudiente. Monitorear actitud en mesas de laboratorio.
+              </div>
+            </div>
+          </div>
+
+          <div style="padding:11px 14px; border-bottom:1px solid var(--line); font-size:12px; display:flex; gap:10px; align-items:flex-start;">
+            <img src="/avatars/women/fila-2-columna-3.png" alt="Camila Hernández" style="width:32px; height:32px; border-radius:50%; border:1px solid var(--ink); object-fit:cover; flex-shrink:0;" />
+            <div style="flex:1;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+                <strong style="color:var(--ink);">Hernández Ospina, Camila</strong>
+                <span class="badge badge-suspended" style="font-size:8.5px;">3 INASISTENCIAS</span>
+              </div>
+              <div style="color:var(--ink-soft); font-size:11px; line-height:1.35;">
+                Faltó las últimas sesiones. Solicitar hoy el taller de nivelación de Biología.
+              </div>
+            </div>
+          </div>
+
+          <div style="padding:11px 14px; font-size:12px; display:flex; gap:10px; align-items:flex-start;">
+            <img src="/avatars/women/fila-1-columna-2.png" alt="Valentina Barrientos" style="width:32px; height:32px; border-radius:50%; border:1px solid var(--ink); object-fit:cover; flex-shrink:0;" />
+            <div style="flex:1;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+                <strong style="color:var(--ink);">Barrientos López, Valentina</strong>
+                <span class="badge badge-active" style="font-size:8.5px;">MONITORA · 9.5</span>
+              </div>
+              <div style="color:var(--ink-soft); font-size:11px; line-height:1.35;">
+                Asignada para coordinar la entrega de portaobjetos y microscopios al grupo.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Herramientas Rápidas -->
+      <div class="panel" style="border:2px solid var(--ink); padding:16px; background:var(--paper);">
+        <div style="font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink); margin-bottom:10px; border-bottom:1.5px solid var(--ink); padding-bottom:4px;">
+          Herramientas de Aula
+        </div>
+        
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <button
+            type="button"
+            class="btn btn-secondary btn-sm"
+            id="btnOpenTimer"
+            style="justify-content:space-between; display:flex; font-size:11px; font-weight:700;"
+          >
+            <span>Temporizador de Actividad</span>
+            <span>[15:00]</span>
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-secondary btn-sm"
+            onclick="alert('Generando lista oficial de asistencia de 10°A con fotos en PDF...');"
+            style="justify-content:space-between; display:flex; font-size:11px;"
+          >
+            <span>Imprimir Planilla con Fotos (PDF)</span>
+            <span>Descargar</span>
+          </button>
+
+          <a
+            href={`/${lang}/app/teacher/courses/crs-bio-10a`}
+            class="btn btn-secondary btn-sm"
+            style="justify-content:space-between; display:flex; font-size:11px;"
+          >
+            <span>Roster de Estudiantes (10°A)</span>
+            <span>Ver 30</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <!-- ── 3. BANNER INFERIOR: ACCESO AL DASHBOARD ANALÍTICO ── -->
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <div style="background:var(--paper); border:2px solid var(--ink); padding:16px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; box-shadow:4px 4px 0 rgba(18,17,14,0.06);">
+    <div>
+      <div style="font-family:var(--serif); font-size:15px; font-weight:700; color:var(--ink); margin-bottom:2px;">
+        ¿Necesitas ver avances curriculares, calificar evaluaciones o consultar métricas?
+      </div>
+      <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">
+        Accede al módulo de planificación y consolidado general de tus 3 cursos asignados.
+      </div>
+    </div>
+    
+    <a href={`/${lang}/app/teacher/dashboard`} class="btn btn-secondary" style="font-size:11.5px; font-weight:800; border-color:var(--rust); color:var(--rust);">
+      Abrir Dashboard & Métricas →
+    </a>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <!-- ── 4. MODAL SWIPE CON DROPDOWN INTERACTIVO EN LISTA FINAL ── -->
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <div id="swipeModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(18,17,14,0.85); z-index:10000; justify-content:center; align-items:center; padding:16px;">
+    <div style="background:var(--paper); border:3px solid var(--ink); max-width:640px; width:100%; max-height:94vh; display:flex; flex-direction:column; box-shadow:10px 10px 0 rgba(18,17,14,0.4); overflow:hidden;">
+      
+      <!-- Top Header -->
+      <div style="padding:14px 22px; background:var(--ink); color:#FFFFFF; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <h3 style="font-family:var(--serif); font-size:17px; margin:0; color:#FFFFFF;">Pase Rápido por Swipe</h3>
+          <div style="font-family:var(--mono); font-size:10.5px; color:#E8E2D9;">10° Grado A · Biología Celular</div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:14px;">
+          <div style="text-align:right; font-family:var(--mono); font-size:11px;">
+            <span id="swipeProgressText" style="color:#FFF8F5; font-weight:800;">1 / 30</span>
+            <div style="width:80px; height:5px; background:#444; margin-top:3px; border-radius:2px; overflow:hidden;">
+              <div id="swipeProgressBar" style="width:3%; height:100%; background:var(--rust); transition:width 0.2s ease;"></div>
+            </div>
+          </div>
+          <button id="btnCloseSwipe" style="background:transparent; border:none; color:#FFFFFF; font-size:22px; cursor:pointer; font-weight:700;">✕</button>
+        </div>
+      </div>
+
+      <!-- Contadores en vivo -->
+      <div style="padding:8px 22px; background:var(--cream); border-bottom:1.5px solid var(--ink); display:flex; justify-content:space-around; font-family:var(--mono); font-size:11px; font-weight:800;">
+        <span style="color:#2E5E1E;">Presentes: <span id="swipeCntP">0</span></span>
+        <span style="color:var(--rust);">Faltas: <span id="swipeCntA">0</span></span>
+        <span style="color:#785700;">Retardos: <span id="swipeCntL">0</span></span>
+      </div>
+
+      <!-- TARJETA DE SWIPE ACTIVO -->
+      <div id="swipeCardContainer" style="padding:32px 24px 28px 24px; min-height:440px; display:flex; flex-direction:column; justify-content:center; align-items:center; position:relative; background:var(--paper);">
+        
+        <div
+          id="currentStudentCard"
+          style="width:100%; max-width:440px; background:#FFFDF9; border:2.5px solid var(--ink); padding:28px 24px; box-shadow:6px 6px 0 var(--ink); text-align:center; position:relative; transition:transform 0.18s ease, opacity 0.18s ease;"
+        >
+          <div style="position:absolute; top:14px; left:16px; font-family:var(--mono); font-size:11px; font-weight:800; color:var(--ink-soft); background:var(--cream); padding:3px 8px; border:1px solid var(--ink);">
+            #<span id="cardStudentNum">01</span> / 30
+          </div>
+
+          <div style="margin:6px auto 16px auto; width:150px; height:150px; position:relative;">
+            <img
+              id="cardStudentImg"
+              src="/avatars/women/fila-1-columna-1.png"
+              alt="Foto del Estudiante"
+              style="width:150px; height:150px; border-radius:50%; border:3.5px solid var(--ink); object-fit:cover; background:var(--cream); box-shadow:4px 4px 0 rgba(18,17,14,0.12);"
+            />
+          </div>
+
+          <h2 id="cardStudentName" style="font-family:var(--serif); font-size:23px; font-weight:700; color:var(--ink); margin:0 0 6px 0; line-height:1.2;">
+            Álvarez Gómez, Sofía
+          </h2>
+          <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">
+            Matrícula Regular · 10° Grado A
+          </div>
+
+          <div
+            id="swipeOverlay"
+            style="display:none; position:absolute; top:16px; right:16px; font-family:var(--mono); font-size:14px; font-weight:900; padding:5px 12px; border:2.5px solid; text-transform:uppercase;"
+          >
+            PRESENTE
+          </div>
+        </div>
+
+        <!-- Sub-panel que se abre al dar "NO ASISTIÓ" -->
+        <div
+          id="absenceReasonSubPanel"
+          style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(252,250,247,0.98); z-index:10; flex-direction:column; justify-content:center; align-items:center; padding:24px; text-align:center;"
+        >
+          <div style="font-family:var(--serif); font-size:18px; font-weight:700; margin-bottom:4px; color:var(--ink);">
+            Registrar novedad para: <span id="subPanelStudentName" style="color:var(--rust);">Mateo</span>
+          </div>
+          <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-bottom:20px;">
+            Selecciona la causa de inasistencia:
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:12px; width:100%; max-width:320px;">
+            <button
+              type="button"
+              id="btnSubAbsent"
+              class="btn"
+              style="padding:14px; font-size:13px; font-weight:800; background:var(--rust); color:#FFFFFF; border:2px solid var(--ink); text-align:center; justify-content:center;"
+            >
+              Falta Injustificada (Ausente)
+            </button>
+
+            <button
+              type="button"
+              id="btnSubLate"
+              class="btn"
+              style="padding:14px; font-size:13px; font-weight:800; background:#C49000; color:#FFFFFF; border:2px solid var(--ink); text-align:center; justify-content:center;"
+            >
+              Llegó Tarde (Retardo)
+            </button>
+
+            <button
+              type="button"
+              id="btnSubCancel"
+              class="btn btn-secondary btn-sm"
+              style="margin-top:6px; font-size:11px;"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+
+        <!-- ── PANTALLA FINAL CON DROPDOWN INTERACTIVO PARA CADA ALUMNO ── -->
+        <div
+          id="swipeCompletedScreen"
+          style="display:none; width:100%; flex-direction:column; padding:10px 0; overflow-y:auto; max-height:64vh;"
+        >
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1.5px solid var(--line); padding-bottom:8px;">
+            <div>
+              <span class="plan-tag" style="background:#5B8A4A; color:#FFFFFF; border-color:#5B8A4A; font-weight:900; font-size:10px;">
+                PASE COMPLETADO
+              </span>
+              <h3 style="font-family:var(--serif); font-size:17.5px; font-weight:700; color:var(--ink); margin:4px 0 0 0;">
+                Resumen de Asistencia (30 Alumnos)
+              </h3>
+              <div style="font-size:11px; color:var(--ink-soft); margin-top:2px;">
+                Toca cualquier selector para corregir el estado de un alumno al instante.
+              </div>
+            </div>
+
+            <div style="font-family:var(--mono); font-size:11.5px; font-weight:800; display:flex; gap:10px; background:var(--cream); padding:6px 10px; border:1px solid var(--ink);">
+              <span style="color:#2E5E1E;">P: <strong id="finalP">28</strong></span>
+              <span style="color:var(--rust);">F: <strong id="finalA">2</strong></span>
+              <span style="color:#785700;">R: <strong id="finalL">0</strong></span>
+            </div>
+          </div>
+
+          <!-- Contenedor de las 30 filas con selectores desplegables -->
+          <div id="swipeFullRosterSummary" style="display:flex; flex-direction:column; gap:6px; margin-bottom:16px;"></div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; border-top:1.5px solid var(--ink); padding-top:14px;">
+            <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">
+              ✓ 30/30 Estudiantes Verificados
+            </div>
+
+            <button
+              type="button"
+              id="btnFinishSwipe"
+              class="btn btn-primary"
+              style="font-size:13px; font-weight:900; padding:12px 28px;"
+            >
+              ✓ Confirmar y Transmitir Asistencia
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Botones de Acción de Swipe -->
+      <div id="swipeActionButtons" style="padding:16px 24px; background:var(--cream); border-top:2px solid var(--ink); display:flex; justify-content:space-between; align-items:center; gap:16px;">
+        
+        <button
+          type="button"
+          id="btnSwipeLeft"
+          class="btn"
+          style="flex:1; padding:15px 12px; font-size:13.5px; font-weight:800; background:#FFF0EE; color:var(--rust); border:2px solid var(--rust); justify-content:center; display:flex; align-items:center; gap:6px;"
+        >
+          <span>←</span>
+          <span>NO ASISTIÓ</span>
+        </button>
+
+        <button
+          type="button"
+          id="btnSwipeUndo"
+          disabled
+          class="btn btn-secondary"
+          style="padding:15px 16px; font-size:12px; font-weight:700; opacity:0.5; border-color:var(--ink-soft);"
+          title="Deshacer el anterior"
+        >
+          Deshacer
+        </button>
+
+        <button
+          type="button"
+          id="btnSwipeRight"
+          class="btn"
+          style="flex:1; padding:15px 12px; font-size:13.5px; font-weight:800; background:#E5EFE0; color:#2E5E1E; border:2px solid #5B8A4A; justify-content:center; display:flex; align-items:center; gap:6px;"
+        >
+          <span>PRESENTE</span>
+          <span>→</span>
+        </button>
+      </div>
+
+      <div style="padding:6px 20px; background:var(--ink); color:#E8E2D9; font-family:var(--mono); font-size:10px; text-align:center;">
+        Teclado: Flecha [→] para Presente | Flecha [←] para No Asistió
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <!-- ── 5. MODAL LISTA TRADICIONAL ── -->
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <div id="attendanceModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(18,17,14,0.75); z-index:9999; justify-content:center; align-items:center; padding:16px;">
+    <div style="background:var(--paper); border:2.5px solid var(--ink); max-width:860px; width:100%; max-height:90vh; display:flex; flex-direction:column; box-shadow:8px 8px 0 rgba(18,17,14,0.3);">
+      
+      <div style="padding:14px 20px; background:var(--ink); color:#FFFFFF; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <h3 style="font-family:var(--serif); font-size:17px; margin:0; color:#FFFFFF;">Pase de Lista Tradicional — Biología 10°A</h3>
+          <div style="font-family:var(--mono); font-size:10.5px; color:#E8E2D9;">30 Estudiantes Matriculados</div>
+        </div>
+        <button id="btnCloseTradModal" style="background:transparent; border:none; color:#FFFFFF; font-size:22px; cursor:pointer; font-weight:700;">✕</button>
+      </div>
+
+      <div style="padding:12px 20px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:6px; background:var(--paper);">
+        {activeClassStudents.map((std, idx) => (
+          <div
+            class="trad-row"
+            id={`trad-r-${std.id}`}
+            style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--cream); border:1px solid var(--line-strong);"
+          >
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="font-family:var(--mono); font-size:10.5px; font-weight:800; color:var(--ink-soft); min-width:22px;">
+                {idx + 1 < 10 ? `0${idx + 1}` : idx + 1}.
+              </span>
+              <img
+                src={std.avatarUrl || '/avatars/women/fila-1-columna-1.png'}
+                alt={std.name}
+                style="width:28px; height:28px; border-radius:50%; border:1px solid var(--ink); object-fit:cover;"
+              />
+              <span style="font-size:12.5px; font-weight:700; color:var(--ink);">
+                {std.name}
+              </span>
+            </div>
+            <div style="display:flex; gap:6px;">
+              <button type="button" class="btn-trad-p" data-id={std.id} style="padding:5px 12px; font-family:var(--mono); font-size:11px; font-weight:700; border:1px solid var(--line-strong); background:#FFFFFF; cursor:pointer;">Presente</button>
+              <button type="button" class="btn-trad-a" data-id={std.id} style="padding:5px 12px; font-family:var(--mono); font-size:11px; font-weight:700; border:1px solid var(--line-strong); background:#FFFFFF; cursor:pointer;">Falta</button>
+              <button type="button" class="btn-trad-l" data-id={std.id} style="padding:5px 12px; font-family:var(--mono); font-size:11px; font-weight:700; border:1px solid var(--line-strong); background:#FFFFFF; cursor:pointer;">Retardo</button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style="padding:12px 20px; border-top:2px solid var(--ink); background:var(--cream); display:flex; justify-content:space-between;">
+        <button id="btnCancelTrad" class="btn btn-secondary btn-sm">Cancelar</button>
+        <button id="btnSaveTrad" class="btn btn-primary btn-sm" style="font-weight:800;">✓ Guardar Asistencia</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Temporizador -->
+  <div id="timerModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(18,17,14,0.75); z-index:9999; justify-content:center; align-items:center; padding:20px;">
+    <div style="background:var(--paper); border:2.5px solid var(--ink); max-width:380px; width:100%; text-align:center; padding:24px; box-shadow:6px 6px 0 rgba(18,17,14,0.25);">
+      <span class="plan-tag" style="background:var(--rust); color:#FFFFFF; font-size:9.5px; font-weight:900;">TEMPORIZADOR DE AULA</span>
+      <div style="font-family:var(--mono); font-size:48px; font-weight:900; color:var(--ink); background:var(--cream); border:2px solid var(--ink); padding:10px; margin:12px 0;">15:00</div>
+      <div style="display:flex; justify-content:center; gap:10px;">
+        <button id="btnCloseTimer" class="btn btn-secondary btn-sm">Cerrar</button>
+        <button onclick="alert('Temporizador iniciado');" class="btn btn-primary btn-sm" style="font-weight:800;">Iniciar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT DE INTERACTIVIDAD -->
+  <script is:inline>
+    const STUDENTS_DATA = [
+      { id: 'std-1',  name: 'Álvarez Gómez, Sofía',        avatarUrl: '/avatars/women/fila-1-columna-1.png' },
+      { id: 'std-2',  name: 'Arango Botero, Juan Pablo',    avatarUrl: '/avatars/men/fila-1-columna-1.png' },
+      { id: 'std-3',  name: 'Barrientos López, Valentina',  avatarUrl: '/avatars/women/fila-1-columna-2.png' },
+      { id: 'std-4',  name: 'Bedoya Castro, Mateo',         avatarUrl: '/avatars/men/fila-1-columna-2.png' },
+      { id: 'std-5',  name: 'Cárdenas Ruiz, Andrés Felipe', avatarUrl: '/avatars/men/fila-1-columna-3.png' },
+      { id: 'std-6',  name: 'Castaño Morales, Isabella',    avatarUrl: '/avatars/women/fila-1-columna-3.png' },
+      { id: 'std-7',  name: 'Delgado Peña, Samuel',         avatarUrl: '/avatars/men/fila-1-columna-4.png' },
+      { id: 'std-8',  name: 'Echeverri Restrepo, Mariana',  avatarUrl: '/avatars/women/fila-1-columna-4.png' },
+      { id: 'std-9',  name: 'Franco Vargas, Lucas',         avatarUrl: '/avatars/men/fila-2-columna-1.png' },
+      { id: 'std-10', name: 'Gallego Herrera, Tomás',       avatarUrl: '/avatars/men/fila-2-columna-2.png' },
+      { id: 'std-11', name: 'Giraldo Ríos, Lucía',          avatarUrl: '/avatars/women/fila-2-columna-1.png' },
+      { id: 'std-12', name: 'Gómez Mendoza, Daniela',       avatarUrl: '/avatars/women/fila-2-columna-2.png' },
+      { id: 'std-13', name: 'Gutiérrez Caro, Santiago',     avatarUrl: '/avatars/men/fila-2-columna-3.png' },
+      { id: 'std-14', name: 'Hernández Ospina, Camila',     avatarUrl: '/avatars/women/fila-2-columna-3.png' },
+      { id: 'std-15', name: 'Jaramillo Sánchez, Nicolás',   avatarUrl: '/avatars/men/fila-2-columna-4.png' },
+      { id: 'std-16', name: 'Londoño Jiménez, Valeria',     avatarUrl: '/avatars/women/fila-2-columna-4.png' },
+      { id: 'std-17', name: 'Martínez Cruz, Alejandro',     avatarUrl: '/avatars/men/fila-3-columna-1.png' },
+      { id: 'std-18', name: 'Mejía Ortiz, Gabriela',        avatarUrl: '/avatars/women/fila-3-columna-1.png' },
+      { id: 'std-19', name: 'Morales Duque, Esteban',       avatarUrl: '/avatars/men/fila-3-columna-2.png' },
+      { id: 'std-20', name: 'Muñoz Salazar, Natalia',       avatarUrl: '/avatars/women/fila-3-columna-2.png' },
+      { id: 'std-21', name: 'Osorio Parra, Sebastián',      avatarUrl: '/avatars/men/fila-3-columna-3.png' },
+      { id: 'std-22', name: 'Palacio Pineda, Laura',        avatarUrl: '/avatars/women/fila-3-columna-3.png' },
+      { id: 'std-23', name: 'Quintero Gil, Martín',         avatarUrl: '/avatars/men/fila-3-columna-4.png' },
+      { id: 'std-24', name: 'Ramírez Correa, Salomé',       avatarUrl: '/avatars/women/fila-3-columna-4.png' },
+      { id: 'std-25', name: 'Restrepo Vega, David',         avatarUrl: '/avatars/men/fila-4-columna-1.png' },
+      { id: 'std-26', name: 'Rincón Torres, Paula',         avatarUrl: '/avatars/women/fila-4-columna-1.png' },
+      { id: 'std-27', name: 'Salazar Montoya, Jerónimo',    avatarUrl: '/avatars/men/fila-4-columna-2.png' },
+      { id: 'std-28', name: 'Tobón Flórez, Andrea',         avatarUrl: '/avatars/women/fila-4-columna-2.png' },
+      { id: 'std-29', name: 'Uribe Benítez, Simón',         avatarUrl: '/avatars/men/fila-4-columna-3.png' },
+      { id: 'std-30', name: 'Zapata Moreno, Manuela',       avatarUrl: '/avatars/women/fila-4-columna-3.png' }
+    ];
+
+    let currentIdx = 0;
+    const swipeHistory = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      
+      const btnTriggerSwipe = document.getElementById('btnTriggerSwipe');
+      if (btnTriggerSwipe) {
+        btnTriggerSwipe.addEventListener('click', startSwipeAttendance);
+      }
+
+      const btnCloseSwipe = document.getElementById('btnCloseSwipe');
+      if (btnCloseSwipe) {
+        btnCloseSwipe.addEventListener('click', () => {
+          document.getElementById('swipeModal').style.display = 'none';
+        });
+      }
+
+      document.getElementById('btnSwipeRight')?.addEventListener('click', doSwipeRight);
+      document.getElementById('btnSwipeLeft')?.addEventListener('click', doSwipeLeft);
+      document.getElementById('btnSwipeUndo')?.addEventListener('click', doSwipeUndo);
+
+      document.getElementById('btnSubAbsent')?.addEventListener('click', () => saveAbsence('absent'));
+      document.getElementById('btnSubLate')?.addEventListener('click', () => saveAbsence('late'));
+      document.getElementById('btnSubCancel')?.addEventListener('click', () => {
+        document.getElementById('absenceReasonSubPanel').style.display = 'none';
+      });
+
+      document.getElementById('btnFinishSwipe')?.addEventListener('click', finishSwipeAttendance);
+
+      // Modal tradicional
+      document.getElementById('btnOpenAttendance')?.addEventListener('click', () => {
+        document.getElementById('attendanceModal').style.display = 'flex';
+      });
+      document.getElementById('btnCloseTradModal')?.addEventListener('click', () => {
+        document.getElementById('attendanceModal').style.display = 'none';
+      });
+      document.getElementById('btnCancelTrad')?.addEventListener('click', () => {
+        document.getElementById('attendanceModal').style.display = 'none';
+      });
+      document.getElementById('btnSaveTrad')?.addEventListener('click', () => {
+        alert('Asistencia tradicional guardada correctamente.');
+        document.getElementById('attendanceModal').style.display = 'none';
+      });
+
+      // Timer
+      document.getElementById('btnOpenTimer')?.addEventListener('click', () => {
+        document.getElementById('timerModal').style.display = 'flex';
+      });
+      document.getElementById('btnCloseTimer')?.addEventListener('click', () => {
+        document.getElementById('timerModal').style.display = 'none';
+      });
+
+    });
+
+    function startSwipeAttendance() {
+      currentIdx = 0;
+      swipeHistory.length = 0;
+      document.getElementById('swipeCompletedScreen').style.display = 'none';
+      document.getElementById('currentStudentCard').style.display = 'block';
+      document.getElementById('swipeActionButtons').style.display = 'flex';
+      document.getElementById('absenceReasonSubPanel').style.display = 'none';
+      document.getElementById('swipeModal').style.display = 'flex';
+      renderSwipeCard();
+      refreshSwipeHUD();
+    }
+
+    function renderSwipeCard() {
+      if (currentIdx >= STUDENTS_DATA.length) {
+        showFinalSwipeScreen();
+        return;
+      }
+
+      const std = STUDENTS_DATA[currentIdx];
+      document.getElementById('cardStudentNum').innerText = (currentIdx + 1 < 10 ? '0' : '') + (currentIdx + 1);
+      document.getElementById('cardStudentName').innerText = std.name;
+      
+      const img = document.getElementById('cardStudentImg');
+      if (img) {
+        img.src = std.avatarUrl;
+        img.alt = std.name;
+      }
+
+      const card = document.getElementById('currentStudentCard');
+      card.style.transform = 'translate(0px, 0px) rotate(0deg)';
+      card.style.opacity = '1';
+      card.style.borderColor = 'var(--ink)';
+
+      document.getElementById('swipeOverlay').style.display = 'none';
+
+      const btnUndo = document.getElementById('btnSwipeUndo');
+      if (btnUndo) {
+        btnUndo.disabled = (currentIdx === 0);
+        btnUndo.style.opacity = (currentIdx === 0 ? '0.5' : '1');
+      }
+    }
+
+    function doSwipeRight() {
+      if (currentIdx >= STUDENTS_DATA.length) return;
+
+      const card = document.getElementById('currentStudentCard');
+      const overlay = document.getElementById('swipeOverlay');
+
+      overlay.innerText = 'PRESENTE';
+      overlay.style.color = '#2E5E1E';
+      overlay.style.borderColor = '#5B8A4A';
+      overlay.style.background = '#E5EFE0';
+      overlay.style.display = 'block';
+
+      card.style.transform = 'translate(180px, -15px) rotate(10deg)';
+      card.style.opacity = '0';
+
+      const std = STUDENTS_DATA[currentIdx];
+      swipeHistory.push({ id: std.id, name: std.name, avatarUrl: std.avatarUrl, status: 'present' });
+
+      setTimeout(() => {
+        currentIdx++;
+        renderSwipeCard();
+        refreshSwipeHUD();
+      }, 160);
+    }
+
+    function doSwipeLeft() {
+      if (currentIdx >= STUDENTS_DATA.length) return;
+
+      const std = STUDENTS_DATA[currentIdx];
+      document.getElementById('subPanelStudentName').innerText = std.name;
+      document.getElementById('absenceReasonSubPanel').style.display = 'flex';
+    }
+
+    function saveAbsence(status) {
+      document.getElementById('absenceReasonSubPanel').style.display = 'none';
+      const std = STUDENTS_DATA[currentIdx];
+      swipeHistory.push({ id: std.id, name: std.name, avatarUrl: std.avatarUrl, status: status });
+
+      const card = document.getElementById('currentStudentCard');
+      const overlay = document.getElementById('swipeOverlay');
+
+      overlay.innerText = status === 'absent' ? 'FALTA' : 'RETARDO';
+      overlay.style.color = status === 'absent' ? 'var(--rust)' : '#785700';
+      overlay.style.borderColor = status === 'absent' ? 'var(--rust)' : '#C49000';
+      overlay.style.background = status === 'absent' ? '#FCEAE6' : '#FFF4E0';
+      overlay.style.display = 'block';
+
+      card.style.transform = 'translate(-180px, -15px) rotate(-10deg)';
+      card.style.opacity = '0';
+
+      setTimeout(() => {
+        currentIdx++;
+        renderSwipeCard();
+        refreshSwipeHUD();
+      }, 160);
+    }
+
+    function doSwipeUndo() {
+      if (currentIdx > 0) {
+        currentIdx--;
+        swipeHistory.pop();
+        renderSwipeCard();
+        refreshSwipeHUD();
+      }
+    }
+
+    function refreshSwipeHUD() {
+      const total = STUDENTS_DATA.length;
+      const prog = Math.min(currentIdx, total);
+      document.getElementById('swipeProgressText').innerText = `${prog} / ${total}`;
+      document.getElementById('swipeProgressBar').style.width = `${(prog / total) * 100}%`;
+
+      let p = 0, a = 0, l = 0;
+      swipeHistory.forEach(r => {
+        if (r.status === 'present') p++;
+        else if (r.status === 'absent') a++;
+        else if (r.status === 'late') l++;
+      });
+
+      document.getElementById('swipeCntP').innerText = p;
+      document.getElementById('swipeCntA').innerText = a;
+      document.getElementById('swipeCntL').innerText = l;
+    }
+
+    // ── MUESTRA EL DESGLOSE FINAL CON SELECTORES INTERACTIVOS ──
+    function showFinalSwipeScreen() {
+      document.getElementById('currentStudentCard').style.display = 'none';
+      document.getElementById('swipeActionButtons').style.display = 'none';
+      document.getElementById('swipeCompletedScreen').style.display = 'flex';
+
+      updateFinalCounters();
+      renderFinalRosterRows();
+    }
+
+    function renderFinalRosterRows() {
+      const container = document.getElementById('swipeFullRosterSummary');
+      container.innerHTML = '';
+
+      swipeHistory.forEach((item, idx) => {
+        const row = document.createElement('div');
+        row.id = `final-row-${idx}`;
+        row.style.display = 'flex';
+        row.style.justifyContent = 'space-between';
+        row.style.alignItems = 'center';
+        row.style.padding = '8px 12px';
+        row.style.border = '1.5px solid var(--line-strong)';
+        row.style.transition = 'background 0.15s ease';
+
+        applyRowStyle(row, item.status);
+
+        row.innerHTML = `
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-family:var(--mono); font-size:10.5px; font-weight:800; color:var(--ink-soft); min-width:20px;">${idx + 1 < 10 ? '0' : ''}${idx + 1}.</span>
+            <img src="${item.avatarUrl}" alt="${item.name}" style="width:28px; height:28px; border-radius:50%; border:1px solid var(--ink); object-fit:cover;" />
+            <span style="font-size:12.5px; font-weight:700; color:var(--ink);">${item.name}</span>
+          </div>
+          <div>
+            <select
+              id="final-sel-${idx}"
+              onchange="changeFinalStudentStatus(${idx}, this.value);"
+              style="font-family:var(--mono); font-size:11px; font-weight:800; padding:4px 10px; border:1.5px solid; cursor:pointer; outline:none; border-radius:2px;"
+            >
+              <option value="present" ${item.status === 'present' ? 'selected' : ''}>PRESENTE</option>
+              <option value="absent" ${item.status === 'absent' ? 'selected' : ''}>FALTA</option>
+              <option value="late" ${item.status === 'late' ? 'selected' : ''}>RETARDO</option>
+            </select>
+          </div>
+        `;
+
+        container.appendChild(row);
+        applySelectStyle(row.querySelector('select'), item.status);
+      });
+    }
+
+    window.changeFinalStudentStatus = function(idx, newStatus) {
+      if (swipeHistory[idx]) {
+        swipeHistory[idx].status = newStatus;
+        const row = document.getElementById(`final-row-${idx}`);
+        if (row) {
+          applyRowStyle(row, newStatus);
+          const sel = document.getElementById(`final-sel-${idx}`);
+          if (sel) applySelectStyle(sel, newStatus);
+        }
+        updateFinalCounters();
+      }
+    };
+
+    function applyRowStyle(rowElement, status) {
+      if (status === 'present') {
+        rowElement.style.background = 'var(--cream)';
+      } else if (status === 'absent') {
+        rowElement.style.background = '#FFF0EE';
+      } else if (status === 'late') {
+        rowElement.style.background = '#FFFDF0';
+      }
+    }
+
+    function applySelectStyle(selectElement, status) {
+      if (!selectElement) return;
+      if (status === 'present') {
+        selectElement.style.background = '#E5EFE0';
+        selectElement.style.color = '#2E5E1E';
+        selectElement.style.borderColor = '#5B8A4A';
+      } else if (status === 'absent') {
+        selectElement.style.background = '#FCEAE6';
+        selectElement.style.color = 'var(--rust)';
+        selectElement.style.borderColor = 'var(--rust)';
+      } else if (status === 'late') {
+        selectElement.style.background = '#FFF4E0';
+        selectElement.style.color = '#785700';
+        selectElement.style.borderColor = '#C49000';
+      }
+    }
+
+    function updateFinalCounters() {
+      let p = 0, a = 0, l = 0;
+      swipeHistory.forEach(r => {
+        if (r.status === 'present') p++;
+        else if (r.status === 'absent') a++;
+        else if (r.status === 'late') l++;
+      });
+
+      document.getElementById('finalP').innerText = p;
+      document.getElementById('finalA').innerText = a;
+      document.getElementById('finalL').innerText = l;
+    }
+
+    function finishSwipeAttendance() {
+      let p = 0, a = 0, l = 0;
+      swipeHistory.forEach(r => {
+        if (r.status === 'present') p++;
+        else if (r.status === 'absent') a++;
+        else if (r.status === 'late') l++;
+      });
+
+      alert(`Asistencia registrada con éxito:\n• ${p} Presentes\n• ${a} Faltas\n• ${l} Retardos\n\nTransmitido a Coordinación.`);
+      document.getElementById('swipeModal').style.display = 'none';
+
+      const mainBtn = document.getElementById('btnTriggerSwipe');
+      if (mainBtn) {
+        mainBtn.innerHTML = `Asistencia Lista (${p}/30) ✓`;
+        mainBtn.style.background = '#5B8A4A';
+        mainBtn.style.borderColor = '#5B8A4A';
+      }
+    }
+
+    // Soporte de Teclado
+    window.addEventListener('keydown', (e) => {
+      const modal = document.getElementById('swipeModal');
+      if (modal && modal.style.display === 'flex') {
+        const sub = document.getElementById('absenceReasonSubPanel');
+        if (sub && sub.style.display === 'flex') {
+          if (e.key === '1' || e.key === 'a') saveAbsence('absent');
+          else if (e.key === '2' || e.key === 'r') saveAbsence('late');
+          else if (e.key === 'Escape') sub.style.display = 'none';
+          return;
+        }
+
+        const compScreen = document.getElementById('swipeCompletedScreen');
+        if (compScreen && compScreen.style.display === 'flex') {
+          if (e.key === 'Enter') finishSwipeAttendance();
+          return;
+        }
+
+        if (e.key === 'ArrowRight' || e.key === ' ') {
+          e.preventDefault();
+          doSwipeRight();
+        } else if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          doSwipeLeft();
+        } else if (e.key === 'Backspace' || e.key === 'z') {
+          e.preventDefault();
+          doSwipeUndo();
+        } else if (e.key === 'Escape') {
+          modal.style.display = 'none';
+        }
+      }
+    });
+  </script>
+
+</AppLayout>

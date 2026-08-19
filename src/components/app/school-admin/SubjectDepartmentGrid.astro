@@ -1,0 +1,663 @@
+---
+// ============================================================
+// SchoolOS — Cuadrícula de Materias + Modal 80% + Horario con Highlight
+// Diseño: Brutalista Editorial Sobrio (Sin emojis, Alto Contraste)
+// ============================================================
+import type { Lang } from '../../../i18n';
+import type { SubjectDepartment } from '../../../types/academic';
+
+interface Props {
+  departments: SubjectDepartment[];
+  lang?: Lang;
+  id?: string;
+}
+
+const { departments, lang = 'es', id = 'subjectExplorer' } = Astro.props;
+---
+
+<div id={id} class="subject-explorer-root">
+  <!-- ── 1. BUSCADOR RÁPIDO SUPERIOR ────────────────────────── -->
+  <div style="margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+    <div style="position:relative; flex:1; min-width:280px;">
+      <svg style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--ink-soft); pointer-events:none;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input
+        type="text"
+        id={`${id}Search`}
+        placeholder={lang === 'es' ? 'Buscar materia, profesor o grupo (ej: 10-2, Ana, Dibujo, Música)...' : 'Search subject, teacher or group (e.g. 10-2, Ana, Art, Music)...'}
+        style="width:100%; padding:10px 14px 10px 34px; border:1px solid var(--ink); background:var(--cream); font-family:var(--sans); font-size:13px; border-radius:2px;"
+      />
+    </div>
+
+    <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">
+      {departments.length} {lang === 'es' ? 'ÁREAS ACADÉMICAS' : 'ACADEMIC SUBJECTS'} · {departments.reduce((acc, d) => acc + d.totalGroupsCount, 0)} {lang === 'es' ? 'GRUPOS EN TOTAL' : 'TOTAL GROUPS'}
+    </div>
+  </div>
+
+  <!-- ── 2. CUADRÍCULA DE CARDS DE MATERIAS (CAPA 0) ────────── -->
+  <div class="subject-cards-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:16px;">
+    {departments.map((dept) => (
+      <div
+        class="subject-card-item"
+        data-dept-id={dept.id}
+        data-search-text={`${dept.name} ${dept.code} ${dept.description} ${dept.teachers.map(t => t.name + ' ' + t.groups.map(g => g.code + ' ' + g.name).join(' ')).join(' ')}`.toLowerCase()}
+        style="background:var(--paper); border:1px solid var(--ink); padding:20px; display:flex; flex-direction:column; justify-content:space-between; box-shadow:4px 4px 0 rgba(18, 17, 14, 0.08); transition:transform 0.15s ease, box-shadow 0.15s ease;"
+      >
+        <!-- Card Header -->
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-weight:800; font-size:11px; padding:2px 7px;">
+              DEP: {dept.code}
+            </span>
+            <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); font-weight:700;">
+              {dept.totalGroupsCount} {lang === 'es' ? 'SECCIONES' : 'SECTIONS'}
+            </span>
+          </div>
+
+          <h3 style="font-family:var(--serif); font-size:18px; font-weight:700; color:var(--ink); margin:0 0 6px 0; line-height:1.25;">
+            {dept.name}
+          </h3>
+
+          <p style="font-size:12px; color:var(--ink-soft); line-height:1.45; margin:0 0 16px 0; min-height:36px;">
+            {dept.description}
+          </p>
+
+          <!-- Metrics Row -->
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:10px 12px; background:var(--cream); border:1px solid var(--line-strong); margin-bottom:16px; font-family:var(--mono); font-size:11px;">
+            <div>
+              <div style="color:var(--ink-soft); font-size:9.5px; text-transform:uppercase;">Planta Docente</div>
+              <strong style="color:var(--ink); font-size:12.5px;">{dept.teachersCount} {lang === 'es' ? 'profesores' : 'faculty'}</strong>
+            </div>
+            <div>
+              <div style="color:var(--ink-soft); font-size:9.5px; text-transform:uppercase;">Alumnos Total</div>
+              <strong style="color:var(--ink); font-size:12.5px;">{dept.totalStudents} {lang === 'es' ? 'alumnos' : 'students'}</strong>
+            </div>
+            <div style="margin-top:4px; padding-top:4px; border-top:1px dashed var(--line); grid-column:span 2; display:flex; justify-content:space-between;">
+              <span style="color:var(--ink-soft); font-size:10.5px;">Rendimiento del área:</span>
+              <strong style="color:var(--rust);">Promedio: {dept.averageGrade} / 10</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Button -->
+        <div>
+          <button
+            type="button"
+            class="btn btn-secondary btn-open-dept"
+            data-dept-id={dept.id}
+            style="width:100%; text-align:center; justify-content:center; font-weight:700; font-size:12px; border:1px solid var(--ink);"
+          >
+            {lang === 'es' ? 'Ver Profesores & Horarios →' : 'View Faculty & Schedule →'}
+          </button>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <!-- ── 3. MODAL AL 80% (CAPA 1: DOCENTES & CAPA 2: HORARIO) ── -->
+  <div id={`${id}ModalBackdrop`} class="dept-modal-backdrop" style="display:none; position:fixed; inset:0; background:rgba(18, 17, 14, 0.75); z-index:9999; align-items:center; justify-content:center; padding:24px;">
+    <div class="dept-modal-container" style="width:90%; max-width:1150px; height:88vh; background:var(--paper); border:2px solid var(--ink); box-shadow:12px 12px 0 rgba(18, 17, 14, 0.4); display:flex; flex-direction:column; overflow:hidden;">
+      
+      <!-- MODAL HEADER -->
+      <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center; padding:16px 24px; border-bottom:2px solid var(--ink); background:var(--paper); flex-shrink:0;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span id="modalDeptBadge" class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-weight:800; font-size:12px;">MAT</span>
+          <h2 id="modalDeptTitle" style="font-family:var(--serif); font-size:18px; margin:0; text-transform:none;">
+            Matemáticas & Cálculo
+          </h2>
+          <span id="modalDeptSummary" style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-left:8px;">
+            3 docentes · 8 grupos · 237 alumnos
+          </span>
+        </div>
+
+        <button type="button" id="modalCloseBtn" style="background:none; border:1px solid var(--ink); font-family:var(--mono); font-size:12px; font-weight:700; padding:4px 10px; cursor:pointer; background:var(--cream);" title="Cerrar modal (Esc)">
+          ✕ {lang === 'es' ? 'Cerrar' : 'Close'} (ESC)
+        </button>
+      </div>
+
+      <!-- MODAL BODY CON CONTENIDO DINÁMICO -->
+      <div style="flex:1; overflow-y:auto; padding:24px;">
+        
+        <!-- VISTA A: LISTADO DE PROFESORES DEL ÁREA (CAPA 1) -->
+        <div id="modalLayerTeachers">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h4 style="font-family:var(--mono); font-size:11.5px; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-soft); margin:0;">
+              {lang === 'es' ? 'PLANTA DOCENTE DE ESTA ÁREA' : 'FACULTY IN THIS DEPARTMENT'}
+            </h4>
+            <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">
+              {lang === 'es' ? 'Selecciona un profesor para ver su horario y ubicación de salones' : 'Select a teacher to view weekly schedule and classroom rooms'}
+            </span>
+          </div>
+
+          <div id="teachersListContainer" style="display:flex; flex-direction:column; gap:14px;">
+            <!-- Renderizado dinámico vía JS -->
+          </div>
+        </div>
+
+        <!-- VISTA B: CALENDARIO SEMANAL & HIGHLIGHT DEL PROFESOR (CAPA 2) -->
+        <div id="modalLayerSchedule" style="display:none;">
+          
+          <!-- BANNER DE RELOJ INSTITUCIONAL / FECHA Y HORA FAKE INTELIGENTE -->
+          <div style="background:var(--cream); border:1.5px solid var(--ink); padding:10px 16px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span class="plan-tag" style="background:var(--rust); color:#FFFFFF; border-color:var(--rust); font-weight:800; font-size:10px; letter-spacing:0.08em;">
+                RELOJ INSTITUCIONAL
+              </span>
+              <span id="liveClockText" style="font-family:var(--mono); font-size:12px; font-weight:700; color:var(--ink);">
+                LUNES · 10:45 AM (Jornada Mañana)
+              </span>
+            </div>
+
+            <div id="liveStatusBadge" style="font-family:var(--mono); font-size:11px; font-weight:700; color:var(--ink-soft);">
+              ESTADO: CLASES EN DESARROLLO
+            </div>
+          </div>
+
+          <!-- ENCABEZADO DEL DOCENTE Y BOTÓN VOLVER -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+            <button type="button" id="btnBackToTeachers" class="btn btn-secondary btn-sm" style="font-size:11.5px; font-weight:700;">
+              ← {lang === 'es' ? 'Volver a Profesores del Área' : 'Back to Faculty List'}
+            </button>
+            <div id="scheduleTeacherInfo" style="font-family:var(--mono); font-size:12px; font-weight:700; color:var(--ink);">
+              Prof. Jorge Salas · Carga: 18h / sem
+            </div>
+          </div>
+
+          <!-- CUADRÍCULA DE HORARIO SEMANAL (LUNES A VIERNES) CON CONTRASTE VISUAL -->
+          <div class="schedule-table-wrapper" style="border:2px solid var(--ink); background:var(--paper); margin-bottom:20px; overflow-x:auto; box-shadow:4px 4px 0 rgba(18, 17, 14, 0.08);">
+            <table class="data-table" style="margin:0; width:100%; border-collapse:collapse;">
+              <thead>
+                <tr id="scheduleGridHeader" style="background:var(--cream); border-bottom:2px solid var(--ink);">
+                  <th style="width:14%; border-right:1.5px solid var(--ink); text-align:center; font-family:var(--mono); font-size:11px; padding:10px;">BLOQUE / HORA</th>
+                  <th id="th-day-0" style="width:17%; border-right:1px solid var(--ink); text-align:center; font-family:var(--mono); font-size:11px; padding:10px;">LUNES</th>
+                  <th id="th-day-1" style="width:17%; border-right:1px solid var(--ink); text-align:center; font-family:var(--mono); font-size:11px; padding:10px;">MARTES</th>
+                  <th id="th-day-2" style="width:17%; border-right:1px solid var(--ink); text-align:center; font-family:var(--mono); font-size:11px; padding:10px;">MIÉRCOLES</th>
+                  <th id="th-day-3" style="width:17%; border-right:1px solid var(--ink); text-align:center; font-family:var(--mono); font-size:11px; padding:10px;">JUEVES</th>
+                  <th id="th-day-4" style="width:17%; text-align:center; font-family:var(--mono); font-size:11px; padding:10px;">VIERNES</th>
+                </tr>
+              </thead>
+              <tbody id="scheduleGridBody">
+                <!-- Generado dinámicamente con celdas de alto contraste -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- ── HIGHLIGHT DE ALTO IMPACTO VISUAL (UBICACIÓN Y DETALLE EN VIVO) ── -->
+          <div id="scheduleHighlightBox" style="background:var(--paper); border:2px solid var(--ink); border-left:10px solid var(--rust); padding:20px 24px; box-shadow:6px 6px 0 rgba(18, 17, 14, 0.14);">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px;">
+              <div style="flex:1; min-width:320px;">
+                
+                <!-- Ribbon de Estado del Bloque -->
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                  <span id="hlStatusTag" style="font-family:var(--mono); font-size:10px; font-weight:900; background:var(--rust); color:#FFFFFF; padding:3px 8px; border-radius:2px; letter-spacing:0.08em; text-transform:uppercase;">
+                    EN CURSO AHORA (CLASE ACTIVA)
+                  </span>
+                  <span id="hlDayTime" style="font-family:var(--mono); font-size:12.5px; font-weight:800; color:var(--ink);">
+                    LUNES · 10:30 - 12:00
+                  </span>
+                </div>
+
+                <!-- Título Grande de Asignatura y Grupo -->
+                <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:8px;">
+                  <span id="hlGroupCode" style="font-family:var(--mono); font-size:24px; font-weight:900; background:var(--ink); color:#FFFFFF; padding:2px 10px;">
+                    10-2
+                  </span>
+                  <h3 id="hlSubjectName" style="font-family:var(--serif); font-size:21px; font-weight:700; color:var(--ink); margin:0;">
+                    Matemáticas 10-2
+                  </h3>
+                </div>
+
+                <!-- Ubicación Física / Salón con alto contraste -->
+                <div style="padding:10px 14px; background:var(--cream); border:1.5px solid var(--ink); margin-bottom:12px; font-size:14px; color:var(--ink);">
+                  <span style="font-family:var(--mono); font-size:10.5px; font-weight:700; text-transform:uppercase; color:var(--ink-soft); display:block; margin-bottom:2px;">UBICACIÓN FÍSICA EN PLANTEL:</span>
+                  <strong id="hlRoom" style="font-size:16px; color:var(--ink); font-weight:800;">Salón 205 (Pabellón de Secundaria, Piso 2)</strong>
+                </div>
+
+                <!-- Datos de Matrícula y Rendimiento -->
+                <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; font-family:var(--mono); font-size:12px;">
+                  <div style="border-left:3px solid var(--ink); padding-left:10px;">
+                    <span style="color:var(--ink-soft); font-size:10px; text-transform:uppercase; display:block;">Estudiantes:</span>
+                    <strong id="hlStudents" style="font-size:13.5px; color:var(--ink);">30 matriculados</strong>
+                  </div>
+                  <div style="border-left:3px solid var(--ink); padding-left:10px;">
+                    <span style="color:var(--ink-soft); font-size:10px; text-transform:uppercase; display:block;">Promedio del Grupo:</span>
+                    <strong id="hlAverage" style="font-size:13.5px; color:var(--rust);">8.1 / 10</strong>
+                  </div>
+                  <div style="border-left:3px solid var(--ink); padding-left:10px;">
+                    <span style="color:var(--ink-soft); font-size:10px; text-transform:uppercase; display:block;">Docente a Cargo:</span>
+                    <strong id="hlTeacherName" style="font-size:13.5px; color:var(--ink);">Jorge Salas</strong>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Botones de Acción -->
+              <div style="display:flex; flex-direction:column; gap:8px; min-width:200px;">
+                <a id="hlCourseLink" href="#" class="btn btn-primary" style="font-size:12px; text-align:center; justify-content:center; font-weight:700; padding:10px 14px;">
+                  Abrir Ficha de Curso →
+                </a>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="alert('Mock: Generando lista de asistencia y calificaciones del grupo');" style="font-size:11px; text-align:center; justify-content:center;">
+                  Planilla de Asistencia
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- MODAL FOOTER -->
+      <div style="padding:12px 24px; border-top:1px solid var(--line); background:var(--paper); display:flex; justify-content:space-between; align-items:center; flex-shrink:0; font-family:var(--mono); font-size:11px; color:var(--ink-soft);">
+        <span>Colegio Norte · Ciclo Lectivo 2026-1</span>
+        <button type="button" class="btn btn-secondary btn-sm" onclick={`document.getElementById('${id}ModalBackdrop').style.display='none';`}>
+          Cerrar Ventana (ESC)
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<style>
+  .subject-card-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 6px 6px 0 rgba(18, 17, 14, 0.14) !important;
+  }
+  
+  /* Celda de clase ocupada normal */
+  .schedule-cell-occupied {
+    background: var(--paper) !important;
+    border: 1.5px solid var(--ink) !important;
+    cursor: pointer;
+    transition: all 0.1s ease;
+  }
+  .schedule-cell-occupied:hover {
+    background: #E8E2D5 !important;
+  }
+
+  /* Celda SELECCIONADA por clic */
+  .schedule-cell-occupied.selected {
+    background: var(--ink) !important;
+    color: #FFFFFF !important;
+    border: 2px solid var(--ink) !important;
+    box-shadow: 0 0 0 2px var(--rust) !important;
+  }
+  .schedule-cell-occupied.selected strong {
+    color: var(--orange-vibrant) !important;
+  }
+  .schedule-cell-occupied.selected div, .schedule-cell-occupied.selected span {
+    color: #FFFFFF !important;
+  }
+
+  /* Celda EN CURSO AHORA (VIVO) */
+  .schedule-cell-occupied.live-now {
+    background: var(--ink) !important;
+    color: #FFFFFF !important;
+    border: 2px solid var(--rust) !important;
+    box-shadow: 0 0 0 3px var(--rust), 0 4px 12px rgba(193, 87, 26, 0.3) !important;
+  }
+  .schedule-cell-occupied.live-now strong {
+    color: var(--orange-vibrant) !important;
+  }
+  .schedule-cell-occupied.live-now div, .schedule-cell-occupied.live-now span {
+    color: #FFFFFF !important;
+  }
+
+  /* Celda libre */
+  .schedule-cell-free {
+    background: #FAF8F5;
+    color: var(--line-strong);
+    font-family: var(--mono);
+    font-size: 10px;
+    text-align: center;
+    padding: 12px 4px;
+    border: 1px dashed var(--line);
+  }
+</style>
+
+<script is:inline define:vars={{ id, departments, lang }}>
+  (function() {
+    var root = document.getElementById(id);
+    if (!root) return;
+
+    var modal = document.getElementById(id + 'ModalBackdrop');
+    var searchInput = document.getElementById(id + 'Search');
+    var cards = root.querySelectorAll('.subject-card-item');
+
+    var currentDept = null;
+    var currentTeacher = null;
+
+    // Elementos del Modal
+    var modalBadge = document.getElementById('modalDeptBadge');
+    var modalTitle = document.getElementById('modalDeptTitle');
+    var modalSummary = document.getElementById('modalDeptSummary');
+    var layerTeachers = document.getElementById('modalLayerTeachers');
+    var layerSchedule = document.getElementById('modalLayerSchedule');
+    var teachersList = document.getElementById('teachersListContainer');
+    var scheduleTeacherInfo = document.getElementById('scheduleTeacherInfo');
+    var scheduleGridBody = document.getElementById('scheduleGridBody');
+    var btnBack = document.getElementById('btnBackToTeachers');
+    var closeBtn = document.getElementById('modalCloseBtn');
+    var liveClockText = document.getElementById('liveClockText');
+
+    // Elementos del Highlight
+    var hlStatusTag = document.getElementById('hlStatusTag');
+    var hlDayTime = document.getElementById('hlDayTime');
+    var hlGroup = document.getElementById('hlGroupCode');
+    var hlSubject = document.getElementById('hlSubjectName');
+    var hlRoom = document.getElementById('hlRoom');
+    var hlStudents = document.getElementById('hlStudents');
+    var hlAverage = document.getElementById('hlAverage');
+    var hlTeacherName = document.getElementById('hlTeacherName');
+    var hlCourseLink = document.getElementById('hlCourseLink');
+
+    // ── CÁLCULO DE FECHA Y HORA SIMULADA INTELIGENTE ─────────
+    // Días: 0 (Lunes) a 4 (Viernes). Si es fin de semana -> Lunes (0)
+    var now = new Date();
+    var rawDay = now.getDay(); // 0: Dom, 1: Lun, 2: Mar, 3: Mié, 4: Jue, 5: Vie, 6: Sáb
+    var currentDayIdx = (rawDay >= 1 && rawDay <= 5) ? (rawDay - 1) : 0;
+    var dayNames = ['LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES'];
+    var currentDayName = dayNames[currentDayIdx];
+
+    // Dividir las 24 horas en secciones de 6 para rotar entre t1, t2, t3, t4 siempre dentro de la jornada escolar
+    var slotKeys = ['t1', 't2', 't3', 't4'];
+    var timeSlotLabels = ['07:00 - 08:30', '08:30 - 10:00', '10:30 - 12:00', '12:00 - 13:30'];
+    var currentSlotIdx = Math.floor(now.getHours() / 6) % 4; // Rotación según hora
+    var currentSlotKey = slotKeys[currentSlotIdx];
+    var currentSlotLabel = timeSlotLabels[currentSlotIdx];
+
+    if (liveClockText) {
+      liveClockText.textContent = currentDayName + ' · ' + currentSlotLabel + ' (JORNADA LECTIVA)';
+    }
+
+    // ── 1. BUSCADOR INSTANTÁNEO ─────────────────────────────
+    searchInput?.addEventListener('input', function(e) {
+      var query = e.target.value.trim().toLowerCase();
+      cards.forEach(function(card) {
+        var text = card.getAttribute('data-search-text') || '';
+        card.style.display = (!query || text.includes(query)) ? 'flex' : 'none';
+      });
+    });
+
+    // ── 2. ABRIR MODAL AL CLIC EN CARD DE MATERIA ───────────
+    root.querySelectorAll('.btn-open-dept').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var deptId = btn.getAttribute('data-dept-id');
+        openDepartment(deptId);
+      });
+    });
+
+    cards.forEach(function(card) {
+      card.addEventListener('click', function() {
+        var deptId = card.getAttribute('data-dept-id');
+        openDepartment(deptId);
+      });
+    });
+
+    function openDepartment(deptId) {
+      currentDept = departments.find(function(d) { return d.id === deptId; });
+      if (!currentDept) return;
+
+      modalBadge.textContent = 'DEP: ' + currentDept.code;
+      modalTitle.textContent = currentDept.name;
+      modalSummary.textContent = currentDept.teachersCount + ' ' + (lang === 'es' ? 'docentes' : 'faculty') + ' · ' + currentDept.totalGroupsCount + ' ' + (lang === 'es' ? 'grupos' : 'groups') + ' · ' + currentDept.totalStudents + ' ' + (lang === 'es' ? 'alumnos' : 'students');
+
+      renderTeachersList();
+      showLayer('teachers');
+      modal.style.display = 'flex';
+    }
+
+    function renderTeachersList() {
+      teachersList.innerHTML = '';
+
+      currentDept.teachers.forEach(function(teacher) {
+        var card = document.createElement('div');
+        card.className = 'panel';
+        card.style.border = '1.5px solid var(--ink)';
+        card.style.background = 'var(--paper)';
+        card.style.padding = '16px 20px';
+        card.style.display = 'flex';
+        card.style.justifyContent = 'space-between';
+        card.style.alignItems = 'center';
+        card.style.flexWrap = 'wrap';
+        card.style.gap = '14px';
+
+        var leftHtml = `
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div style="width:36px; height:36px; background:var(--ink); color:#FFFFFF; font-family:var(--mono); font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              ${teacher.avatarInitials}
+            </div>
+            <div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <strong style="font-family:var(--serif); font-size:16px; color:var(--ink);">${teacher.name}</strong>
+                ${teacher.hasFreeCapacity ? '<span class="plan-tag" style="background:var(--cream); border-color:var(--olive-dark); color:var(--olive-dark); font-size:10px; font-weight:800;">[DISPONIBLE: 6h LIBRES]</span>' : '<span class="plan-tag" style="font-size:10px; color:var(--ink-soft);">[CARGA COMPLETA]</span>'}
+              </div>
+              <div style="font-size:12px; color:var(--ink-soft); margin-top:2px;">
+                ${teacher.specialty} · <span style="font-family:var(--mono);">${teacher.email}</span>
+              </div>
+              <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;">
+                ${teacher.groups.map(function(g) {
+                  return '<span class="plan-tag" style="font-family:var(--mono); font-size:10.5px; border:1px solid var(--ink); background:var(--cream); padding:2px 6px;"><strong>' + g.code + '</strong> (' + g.studentCount + ' alum · ' + g.room + ')</span>';
+                }).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+
+        var rightHtml = `
+          <div style="text-align:right;">
+            <div style="font-family:var(--mono); font-size:11.5px; font-weight:700; color:var(--ink); margin-bottom:6px;">
+              ${teacher.groupsCount} ${lang === 'es' ? 'grupos' : 'groups'} · ${teacher.totalStudents} ${lang === 'es' ? 'alumnos' : 'students'} (${teacher.weeklyHours}h/sem)
+            </div>
+            <button type="button" class="btn btn-primary btn-sm btn-view-schedule" data-teacher-id="${teacher.id}" style="font-size:11.5px;">
+              Ver Horario Semanal & Salones →
+            </button>
+          </div>
+        `;
+
+        card.innerHTML = leftHtml + rightHtml;
+        teachersList.appendChild(card);
+      });
+
+      teachersList.querySelectorAll('.btn-view-schedule').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          var tId = btn.getAttribute('data-teacher-id');
+          openTeacherSchedule(tId);
+        });
+      });
+    }
+
+    // ── 3. ABRIR HORARIO Y CALENDARIO SEMANAL (CAPA 2) ───────
+    function openTeacherSchedule(teacherId) {
+      currentTeacher = currentDept.teachers.find(function(t) { return t.id === teacherId; });
+      if (!currentTeacher) return;
+
+      scheduleTeacherInfo.innerHTML = `
+        <span style="font-family:var(--serif); font-size:15px; font-weight:700;">Prof. ${currentTeacher.name}</span> · 
+        <span style="font-family:var(--mono); font-size:12px;">${currentTeacher.specialty} · ${currentTeacher.weeklyHours}h/semana</span>
+      `;
+
+      // Resaltar columna del día actual en la cabecera
+      for (var d = 0; d < 5; d++) {
+        var th = document.getElementById('th-day-' + d);
+        if (th) {
+          if (d === currentDayIdx) {
+            th.style.background = 'var(--ink)';
+            th.style.color = '#FFFFFF';
+            th.innerHTML = dayNames[d] + ' <span style="background:var(--rust); color:#FFF; font-size:9px; padding:1px 4px; border-radius:2px; margin-left:4px;">HOY</span>';
+          } else {
+            th.style.background = 'var(--cream)';
+            th.style.color = 'var(--ink)';
+            th.textContent = dayNames[d];
+          }
+        }
+      }
+
+      renderScheduleGrid();
+      showLayer('schedule');
+    }
+
+    function renderScheduleGrid() {
+      var timeBlocks = [
+        { key: 't1', label: '07:00 - 08:30' },
+        { key: 't2', label: '08:30 - 10:00' },
+        { key: 't3', label: '10:30 - 12:00' },
+        { key: 't4', label: '12:00 - 13:30' },
+      ];
+
+      scheduleGridBody.innerHTML = '';
+      
+      // Buscar slot en vivo: primero buscamos si tiene clase hoy a esta hora
+      var liveSlot = currentTeacher.scheduleSlots.find(function(s) {
+        return s.dayIndex === currentDayIdx && s.timeKey === currentSlotKey;
+      });
+
+      // Si no tiene clase exactamente en ese bloque hoy, buscar la primera clase de hoy
+      if (!liveSlot) {
+        liveSlot = currentTeacher.scheduleSlots.find(function(s) {
+          return s.dayIndex === currentDayIdx;
+        });
+      }
+
+      // Si no tiene clase hoy, tomar la primera clase de la semana
+      if (!liveSlot && currentTeacher.scheduleSlots.length > 0) {
+        liveSlot = currentTeacher.scheduleSlots[0];
+      }
+
+      timeBlocks.forEach(function(tb) {
+        var tr = document.createElement('tr');
+        
+        // Columna de hora
+        var tdTime = document.createElement('td');
+        tdTime.style.fontFamily = 'var(--mono)';
+        tdTime.style.fontSize = '11px';
+        tdTime.style.fontWeight = '800';
+        tdTime.style.textAlign = 'center';
+        tdTime.style.background = 'var(--cream)';
+        tdTime.style.borderRight = '1.5px solid var(--ink)';
+        tdTime.style.borderBottom = '1.5px solid var(--ink)';
+        tdTime.textContent = tb.label;
+        tr.appendChild(tdTime);
+
+        // 5 Días: Lunes(0), Martes(1), Miércoles(2), Jueves(3), Viernes(4)
+        for (var dayIdx = 0; dayIdx < 5; dayIdx++) {
+          var tdDay = document.createElement('td');
+          tdDay.style.borderRight = (dayIdx < 4) ? '1px solid var(--ink)' : 'none';
+          tdDay.style.borderBottom = '1px solid var(--ink)';
+          tdDay.style.padding = '8px 10px';
+          tdDay.style.verticalAlign = 'top';
+
+          // Fondo suave si es la columna de HOY
+          if (dayIdx === currentDayIdx) {
+            tdDay.style.background = '#FAF5ED';
+          }
+
+          var slot = currentTeacher.scheduleSlots.find(function(s) {
+            return s.timeKey === tb.key && s.dayIndex === dayIdx;
+          });
+
+          if (slot) {
+            var isLive = (slot === liveSlot);
+            tdDay.className = 'schedule-cell-occupied' + (isLive ? ' live-now' : '');
+            tdDay.setAttribute('data-slot-json', JSON.stringify(slot));
+            
+            var badgeHtml = isLive 
+              ? `<div style="background:var(--rust); color:#FFFFFF; font-size:9px; font-weight:900; font-family:var(--mono); padding:2px 6px; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.04em; display:inline-block; border-radius:2px;">● EN CURSO AHORA</div>`
+              : `<div class="selection-badge" style="display:none; background:var(--ink); color:#FFFFFF; font-size:9px; font-weight:800; font-family:var(--mono); padding:1px 5px; margin-bottom:4px; text-transform:uppercase;">SELECCIONADO</div>`;
+
+            tdDay.innerHTML = `
+              ${badgeHtml}
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
+                <strong style="font-family:var(--mono); font-size:13px; font-weight:900; color:${isLive ? 'var(--orange-vibrant)' : 'var(--rust)'};">${slot.groupCode}</strong>
+                <span style="font-family:var(--mono); font-size:9.5px; opacity:0.85;">${slot.studentCount} alum</span>
+              </div>
+              <div style="font-size:12px; font-weight:700; line-height:1.25; margin-bottom:3px;">${slot.subjectName}</div>
+              <div style="font-family:var(--mono); font-size:10.5px; color:${isLive ? '#FFF' : 'var(--ink-soft)'}; font-weight:600;">Salón: <strong>${slot.room}</strong></div>
+            `;
+
+            tdDay.addEventListener('click', (function(s, cell) {
+              return function() {
+                // Remover estado previo
+                scheduleGridBody.querySelectorAll('.schedule-cell-occupied').forEach(function(c) {
+                  c.classList.remove('selected');
+                  var selBadge = c.querySelector('.selection-badge');
+                  if (selBadge) selBadge.style.display = 'none';
+                });
+                
+                cell.classList.add('selected');
+                var currentSelBadge = cell.querySelector('.selection-badge');
+                if (currentSelBadge) currentSelBadge.style.display = 'inline-block';
+
+                updateHighlight(s, (s === liveSlot));
+              };
+            })(slot, tdDay));
+          } else {
+            tdDay.className = 'schedule-cell-free';
+            tdDay.innerHTML = '<span>— Disponible —</span>';
+          }
+
+          tr.appendChild(tdDay);
+        }
+
+        scheduleGridBody.appendChild(tr);
+      });
+
+      // Actualizar highlight con el slot en vivo
+      if (liveSlot) {
+        updateHighlight(liveSlot, true);
+      }
+    }
+
+    function updateHighlight(slot, isLive) {
+      if (hlStatusTag) {
+        if (isLive) {
+          hlStatusTag.textContent = '● EN CURSO AHORA (CLASE ACTIVA)';
+          hlStatusTag.style.background = 'var(--rust)';
+        } else {
+          hlStatusTag.textContent = 'BLOQUE SELECCIONADO';
+          hlStatusTag.style.background = 'var(--ink)';
+        }
+      }
+
+      hlDayTime.textContent = slot.day.toUpperCase() + ' · ' + slot.time;
+      hlGroup.textContent = slot.groupCode;
+      hlSubject.textContent = slot.subjectName;
+      hlRoom.textContent = slot.room + ' (Pabellón de Secundaria, Colegio Norte)';
+      hlStudents.textContent = slot.studentCount + ' ' + (lang === 'es' ? 'alumnos matriculados' : 'enrolled students');
+      hlAverage.textContent = slot.averageGrade + ' / 10';
+      hlTeacherName.textContent = currentTeacher.name;
+      hlCourseLink.setAttribute('href', '/' + lang + '/app/school-admin/courses/' + slot.courseId);
+    }
+
+    function showLayer(layer) {
+      if (layer === 'teachers') {
+        layerTeachers.style.display = 'block';
+        layerSchedule.style.display = 'none';
+      } else {
+        layerTeachers.style.display = 'none';
+        layerSchedule.style.display = 'block';
+      }
+    }
+
+    btnBack?.addEventListener('click', function() {
+      showLayer('teachers');
+    });
+
+    closeBtn?.addEventListener('click', function() {
+      modal.style.display = 'none';
+    });
+
+    modal?.addEventListener('click', function(e) {
+      if (e.target === modal) {
+        modal.style.display = 'none';
+      }
+    });
+
+    window.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && modal.style.display === 'flex') {
+        modal.style.display = 'none';
+      }
+    });
+  })();
+</script>

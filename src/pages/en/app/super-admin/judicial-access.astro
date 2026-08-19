@@ -1,47 +1,76 @@
 ---
 // ============================================================
-// SchoolOS — System-wide Judicial Access (/en/app/super-admin/judicial-access)
+// SchoolOS — Judicial Access Overview (/en/app/super-admin/judicial-access)
 // ============================================================
 import AppLayout from '../../../../layouts/AppLayout.astro';
 import { getMockJudicialGrants } from '../../../../data/app/mock-data';
 
 const lang = 'en';
 const grants = getMockJudicialGrants(lang);
+
+function getGrantStatusLabel(status: string) {
+  switch (status) {
+    case 'active': return 'Active';
+    case 'pending_verification': return 'Pending Verification';
+    case 'expired': return 'Expired';
+    case 'revoked': return 'Revoked';
+    default: return status;
+  }
+}
 ---
 
 <AppLayout
   title="Judicial Access"
-  pageTitle="Judicial Access Requests"
+  pageTitle="Compliance & Judicial Orders"
   activeSection="judicial-access"
   lang={lang}
   activeRoute="/app/super-admin/judicial-access"
   breadcrumbs={[{ label: 'Compliance' }, { label: 'Judicial Access' }]}
 >
-  <div class="notice restricted">
-    <span class="notice-icon">⚠</span>
+  <!-- TOP SECURITY RIBBON -->
+  <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-bottom:24px;">
+    <div style="background:var(--paper); border:1px solid var(--ink); padding:16px 20px; border-bottom:3px solid var(--orange-vibrant);">
+      <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft);">Active Orders</div>
+      <div style="font-family:var(--serif); font-size:26px; font-weight:700; color:var(--orange-vibrant); margin-top:4px;">1 In Effect</div>
+      <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); margin-top:2px;">EXP-2026-0417 · Expires in 28d</div>
+    </div>
+    <div style="background:var(--paper); border:1px solid var(--ink); padding:16px 20px; border-bottom:3px solid #8A5A00;">
+      <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft);">Pending Dual Verification</div>
+      <div style="font-family:var(--serif); font-size:26px; font-weight:700; color:#8A5A00; margin-top:4px;">1 Request</div>
+      <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); margin-top:2px;">Requires 2nd Super Admin</div>
+    </div>
+    <div style="background:var(--paper); border:1px solid var(--ink); padding:16px 20px; border-bottom:3px solid var(--line-strong);">
+      <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft);">Archived History</div>
+      <div style="font-family:var(--serif); font-size:26px; font-weight:700; color:var(--ink); margin-top:4px;">1 Expired</div>
+      <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); margin-top:2px;">Immutable ledger</div>
+    </div>
+  </div>
+
+  <div class="notice restricted" style="border:1px solid var(--danger); background:var(--danger-dim); color:#5C2015; border-radius:0;">
+    <span class="notice-icon" style="font-size:18px;">⚖️</span>
     <div>
-      <strong>Restricted Compliance Environment.</strong> Individual student records,
-      communications and academic activity across all schools are strictly private by default.
-      Access is only permitted with an approved <strong>JudicialAccessGrant</strong> under the two-person verification rule.
+      <strong style="color:#3B120B;">Strict Judicial Compliance Protocol (Statutory Data Protection).</strong><br />
+      Individual student records, communications, and academic logs are cryptographically sealed by design. Access is strictly provisioned through verified court orders under the mandatory <strong>dual confirmation rule by two Super Administrators</strong>.
     </div>
   </div>
 
   <div class="panel">
     <div class="panel-header">
-      <h2>Active and Pending Judicial Grants</h2>
+      <h2>CENTRAL COURT ORDER & JUDICIAL RECORD LEDGER</h2>
+      <button class="btn btn-secondary btn-sm" onclick="alert('Mock: Court Order Registration form opened');">+ File New Order</button>
     </div>
     <div class="panel-body">
       <table class="data-table">
         <thead>
           <tr>
-            <th>School</th>
-            <th>Case Reference</th>
+            <th>School Institution</th>
+            <th>Case Reference #</th>
             <th>Issuing Authority</th>
             <th>Authorized Scope</th>
             <th>Status</th>
-            <th>Requested by</th>
-            <th>Verified by</th>
-            <th>Expires</th>
+            <th>Requested By</th>
+            <th>Verified By</th>
+            <th>Validity</th>
             <th></th>
           </tr>
         </thead>
@@ -49,22 +78,22 @@ const grants = getMockJudicialGrants(lang);
           {grants.map((g) => (
             <tr>
               <td class="cell-name">
-                <a href={`/${lang}/app/super-admin/schools/${g.schoolId}`}>{g.schoolName}</a>
+                <a href={`/${lang}/app/super-admin/schools/${g.schoolId}`} style="font-weight:700;">{g.schoolName}</a>
               </td>
-              <td style="font-family:var(--mono);">{g.caseReference}</td>
+              <td style="font-family:var(--mono); font-weight:700; font-size:13px;">{g.caseReference}</td>
               <td class="cell-muted">{g.issuingAuthority}</td>
-              <td class="cell-muted">{g.scope}</td>
+              <td class="cell-muted" style="color:var(--ink); font-weight:500;">{g.scope}</td>
               <td>
                 <span class={`badge badge-${g.status}`}>
-                  {g.status === 'pending_verification' ? 'Pending Verification' : g.status.charAt(0).toUpperCase() + g.status.slice(1)}
+                  {getGrantStatusLabel(g.status)}
                 </span>
               </td>
-              <td class="cell-muted">{g.requestedBy}</td>
-              <td class="cell-muted">{g.verifiedBy || '—'}</td>
-              <td class="cell-muted">{g.expiresAt}</td>
+              <td class="cell-muted" style="font-family:var(--mono); font-size:11px;">{g.requestedBy}</td>
+              <td class="cell-muted" style="font-family:var(--mono); font-size:11px;">{g.verifiedBy || '—'}</td>
+              <td class="cell-muted" style="font-family:var(--mono); font-size:11.5px; font-weight:600; color:var(--ink);">{g.expiresAt}</td>
               <td class="cell-actions">
                 <a class="btn btn-secondary btn-sm" href={`/${lang}/app/super-admin/schools/${g.schoolId}`}>
-                  View School
+                  View Details →
                 </a>
               </td>
             </tr>

@@ -11,34 +11,108 @@ const plans = getMockPlans(lang);
 
 <AppLayout
   title="Plans"
-  pageTitle="Subscription Plans"
+  pageTitle="Plans & Subscriptions"
   activeSection="plans"
   lang={lang}
   activeRoute="/app/super-admin/plans"
   breadcrumbs={[{ label: 'System' }, { label: 'Plans' }]}
 >
+  <!-- 3 VISUAL TIER CARDS -->
+  <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:20px; margin-bottom:28px;">
+    
+    <!-- STARTER -->
+    <div style="background:var(--paper); border:1px solid var(--ink); display:flex; flex-direction:column;">
+      <div style="padding:20px 22px; border-bottom:1px solid var(--line);">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span class="plan-tag">Starter</span>
+          <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">42 SCHOOLS</span>
+        </div>
+        <div style="font-family:var(--serif); font-size:28px; font-weight:700; margin-top:8px;">$199 <span style="font-size:13px; font-family:var(--mono); font-weight:normal; color:var(--ink-soft);">USD / mo</span></div>
+        <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:4px;">Up to 200 students</div>
+      </div>
+      <div style="padding:14px 22px; background:var(--cream); flex:1; font-size:12.5px; color:var(--ink-soft);">
+        <div style="margin-bottom:6px;">✓ Core virtual classrooms</div>
+        <div style="margin-bottom:6px;">✓ Lesson guides & grades</div>
+        <div>✓ Standard ticket support</div>
+      </div>
+      <div style="padding:10px 22px; background:var(--sage-accent); border-top:1px solid var(--ink); font-family:var(--mono); font-size:11px; font-weight:700; text-transform:uppercase;">
+        Basic Operational Tier
+      </div>
+    </div>
+
+    <!-- PROFESSIONAL (FEATURED) -->
+    <div style="background:var(--paper); border:1px solid var(--ink); display:flex; flex-direction:column; position:relative; box-shadow: 4px 4px 0 rgba(18, 17, 14, 0.15);">
+      <div style="padding:20px 22px; border-bottom:1px solid var(--line);">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-weight:700;">Professional</span>
+          <span style="font-family:var(--mono); font-size:11px; color:var(--orange-vibrant); font-weight:700;">118 SCHOOLS (MAJORITY)</span>
+        </div>
+        <div style="font-family:var(--serif); font-size:28px; font-weight:700; margin-top:8px;">$499 <span style="font-size:13px; font-family:var(--mono); font-weight:normal; color:var(--ink-soft);">USD / mo</span></div>
+        <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:4px;">Up to 1,500 students</div>
+      </div>
+      <div style="padding:14px 22px; background:var(--cream); flex:1; font-size:12.5px; color:var(--ink-soft);">
+        <div style="margin-bottom:6px;">✓ All in Starter + Live Classes</div>
+        <div style="margin-bottom:6px;">✓ Judicial audit & reports</div>
+        <div>✓ Custom institution domain</div>
+      </div>
+      <div style="padding:10px 22px; background:var(--orange-vibrant); color:#FFFFFF; border-top:1px solid var(--ink); font-family:var(--mono); font-size:11px; font-weight:700; text-transform:uppercase;">
+        ★ Recommended Plan
+      </div>
+    </div>
+
+    <!-- ENTERPRISE -->
+    <div style="background:var(--paper); border:1px solid var(--ink); display:flex; flex-direction:column;">
+      <div style="padding:20px 22px; border-bottom:1px solid var(--line);">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span class="plan-tag">Enterprise</span>
+          <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">24 SCHOOL DISTRICTS</span>
+        </div>
+        <div style="font-family:var(--serif); font-size:28px; font-weight:700; margin-top:8px;">Custom <span style="font-size:13px; font-family:var(--mono); font-weight:normal; color:var(--ink-soft);">/ annual</span></div>
+        <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:4px;">Unlimited students</div>
+      </div>
+      <div style="padding:14px 22px; background:var(--cream); flex:1; font-size:12.5px; color:var(--ink-soft);">
+        <div style="margin-bottom:6px;">✓ Dedicated clusters & 99.99% SLA</div>
+        <div style="margin-bottom:6px;">✓ National SIS/ERP integration</div>
+        <div>✓ 24/7 dedicated account manager</div>
+      </div>
+      <div style="padding:10px 22px; background:var(--stone-accent); border-top:1px solid var(--ink); font-family:var(--mono); font-size:11px; font-weight:700; text-transform:uppercase;">
+        District & Network Scale
+      </div>
+    </div>
+
+  </div>
+
   <div class="panel">
     <div class="panel-header">
-      <h2>Commercial Plans Configuration</h2>
+      <h2>SUBSCRIPTION ALLOCATION & FLEET SHARE</h2>
     </div>
     <div class="panel-body">
       <table class="data-table">
         <thead>
           <tr>
             <th>Plan Tier</th>
-            <th>Student Limit</th>
+            <th>Enrollment Limit</th>
             <th>Base Price</th>
-            <th>Active Schools</th>
+            <th>Active Institutions</th>
+            <th>Fleet Share</th>
             <th>Status</th>
           </tr>
         </thead>
         <tbody>
           {plans.map((p) => (
             <tr>
-              <td class="cell-name"><span class="plan-tag">{p.name}</span></td>
-              <td class="cell-muted">{p.limit}</td>
-              <td style="font-family:var(--mono);">{p.price}</td>
-              <td>{p.schoolsCount}</td>
+              <td class="cell-name"><span class="plan-tag" style="font-weight:700;">{p.name}</span></td>
+              <td class="cell-muted" style="font-family:var(--mono);">{p.limit}</td>
+              <td style="font-family:var(--mono); font-weight:700; font-size:13.5px;">{p.price}</td>
+              <td style="font-family:var(--mono); font-weight:700;">{p.schoolsCount} schools</td>
+              <td>
+                <div style="display:flex; align-items:center; gap:8px; font-family:var(--mono); font-size:11.5px;">
+                  <div style="width:80px; height:4px; background:var(--line); border-radius:2px; overflow:hidden;">
+                    <div style={`width:${(p.schoolsCount / 184 * 100).toFixed(0)}%; height:100%; background:var(--ink);`}></div>
+                  </div>
+                  <span>{(p.schoolsCount / 184 * 100).toFixed(1)}%</span>
+                </div>
+              </td>
               <td><span class="badge badge-active">{p.status}</span></td>
             </tr>
           ))}

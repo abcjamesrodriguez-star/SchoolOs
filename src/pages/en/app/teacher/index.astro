@@ -1,0 +1,763 @@
+---
+// ============================================================
+// SchoolOS — Teacher Quick-Action Home Cockpit (English)
+// Phase 3 | Swipe Attendance with Interactive Dropdown in Final Roster
+// ============================================================
+import AppLayout from '../../../../layouts/AppLayout.astro';
+import { getAllTeacherStudents } from '../../../../data/app/mock-content';
+
+const lang = 'en';
+const allStudents = getAllTeacherStudents();
+// 30 enrolled students for 10°A
+const activeClassStudents = allStudents.filter(s => s.courseId === 'crs-bio-10a');
+---
+
+<AppLayout
+  title="Today in Class"
+  pageTitle="Today in Class — Quick Action"
+  activeSection="today"
+  role="teacher"
+  schoolName="Colegio Norte"
+  lang={lang}
+  activeRoute="/app/teacher"
+  breadcrumbs={[{ label: 'Colegio Norte' }, { label: 'Today in Class (Quick Action)' }]}
+>
+
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <!-- ── 1. DAILY SCHEDULE NAVIGATOR ── -->
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <div style="background:var(--paper); border:2px solid var(--ink); margin-bottom:24px; box-shadow:4px 4px 0 rgba(18,17,14,0.08);">
+    
+    <div style="background:var(--ink); color:#FFFFFF; padding:12px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="background:#5B8A4A; width:8px; height:8px; border-radius:50%; display:inline-block;"></span>
+        <span style="font-family:var(--mono); font-size:12px; font-weight:800; letter-spacing:0.08em; color:#FFFFFF; text-transform:uppercase;">
+          Today's Schedule · Tuesday, August 18, 2026
+        </span>
+      </div>
+      <div style="display:flex; align-items:center; gap:16px; font-family:var(--mono); font-size:12px; color:#E8E2D9;">
+        <span>Campus Time: <strong style="color:#FFF8F5; font-size:13px;">08:42 AM</strong></span>
+        <span>·</span>
+        <span>Term 1 · Week 6 of 18</span>
+      </div>
+    </div>
+
+    <!-- Day blocks -->
+    <div style="display:grid; grid-template-columns: repeat(5, 1fr); background:var(--cream);">
+      
+      <div style="padding:12px 16px; border-right:1.5px solid var(--ink); opacity:0.65;">
+        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); font-weight:700; margin-bottom:2px;">07:00 – 08:30</div>
+        <div style="font-family:var(--serif); font-size:14px; font-weight:700; color:var(--ink);">10th Grade B</div>
+        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);">Room 204 · Concluded</div>
+      </div>
+
+      <div style="padding:12px 16px; border-right:1.5px solid var(--ink); background:#FFFDF9; border-top:3.5px solid var(--rust);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
+          <span style="font-family:var(--mono); font-size:10px; color:var(--rust); font-weight:800;">08:30 – 10:00</span>
+          <span class="plan-tag" style="background:var(--rust); color:#FFFFFF; border-color:var(--rust); font-size:8.5px; font-weight:900; padding:1px 5px;">IN SESSION</span>
+        </div>
+        <div style="font-family:var(--serif); font-size:15px; font-weight:800; color:var(--ink);">10th Grade A</div>
+        <div style="font-family:var(--mono); font-size:10.5px; color:var(--rust); font-weight:700;">Science Lab 1 · 30 students</div>
+      </div>
+
+      <div style="padding:12px 16px; border-right:1.5px solid var(--ink); opacity:0.75;">
+        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); font-weight:700; margin-bottom:2px;">10:00 – 10:30</div>
+        <div style="font-family:var(--serif); font-size:13.5px; font-weight:700; color:var(--ink-soft);">Recess</div>
+        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);">Faculty Lounge</div>
+      </div>
+
+      <div style="padding:12px 16px; border-right:1.5px solid var(--ink); background:var(--paper);">
+        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); font-weight:700; margin-bottom:2px;">10:30 – 12:00</div>
+        <div style="font-family:var(--serif); font-size:14px; font-weight:700; color:var(--ink);">11th Grade A</div>
+        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);">Room 301 · Next</div>
+      </div>
+
+      <div style="padding:12px 16px; opacity:0.75;">
+        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); font-weight:700; margin-bottom:2px;">12:00 – 13:30</div>
+        <div style="font-family:var(--serif); font-size:13.5px; font-weight:700; color:var(--ink-soft);">Planning</div>
+        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);">Office Hour</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <!-- ── 2. HERO: ACTIVE CLASS HERO COCKPIT ── -->
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <div style="display:grid; grid-template-columns: 1.85fr 1fr; gap:24px; margin-bottom:24px;">
+
+    <!-- MAIN LIVE CLASS PANEL -->
+    <div style="background:#FFFDF9; border:2px solid var(--ink); padding:24px 28px; box-shadow:4px 4px 0 rgba(18,17,14,0.08); display:flex; flex-direction:column; justify-content:space-between;">
+      
+      <div>
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+          <div>
+            <span class="plan-tag" style="background:var(--rust); color:#FFFFFF; border-color:var(--rust); font-size:9.5px; font-weight:900; padding:2px 8px;">
+              ACTIVE CLASS
+            </span>
+            <h1 style="font-family:var(--serif); font-size:24px; font-weight:700; color:var(--ink); margin:6px 0 2px 0;">
+              Cell Biology & Genetics · 10th Grade A
+            </h1>
+            <div style="font-family:var(--mono); font-size:12px; color:var(--ink-soft);">
+              Location: <strong>Science Lab 1</strong> · <strong>30 enrolled students</strong>
+            </div>
+          </div>
+
+          <div style="text-align:right; font-family:var(--mono);">
+            <div style="font-size:10.5px; color:var(--ink-soft); text-transform:uppercase;">Time Remaining</div>
+            <div style="font-size:22px; font-weight:900; color:var(--rust);">38 MIN</div>
+          </div>
+        </div>
+
+        <div style="background:var(--paper); border:1.5px solid var(--ink); padding:16px 18px; margin:16px 0 20px 0;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid var(--line); padding-bottom:6px;">
+            <span style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; color:var(--rust);">
+              Today's Pedagogical Material
+            </span>
+            <span style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft);">Assigned Guide #1</span>
+          </div>
+
+          <h3 style="font-family:var(--serif); font-size:17px; font-weight:700; color:var(--ink); margin:0 0 8px 0;">
+            Structure and Function of the Eukaryotic Cell
+          </h3>
+
+          <div style="font-size:12.5px; color:var(--ink); line-height:1.5; background:var(--cream); border-left:3px solid var(--rust); padding:10px 14px;">
+            <div style="font-family:var(--mono); font-size:10px; font-weight:800; color:var(--ink-soft); margin-bottom:2px; text-transform:uppercase;">
+              Last session review:
+            </div>
+            Covered up to <strong>Block § 3 (Cell Nucleus and DNA)</strong>. Today's goal is to present <strong>Block § 4 (Nuclear Membrane)</strong> and conduct microscope lab practice for <strong>Block § 5 (Mitochondria)</strong>.
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTION BUTTONS -->
+      <div style="display:grid; grid-template-columns: 1.15fr 1fr 1fr; gap:10px; margin-top:8px;">
+        
+        <button
+          type="button"
+          class="btn btn-primary"
+          id="btnTriggerSwipeEn"
+          style="padding:12px 14px; font-size:12px; font-weight:800; justify-content:center; white-space:nowrap;"
+        >
+          Take Attendance (Swipe)
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-secondary"
+          id="btnOpenAttendanceEn"
+          style="padding:12px 14px; font-size:12px; font-weight:700; justify-content:center; white-space:nowrap; border-color:var(--ink);"
+        >
+          Classic List
+        </button>
+
+        <a
+          href={`/${lang}/app/teacher/guides/gd-1`}
+          class="btn btn-secondary"
+          style="padding:12px 14px; font-size:12px; font-weight:700; justify-content:center; white-space:nowrap; border-color:var(--ink);"
+        >
+          Project Guide
+        </a>
+      </div>
+
+    </div>
+
+    <!-- SIDEBAR -->
+    <div style="display:flex; flex-direction:column; gap:16px;">
+      <div class="panel" style="border:2px solid var(--ink); box-shadow:4px 4px 0 rgba(18,17,14,0.08);">
+        <div class="panel-header" style="background:var(--cream); display:flex; justify-content:space-between; align-items:center;">
+          <h2 style="font-size:11.5px; margin:0; letter-spacing:0.04em;">OBSERVATIONS: 10TH GRADE A</h2>
+          <span style="font-family:var(--mono); font-size:9.5px; color:var(--rust); font-weight:800;">3 NOTES</span>
+        </div>
+        <div class="panel-body" style="padding:0;">
+          
+          <div style="padding:11px 14px; border-bottom:1px solid var(--line); font-size:12px; display:flex; gap:10px; align-items:flex-start;">
+            <img src="/avatars/men/fila-1-columna-2.png" alt="Mateo Bedoya" style="width:32px; height:32px; border-radius:50%; border:1px solid var(--ink); object-fit:cover; flex-shrink:0;" />
+            <div style="flex:1;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+                <strong style="color:var(--ink);">Bedoya Castro, Mateo</strong>
+                <span class="badge badge-suspended" style="font-size:8.5px;">BEHAVIOR</span>
+              </div>
+              <div style="color:var(--ink-soft); font-size:11px;">Signed agreement with guardian.</div>
+            </div>
+          </div>
+
+          <div style="padding:11px 14px; border-bottom:1px solid var(--line); font-size:12px; display:flex; gap:10px; align-items:flex-start;">
+            <img src="/avatars/women/fila-2-columna-3.png" alt="Camila Hernández" style="width:32px; height:32px; border-radius:50%; border:1px solid var(--ink); object-fit:cover; flex-shrink:0;" />
+            <div style="flex:1;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+                <strong style="color:var(--ink);">Hernández Ospina, Camila</strong>
+                <span class="badge badge-suspended" style="font-size:8.5px;">3 ABSENCES</span>
+              </div>
+              <div style="color:var(--ink-soft); font-size:11px;">Missed last 2 classes. Collect worksheet.</div>
+            </div>
+          </div>
+
+          <div style="padding:11px 14px; font-size:12px; display:flex; gap:10px; align-items:flex-start;">
+            <img src="/avatars/women/fila-1-columna-2.png" alt="Valentina Barrientos" style="width:32px; height:32px; border-radius:50%; border:1px solid var(--ink); object-fit:cover; flex-shrink:0;" />
+            <div style="flex:1;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+                <strong style="color:var(--ink);">Barrientos López, Valentina</strong>
+                <span class="badge badge-active" style="font-size:8.5px;">LEAD · 9.5</span>
+              </div>
+              <div style="color:var(--ink-soft); font-size:11px;">Assigned to coordinate microscope slides.</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <!-- ── 3. BANNER INFERIOR ── -->
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <div style="background:var(--paper); border:2px solid var(--ink); padding:16px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; box-shadow:4px 4px 0 rgba(18,17,14,0.06);">
+    <div>
+      <div style="font-family:var(--serif); font-size:15px; font-weight:700; color:var(--ink); margin-bottom:2px;">
+        Need to review curriculum pacing, grade tests or see analytics?
+      </div>
+      <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">
+        Access the long-term planning workbench and metrics across all 3 assigned classes.
+      </div>
+    </div>
+    
+    <a href={`/${lang}/app/teacher/dashboard`} class="btn btn-secondary" style="font-size:11.5px; font-weight:800; border-color:var(--rust); color:var(--rust);">
+      Open Dashboard & Analytics →
+    </a>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <!-- ── 4. SWIPE MODAL (WITH INTERACTIVE ROSTER DROPDOWNS) ── -->
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <div id="swipeModalEn" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(18,17,14,0.85); z-index:10000; justify-content:center; align-items:center; padding:16px;">
+    <div style="background:var(--paper); border:3px solid var(--ink); max-width:640px; width:100%; max-height:94vh; display:flex; flex-direction:column; box-shadow:10px 10px 0 rgba(18,17,14,0.4); overflow:hidden;">
+      
+      <!-- Header -->
+      <div style="padding:14px 22px; background:var(--ink); color:#FFFFFF; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <h3 style="font-family:var(--serif); font-size:17px; margin:0; color:#FFFFFF;">Rapid Swipe Attendance</h3>
+          <div style="font-family:var(--mono); font-size:10.5px; color:#E8E2D9;">10th Grade A · Cell Biology</div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:14px;">
+          <div style="text-align:right; font-family:var(--mono); font-size:11px;">
+            <span id="swipeProgressTextEn" style="color:#FFF8F5; font-weight:800;">1 / 30</span>
+            <div style="width:80px; height:5px; background:#444; margin-top:3px; border-radius:2px; overflow:hidden;">
+              <div id="swipeProgressBarEn" style="width:3%; height:100%; background:var(--rust); transition:width 0.2s ease;"></div>
+            </div>
+          </div>
+          <button id="btnCloseSwipeEn" style="background:transparent; border:none; color:#FFFFFF; font-size:22px; cursor:pointer; font-weight:700;">✕</button>
+        </div>
+      </div>
+
+      <!-- Counters -->
+      <div style="padding:8px 22px; background:var(--cream); border-bottom:1.5px solid var(--ink); display:flex; justify-content:space-around; font-family:var(--mono); font-size:11px; font-weight:800;">
+        <span style="color:#2E5E1E;">Present: <span id="swipeCntPEn">0</span></span>
+        <span style="color:var(--rust);">Absent: <span id="swipeCntAEn">0</span></span>
+        <span style="color:#785700;">Tardy: <span id="swipeCntLEn">0</span></span>
+      </div>
+
+      <!-- Card Container -->
+      <div id="swipeCardContainerEn" style="padding:32px 24px 28px 24px; min-height:440px; display:flex; flex-direction:column; justify-content:center; align-items:center; position:relative; background:var(--paper);">
+        
+        <div
+          id="currentStudentCardEn"
+          style="width:100%; max-width:440px; background:#FFFDF9; border:2.5px solid var(--ink); padding:28px 24px; box-shadow:6px 6px 0 var(--ink); text-align:center; position:relative; transition:transform 0.18s ease, opacity 0.18s ease;"
+        >
+          <div style="position:absolute; top:14px; left:16px; font-family:var(--mono); font-size:11px; font-weight:800; color:var(--ink-soft); background:var(--cream); padding:3px 8px; border:1px solid var(--ink);">
+            #<span id="cardStudentNumEn">01</span> / 30
+          </div>
+
+          <div style="margin:6px auto 16px auto; width:150px; height:150px; position:relative;">
+            <img
+              id="cardStudentImgEn"
+              src="/avatars/women/fila-1-columna-1.png"
+              alt="Student Photo"
+              style="width:150px; height:150px; border-radius:50%; border:3.5px solid var(--ink); object-fit:cover; background:var(--cream); box-shadow:4px 4px 0 rgba(18,17,14,0.12);"
+            />
+          </div>
+
+          <h2 id="cardStudentNameEn" style="font-family:var(--serif); font-size:23px; font-weight:700; color:var(--ink); margin:0 0 6px 0; line-height:1.2;">
+            Álvarez Gómez, Sofía
+          </h2>
+          <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">
+            Section 10°A · Regular Enrollment
+          </div>
+
+          <div
+            id="swipeOverlayEn"
+            style="display:none; position:absolute; top:16px; right:16px; font-family:var(--mono); font-size:14px; font-weight:900; padding:5px 12px; border:2.5px solid; text-transform:uppercase;"
+          >
+            PRESENT
+          </div>
+        </div>
+
+        <!-- Absence Reason Sub-panel -->
+        <div
+          id="absenceReasonSubPanelEn"
+          style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(252,250,247,0.98); z-index:10; flex-direction:column; justify-content:center; align-items:center; padding:24px; text-align:center;"
+        >
+          <div style="font-family:var(--serif); font-size:18px; font-weight:700; margin-bottom:4px; color:var(--ink);">
+            Record absence for: <span id="subPanelStudentNameEn" style="color:var(--rust);">Mateo</span>
+          </div>
+          <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-bottom:20px;">
+            Select attendance status:
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:12px; width:100%; max-width:320px;">
+            <button
+              type="button"
+              id="btnSubAbsentEn"
+              class="btn"
+              style="padding:14px; font-size:13px; font-weight:800; background:var(--rust); color:#FFFFFF; border:2px solid var(--ink); text-align:center; justify-content:center;"
+            >
+              Unexcused Absence
+            </button>
+
+            <button
+              type="button"
+              id="btnSubLateEn"
+              class="btn"
+              style="padding:14px; font-size:13px; font-weight:800; background:#C49000; color:#FFFFFF; border:2px solid var(--ink); text-align:center; justify-content:center;"
+            >
+              Tardy / Arrived Late
+            </button>
+
+            <button
+              type="button"
+              id="btnSubCancelEn"
+              class="btn btn-secondary btn-sm"
+              style="margin-top:6px; font-size:11px;"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+
+        <!-- Completed Screen with Interactive Dropdowns -->
+        <div
+          id="swipeCompletedScreenEn"
+          style="display:none; width:100%; flex-direction:column; padding:10px 0; overflow-y:auto; max-height:64vh;"
+        >
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1.5px solid var(--line); padding-bottom:8px;">
+            <div>
+              <span class="plan-tag" style="background:#5B8A4A; color:#FFFFFF; border-color:#5B8A4A; font-weight:900; font-size:10px;">
+                VERIFICATION COMPLETE
+              </span>
+              <h3 style="font-family:var(--serif); font-size:17.5px; font-weight:700; color:var(--ink); margin:4px 0 0 0;">
+                Attendance Summary (30 Students)
+              </h3>
+              <div style="font-size:11px; color:var(--ink-soft); margin-top:2px;">
+                Click any dropdown to modify a student's status on the fly.
+              </div>
+            </div>
+
+            <div style="font-family:var(--mono); font-size:11.5px; font-weight:800; display:flex; gap:10px; background:var(--cream); padding:6px 10px; border:1px solid var(--ink);">
+              <span style="color:#2E5E1E;">P: <strong id="finalPEn">28</strong></span>
+              <span style="color:var(--rust);">A: <strong id="finalAEn">2</strong></span>
+              <span style="color:#785700;">T: <strong id="finalLEn">0</strong></span>
+            </div>
+          </div>
+
+          <div id="swipeFullRosterSummaryEn" style="display:flex; flex-direction:column; gap:6px; margin-bottom:16px;"></div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; border-top:1.5px solid var(--ink); padding-top:14px;">
+            <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">
+              ✓ 30/30 Students Verified
+            </div>
+
+            <button
+              type="button"
+              id="btnFinishSwipeEn"
+              class="btn btn-primary"
+              style="font-size:13px; font-weight:900; padding:12px 28px;"
+            >
+              ✓ Confirm & Submit Attendance
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Action Buttons -->
+      <div id="swipeActionButtonsEn" style="padding:16px 24px; background:var(--cream); border-top:2px solid var(--ink); display:flex; justify-content:space-between; align-items:center; gap:16px;">
+        
+        <button
+          type="button"
+          id="btnSwipeLeftEn"
+          class="btn"
+          style="flex:1; padding:15px 12px; font-size:13.5px; font-weight:800; background:#FFF0EE; color:var(--rust); border:2px solid var(--rust); justify-content:center; display:flex; align-items:center; gap:6px;"
+        >
+          <span>←</span>
+          <span>NOT PRESENT</span>
+        </button>
+
+        <button
+          type="button"
+          id="btnSwipeUndoEn"
+          disabled
+          class="btn btn-secondary"
+          style="padding:15px 16px; font-size:12px; font-weight:700; opacity:0.5; border-color:var(--ink-soft);"
+          title="Undo previous"
+        >
+          Undo
+        </button>
+
+        <button
+          type="button"
+          id="btnSwipeRightEn"
+          class="btn"
+          style="flex:1; padding:15px 12px; font-size:13.5px; font-weight:800; background:#E5EFE0; color:#2E5E1E; border:2px solid #5B8A4A; justify-content:center; display:flex; align-items:center; gap:6px;"
+        >
+          <span>PRESENT</span>
+          <span>→</span>
+        </button>
+      </div>
+
+      <div style="padding:6px 20px; background:var(--ink); color:#E8E2D9; font-family:var(--mono); font-size:10px; text-align:center;">
+        Keyboard: Arrow [→] for Present | Arrow [←] for Not Present
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SCRIPT -->
+  <script is:inline>
+    const STUDENTS_DATA_EN = [
+      { id: 'std-1',  name: 'Álvarez Gómez, Sofía',        avatarUrl: '/avatars/women/fila-1-columna-1.png' },
+      { id: 'std-2',  name: 'Arango Botero, Juan Pablo',    avatarUrl: '/avatars/men/fila-1-columna-1.png' },
+      { id: 'std-3',  name: 'Barrientos López, Valentina',  avatarUrl: '/avatars/women/fila-1-columna-2.png' },
+      { id: 'std-4',  name: 'Bedoya Castro, Mateo',         avatarUrl: '/avatars/men/fila-1-columna-2.png' },
+      { id: 'std-5',  name: 'Cárdenas Ruiz, Andrés Felipe', avatarUrl: '/avatars/men/fila-1-columna-3.png' },
+      { id: 'std-6',  name: 'Castaño Morales, Isabella',    avatarUrl: '/avatars/women/fila-1-columna-3.png' },
+      { id: 'std-7',  name: 'Delgado Peña, Samuel',         avatarUrl: '/avatars/men/fila-1-columna-4.png' },
+      { id: 'std-8',  name: 'Echeverri Restrepo, Mariana',  avatarUrl: '/avatars/women/fila-1-columna-4.png' },
+      { id: 'std-9',  name: 'Franco Vargas, Lucas',         avatarUrl: '/avatars/men/fila-2-columna-1.png' },
+      { id: 'std-10', name: 'Gallego Herrera, Tomás',       avatarUrl: '/avatars/men/fila-2-columna-2.png' },
+      { id: 'std-11', name: 'Giraldo Ríos, Lucía',          avatarUrl: '/avatars/women/fila-2-columna-1.png' },
+      { id: 'std-12', name: 'Gómez Mendoza, Daniela',       avatarUrl: '/avatars/women/fila-2-columna-2.png' },
+      { id: 'std-13', name: 'Gutiérrez Caro, Santiago',     avatarUrl: '/avatars/men/fila-2-columna-3.png' },
+      { id: 'std-14', name: 'Hernández Ospina, Camila',     avatarUrl: '/avatars/women/fila-2-columna-3.png' },
+      { id: 'std-15', name: 'Jaramillo Sánchez, Nicolás',   avatarUrl: '/avatars/men/fila-2-columna-4.png' },
+      { id: 'std-16', name: 'Londoño Jiménez, Valeria',     avatarUrl: '/avatars/women/fila-2-columna-4.png' },
+      { id: 'std-17', name: 'Martínez Cruz, Alejandro',     avatarUrl: '/avatars/men/fila-3-columna-1.png' },
+      { id: 'std-18', name: 'Mejía Ortiz, Gabriela',        avatarUrl: '/avatars/women/fila-3-columna-1.png' },
+      { id: 'std-19', name: 'Morales Duque, Esteban',       avatarUrl: '/avatars/men/fila-3-columna-2.png' },
+      { id: 'std-20', name: 'Muñoz Salazar, Natalia',       avatarUrl: '/avatars/women/fila-3-columna-2.png' },
+      { id: 'std-21', name: 'Osorio Parra, Sebastián',      avatarUrl: '/avatars/men/fila-3-columna-3.png' },
+      { id: 'std-22', name: 'Palacio Pineda, Laura',        avatarUrl: '/avatars/women/fila-3-columna-3.png' },
+      { id: 'std-23', name: 'Quintero Gil, Martín',         avatarUrl: '/avatars/men/fila-3-columna-4.png' },
+      { id: 'std-24', name: 'Ramírez Correa, Salomé',       avatarUrl: '/avatars/women/fila-3-columna-4.png' },
+      { id: 'std-25', name: 'Restrepo Vega, David',         avatarUrl: '/avatars/men/fila-4-columna-1.png' },
+      { id: 'std-26', name: 'Rincón Torres, Paula',         avatarUrl: '/avatars/women/fila-4-columna-1.png' },
+      { id: 'std-27', name: 'Salazar Montoya, Jerónimo',    avatarUrl: '/avatars/men/fila-4-columna-2.png' },
+      { id: 'std-28', name: 'Tobón Flórez, Andrea',         avatarUrl: '/avatars/women/fila-4-columna-2.png' },
+      { id: 'std-29', name: 'Uribe Benítez, Simón',         avatarUrl: '/avatars/men/fila-4-columna-3.png' },
+      { id: 'std-30', name: 'Zapata Moreno, Manuela',       avatarUrl: '/avatars/women/fila-4-columna-3.png' }
+    ];
+
+    let currentIdxEn = 0;
+    const swipeHistoryEn = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('btnTriggerSwipeEn')?.addEventListener('click', startSwipeAttendanceEn);
+      document.getElementById('btnCloseSwipeEn')?.addEventListener('click', () => {
+        document.getElementById('swipeModalEn').style.display = 'none';
+      });
+
+      document.getElementById('btnSwipeRightEn')?.addEventListener('click', doSwipeRightEn);
+      document.getElementById('btnSwipeLeftEn')?.addEventListener('click', doSwipeLeftEn);
+      document.getElementById('btnSwipeUndoEn')?.addEventListener('click', doSwipeUndoEn);
+
+      document.getElementById('btnSubAbsentEn')?.addEventListener('click', () => saveAbsenceEn('absent'));
+      document.getElementById('btnSubLateEn')?.addEventListener('click', () => saveAbsenceEn('late'));
+      document.getElementById('btnSubCancelEn')?.addEventListener('click', () => {
+        document.getElementById('absenceReasonSubPanelEn').style.display = 'none';
+      });
+
+      document.getElementById('btnFinishSwipeEn')?.addEventListener('click', finishSwipeAttendanceEn);
+    });
+
+    function startSwipeAttendanceEn() {
+      currentIdxEn = 0;
+      swipeHistoryEn.length = 0;
+      document.getElementById('swipeCompletedScreenEn').style.display = 'none';
+      document.getElementById('currentStudentCardEn').style.display = 'block';
+      document.getElementById('swipeActionButtonsEn').style.display = 'flex';
+      document.getElementById('absenceReasonSubPanelEn').style.display = 'none';
+      document.getElementById('swipeModalEn').style.display = 'flex';
+      renderSwipeCardEn();
+      refreshSwipeHUDEn();
+    }
+
+    function renderSwipeCardEn() {
+      if (currentIdxEn >= STUDENTS_DATA_EN.length) {
+        showFinalSwipeScreenEn();
+        return;
+      }
+
+      const std = STUDENTS_DATA_EN[currentIdxEn];
+      document.getElementById('cardStudentNumEn').innerText = (currentIdxEn + 1 < 10 ? '0' : '') + (currentIdxEn + 1);
+      document.getElementById('cardStudentNameEn').innerText = std.name;
+      
+      const img = document.getElementById('cardStudentImgEn');
+      if (img) {
+        img.src = std.avatarUrl;
+        img.alt = std.name;
+      }
+
+      const card = document.getElementById('currentStudentCardEn');
+      card.style.transform = 'translate(0px, 0px) rotate(0deg)';
+      card.style.opacity = '1';
+      card.style.borderColor = 'var(--ink)';
+
+      document.getElementById('swipeOverlayEn').style.display = 'none';
+
+      const btnUndo = document.getElementById('btnSwipeUndoEn');
+      if (btnUndo) {
+        btnUndo.disabled = (currentIdxEn === 0);
+        btnUndo.style.opacity = (currentIdxEn === 0 ? '0.5' : '1');
+      }
+    }
+
+    function doSwipeRightEn() {
+      if (currentIdxEn >= STUDENTS_DATA_EN.length) return;
+
+      const card = document.getElementById('currentStudentCardEn');
+      const overlay = document.getElementById('swipeOverlayEn');
+
+      overlay.innerText = 'PRESENT';
+      overlay.style.color = '#2E5E1E';
+      overlay.style.borderColor = '#5B8A4A';
+      overlay.style.background = '#E5EFE0';
+      overlay.style.display = 'block';
+
+      card.style.transform = 'translate(180px, -15px) rotate(10deg)';
+      card.style.opacity = '0';
+
+      const std = STUDENTS_DATA_EN[currentIdxEn];
+      swipeHistoryEn.push({ id: std.id, name: std.name, avatarUrl: std.avatarUrl, status: 'present' });
+
+      setTimeout(() => {
+        currentIdxEn++;
+        renderSwipeCardEn();
+        refreshSwipeHUDEn();
+      }, 160);
+    }
+
+    function doSwipeLeftEn() {
+      if (currentIdxEn >= STUDENTS_DATA_EN.length) return;
+
+      const std = STUDENTS_DATA_EN[currentIdxEn];
+      document.getElementById('subPanelStudentNameEn').innerText = std.name;
+      document.getElementById('absenceReasonSubPanelEn').style.display = 'flex';
+    }
+
+    function saveAbsenceEn(status) {
+      document.getElementById('absenceReasonSubPanelEn').style.display = 'none';
+      const std = STUDENTS_DATA_EN[currentIdxEn];
+      swipeHistoryEn.push({ id: std.id, name: std.name, avatarUrl: std.avatarUrl, status: status });
+
+      const card = document.getElementById('currentStudentCardEn');
+      const overlay = document.getElementById('swipeOverlayEn');
+
+      overlay.innerText = status === 'absent' ? 'ABSENT' : 'TARDY';
+      overlay.style.color = status === 'absent' ? 'var(--rust)' : '#785700';
+      overlay.style.borderColor = status === 'absent' ? 'var(--rust)' : '#C49000';
+      overlay.style.background = status === 'absent' ? '#FCEAE6' : '#FFF4E0';
+      overlay.style.display = 'block';
+
+      card.style.transform = 'translate(-180px, -15px) rotate(-10deg)';
+      card.style.opacity = '0';
+
+      setTimeout(() => {
+        currentIdxEn++;
+        renderSwipeCardEn();
+        refreshSwipeHUDEn();
+      }, 160);
+    }
+
+    function doSwipeUndoEn() {
+      if (currentIdxEn > 0) {
+        currentIdxEn--;
+        swipeHistoryEn.pop();
+        renderSwipeCardEn();
+        refreshSwipeHUDEn();
+      }
+    }
+
+    function refreshSwipeHUDEn() {
+      const total = STUDENTS_DATA_EN.length;
+      const prog = Math.min(currentIdxEn, total);
+      document.getElementById('swipeProgressTextEn').innerText = `${prog} / ${total}`;
+      document.getElementById('swipeProgressBarEn').style.width = `${(prog / total) * 100}%`;
+
+      let p = 0, a = 0, l = 0;
+      swipeHistoryEn.forEach(r => {
+        if (r.status === 'present') p++;
+        else if (r.status === 'absent') a++;
+        else if (r.status === 'late') l++;
+      });
+
+      document.getElementById('swipeCntPEn').innerText = p;
+      document.getElementById('swipeCntAEn').innerText = a;
+      document.getElementById('swipeCntLEn').innerText = l;
+    }
+
+    function showFinalSwipeScreenEn() {
+      document.getElementById('currentStudentCardEn').style.display = 'none';
+      document.getElementById('swipeActionButtonsEn').style.display = 'none';
+      document.getElementById('swipeCompletedScreenEn').style.display = 'flex';
+
+      updateFinalCountersEn();
+      renderFinalRosterRowsEn();
+    }
+
+    function renderFinalRosterRowsEn() {
+      const container = document.getElementById('swipeFullRosterSummaryEn');
+      container.innerHTML = '';
+
+      swipeHistoryEn.forEach((item, idx) => {
+        const row = document.createElement('div');
+        row.id = `final-row-en-${idx}`;
+        row.style.display = 'flex';
+        row.style.justifyContent = 'space-between';
+        row.style.alignItems = 'center';
+        row.style.padding = '8px 12px';
+        row.style.border = '1.5px solid var(--line-strong)';
+        row.style.transition = 'background 0.15s ease';
+
+        applyRowStyleEn(row, item.status);
+
+        row.innerHTML = `
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-family:var(--mono); font-size:10.5px; font-weight:800; color:var(--ink-soft); min-width:20px;">${idx + 1 < 10 ? '0' : ''}${idx + 1}.</span>
+            <img src="${item.avatarUrl}" alt="${item.name}" style="width:28px; height:28px; border-radius:50%; border:1px solid var(--ink); object-fit:cover;" />
+            <span style="font-size:12.5px; font-weight:700; color:var(--ink);">${item.name}</span>
+          </div>
+          <div>
+            <select
+              id="final-sel-en-${idx}"
+              onchange="changeFinalStudentStatusEn(${idx}, this.value);"
+              style="font-family:var(--mono); font-size:11px; font-weight:800; padding:4px 10px; border:1.5px solid; cursor:pointer; outline:none; border-radius:2px;"
+            >
+              <option value="present" ${item.status === 'present' ? 'selected' : ''}>PRESENT</option>
+              <option value="absent" ${item.status === 'absent' ? 'selected' : ''}>ABSENT</option>
+              <option value="late" ${item.status === 'late' ? 'selected' : ''}>TARDY</option>
+            </select>
+          </div>
+        `;
+
+        container.appendChild(row);
+        applySelectStyleEn(row.querySelector('select'), item.status);
+      });
+    }
+
+    window.changeFinalStudentStatusEn = function(idx, newStatus) {
+      if (swipeHistoryEn[idx]) {
+        swipeHistoryEn[idx].status = newStatus;
+        const row = document.getElementById(`final-row-en-${idx}`);
+        if (row) {
+          applyRowStyleEn(row, newStatus);
+          const sel = document.getElementById(`final-sel-en-${idx}`);
+          if (sel) applySelectStyleEn(sel, newStatus);
+        }
+        updateFinalCountersEn();
+      }
+    };
+
+    function applyRowStyleEn(rowElement, status) {
+      if (status === 'present') {
+        rowElement.style.background = 'var(--cream)';
+      } else if (status === 'absent') {
+        rowElement.style.background = '#FFF0EE';
+      } else if (status === 'late') {
+        rowElement.style.background = '#FFFDF0';
+      }
+    }
+
+    function applySelectStyleEn(selectElement, status) {
+      if (!selectElement) return;
+      if (status === 'present') {
+        selectElement.style.background = '#E5EFE0';
+        selectElement.style.color = '#2E5E1E';
+        selectElement.style.borderColor = '#5B8A4A';
+      } else if (status === 'absent') {
+        selectElement.style.background = '#FCEAE6';
+        selectElement.style.color = 'var(--rust)';
+        selectElement.style.borderColor = 'var(--rust)';
+      } else if (status === 'late') {
+        selectElement.style.background = '#FFF4E0';
+        selectElement.style.color = '#785700';
+        selectElement.style.borderColor = '#C49000';
+      }
+    }
+
+    function updateFinalCountersEn() {
+      let p = 0, a = 0, l = 0;
+      swipeHistoryEn.forEach(r => {
+        if (r.status === 'present') p++;
+        else if (r.status === 'absent') a++;
+        else if (r.status === 'late') l++;
+      });
+
+      document.getElementById('finalPEn').innerText = p;
+      document.getElementById('finalAEn').innerText = a;
+      document.getElementById('finalLEn').innerText = l;
+    }
+
+    function finishSwipeAttendanceEn() {
+      let p = 0, a = 0, l = 0;
+      swipeHistoryEn.forEach(r => {
+        if (r.status === 'present') p++;
+        else if (r.status === 'absent') a++;
+        else if (r.status === 'late') l++;
+      });
+
+      alert(`Attendance saved:\n• ${p} Present\n• ${a} Absent\n• ${l} Tardies\n\nSubmitted.`);
+      document.getElementById('swipeModalEn').style.display = 'none';
+
+      const mainBtn = document.getElementById('btnTriggerSwipeEn');
+      if (mainBtn) {
+        mainBtn.innerHTML = `Attendance Complete (${p}/30) ✓`;
+        mainBtn.style.background = '#5B8A4A';
+        mainBtn.style.borderColor = '#5B8A4A';
+      }
+    }
+
+    window.addEventListener('keydown', (e) => {
+      const modal = document.getElementById('swipeModalEn');
+      if (modal && modal.style.display === 'flex') {
+        const sub = document.getElementById('absenceReasonSubPanelEn');
+        if (sub && sub.style.display === 'flex') {
+          if (e.key === '1' || e.key === 'a') saveAbsenceEn('absent');
+          else if (e.key === '2' || e.key === 'l') saveAbsenceEn('late');
+          else if (e.key === 'Escape') sub.style.display = 'none';
+          return;
+        }
+
+        const compScreen = document.getElementById('swipeCompletedScreenEn');
+        if (compScreen && compScreen.style.display === 'flex') {
+          if (e.key === 'Enter') finishSwipeAttendanceEn();
+          return;
+        }
+
+        if (e.key === 'ArrowRight' || e.key === ' ') {
+          e.preventDefault();
+          doSwipeRightEn();
+        } else if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          doSwipeLeftEn();
+        } else if (e.key === 'Backspace' || e.key === 'z') {
+          e.preventDefault();
+          doSwipeUndoEn();
+        } else if (e.key === 'Escape') {
+          modal.style.display = 'none';
+        }
+      }
+    });
+  </script>
+
+</AppLayout>

@@ -1,0 +1,62 @@
+---
+// ============================================================
+// SchoolOS — Cursos & Asignaturas (Rectoría)
+// Diseño: Navegación por Capas (Cards > Modal 80% > Horario & Highlight)
+// ============================================================
+import AppLayout from '../../../../../layouts/AppLayout.astro';
+import SubjectDepartmentGrid from '../../../../../components/app/school-admin/SubjectDepartmentGrid.astro';
+import { getDepartments } from '../../../../../data/app/mock-academic';
+
+const lang = 'es';
+const departments = getDepartments(lang);
+
+const totalTeachers = departments.reduce((acc, d) => acc + d.teachersCount, 0);
+const totalGroups = departments.reduce((acc, d) => acc + d.totalGroupsCount, 0);
+const totalStudents = departments.reduce((acc, d) => acc + d.totalStudents, 0);
+---
+
+<AppLayout
+  title="Cursos & Materias"
+  pageTitle="Catálogo de Asignaturas & Horarios"
+  activeSection="courses"
+  role="school_admin"
+  schoolName="Colegio Norte"
+  lang={lang}
+  activeRoute="/app/school-admin/courses"
+  breadcrumbs={[{ label: 'Colegio Norte', href: `/${lang}/app/school-admin` }, { label: 'Cursos & Materias' }]}
+>
+  <!-- STATS GENERALES DEL COLEGIO -->
+  <div class="stat-grid" style="margin-bottom:24px;">
+    <div class="stat-card">
+      <div class="stat-label">Áreas & Asignaturas</div>
+      <div class="stat-num">{departments.length}</div>
+      <div class="stat-sub">Planes curriculares activos</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Planta Docente</div>
+      <div class="stat-num">{totalTeachers}</div>
+      <div class="stat-sub">100% con asignación lectiva</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Grupos y Secciones</div>
+      <div class="stat-num">{totalGroups}</div>
+      <div class="stat-sub">Desde 8° hasta 11° grado</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Alumnos Matriculados</div>
+      <div class="stat-num accent" style="color:var(--rust);">{totalStudents}</div>
+      <div class="stat-sub">Ciclo Lectivo 2026 - Periodo 1</div>
+    </div>
+  </div>
+
+  <!-- CATÁLOGO DE MATERIAS (CAPA 0: CARDS + MODAL 80% INTERACTIVO) -->
+  <div class="panel">
+    <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+      <h2>MATERIAS Y ÁREAS DE CONOCIMIENTO (SELECCIONA PARA VER PROFESORES Y HORARIOS)</h2>
+      <a href={`/${lang}/app/school-admin/courses/new`} class="btn btn-primary btn-sm">＋ Nuevo Curso / Grupo</a>
+    </div>
+    <div class="panel-body padded">
+      <SubjectDepartmentGrid departments={departments} lang={lang} id="coursesGrid" />
+    </div>
+  </div>
+</AppLayout>

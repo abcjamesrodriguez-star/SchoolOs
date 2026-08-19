@@ -4,6 +4,8 @@ import Topbar from '../components/app/Topbar.astro';
 import type { Lang } from '../i18n';
 import '../styles/app.css';
 
+export type AppRole = 'super_admin' | 'school_admin' | 'teacher' | 'student';
+
 interface BreadcrumbItem {
   label: string;
   href?: string;
@@ -13,7 +15,9 @@ interface Props {
   title: string;
   pageTitle: string;
   breadcrumbs: BreadcrumbItem[];
-  activeSection: 'dashboard' | 'schools' | 'users' | 'plans' | 'judicial-access' | 'audit-log' | 'settings';
+  activeSection: string;
+  role?: AppRole;
+  schoolName?: string;
   lang?: Lang;
   activeRoute?: string;
 }
@@ -23,9 +27,18 @@ const {
   pageTitle,
   breadcrumbs,
   activeSection,
+  role = 'super_admin',
+  schoolName = 'Colegio Norte',
   lang = 'es',
   activeRoute = '/app/super-admin',
 } = Astro.props;
+
+const roleLabels = {
+  super_admin: lang === 'es' ? 'Super Admin' : 'Super Admin',
+  school_admin: lang === 'es' ? 'Rectoría / School Admin' : 'School Admin',
+  teacher: lang === 'es' ? 'Docente' : 'Teacher',
+  student: lang === 'es' ? 'Estudiante' : 'Student',
+};
 ---
 
 <!doctype html>
@@ -33,13 +46,13 @@ const {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{title} — Super Admin — SchoolOS</title>
+    <title>{title} — {roleLabels[role]} — SchoolOS</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,450;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,450;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -58,11 +71,13 @@ const {
   </head>
   <body>
     <div class="app-shell">
-      <Sidebar activeSection={activeSection} lang={lang} />
+      <Sidebar activeSection={activeSection} role={role} schoolName={schoolName} lang={lang} />
       <main class="app-main">
         <Topbar
           title={pageTitle}
           breadcrumbs={breadcrumbs}
+          role={role}
+          schoolName={schoolName}
           lang={lang}
           activeRoute={activeRoute}
         />

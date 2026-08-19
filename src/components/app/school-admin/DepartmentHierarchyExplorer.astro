@@ -1,0 +1,242 @@
+---
+// ============================================================
+// SchoolOS — Explorador Jerárquico: Materias > Docentes > Grupos
+// ============================================================
+import type { Lang } from '../../../i18n';
+import type { SubjectDepartment } from '../../../types/academic';
+
+interface Props {
+  departments: SubjectDepartment[];
+  lang?: Lang;
+  id?: string;
+}
+
+const { departments, lang = 'es', id = 'deptHierarchy' } = Astro.props;
+---
+
+<div id={id} class="dept-hierarchy-container">
+  <!-- SEARCH BAR & FILTER -->
+  <div style="margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+    <div style="position:relative; flex:1; min-width:280px;">
+      <svg style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--ink-soft); pointer-events:none;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input
+        type="text"
+        id={`${id}SearchInput`}
+        placeholder={lang === 'es' ? 'Buscar materia, profesor o grupo (ej. 10-2, Ana, Cálculo)...' : 'Search subject, teacher or group (e.g. 10-2, Ana, Calculus)...'}
+        style="width:100%; padding:9px 12px 9px 34px; border:1px solid var(--ink); background:var(--cream); font-family:var(--sans); font-size:13px; border-radius:2px;"
+      />
+    </div>
+    <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">
+      {departments.length} {lang === 'es' ? 'Áreas Académicas' : 'Academic Departments'} · {departments.reduce((acc, d) => acc + d.totalGroupsCount, 0)} {lang === 'es' ? 'Grupos' : 'Active Groups'}
+    </div>
+  </div>
+
+  <!-- LEVEL 1: SUBJECT / DEPARTMENT PILLS -->
+  <div class="dept-pills-row" style="display:flex; gap:8px; overflow-x:auto; padding-bottom:8px; margin-bottom:18px; scrollbar-width:thin;">
+    {departments.map((dept, idx) => (
+      <button
+        type="button"
+        class={`dept-tab-btn ${idx === 0 ? 'active' : ''}`}
+        data-dept-id={dept.id}
+        style="display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border:1px solid var(--ink); background:var(--paper); cursor:pointer; font-family:var(--sans); font-size:13px; font-weight:600; text-align:left; transition:all 0.15s ease; white-space:nowrap; flex-shrink:0;"
+      >
+        <span style="font-family:var(--mono); font-size:14px; font-weight:700; color:var(--rust);">{dept.icon}</span>
+        <span>{dept.name}</span>
+        <span class="plan-tag" style="font-size:10px; padding:1px 6px; font-weight:700; background:var(--cream); border-color:var(--line-strong);">
+          {dept.teachersCount} {lang === 'es' ? 'profes' : 'faculty'} · {dept.totalGroupsCount} {lang === 'es' ? 'grupos' : 'groups'}
+        </span>
+      </button>
+    ))}
+  </div>
+
+  <!-- LEVEL 2 & 3: TEACHERS AND GROUPS FOR EACH DEPARTMENT -->
+  <div class="dept-content-panels">
+    {departments.map((dept, idx) => (
+      <div
+        class="dept-panel"
+        id={`deptPanel-${dept.id}`}
+        style={`display: ${idx === 0 ? 'block' : 'none'};`}
+      >
+        <!-- Department Banner -->
+        <div style="background:var(--cream); border:1px solid var(--ink); padding:14px 18px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-family:var(--serif); font-size:17px; font-weight:700; color:var(--ink);">
+                {dept.name}
+              </span>
+              <span class="badge badge-active" style="font-size:9.5px;">{dept.code}</span>
+            </div>
+            <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft); margin-top:2px;">
+              {dept.teachersCount} {lang === 'es' ? 'docentes asignados' : 'assigned teachers'} · {dept.totalStudents} {lang === 'es' ? 'estudiantes atendidos' : 'students enrolled'} · {dept.totalGroupsCount} {lang === 'es' ? 'grupos escolares' : 'classroom sections'}
+            </div>
+          </div>
+          <div>
+            <a href={`/${lang}/app/school-admin/courses/new`} class="btn btn-secondary btn-sm" style="font-size:11px;">
+              ＋ {lang === 'es' ? 'Crear Grupo en esta Materia' : 'Add Group to Subject'}
+            </a>
+          </div>
+        </div>
+
+        <!-- Teachers Grid in this department -->
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          {dept.teachers.map((teacher) => (
+            <div class="teacher-hierarchy-card" style="background:var(--paper); border:1px solid var(--ink); padding:18px 20px; box-shadow:3px 3px 0 rgba(18, 17, 14, 0.06);">
+              <!-- TEACHER HEADER -->
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:14px; border-bottom:1px solid var(--line); padding-bottom:12px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                  <div style="width:36px; height:36px; background:var(--ink); color:#FFFFFF; font-family:var(--mono); font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center;">
+                    {teacher.avatarInitials}
+                  </div>
+                  <div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                      <a href={`/${lang}/app/school-admin/teachers/${teacher.id}`} style="font-family:var(--serif); font-size:16px; font-weight:700; color:var(--ink); text-decoration:none;">
+                        {teacher.name}
+                      </a>
+                      <span style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft);">{teacher.email}</span>
+                    </div>
+                    <div style="font-size:12px; color:var(--ink-soft); margin-top:2px;">
+                      {teacher.specialty}
+                    </div>
+                  </div>
+                </div>
+
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <span style="font-family:var(--mono); font-size:11px; font-weight:700; color:var(--ink);">
+                    {teacher.totalStudents} {lang === 'es' ? 'alumnos' : 'students'}
+                  </span>
+                  <a href={`/${lang}/app/school-admin/teachers/${teacher.id}`} class="btn btn-secondary btn-sm" style="font-size:10.5px; padding:3px 8px;">
+                    {lang === 'es' ? 'Perfil Docente →' : 'Teacher Profile →'}
+                  </a>
+                </div>
+              </div>
+
+              <!-- ASSIGNED GROUPS (SECCIONES: 10-1, 10-2, etc.) -->
+              <div>
+                <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:8px;">
+                  {lang === 'es' ? `GRUPOS Y CURSOS ASIGNADOS (${teacher.groups.length})` : `ASSIGNED GROUPS & SECTIONS (${teacher.groups.length})`}
+                </div>
+
+                <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap:10px;">
+                  {teacher.groups.map((grp) => (
+                    <div
+                      class="group-card-item"
+                      style="background:var(--cream); border:1px solid var(--line-strong); padding:10px 12px; display:flex; flex-direction:column; justify-content:space-between; transition:border-color 0.15s ease;"
+                    >
+                      <div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                          <span style="font-family:var(--mono); font-size:12px; font-weight:800; background:var(--ink); color:#FFFFFF; padding:2px 6px; border-radius:2px;">
+                            {grp.code}
+                          </span>
+                          <span style="font-family:var(--mono); font-size:11px; color:var(--rust); font-weight:700;">
+                            ★ {grp.averageGrade} / 10
+                          </span>
+                        </div>
+
+                        <a href={`/${lang}/app/school-admin/courses/${grp.id}`} style="font-family:var(--sans); font-size:12.5px; font-weight:700; color:var(--ink); text-decoration:none; display:block; margin:4px 0 2px 0;">
+                          {grp.name}
+                        </a>
+                        <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft);">
+                          {grp.schedule}
+                        </div>
+                      </div>
+
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding-top:6px; border-top:1px dashed var(--line); font-family:var(--mono); font-size:10.5px;">
+                        <span style="color:var(--ink-soft);">
+                          {grp.studentCount} / {grp.maxCapacity} {lang === 'es' ? 'alumnos' : 'stud.'}
+                        </span>
+                        <a href={`/${lang}/app/school-admin/courses/${grp.id}`} style="color:var(--rust); font-weight:700; text-decoration:none;">
+                          {lang === 'es' ? 'Ver Ficha →' : 'View Course →'}
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
+
+<style>
+  .dept-tab-btn.active {
+    background: var(--ink) !important;
+    color: #FFFFFF !important;
+  }
+  .dept-tab-btn.active span.plan-tag {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: #FFFFFF !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+  }
+  .dept-tab-btn.active span:first-child {
+    color: var(--orange-vibrant) !important;
+  }
+  .group-card-item:hover {
+    border-color: var(--ink) !important;
+    background: #FFFFFF !important;
+  }
+</style>
+
+<script is:inline define:vars={{ id }}>
+  (function() {
+    var container = document.getElementById(id);
+    if (!container) return;
+
+    var tabButtons = container.querySelectorAll('.dept-tab-btn');
+    var panels = container.querySelectorAll('.dept-panel');
+    var searchInput = document.getElementById(id + 'SearchInput');
+
+    tabButtons.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var deptId = btn.getAttribute('data-dept-id');
+        
+        tabButtons.forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+
+        panels.forEach(function(panel) {
+          if (panel.id === 'deptPanel-' + deptId) {
+            panel.style.display = 'block';
+          } else {
+            panel.style.display = 'none';
+          }
+        });
+      });
+    });
+
+    // Realtime search across departments, teachers, and group codes
+    searchInput?.addEventListener('input', function(e) {
+      var query = e.target.value.trim().toLowerCase();
+      
+      if (!query) {
+        // Reset to currently active tab
+        var activeBtn = container.querySelector('.dept-tab-btn.active');
+        var activeDeptId = activeBtn ? activeBtn.getAttribute('data-dept-id') : null;
+        panels.forEach(function(p) {
+          p.style.display = (p.id === 'deptPanel-' + activeDeptId) ? 'block' : 'none';
+          p.querySelectorAll('.teacher-hierarchy-card').forEach(function(card) {
+            card.style.display = 'block';
+          });
+        });
+        return;
+      }
+
+      // If query exists, search all panels and expand matches
+      panels.forEach(function(p) {
+        var panelHasMatch = false;
+        p.querySelectorAll('.teacher-hierarchy-card').forEach(function(card) {
+          var cardText = card.innerText.toLowerCase();
+          if (cardText.includes(query)) {
+            card.style.display = 'block';
+            panelHasMatch = true;
+          } else {
+            card.style.display = 'none';
+          }
+        });
+
+        p.style.display = panelHasMatch ? 'block' : 'none';
+      });
+    });
+  })();
+</script>

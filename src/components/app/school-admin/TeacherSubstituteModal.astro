@@ -1,0 +1,146 @@
+---
+// ============================================================
+// SchoolOS — Modal de Asignación de Suplencias & Novedades
+// ============================================================
+import type { Lang } from '../../../i18n';
+import type { TeacherProfile } from '../../../types/academic';
+
+interface Props {
+  id?: string;
+  lang?: Lang;
+  teachers?: TeacherProfile[];
+}
+
+const { id = 'teacherSubstituteModal', lang = 'es', teachers = [] } = Astro.props;
+
+const availableTeachers = teachers.filter((t) => t.hasFreeCapacity);
+---
+
+<div
+  id={id}
+  class="custom-modal-backdrop substitute-modal-backdrop"
+  style="display:none; position:fixed; inset:0; background:rgba(18, 17, 14, 0.7); z-index:9999; align-items:center; justify-content:center; padding:20px;"
+  role="dialog"
+  aria-modal="true"
+>
+  <div class="panel" style="width:100%; max-width:600px; background:var(--paper); border:2px solid var(--ink); box-shadow:8px 8px 0 rgba(18, 17, 14, 0.35);">
+    
+    <!-- HEADER -->
+    <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center; padding:14px 20px; background:var(--cream); border-bottom:2px solid var(--ink);">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="plan-tag" style="background:var(--rust); color:#FFFFFF; border-color:var(--rust); font-size:10px; font-weight:900;">
+          PROTOCOLO OPERATIVO
+        </span>
+        <h2 style="font-family:var(--serif); font-size:16px; margin:0; font-weight:700;">
+          {lang === 'es' ? 'Asignar Cobertura / Suplencia Docente' : 'Assign Faculty Substitute / Coverage'}
+        </h2>
+      </div>
+
+      <button type="button" class="close-substitute-btn" style="background:none; border:none; font-family:var(--mono); font-size:16px; font-weight:700; cursor:pointer; color:var(--ink);">✕</button>
+    </div>
+
+    <!-- BODY -->
+    <div class="panel-body padded" style="background:#FFFDF9; padding:20px;">
+      
+      <!-- CUADRO DE NOVEDAD REPORTADA -->
+      <div style="background:var(--paper); border:1.5px solid var(--ink); padding:12px 16px; margin-bottom:18px;">
+        <div style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; color:var(--rust); margin-bottom:4px;">
+          {lang === 'es' ? 'DOCENTE CON NOVEDAD / AUSENCIA:' : 'FACULTY WITH ABSENCE / LEAVE:'}
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+          <div>
+            <strong id="subModalTeacherTarget" style="font-size:14.5px; color:var(--ink);">Prof. Jorge Salas</strong>
+            <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">
+              Área de Matemáticas · Incapacidad médica 24h
+            </div>
+          </div>
+          <span class="badge badge-suspended" style="font-size:10px;">
+            {lang === 'es' ? 'NOVEDAD ACTIVA' : 'ACTIVE LEAVE'}
+          </span>
+        </div>
+      </div>
+
+      <form id={`${id}Form`} onsubmit="event.preventDefault(); alert('✓ Suplencia y cobertura asignada exitosamente. El horario institucional fue actualizado y se envió notificación formal al docente suplente y a coordinación.'); document.getElementById(this.getAttribute('data-modal-id')).style.display='none';" data-modal-id={id}>
+        
+        <div class="form-grid" style="display:flex; flex-direction:column; gap:14px;">
+          
+          <!-- Bloque / Grupo a cubrir -->
+          <div class="form-field full">
+            <label style="font-family:var(--mono); font-size:11px; font-weight:700; text-transform:uppercase; display:block; margin-bottom:4px;">
+              {lang === 'es' ? 'Grupo & Bloque a Cubrir' : 'Group & Time Slot to Cover'}
+            </label>
+            <select style="border:1.5px solid var(--ink); background:var(--cream); padding:8px 10px; font-family:var(--mono); font-size:12px; width:100%;">
+              <option value="mat-10-2">Matemáticas 10-2 (30 alumnos) · Lunes 10:30 - 12:00 (Salón 205)</option>
+              <option value="mat-10-1">Matemáticas 10-1 (28 alumnos) · Miércoles 08:30 - 10:00 (Salón 204)</option>
+              <option value="mat-11-1">Cálculo Avanzado 11-1 (31 alumnos) · Jueves 10:30 - 12:00 (Salón 301)</option>
+            </select>
+          </div>
+
+          <!-- Docente Suplente con Horas Libres -->
+          <div class="form-field full">
+            <label style="font-family:var(--mono); font-size:11px; font-weight:700; text-transform:uppercase; display:block; margin-bottom:4px;">
+              {lang === 'es' ? 'Seleccionar Docente Suplente (Con Capacidad Disponible)' : 'Select Substitute Faculty (With Available Capacity)'}
+            </label>
+            <select style="border:1.5px solid var(--ink); background:var(--cream); padding:8px 10px; font-family:var(--mono); font-size:12px; width:100%;">
+              {availableTeachers.map((t) => (
+                <option value={t.id}>
+                  {t.name} ({t.departmentName || t.roleTitle}) — [Disponibilidad: {t.freeHoursCount || 6}h libres]
+                </option>
+              ))}
+              <option value="external">{lang === 'es' ? 'Profesor Reemplazo Externo / Bolsa de Horas' : 'External Substitute / Hourly Pool'}</option>
+            </select>
+          </div>
+
+          <!-- Instrucciones pedagógicas de clase -->
+          <div class="form-field full">
+            <label style="font-family:var(--mono); font-size:11px; font-weight:700; text-transform:uppercase; display:block; margin-bottom:4px;">
+              {lang === 'es' ? 'Plan Pedagógico / Guía de Trabajo en Aula' : 'Classroom Lesson Plan / Study Guide'}
+            </label>
+            <textarea rows="3" placeholder={lang === 'es' ? 'Ej: Desarrollar la Guía N° 4 de Cálculo Diferencial (Límites trigonométricos). La guía ya se encuentra impresa en secretaría y cargada en la plataforma.' : 'E.g. Work on Study Guide #4 on Differential Calculus...'} style="border:1.5px solid var(--ink); background:var(--cream); padding:8px 10px; font-family:var(--sans); font-size:12.5px; width:100%; resize:vertical;"></textarea>
+          </div>
+
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px; border-top:1.5px solid var(--line); padding-top:16px;">
+          <button type="button" class="btn btn-secondary close-substitute-btn" style="font-size:11.5px;">
+            {lang === 'es' ? 'Cancelar' : 'Cancel'}
+          </button>
+          <button type="submit" class="btn btn-primary" style="font-size:11.5px; font-weight:700;">
+            {lang === 'es' ? 'Confirmar & Notificar Suplencia →' : 'Confirm & Notify Coverage →'}
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<script is:inline define:vars={{ id }}>
+  (function() {
+    var modal = document.getElementById(id);
+    if (!modal) return;
+
+    window.openTeacherSubstituteModal = function(teacherName, teacherId) {
+      var target = document.getElementById('subModalTeacherTarget');
+      if (target && teacherName) target.textContent = 'Prof. ' + teacherName;
+      modal.style.display = 'flex';
+    };
+
+    modal.querySelectorAll('.close-substitute-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        modal.style.display = 'none';
+      });
+    });
+
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) modal.style.display = 'none';
+    });
+
+    window.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && modal.style.display === 'flex') {
+        modal.style.display = 'none';
+      }
+    });
+  })();
+</script>

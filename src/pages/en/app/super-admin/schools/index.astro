@@ -1,43 +1,79 @@
 ---
 // ============================================================
-// SchoolOS — Super Admin Schools List (/en/app/super-admin/schools)
+// SchoolOS — School Directory (/en/app/super-admin/schools)
 // ============================================================
 import AppLayout from '../../../../../layouts/AppLayout.astro';
-import { getMockSchools } from '../../../../../data/app/mock-data';
+import { getMockSchools, getMockDashboardStats } from '../../../../../data/app/mock-data';
 
 const lang = 'en';
 const schools = getMockSchools(lang);
+const stats = getMockDashboardStats(lang);
 
 function getAuditBadge(auditStatus: string) {
   if (auditStatus === 'under_investigation') {
-    return { class: 'badge-investigation', label: 'Under investigation' };
+    return { class: 'badge-investigation', label: 'Under Investigation' };
   }
   if (auditStatus === 'flagged') {
     return { class: 'badge-flagged', label: 'Flagged' };
   }
   return { class: 'badge-none', label: 'None' };
 }
+
+function getStatusLabel(status: string) {
+  switch (status) {
+    case 'active': return 'Active';
+    case 'trial': return 'Trial';
+    case 'suspended': return 'Suspended';
+    case 'cancelled': return 'Cancelled';
+    default: return status;
+  }
+}
 ---
 
 <AppLayout
   title="Schools"
-  pageTitle="Schools Management"
+  pageTitle="Institution Directory"
   activeSection="schools"
   lang={lang}
   activeRoute="/app/super-admin/schools"
-  breadcrumbs={[{ label: 'System' }, { label: 'Schools' }]}
+  breadcrumbs={[{ label: 'System' }, { label: 'Institutions' }]}
 >
+  <!-- TOP SUMMARY RIBBON -->
+  <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:24px;">
+    <div style="background:var(--paper); border:1px solid var(--ink); padding:16px 20px; border-bottom:3px solid var(--sage-accent);">
+      <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft);">Total Institutions</div>
+      <div style="font-family:var(--serif); font-size:26px; font-weight:700; color:var(--ink); margin-top:4px;">184</div>
+      <div style="font-family:var(--mono); font-size:10.5px; color:var(--sage-dark); font-weight:600; margin-top:2px;">+6 this month</div>
+    </div>
+    <div style="background:var(--paper); border:1px solid var(--ink); padding:16px 20px; border-bottom:3px solid var(--sage-dark);">
+      <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft);">Active Schools</div>
+      <div style="font-family:var(--serif); font-size:26px; font-weight:700; color:var(--ink); margin-top:4px;">170</div>
+      <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); margin-top:2px;">92.4% operational</div>
+    </div>
+    <div style="background:var(--paper); border:1px solid var(--ink); padding:16px 20px; border-bottom:3px solid var(--orange-vibrant);">
+      <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft);">In Trial Period</div>
+      <div style="font-family:var(--serif); font-size:26px; font-weight:700; color:var(--orange-vibrant); margin-top:4px;">{stats.trialSchools}</div>
+      <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); margin-top:2px;">avg. 9 days left</div>
+    </div>
+    <div style="background:var(--paper); border:1px solid var(--ink); padding:16px 20px; border-bottom:3px solid var(--danger);">
+      <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft);">Suspended</div>
+      <div style="font-family:var(--serif); font-size:26px; font-weight:700; color:var(--danger); margin-top:4px;">{stats.suspendedSchools}</div>
+      <div style="font-family:var(--mono); font-size:10.5px; color:var(--danger); margin-top:2px;">needs attention</div>
+    </div>
+  </div>
+
   <div class="panel">
     <div class="table-toolbar">
-      <div class="filter-row">
-        <select class="filter-select" aria-label="Filter by status">
+      <div class="filter-row" style="align-items:center;">
+        <input type="text" placeholder="Filter by name or domain..." style="border:1px solid var(--ink); background:var(--cream); padding:7px 12px; font-family:var(--sans); font-size:12.5px; width:240px; border-radius:2px;" />
+        <select class="filter-select" style="border:1px solid var(--ink);" aria-label="Filter by status">
           <option>All statuses</option>
           <option>Active</option>
           <option>Trial</option>
           <option>Suspended</option>
           <option>Cancelled</option>
         </select>
-        <select class="filter-select" aria-label="Filter by plan">
+        <select class="filter-select" style="border:1px solid var(--ink);" aria-label="Filter by plan">
           <option>All plans</option>
           <option>Starter</option>
           <option>Professional</option>
@@ -51,12 +87,12 @@ function getAuditBadge(auditStatus: string) {
       <table class="data-table">
         <thead>
           <tr>
-            <th>School</th>
-            <th>Plan</th>
+            <th>Educational Institution</th>
+            <th>Subscription Plan</th>
             <th>Status</th>
-            <th>Audit</th>
-            <th>Students</th>
-            <th>Created</th>
+            <th>Judicial Audit</th>
+            <th>Enrolled Students</th>
+            <th>Registration Date</th>
             <th></th>
           </tr>
         </thead>
@@ -66,22 +102,23 @@ function getAuditBadge(auditStatus: string) {
             return (
               <tr>
                 <td class="cell-name">
-                  <a href={`/${lang}/app/super-admin/schools/${school.id}`}>{school.name}</a>
+                  <a href={`/${lang}/app/super-admin/schools/${school.id}`} style="font-size:14px; font-weight:700;">{school.name}</a>
+                  <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">{school.domain} · {school.location}</div>
                 </td>
                 <td><span class="plan-tag">{school.planName}</span></td>
                 <td>
                   <span class={`badge badge-${school.status}`}>
-                    {school.status.charAt(0).toUpperCase() + school.status.slice(1)}
+                    {getStatusLabel(school.status)}
                   </span>
                 </td>
                 <td>
                   <span class={`badge ${audit.class}`}>{audit.label}</span>
                 </td>
-                <td>{school.studentCount.toLocaleString()}</td>
+                <td style="font-family:var(--mono); font-weight:700; font-size:13px;">{school.studentCount.toLocaleString()}</td>
                 <td class="cell-muted">{school.createdAt}</td>
                 <td class="cell-actions">
                   <a class="btn btn-secondary btn-sm" href={`/${lang}/app/super-admin/schools/${school.id}`}>
-                    View
+                    View Details →
                   </a>
                 </td>
               </tr>

@@ -1,0 +1,161 @@
+---
+// ============================================================
+// SchoolOS — Manual Grading (Teacher - English)
+// Phase 3 | In-person assessment grade entry sheet
+// ============================================================
+import AppLayout from '../../../../../../layouts/AppLayout.astro';
+import { getEvaluationById, getResultsByEvaluation } from '../../../../../../data/app/mock-content';
+
+export async function getStaticPaths() {
+  return [
+    { params: { id: 'eval-1' } },
+    { params: { id: 'eval-2' } },
+  ];
+}
+
+const lang = 'en';
+const { id } = Astro.params;
+const evaluation = getEvaluationById(id!);
+const students = getResultsByEvaluation(id!);
+---
+
+{evaluation ? (
+  <AppLayout
+    title={`Input Grades — ${evaluation.title}`}
+    pageTitle="Manual Grade Entry"
+    activeSection="courses"
+    role="teacher"
+    schoolName="Colegio Norte"
+    lang={lang}
+    activeRoute={`/app/teacher/evaluations/${id}/grade`}
+    breadcrumbs={[
+      { label: 'Colegio Norte' },
+      { label: 'Teacher Panel', href: `/${lang}/app/teacher` },
+      { label: evaluation.guideTitle, href: `/${lang}/app/teacher/guides/${evaluation.guideId}` },
+      { label: 'Grade Entry' },
+    ]}
+  >
+
+    <!-- ── INFO BANNER ── -->
+    <div style="background:var(--cream); border:2px solid var(--rust); padding:12px 18px; margin-bottom:20px; display:flex; align-items:center; gap:12px;">
+      <span class="plan-tag" style="background:var(--rust); color:#FFFFFF; border-color:var(--rust); font-size:10px; font-weight:900; white-space:nowrap;">IN-PERSON EXAM</span>
+      <span style="font-family:var(--mono); font-size:12px; color:var(--ink);">Manual grade upload — Results are not auto-generated for physical/paper assessments.</span>
+    </div>
+
+    <!-- ── HEADER ── -->
+    <div style="background:var(--paper); border:2px solid var(--ink); padding:16px 20px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; box-shadow:4px 4px 0 rgba(18,17,14,0.08);">
+      <div>
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+          <span class="badge badge-warning" style="font-size:10px; font-weight:800;">IN-PERSON</span>
+          <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">{students.length} students pending · Passing score ≥ {evaluation.passingScore}%</span>
+        </div>
+        <h1 style="font-family:var(--serif); font-size:22px; font-weight:700; color:var(--ink); margin:0 0 4px 0;">{evaluation.title}</h1>
+        <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">Guide: {evaluation.guideTitle}</div>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <a href={`/${lang}/app/teacher/courses`} class="btn btn-secondary btn-sm" style="font-size:11px;">Cancel</a>
+      </div>
+    </div>
+
+    <!-- ── SCALE GUIDE ── -->
+    <div style="background:var(--paper); border:1.5px solid var(--ink); padding:12px 16px; margin-bottom:20px; display:grid; grid-template-columns: repeat(4, 1fr); gap:8px; font-family:var(--mono); font-size:11px;">
+      <div style="text-align:center; padding:8px; background:var(--cream); border:1px solid var(--line-strong);">
+        <div style="font-size:9px; color:var(--ink-soft); text-transform:uppercase;">Scale</div>
+        <div style="font-weight:800; color:var(--ink);">0 – 100%</div>
+      </div>
+      <div style="text-align:center; padding:8px; background:var(--cream); border:1px solid var(--line-strong);">
+        <div style="font-size:9px; color:var(--ink-soft); text-transform:uppercase;">Grade Point (10)</div>
+        <div style="font-weight:800; color:var(--ink);">0.0 – 10.0</div>
+      </div>
+      <div style="text-align:center; padding:8px; background:var(--cream); border:1px solid var(--line-strong);">
+        <div style="font-size:9px; color:var(--ink-soft); text-transform:uppercase;">Passing</div>
+        <div style="font-weight:800; color:var(--rust);">≥ {evaluation.passingScore}% / {(evaluation.passingScore / 10).toFixed(1)}</div>
+      </div>
+      <div style="text-align:center; padding:8px; background:var(--cream); border:1px solid var(--line-strong);">
+        <div style="font-size:9px; color:var(--ink-soft); text-transform:uppercase;">Attempts</div>
+        <div style="font-weight:800; color:var(--ink);">{evaluation.maxAttempts} max</div>
+      </div>
+    </div>
+
+    <!-- ── GRADING SHEET ── -->
+    <div class="panel" style="border:2px solid var(--ink); box-shadow:6px 6px 0 rgba(18,17,14,0.08); margin-bottom:20px;">
+      <div class="panel-header" style="background:var(--ink);">
+        <h2 style="font-size:12px; color:#FFFFFF; letter-spacing:0.08em;">STUDENT ROSTER GRADE ENTRY — {students.length} STUDENTS</h2>
+      </div>
+      <div class="panel-body" style="padding:0;">
+        <table style="width:100%; border-collapse:collapse;">
+          <thead>
+            <tr style="border-bottom:2px solid var(--ink); background:var(--cream);">
+              <th style="text-align:left; padding:10px 16px; font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink);">Student</th>
+              <th style="text-align:center; padding:10px 12px; font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink);">Section</th>
+              <th style="text-align:center; padding:10px 12px; font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink);">Score (0–100)</th>
+              <th style="text-align:center; padding:10px 12px; font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink);">Equivalent</th>
+              <th style="text-align:center; padding:10px 12px; font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink);">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {students.map((s, i) => (
+              <tr style={`border-bottom:1.5px solid var(--line); ${i % 2 === 0 ? 'background:var(--paper);' : 'background:var(--cream);'}`}>
+                <td style="padding:12px 16px;">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <div style="width:28px; height:28px; background:var(--cream); border:1.5px solid var(--ink); border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:9px; font-weight:800; flex-shrink:0;">
+                      {s.studentName.split(' ').map((n: string) => n[0]).slice(0,2).join('')}
+                    </div>
+                    <span style="font-size:13px; font-weight:600; color:var(--ink);">{s.studentName}</span>
+                  </div>
+                </td>
+                <td style="padding:12px; text-align:center; font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">{s.groupCode}</td>
+                <td style="padding:12px; text-align:center;">
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    placeholder="0–100"
+                    style="width:80px; padding:6px 10px; border:2px solid var(--ink); background:var(--paper); font-family:var(--mono); font-size:14px; font-weight:700; color:var(--ink); text-align:center; outline:none;"
+                  />
+                </td>
+                <td style="padding:12px; text-align:center; font-family:var(--mono); font-size:11px; color:var(--ink-soft);">
+                  <span id={`equiv-${i}`}>—</span>
+                </td>
+                <td style="padding:12px; text-align:center;">
+                  <button
+                    class="btn btn-secondary btn-sm"
+                    onclick={`alert('Grade saved for ${s.studentName}. Click Save All when finished.');`}
+                    style="font-size:10.5px;"
+                  >
+                    Save
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── SAVE ALL BUTTON ── -->
+    <div style="display:flex; gap:14px; flex-wrap:wrap; align-items:center;">
+      <button
+        class="btn btn-primary"
+        onclick="alert('✅ All student grades have been posted successfully. Students can now view their scores.')"
+        style="font-size:13px; font-weight:800; padding:12px 24px;"
+      >
+        ✓ Save All Grades
+      </button>
+      <a href={`/${lang}/app/teacher/courses`} class="btn btn-secondary" style="font-size:12px; padding:11px 20px;">
+        Cancel & Return
+      </a>
+      <span style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); margin-left:8px;">
+        Enrolled students will receive instant notifications upon grade release.
+      </span>
+    </div>
+
+  </AppLayout>
+) : (
+  <AppLayout title="Evaluation Not Found" pageTitle="Error" activeSection="courses" role="teacher" schoolName="Colegio Norte" lang={lang} activeRoute="/app/teacher" breadcrumbs={[{ label: 'Error' }]}>
+    <div style="padding:40px; text-align:center;">
+      <h2>Evaluation not found</h2>
+      <a href={`/${lang}/app/teacher/courses`} class="btn btn-primary">Return</a>
+    </div>
+  </AppLayout>
+)}

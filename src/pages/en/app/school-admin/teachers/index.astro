@@ -1,0 +1,323 @@
+---
+// ============================================================
+// SchoolOS — Faculty Directory & Management (/en/app/school-admin/teachers)
+// Official SchoolOS Data-Table, 100% Robust Alignment & Low Visual Noise
+// ============================================================
+import AppLayout from '../../../../../layouts/AppLayout.astro';
+import TeacherRegisterModal from '../../../../../components/app/school-admin/TeacherRegisterModal.astro';
+import TeacherScheduleModal from '../../../../../components/app/school-admin/TeacherScheduleModal.astro';
+import TeacherSubstituteModal from '../../../../../components/app/school-admin/TeacherSubstituteModal.astro';
+import { getTeachers, getDepartments } from '../../../../../data/app/mock-academic';
+
+const lang = 'en';
+const teachers = getTeachers(lang);
+const departments = getDepartments(lang);
+
+const totalTeachers = teachers.length;
+const totalWithFreeCapacity = teachers.filter((t) => t.hasFreeCapacity).length;
+---
+
+<AppLayout
+  title="Faculty Directory"
+  pageTitle="Faculty Staff & Academic Management"
+  activeSection="teachers"
+  role="school_admin"
+  schoolName="Colegio Norte"
+  lang={lang}
+  activeRoute="/app/school-admin/teachers"
+  breadcrumbs={[{ label: 'Colegio Norte', href: `/${lang}/app/school-admin` }, { label: 'Faculty' }]}
+>
+
+  <!-- ── 1. EXECUTIVE METRICS ───────────────────────────────────── -->
+  <div class="stat-grid" style="margin-bottom:18px;">
+    <div class="stat-card">
+      <div class="stat-label">TOTAL FACULTY ON STAFF</div>
+      <div class="stat-num">{totalTeachers}</div>
+      <div class="stat-sub">100% curriculum coverage</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-label">FACULTY IN CLASSROOMS TODAY</div>
+      <div class="stat-num">{totalTeachers - 1} <span style="font-size:16px; font-weight:400; color:var(--ink-soft);">/ {totalTeachers}</span></div>
+      <div class="stat-sub" style="color:var(--rust); font-weight:700;">1 medical absence active</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-label">SUBSTITUTE CAPACITY</div>
+      <div class="stat-num" style="color:var(--olive-dark);">{totalWithFreeCapacity}</div>
+      <div class="stat-sub">Faculty with free hours this week</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-label">PERIOD 1 GRADE SUBMISSION</div>
+      <div class="stat-num">94.2%</div>
+      <div class="stat-sub">1 pending midterm gradebook</div>
+    </div>
+  </div>
+
+  <!-- ── 2. COMPACT MORNING LEAVE NOTICE ────────────────────────── -->
+  <div class="panel" style="margin-bottom:18px; border-left:4px solid var(--rust);">
+    <div class="panel-body" style="padding:12px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+      <div style="font-size:13px; color:var(--ink);">
+        <strong style="color:var(--rust); font-family:var(--mono); font-size:11px; text-transform:uppercase; margin-right:8px;">[Active Absence]</strong>
+        Prof. <strong>Jorge Salas</strong> (Medical Leave) · <strong>Math 10-2</strong> today 10:30 AM in <strong>Room 205</strong>.
+        <span style="color:var(--ink-soft); margin-left:6px;">Suggested: <strong>Prof. Carlos Gomez</strong> (6h free).</span>
+      </div>
+      <button
+        type="button"
+        class="btn btn-primary btn-sm"
+        onclick="window.openTeacherSubstituteModal('Jorge Salas', 'tch-2');"
+        style="font-size:11px; font-weight:700; white-space:nowrap;"
+      >
+        Assign Coverage →
+      </button>
+    </div>
+  </div>
+
+  <!-- ── 3. SEARCH & CONTROL BAR ───────────────────────────────── -->
+  <div class="panel" style="margin-bottom:20px; background:var(--cream); padding:12px 16px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+      
+      <!-- Search -->
+      <div style="position:relative; flex:1; min-width:280px;">
+        <svg style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--ink-soft); pointer-events:none;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input
+          type="text"
+          id="teacherSearchInput"
+          placeholder="Filter by teacher, room (e.g. 205), subject, section (10-1) or day..."
+          style="width:100%; padding:7px 12px 7px 32px; border:1px solid var(--ink); background:var(--paper); font-family:var(--sans); font-size:12.5px; border-radius:2px;"
+        />
+      </div>
+
+      <!-- Capacity Filter -->
+      <div>
+        <select id="filterCapacity" style="border:1px solid var(--ink); background:var(--paper); padding:7px 12px; font-family:var(--mono); font-size:11.5px; border-radius:2px;">
+          <option value="all">All Faculty</option>
+          <option value="free">Available for Coverage (Free Hours)</option>
+          <option value="directors">Homeroom Directors Only</option>
+          <option value="leave">On Medical Leave</option>
+        </select>
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="display:flex; gap:8px;">
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          onclick="window.openTeacherSubstituteModal('Faculty Pool', '');"
+          style="font-size:11.5px; font-weight:700;"
+        >
+          Coverage
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary btn-sm"
+          onclick="document.getElementById('inviteModal').style.display='flex';"
+          style="font-size:11.5px; font-weight:700;"
+        >
+          ＋ Onboard Faculty
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── 4. OFFICIAL DATA-TABLE PER DEPARTMENT ─────────────────── -->
+  <div id="departmentsContainer" style="display:flex; flex-direction:column; gap:22px; margin-bottom:30px;">
+    {departments.map((dept) => {
+      const deptTeachers = teachers.filter(t => t.departmentId === dept.id);
+      return (
+        <div
+          class="dept-block panel"
+          data-dept-id={dept.id}
+        >
+          <!-- Department Header -->
+          <div class="panel-header" style="background:var(--cream); display:flex; justify-content:space-between; align-items:center; padding:12px 20px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-weight:800; font-size:10.5px; padding:2px 7px;">
+                DEP: {dept.code}
+              </span>
+              <h2 style="font-family:var(--serif); font-size:16.5px; margin:0; font-weight:700; color:var(--ink);">
+                {dept.name}
+              </h2>
+            </div>
+
+            <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">
+              <strong>{dept.teachersCount} faculty</strong> · <strong>{dept.totalGroupsCount} sections</strong> · Department GPA: <strong style="color:var(--rust);">{dept.averageGrade} / 10</strong>
+            </div>
+          </div>
+
+          <!-- Native Data Table -->
+          <div class="panel-body">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width:280px;">Faculty & Specialty</th>
+                  <th>Assigned Sections & Rooms</th>
+                  <th style="width:190px;">Parent Office Hours</th>
+                  <th style="width:100px;">Obs. Score</th>
+                  <th style="width:180px; text-align:right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {deptTeachers.map((t) => (
+                  <tr
+                    class="teacher-table-row"
+                    data-teacher-id={t.id}
+                    data-has-free={t.hasFreeCapacity ? 'true' : 'false'}
+                    data-is-director={t.isGroupDirector ? 'true' : 'false'}
+                    data-has-leave={t.medicalLeaveNotice ? 'true' : 'false'}
+                    data-search-text={`${t.name} ${t.specialty || ''} ${t.departmentName || ''} ${t.parentOfficeHours || ''} ${t.groupDirectorCode || ''} ${t.assignedCourses.map(c => c.name + ' ' + (c.room || '')).join(' ')}`.toLowerCase()}
+                  >
+                    <!-- Col 1: Faculty & Specialty -->
+                    <td class="cell-name">
+                      <div style="display:flex; align-items:center; gap:12px;">
+                        <div style="width:34px; height:34px; background:var(--ink); color:#FFFFFF; font-family:var(--mono); font-size:12.5px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; border-radius:2px;">
+                          {t.avatarInitials}
+                        </div>
+                        <div>
+                          <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                            <a href={`/${lang}/app/school-admin/teachers/${t.id}`} style="font-weight:700; font-size:14px;">
+                              {t.name}
+                            </a>
+                            {t.isGroupDirector && t.groupDirectorCode && (
+                              <span class="plan-tag" style="background:var(--ink); color:#FFF; font-weight:800; font-size:9px; padding:1px 5px;">
+                                DIR {t.groupDirectorCode}
+                              </span>
+                            )}
+                          </div>
+                          <div style="font-size:11.5px; color:var(--ink-soft); margin-top:1px;">
+                            {t.specialty}
+                          </div>
+                          <div style="margin-top:3px;">
+                            {t.medicalLeaveNotice ? (
+                              <span class="badge badge-suspended" style="font-size:9px; padding:1px 5px;">Medical Leave</span>
+                            ) : t.hasFreeCapacity ? (
+                              <span class="badge badge-active" style="font-size:9px; padding:1px 5px;">{t.freeHoursCount || 6}h free</span>
+                            ) : (
+                              <span class="plan-tag" style="font-size:9px; color:var(--ink-soft); border-color:var(--line); padding:1px 5px;">18h full load</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+
+                    <!-- Col 2: Groups & Rooms -->
+                    <td>
+                      <div style="display:flex; flex-wrap:wrap; gap:5px;">
+                        {t.assignedCourses.map((c) => (
+                          <span class="plan-tag" style="background:var(--cream); font-size:10.5px; padding:2px 7px; border:1px solid var(--line);">
+                            <strong>{c.name.split(' ')[0]} {c.name.split(' ')[1] || ''}</strong> <span style="font-family:var(--mono); color:var(--ink-soft); font-size:9.5px;">({c.room || 'Room'})</span>
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+
+                    <!-- Col 3: Parent Hours -->
+                    <td class="cell-muted">
+                      <div style="font-weight:700; color:var(--ink); font-size:11.5px;">
+                        {t.parentOfficeHours ? t.parentOfficeHours.split('(')[0].trim() : 'Thursday 07:00 - 08:30'}
+                      </div>
+                      <div style="font-size:10.5px; color:var(--ink-soft);">
+                        {t.parentOfficeHours && t.parentOfficeHours.includes('(') ? t.parentOfficeHours.split('(')[1].replace(')', '') : 'Faculty Lounge'}
+                      </div>
+                    </td>
+
+                    <!-- Col 4: Obs. Score -->
+                    <td>
+                      <div style="font-family:var(--mono); font-weight:800; font-size:12.5px; color:var(--rust);">
+                        {t.lastClassroomObservation ? `${t.lastClassroomObservation.score} / 10` : '9.0 / 10'}
+                      </div>
+                      <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);">
+                        {t.lastClassroomObservation ? t.lastClassroomObservation.date.split(',')[0] : 'Aug 12'}
+                      </div>
+                    </td>
+
+                    <!-- Col 5: Actions Locked to Right -->
+                    <td class="cell-actions">
+                      <div style="display:inline-flex; gap:6px;">
+                        <button
+                          type="button"
+                          class="btn btn-secondary btn-sm btn-open-schedule"
+                          data-teacher-id={t.id}
+                          style="font-size:11px; font-weight:700;"
+                        >
+                          Schedule
+                        </button>
+                        <a
+                          href={`/${lang}/app/school-admin/teachers/${t.id}`}
+                          class="btn btn-primary btn-sm"
+                          style="font-size:11px; font-weight:700;"
+                        >
+                          Profile →
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      );
+    })}
+  </div>
+
+  <!-- ── 5. REUSABLE MODALS ────────────────────────────────────── -->
+  <TeacherScheduleModal id="teacherScheduleModal" lang={lang} />
+  <TeacherSubstituteModal id="teacherSubstituteModal" lang={lang} teachers={teachers} />
+  <TeacherRegisterModal id="inviteModal" lang={lang} departments={departments} />
+
+</AppLayout>
+
+<script is:inline define:vars={{ teachers }}>
+  (function() {
+    var searchInput = document.getElementById('teacherSearchInput');
+    var filterCap = document.getElementById('filterCapacity');
+    var tableRows = document.querySelectorAll('.teacher-table-row');
+    var deptBlocks = document.querySelectorAll('.dept-block');
+
+    function applyFilters() {
+      var query = (searchInput?.value || '').trim().toLowerCase();
+      var selectedCap = filterCap?.value || 'all';
+
+      tableRows.forEach(function(row) {
+        var text = row.getAttribute('data-search-text') || '';
+        var hasFree = row.getAttribute('data-has-free') === 'true';
+        var isDirector = row.getAttribute('data-is-director') === 'true';
+        var hasLeave = row.getAttribute('data-has-leave') === 'true';
+
+        var matchSearch = !query || text.includes(query);
+        var matchCap = true;
+        if (selectedCap === 'free') matchCap = hasFree;
+        if (selectedCap === 'directors') matchCap = isDirector;
+        if (selectedCap === 'leave') matchCap = hasLeave;
+
+        if (matchSearch && matchCap) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      deptBlocks.forEach(function(dept) {
+        var visibleRows = dept.querySelectorAll('.teacher-table-row:not([style*="display: none"])');
+        dept.style.display = visibleRows.length > 0 ? 'block' : 'none';
+      });
+    }
+
+    searchInput?.addEventListener('input', applyFilters);
+    filterCap?.addEventListener('change', applyFilters);
+
+    document.querySelectorAll('.btn-open-schedule').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var teacherId = btn.getAttribute('data-teacher-id');
+        var teacher = teachers.find(function(t) { return t.id === teacherId; });
+        if (teacher && window.openTeacherScheduleModal) {
+          window.openTeacherScheduleModal(teacher);
+        }
+      });
+    });
+  })();
+</script>

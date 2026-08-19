@@ -1,0 +1,128 @@
+---
+// ============================================================
+// SchoolOS — Noticias & Comunicación Escolar (/es/app/school-admin/news)
+// ============================================================
+import AppLayout from '../../../../../layouts/AppLayout.astro';
+import { getNews } from '../../../../../data/app/mock-academic';
+
+const lang = 'es';
+const news = getNews(lang);
+---
+
+<AppLayout
+  title="Noticias"
+  pageTitle="Comunicación Escolar & Noticias"
+  activeSection="news"
+  role="school_admin"
+  schoolName="Colegio Norte"
+  lang={lang}
+  activeRoute="/app/school-admin/news"
+  breadcrumbs={[{ label: 'Colegio Norte', href: `/${lang}/app/school-admin` }, { label: 'Noticias' }]}
+>
+  <div style="display:grid; grid-template-columns: 2fr 1.2fr; gap:24px;">
+    
+    <!-- LEFT: NEWS FEED -->
+    <div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+        <h2 style="font-family:var(--mono); font-size:12px; letter-spacing:0.08em; text-transform:uppercase; margin:0;">
+          COMUNICADOS Y BOLETINES PUBLICADOS ({news.length})
+        </h2>
+        <div style="display:flex; gap:6px;">
+          <button class="btn btn-secondary btn-sm" style="font-size:11px;">Todos</button>
+          <button class="btn btn-secondary btn-sm" style="font-size:11px;">Urgentes</button>
+          <button class="btn btn-secondary btn-sm" style="font-size:11px;">Académicos</button>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        {news.map((item) => (
+          <div style="background:var(--paper); border:1px solid var(--ink); padding:20px 24px; box-shadow:4px 4px 0 rgba(18, 17, 14, 0.08);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class={item.category === 'urgent' ? 'badge badge-suspended' : 'badge badge-active'} style="font-size:10px;">
+                  {item.category.toUpperCase()}
+                </span>
+                {item.pinned && (
+                  <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-size:9.5px; font-weight:700;">
+                    ★ FIJADO
+                  </span>
+                )}
+              </div>
+              <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">{item.publishedAt}</span>
+            </div>
+
+            <h3 style="font-family:var(--serif); font-size:19px; font-weight:700; color:var(--ink); margin:0 0 8px 0; line-height:1.3;">
+              {item.title}
+            </h3>
+
+            <p style="font-size:13.5px; color:var(--ink); line-height:1.55; margin:0 0 16px 0;">
+              {item.content}
+            </p>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed var(--line); padding-top:12px; font-family:var(--mono); font-size:11px; color:var(--ink-soft);">
+              <div>
+                Publicado por: <strong style="color:var(--ink);">{item.authorName}</strong> ({item.authorRole})
+              </div>
+              <div>
+                👁 {item.viewsCount} lecturas
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- RIGHT: QUICK PUBLISHER (CMS EDITOR) -->
+    <div>
+      <div class="panel" style="position:sticky; top:80px;">
+        <div class="panel-header">
+          <h2>REDACTAR NUEVO COMUNICADO</h2>
+        </div>
+        <div class="panel-body padded">
+          <form onsubmit="event.preventDefault(); alert('¡Comunicado publicado exitosamente en el muro del colegio!'); this.reset();">
+            <div class="form-grid">
+              <div class="form-field full">
+                <label>Categoría del Aviso</label>
+                <select required>
+                  <option value="academic">Académica & Pedagógica</option>
+                  <option value="urgent">Aviso Urgente / Institucional</option>
+                  <option value="event">Evento & Actividad Cultural</option>
+                  <option value="general">Información General</option>
+                </select>
+              </div>
+
+              <div class="form-field full">
+                <label>Título del Comunicado</label>
+                <input type="text" placeholder="Ej. Cronograma de Evaluaciones Finales" required />
+              </div>
+
+              <div class="form-field full">
+                <label>Resumen Breve</label>
+                <input type="text" placeholder="Una frase que sintetice el aviso..." required />
+              </div>
+
+              <div class="form-field full">
+                <label>Cuerpo del Mensaje</label>
+                <textarea rows="5" placeholder="Escribe el contenido detallado del comunicado..." required style="border:1px solid var(--ink); background:var(--cream); padding:10px; width:100%; font-family:var(--sans); font-size:13px;"></textarea>
+              </div>
+
+              <div class="form-field full" style="display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" id="pinCheck" />
+                <label for="pinCheck" style="margin:0; text-transform:none; font-family:var(--sans); font-size:12.5px; font-weight:500;">
+                  Fijar este anuncio al inicio del muro
+                </label>
+              </div>
+            </div>
+
+            <div style="margin-top:20px;">
+              <button type="submit" class="btn btn-primary" style="width:100%;">
+                Publicar Comunicado Escolar →
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</AppLayout>

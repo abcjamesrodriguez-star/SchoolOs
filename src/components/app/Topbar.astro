@@ -10,12 +10,23 @@ interface BreadcrumbItem {
 interface Props {
   title: string;
   breadcrumbs: BreadcrumbItem[];
+  role?: 'super_admin' | 'school_admin' | 'teacher' | 'student';
+  schoolName?: string;
   lang?: Lang;
   activeRoute?: string;
 }
 
-const { title, breadcrumbs, lang = 'es', activeRoute = '/app/super-admin' } = Astro.props;
+const {
+  title,
+  breadcrumbs,
+  role = 'super_admin',
+  schoolName = 'Colegio Norte',
+  lang = 'es',
+  activeRoute = '/app/super-admin',
+} = Astro.props;
+
 const t = useTranslations(lang).app.topbar;
+const isSchoolAdmin = role === 'school_admin';
 
 const altLang: Lang = lang === 'en' ? 'es' : 'en';
 const currentPath = `/${lang}${activeRoute.startsWith('/') ? activeRoute : '/' + activeRoute}`;
@@ -36,27 +47,55 @@ const altPath = switchLang(currentPath, altLang);
   </div>
 
   <div class="topbar-right">
-    <input class="search-input" type="text" placeholder={t.searchPlaceholder} />
+    <!-- Live Ecosystem Indicator -->
+    {isSchoolAdmin ? (
+      <div style="display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:11px; padding:4px 10px; border:1px solid var(--ink); background:var(--paper); color:var(--ink);">
+        <span style="width:6px; height:6px; border-radius:50%; background:#4ADE80;"></span>
+        <span style="font-weight:700;">{schoolName.toUpperCase()}</span>
+        <span style="color:var(--ink-soft); font-size:10px;">894 {lang === 'es' ? 'ALUMNOS' : 'STUDENTS'}</span>
+      </div>
+    ) : (
+      <div style="display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:11px; padding:4px 10px; border:1px solid var(--ink); background:var(--paper); color:var(--ink);">
+        <span style="width:6px; height:6px; border-radius:50%; background:#4ADE80;"></span>
+        <span style="font-weight:700;">184</span>
+        <span style="color:var(--ink-soft); font-size:10px;">ESCUELAS VIVAS</span>
+      </div>
+    )}
 
-    <!-- Dual Language Switcher pill with exact route preservation -->
+    <!-- Search with shortcut badge -->
+    <div style="position:relative; display:flex; align-items:center;">
+      <svg style="position:absolute; left:10px; color:var(--ink-soft); pointer-events:none;" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input class="search-input" style="padding-left:30px; padding-right:38px; border:1px solid var(--ink);" type="text" placeholder={isSchoolAdmin ? (lang === 'es' ? 'Buscar cursos, alumnos, profes...' : 'Search courses, students, teachers...') : t.searchPlaceholder} />
+      <span style="position:absolute; right:8px; font-family:var(--mono); font-size:9.5px; border:1px solid var(--line-strong); padding:1px 4px; border-radius:2px; color:var(--ink-soft); background:var(--paper);">⌘K</span>
+    </div>
+
+    <!-- Dual Language Switcher pill -->
     <a
       class="topbar-lang-switcher"
       href={altPath}
       data-target-lang={altLang}
-      style="display:inline-flex; align-items:center; gap:4px; font-family:var(--mono); font-size:11px; padding:3px 10px; border:1px solid var(--line-strong); border-radius:999px; background:var(--paper); color:var(--ink-soft); text-decoration:none;"
+      style="display:inline-flex; align-items:center; gap:4px; font-family:var(--mono); font-size:11px; padding:4px 10px; border:1px solid var(--ink); background:var(--paper); color:var(--ink); text-decoration:none; font-weight:600;"
       title={lang === 'es' ? 'Switch to English' : 'Cambiar a Español'}
     >
-      <span style={lang === 'en' ? 'color:var(--rust); font-weight:700;' : 'color:var(--ink-soft);'}>EN</span>
-      <span style="opacity:0.3;">|</span>
-      <span style={lang === 'es' ? 'color:var(--rust); font-weight:700;' : 'color:var(--ink-soft);'}>ES</span>
+      <span style={lang === 'en' ? 'color:var(--orange-vibrant); font-weight:800;' : 'color:var(--ink-soft);'}>EN</span>
+      <span style="opacity:0.3;">/</span>
+      <span style={lang === 'es' ? 'color:var(--orange-vibrant); font-weight:800;' : 'color:var(--ink-soft);'}>ES</span>
     </a>
 
-    <div class="user-chip">
-      <div class="avatar">MP</div>
-      <span>Maria P.</span>
-    </div>
+    <!-- User chip -->
+    {isSchoolAdmin ? (
+      <div class="user-chip" style="border:1px solid var(--ink); padding:3px 10px 3px 4px; background:var(--paper);">
+        <div class="avatar" style="width:24px; height:24px; font-size:10.5px; background:var(--rust); color:#FFFFFF; border-radius:0;">DR</div>
+        <span style="font-weight:700; font-size:12px;">Diana Restrepo</span>
+      </div>
+    ) : (
+      <div class="user-chip" style="border:1px solid var(--ink); padding:3px 10px 3px 4px; background:var(--paper);">
+        <div class="avatar" style="width:24px; height:24px; font-size:10.5px; background:var(--ink); color:#FFFFFF; border-radius:0;">MP</div>
+        <span style="font-weight:700; font-size:12px;">Maria P.</span>
+      </div>
+    )}
 
-    <button id="logoutBtn" class="logout-btn" title="Cerrar sesión">{t.logout}</button>
+    <button id="logoutBtn" class="logout-btn" style="border:1px solid var(--ink); font-weight:700;" title="Cerrar sesión">{t.logout}</button>
   </div>
 </header>
 

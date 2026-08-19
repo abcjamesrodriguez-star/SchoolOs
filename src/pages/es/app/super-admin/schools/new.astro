@@ -9,42 +9,54 @@ const lang = 'es';
 
 <AppLayout
   title="Nueva Escuela"
-  pageTitle="Registrar Nueva Escuela"
+  pageTitle="Aprovisionar Nueva Escuela"
   activeSection="schools"
   lang={lang}
   activeRoute="/app/super-admin/schools/new"
   breadcrumbs={[
-    { label: 'Escuelas', href: `/${lang}/app/super-admin/schools` },
+    { label: 'Instituciones', href: `/${lang}/app/super-admin/schools` },
     { label: 'Nueva Escuela' },
   ]}
 >
-  <div class="panel" style="max-width: 800px;">
-    <div class="panel-header">
-      <h2>Datos de la Institución</h2>
+  <div style="margin-bottom:16px;">
+    <a class="back-link" href={`/${lang}/app/super-admin/schools`} style="font-family:var(--mono); font-size:12px; font-weight:700; color:var(--ink);">
+      ← VOLVER AL DIRECTORIO DE ESCUELAS
+    </a>
+  </div>
+
+  <div class="panel" style="max-width: 860px;">
+    <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <span style="font-family:var(--mono); font-size:11px; background:var(--ink); color:#FFFFFF; padding:4px 8px; font-weight:700;">PASO 01</span>
+        <h2 style="margin:0;">DATOS DE LA INSTITUCIÓN & APROVISIONAMIENTO</h2>
+      </div>
+      <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">MULTI-TENANT ISOLATED DB</span>
     </div>
-    <div class="panel-body padded">
+    
+    <div class="panel-body padded" style="padding:28px 32px;">
       <form id="newSchoolForm">
         <div class="form-grid">
           <div class="form-field">
-            <label for="schoolName">Nombre de la Escuela / Institución *</label>
-            <input type="text" id="schoolName" placeholder="ej. Colegio San Rafael" required />
-            <span class="hint">Nombre legal o comercial de la institución educativa.</span>
+            <label for="schoolName">Nombre Oficial de la Escuela / Colegio *</label>
+            <input type="text" id="schoolName" placeholder="ej. Gimnasio Moderno del Norte" required style="border:1px solid var(--ink); background:var(--paper); padding:10px 14px; font-size:14px; font-weight:600;" />
+            <span class="hint" style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">Nombre institucional legal registrado.</span>
           </div>
 
           <div class="form-field">
-            <label for="schoolSlug">Identificador de Subdominio (Slug) *</label>
-            <input type="text" id="schoolSlug" placeholder="san-rafael" required />
-            <span class="hint">Utilizado para la URL del tenant: slug.schoolos.com</span>
+            <label for="schoolSlug">Identificador de Subdominio (Slug Único) *</label>
+            <input type="text" id="schoolSlug" placeholder="gimnasio-norte" required style="border:1px solid var(--ink); background:var(--cream); padding:10px 14px; font-family:var(--mono); font-size:13.5px;" />
+            <span class="hint" style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">URL del Tenant: <strong style="color:var(--orange-vibrant);">[slug].schoolos.com</strong></span>
           </div>
 
           <div class="form-field">
-            <label for="country">País y Ciudad *</label>
-            <input type="text" id="country" placeholder="ej. Bogotá, Colombia" required />
+            <label for="country">Ciudad y País de Operación *</label>
+            <input type="text" id="country" placeholder="ej. Bogotá, Colombia" required style="border:1px solid var(--ink); background:var(--paper); padding:10px 14px; font-size:14px;" />
+            <span class="hint" style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">Para jurisdicción legal y zona de retención.</span>
           </div>
 
           <div class="form-field">
-            <label for="timezone">Zona Horaria</label>
-            <select id="timezone">
+            <label for="timezone">Zona Horaria Académica</label>
+            <select id="timezone" style="border:1px solid var(--ink); background:var(--paper); padding:10px 14px; font-size:13.5px;">
               <option value="America/Bogota">America/Bogota (UTC-5)</option>
               <option value="America/Mexico_City">America/Mexico_City (UTC-6)</option>
               <option value="America/Lima">America/Lima (UTC-5)</option>
@@ -55,23 +67,27 @@ const lang = 'es';
 
           <div class="form-field">
             <label for="plan">Plan de Suscripción Inicial *</label>
-            <select id="plan" required>
-              <option value="Starter">Starter (Hasta 200 estudiantes)</option>
-              <option value="Professional" selected>Professional (Hasta 1,500 estudiantes)</option>
-              <option value="Enterprise">Enterprise (Escala institucional personalizada)</option>
+            <select id="plan" required style="border:1px solid var(--ink); background:var(--paper); padding:10px 14px; font-size:13.5px;">
+              <option value="Starter">Starter — Hasta 200 estudiantes ($199/mes)</option>
+              <option value="Professional" selected>Professional — Hasta 1,500 estudiantes ($499/mes)</option>
+              <option value="Enterprise">Enterprise — Escala ilimitada personalizada</option>
             </select>
           </div>
 
           <div class="form-field">
-            <label for="adminEmail">Correo Electrónico del Primer Administrador *</label>
-            <input type="email" id="adminEmail" placeholder="admin@sanrafael.edu.co" required />
-            <span class="hint">Se enviará un enlace automático de activación e invitación a este correo.</span>
+            <label for="adminEmail">Correo del Primer Administrador (Super Usuario) *</label>
+            <input type="email" id="adminEmail" placeholder="rectoria@gimnasionorte.edu.co" required style="border:1px solid var(--ink); background:var(--paper); padding:10px 14px; font-size:14px; font-family:var(--mono);" />
+            <span class="hint" style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">Recibirá el enlace de seguridad para activar el tenant.</span>
           </div>
         </div>
 
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary">Crear Escuela</button>
-          <a class="btn btn-secondary" href={`/${lang}/app/super-admin/schools`}>Cancelar</a>
+        <div class="form-actions" style="margin-top:32px; padding-top:20px; border-top:1px solid var(--line); display:flex; gap:16px; align-items:center;">
+          <button type="submit" class="btn btn-primary" style="padding:12px 24px; font-size:13px; font-weight:700;">
+            Aprovisionar e Inicializar Tenant →
+          </button>
+          <a class="btn btn-secondary" href={`/${lang}/app/super-admin/schools`} style="padding:12px 20px; font-size:13px;">
+            Cancelar
+          </a>
         </div>
       </form>
     </div>
@@ -80,8 +96,9 @@ const lang = 'es';
   <script is:inline define:vars={{ lang }}>
     document.getElementById('newSchoolForm')?.addEventListener('submit', (e) => {
       e.preventDefault();
-      alert('Mock: Escuela creada con éxito. Redirigiendo al listado de escuelas.');
+      alert('Mock: Institución creada con éxito y tenant provisionado. Redirigiendo al listado general.');
       window.location.href = '/' + lang + '/app/super-admin/schools';
     });
   </script>
 </AppLayout>
+

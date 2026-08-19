@@ -7,15 +7,28 @@
    ---------------------------------------------------------- */
 :root {
   /* Color */
-  --cream:        #F3EFE4;
-  --paper:        #FBF9F3;
-  --ink:          #16140F;
-  --ink-soft:     #4A473E;
-  --rust:         #C1571A;
-  --rust-dim:     #E9C9AE;
-  --olive:        #4B5320;
-  --line:         #D8D2C2;
-  --line-strong:  #B9B29C;
+  --cream:          #F4EFE6;
+  --paper:          #FDFCF9;
+  --ink:            #12110E;
+  --ink-soft:       #4A473E;
+  --rust:           #C1571A;
+  --rust-dim:       #E9C9AE;
+  --olive:          #4B5320;
+  --line:           #D8D2C2;
+  --line-strong:    #B9B29C;
+
+  /* Vibrant Editorial Brutalist Tokens */
+  --orange-vibrant: #F25C2B;
+  --orange-dim:     #FDEEE9;
+  --sage-accent:    #BACBB0;
+  --sage-dim:       #E8EFE4;
+  --sage-dark:      #2D4327;
+  --stone-accent:   #DFCDB8;
+  --stone-dim:      #F4EFEA;
+  --stone-dark:     #4A3F33;
+  --onyx:           #12110E;
+  --onyx-surface:   #1A1916;
+  --onyx-border:    #2B2822;
 
   /* Typography */
   --serif: 'Fraunces', serif;

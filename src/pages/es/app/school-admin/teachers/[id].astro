@@ -1,0 +1,331 @@
+---
+// ============================================================
+// SchoolOS — Expediente Directivo de Docente (/es/app/school-admin/teachers/[id])
+// ============================================================
+import AppLayout from '../../../../../layouts/AppLayout.astro';
+import TeacherScheduleModal from '../../../../../components/app/school-admin/TeacherScheduleModal.astro';
+import TeacherSubstituteModal from '../../../../../components/app/school-admin/TeacherSubstituteModal.astro';
+import { getTeachers, getTeacher, getCourses } from '../../../../../data/app/mock-academic';
+
+export function getStaticPaths() {
+  const teachers = getTeachers('es');
+  return teachers.map((teacher) => ({
+    params: { id: teacher.id },
+  }));
+}
+
+const { id } = Astro.params;
+const lang = 'es';
+const teacher = getTeacher(id!, lang);
+const allTeachers = getTeachers(lang);
+const allCourses = getCourses(lang);
+
+if (!teacher) {
+  return Astro.redirect(`/${lang}/app/school-admin/teachers`);
+}
+
+const assignedCourses = teacher.assignedCourses || [];
+---
+
+<AppLayout
+  title={teacher.name}
+  pageTitle={`Expediente Docente: ${teacher.name}`}
+  activeSection="teachers"
+  role="school_admin"
+  schoolName="Colegio Norte"
+  lang={lang}
+  activeRoute={`/app/school-admin/teachers/${teacher.id}`}
+  breadcrumbs={[
+    { label: 'Colegio Norte', href: `/${lang}/app/school-admin` },
+    { label: 'Cuerpo Docente', href: `/${lang}/app/school-admin/teachers` },
+    { label: teacher.name },
+  ]}
+>
+  <div style="margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+    <a href={`/${lang}/app/school-admin/teachers`} class="btn btn-secondary btn-sm" style="font-weight:700;">
+      ← Volver al Directorio de Planta
+    </a>
+
+    <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">
+      ID Docente: <strong>{teacher.id}</strong> · DANE Docente: <strong>{1002900 + parseInt(teacher.id.replace(/\D/g, '') || '1')}</strong>
+    </div>
+  </div>
+
+  <!-- ── 1. CABECERA EJECUTIVA DEL DOCENTE ───────────────────────── -->
+  <div class="detail-header" style="margin-bottom:24px; background:var(--paper); border:2px solid var(--ink); padding:24px; box-shadow:6px 6px 0 rgba(18, 17, 14, 0.08);">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px;">
+      
+      <div style="display:flex; align-items:center; gap:18px;">
+        <div style="width:58px; height:58px; background:var(--ink); color:#FFFFFF; font-family:var(--mono); font-size:20px; font-weight:700; display:flex; align-items:center; justify-content:center; box-shadow:3px 3px 0 rgba(18, 17, 14, 0.2);">
+          {teacher.avatarInitials}
+        </div>
+        <div>
+          <div class="title-row" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:4px;">
+            <h1 style="font-family:var(--serif); font-size:24px; margin:0; font-weight:700; color:var(--ink);">{teacher.name}</h1>
+            <span class={teacher.medicalLeaveNotice ? 'badge badge-suspended' : teacher.status === 'active' ? 'badge badge-active' : 'badge badge-trial'}>
+              {teacher.medicalLeaveNotice ? 'NOVEDAD DE SALUD' : teacher.status === 'active' ? 'ACTIVO EN PLANTA' : 'INVITADO'}
+            </span>
+            {teacher.isGroupDirector && teacher.groupDirectorCode && (
+              <span class="plan-tag" style="background:var(--ink); color:#FFF; font-weight:800; font-size:11px; padding:3px 8px;">
+                DIRECTOR DE GRUPO: {teacher.groupDirectorCode}
+              </span>
+            )}
+          </div>
+          <div class="sub" style="font-size:13px; color:var(--ink-soft);">
+            <strong>{teacher.departmentName || teacher.roleTitle}</strong> · Especialidad: <strong>{teacher.specialty}</strong> · {teacher.email}
+          </div>
+          <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:4px; display:flex; gap:16px; flex-wrap:wrap;">
+            <span>Vinculación: <strong>{teacher.joinedAt}</strong></span>
+            <span>Escalafón: <strong>Grado 2A (Licenciatura & Maestría)</strong></span>
+            <span style="color:var(--rust); font-weight:700;">Atención a Padres: <strong>{teacher.parentOfficeHours || 'Jueves 07:00 - 08:30'}</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Acciones de Rectoría -->
+      <div class="detail-actions" style="display:flex; flex-wrap:wrap; gap:8px;">
+        <button
+          type="button"
+          class="btn btn-primary"
+          onclick={`if (window.openTeacherScheduleModal) window.openTeacherScheduleModal(${JSON.stringify(teacher)});`}
+          style="font-size:12px; font-weight:700;"
+        >
+          Horario & Salones
+        </button>
+        <button
+          type="button"
+          class="btn btn-secondary"
+          onclick={`window.openTeacherSubstituteModal('${teacher.name}', '${teacher.id}');`}
+          style="font-size:12px;"
+        >
+          Gestionar Suplencia
+        </button>
+        <button
+          type="button"
+          class="btn btn-secondary"
+          onclick="alert('Se ha generado un requerimiento formal pedagógico para este docente vía correo institucional.');"
+          style="font-size:12px;"
+        >
+          Requerimiento Formal
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          onclick="if(confirm('¿Desea suspender preventivamente el acceso de este docente?')) alert('Acceso suspendido temporalmente.');"
+          style="font-size:12px;"
+        >
+          Suspender
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── 2. CUADRÍCULA DE MÉTRICAS DEL DOCENTE ──────────────────── -->
+  <div class="stat-grid" style="margin-bottom:24px;">
+    <!-- Carga Horaria -->
+    <div class="stat-card" style="border:2px solid var(--ink);">
+      <div class="stat-label">CARGA HORARIA SEMANAL</div>
+      <div class="stat-num" style="color:var(--ink); font-size:28px;">
+        {teacher.weeklyHours || 18}h <span style="font-size:16px; font-weight:400; color:var(--ink-soft);">/ 18h</span>
+      </div>
+      <div class="stat-sub" style={teacher.hasFreeCapacity ? 'color:var(--olive-dark); font-weight:800;' : ''}>
+        {teacher.hasFreeCapacity ? `${teacher.freeHoursCount || 6} horas libres disponibles para suplencias` : '100% Asignación lectiva completa'}
+      </div>
+    </div>
+
+    <!-- Estudiantes a Cargo -->
+    <div class="stat-card" style="border:2px solid var(--ink);">
+      <div class="stat-label">ESTUDIANTES A CARGO</div>
+      <div class="stat-num" style="color:var(--ink); font-size:28px;">{teacher.totalStudents}</div>
+      <div class="stat-sub">Distribuidos en {assignedCourses.length} grupos académicos</div>
+    </div>
+
+    <!-- Promedio Académico General -->
+    <div class="stat-card" style="border:2px solid var(--ink);">
+      <div class="stat-label">PROMEDIO DE CALIFICACIONES</div>
+      <div class="stat-num accent" style="color:var(--rust); font-size:28px;">{teacher.averageGrade || 8.6} <span style="font-size:16px; font-weight:400; color:var(--ink-soft);">/ 10</span></div>
+      <div class="stat-sub">94.8% tasa de aprobación en sus asignaturas</div>
+    </div>
+
+    <!-- Cumplimiento de Notas Periodo 1 -->
+    <div class="stat-card" style="border:2px solid var(--ink);">
+      <div class="stat-label">CUMPLIMIENTO DE NOTAS P1</div>
+      <div class="stat-num" style={teacher.notesSubmissionStatus === 'delayed' ? 'color:var(--rust); font-size:28px;' : 'color:var(--olive-dark); font-size:28px;'}>
+        {teacher.notesSubmissionStatus === 'delayed' ? 'Pendiente' : 'Al Día ✓'}
+      </div>
+      <div class="stat-sub">
+        {teacher.notesSubmissionStatus === 'delayed' ? '1 acta de notas parciales por firmar' : '100% de notas cargadas en plataforma'}
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 3. ACOMPAÑAMIENTO PEDAGÓGICO & OBSERVACIÓN DE AULA ─────── -->
+  <div class="panel" style="border:2px solid var(--ink); background:#FFFDF9; box-shadow:4px 4px 0 rgba(18, 17, 14, 0.08); margin-bottom:24px;">
+    <div class="panel-header" style="background:var(--cream); display:flex; justify-content:space-between; align-items:center; padding:12px 18px; border-bottom:1.5px solid var(--ink);">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-size:10px; font-weight:900;">
+          SEGUIMIENTO DE CALIDAD PEDAGÓGICA
+        </span>
+        <h3 style="font-family:var(--serif); font-size:15px; margin:0; font-weight:700;">
+          Última Observación de Aula & Acompañamiento
+        </h3>
+      </div>
+      <span style="font-family:var(--mono); font-size:11px; font-weight:700; color:var(--rust);">
+        Calificación: {teacher.lastClassroomObservation ? `${teacher.lastClassroomObservation.score} / 10` : '9.0 / 10'}
+      </span>
+    </div>
+
+    <div class="panel-body padded" style="padding:16px 18px;">
+      <div style="display:grid; grid-template-columns: 2fr 1fr; gap:16px; flex-wrap:wrap;">
+        <div>
+          <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-bottom:4px;">
+            Fecha de Visita: <strong>{teacher.lastClassroomObservation?.date || '12 de agosto, 2026'}</strong> · Evaluador: <strong>{teacher.lastClassroomObservation?.observer || 'Coordinación Académica'}</strong>
+          </div>
+          <p style="font-size:13px; color:var(--ink); margin:0 0 8px 0; line-height:1.45;">
+            {teacher.lastClassroomObservation?.notes || 'Excelente manejo de aula, metodología constructivista y articulación con guías de aprendizaje híbrido.'}
+          </p>
+        </div>
+
+        <div style="background:var(--paper); border:1px solid var(--ink); padding:10px 14px; font-family:var(--mono); font-size:11px;">
+          <div style="color:var(--ink-soft); font-size:9.5px; text-transform:uppercase;">Avance Curricular del Periodo:</div>
+          <strong style="font-size:13px; color:var(--ink); display:block; margin:2px 0 6px 0;">{teacher.syllabusProgress || 'Semana 6 de 18 (100% al día)'}</strong>
+          <div style="color:var(--ink-soft); font-size:10px;">Permisos reportados este ciclo: <strong>{teacher.activePermitsCount || 0}</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 4. CUADRÍCULA DE CURSOS & ASIGNATURAS ASIGNADAS ─────────── -->
+  <div class="panel" style="border:2px solid var(--ink); box-shadow:4px 4px 0 rgba(18, 17, 14, 0.08); margin-bottom:24px;">
+    <div class="panel-header" style="background:var(--cream); display:flex; justify-content:space-between; align-items:center; padding:14px 20px;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-weight:800; font-size:11px;">
+          ASIGNACIÓN LECTIVA ({assignedCourses.length} GRUPOS)
+        </span>
+        <h2 style="font-family:var(--serif); font-size:15px; margin:0; font-weight:700;">
+          Cursos Dictados por {teacher.name}
+        </h2>
+      </div>
+      <button type="button" class="btn btn-secondary btn-sm" onclick="alert('Mock: Formulario para vincular un nuevo grupo académico.');" style="font-size:11px; font-weight:700;">
+        ＋ Asignar Nuevo Curso / Grupo
+      </button>
+    </div>
+
+    <div class="panel-body">
+      <table class="data-table" style="margin:0;">
+        <thead>
+          <tr>
+            <th>Curso / Asignatura</th>
+            <th>Nivel / Grado</th>
+            <th>Salón Asignado</th>
+            <th>Matrícula</th>
+            <th>Promedio</th>
+            <th>Guías</th>
+            <th>Estado Notas</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {assignedCourses.map((c) => (
+            <tr>
+              <td class="cell-name">
+                <a href={`/${lang}/app/school-admin/courses/${c.id}`} style="font-weight:700; font-size:13.5px;">
+                  {c.name}
+                </a>
+                <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">{c.id}</div>
+              </td>
+              <td><span class="plan-tag" style="font-weight:800; font-size:10.5px;">{c.level}</span></td>
+              <td>
+                <strong style="font-family:var(--mono); font-size:12px; color:var(--ink);">{c.room || 'Salón 204'}</strong>
+              </td>
+              <td style="font-family:var(--mono); font-weight:700; font-size:12px;">
+                {c.studentCount} estudiantes
+              </td>
+              <td style="font-family:var(--mono); font-weight:800; font-size:13px; color:var(--rust);">
+                {c.averageGrade || 8.5} / 10
+              </td>
+              <td style="font-family:var(--mono); font-weight:700; font-size:12px;">
+                {teacher.guidesPublished} guías
+              </td>
+              <td>
+                <span class={teacher.notesSubmissionStatus === 'delayed' ? 'badge badge-suspended' : 'badge badge-active'} style="font-size:9.5px;">
+                  {teacher.notesSubmissionStatus === 'delayed' ? 'Pendiente' : 'Cerradas'}
+                </span>
+              </td>
+              <td class="cell-actions">
+                <a href={`/${lang}/app/school-admin/courses/${c.id}`} class="btn btn-secondary btn-sm" style="font-size:11px;">
+                  Abrir Curso →
+                </a>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── 5. RESUMEN DE SALONES & CALENDARIO SEMANAL DIRECTO ─────── -->
+  <div class="panel" style="border:2px solid var(--ink); box-shadow:4px 4px 0 rgba(18, 17, 14, 0.08); margin-bottom:28px;">
+    <div class="panel-header" style="background:var(--paper); display:flex; justify-content:space-between; align-items:center; padding:14px 20px; border-bottom:2px solid var(--ink);">
+      <div>
+        <h2 style="font-family:var(--serif); font-size:16px; margin:0; font-weight:700;">
+          MATRIZ DE HORARIO SEMANAL & UBICACIÓN DE AULA
+        </h2>
+        <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:2px;">
+          Distribución de bloques horarios de Lunes a Viernes con salones correspondientes
+        </div>
+      </div>
+      <button
+        type="button"
+        class="btn btn-primary btn-sm"
+        onclick={`if (window.openTeacherScheduleModal) window.openTeacherScheduleModal(${JSON.stringify(teacher)});`}
+        style="font-size:11.5px; font-weight:700;"
+      >
+        Expandir en Inspector Interactivo ↗
+      </button>
+    </div>
+
+    <div class="panel-body padded" style="background:#FFFDF9;">
+      <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:12px;">
+        {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'].map((dayName, dIdx) => {
+          const daySlots = (teacher.scheduleSlots || []).filter(s => s.dayIndex === dIdx);
+          return (
+            <div style="border:1.5px solid var(--ink); background:var(--paper); padding:12px;">
+              <div style="font-family:var(--mono); font-size:11px; font-weight:800; text-transform:uppercase; border-bottom:1.5px solid var(--ink); padding-bottom:6px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                <span>{dayName}</span>
+                {dIdx === 0 && <span style="background:var(--rust); color:#FFF; font-size:8.5px; padding:1px 4px; border-radius:2px;">HOY</span>}
+              </div>
+
+              {daySlots.length > 0 ? (
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                  {daySlots.map(slot => (
+                    <div style="background:var(--cream); border:1px solid var(--ink); padding:8px; font-size:11px;">
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
+                        <strong style="font-family:var(--mono); color:var(--rust); font-weight:800;">{slot.groupCode}</strong>
+                        <span style="font-family:var(--mono); font-size:9px; color:var(--ink-soft);">{slot.time}</span>
+                      </div>
+                      <div style="font-weight:700; margin-bottom:2px; font-size:11px;">{slot.subjectName}</div>
+                      <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);">
+                        Aula: <strong>{slot.room}</strong>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); text-align:center; padding:16px 0;">
+                  — Sin clases asignadas —
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 6. MODALES ────────────────────────────────────────────── -->
+  <TeacherScheduleModal id="teacherScheduleModal" lang={lang} />
+  <TeacherSubstituteModal id="teacherSubstituteModal" lang={lang} teachers={allTeachers} />
+
+</AppLayout>

@@ -1,0 +1,104 @@
+---
+// ============================================================
+// SchoolOS — Create Course (/en/app/school-admin/courses/new)
+// ============================================================
+import AppLayout from '../../../../../layouts/AppLayout.astro';
+import { getTeachers } from '../../../../../data/app/mock-academic';
+
+const lang = 'en';
+const teachers = getTeachers(lang);
+---
+
+<AppLayout
+  title="New Course"
+  pageTitle="Create New Course or Subject"
+  activeSection="courses"
+  role="school_admin"
+  schoolName="Colegio Norte"
+  lang={lang}
+  activeRoute="/app/school-admin/courses/new"
+  breadcrumbs={[
+    { label: 'Colegio Norte', href: `/${lang}/app/school-admin` },
+    { label: 'Courses', href: `/${lang}/app/school-admin/courses` },
+    { label: 'New' },
+  ]}
+>
+  <div style="max-width:760px; margin:0 auto;">
+    <a href={`/${lang}/app/school-admin/courses`} class="btn btn-secondary btn-sm" style="margin-bottom:20px; display:inline-block;">
+      ← Back to Courses
+    </a>
+
+    <div class="panel">
+      <div class="panel-header">
+        <h2>COURSE REGISTRATION DETAILS</h2>
+      </div>
+
+      <div class="panel-body padded">
+        <form onsubmit="event.preventDefault(); alert('Course created successfully! Assigned to the selected faculty lead.'); window.location.href='/en/app/school-admin/courses';">
+          <div class="form-grid">
+            <div class="form-field full">
+              <label>Course Title / Subject Name</label>
+              <input type="text" placeholder="E.g. Cellular Biology & Genetics" required />
+            </div>
+
+            <div class="form-field">
+              <label>Grade Level & Section</label>
+              <select required>
+                <option value="8A">8th Grade A</option>
+                <option value="8B">8th Grade B</option>
+                <option value="9A">9th Grade A</option>
+                <option value="9C">9th Grade C</option>
+                <option value="10A" selected>10th Grade A</option>
+                <option value="10B">10th Grade B</option>
+                <option value="11A">11th Grade A</option>
+                <option value="11B">11th Grade B</option>
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label>Academic Department</label>
+              <select required>
+                <option selected>Natural Sciences</option>
+                <option>Mathematics & Calculus</option>
+                <option>Language Arts & Literature</option>
+                <option>Social Studies & History</option>
+                <option>English & Bilingual Program</option>
+                <option>Fine Arts & Athletics</option>
+              </select>
+            </div>
+
+            <div class="form-field full">
+              <label>Assigned Lead Teacher</label>
+              <select required>
+                {teachers.map((t) => (
+                  <option value={t.id}>{t.name} — {t.roleTitle}</option>
+                ))}
+              </select>
+              <span class="hint">The assigned teacher will have permissions to create guides and evaluations in this course.</span>
+            </div>
+
+            <div class="form-field">
+              <label>Weekly Schedule</label>
+              <input type="text" placeholder="E.g. Mon, Wed 08:00 - 09:30 AM" required />
+            </div>
+
+            <div class="form-field">
+              <label>Maximum Student Capacity</label>
+              <input type="number" value="32" min="5" max="50" required />
+            </div>
+
+            <div class="form-field full">
+              <label>Academic Term</label>
+              <input type="text" value="2026 - Term 1" readonly style="background:var(--cream); font-family:var(--mono);" />
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px; padding-top:16px; border-top:1px solid var(--line);">
+            <a href={`/${lang}/app/school-admin/courses`} class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">Create & Activate Course →</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</AppLayout>

@@ -1,0 +1,190 @@
+---
+// ============================================================
+// SchoolOS — Resultados de Evaluación (Teacher)
+// Fase 3 | Tabla de calificaciones por alumno
+// ============================================================
+import AppLayout from '../../../../../../layouts/AppLayout.astro';
+import { getEvaluationById, getResultsByEvaluation } from '../../../../../../data/app/mock-content';
+
+export async function getStaticPaths() {
+  return [
+    { params: { id: 'eval-1' } },
+    { params: { id: 'eval-2' } },
+  ];
+}
+
+const lang = 'es';
+const { id } = Astro.params;
+const evaluation = getEvaluationById(id!);
+const results = getResultsByEvaluation(id!);
+
+// Calcular estadísticas
+const gradedResults = results.filter((r) => r.status === 'graded' || r.status === 'failed');
+const avgScore = gradedResults.length > 0 ? gradedResults.reduce((sum, r) => sum + r.score, 0) / gradedResults.length : 0;
+const passedCount = results.filter((r) => r.status === 'graded').length;
+const highScore = gradedResults.length > 0 ? Math.max(...gradedResults.map((r) => r.score)) : 0;
+const lowScore = gradedResults.length > 0 ? Math.min(...gradedResults.map((r) => r.score)) : 0;
+const passRate = gradedResults.length > 0 ? Math.round((passedCount / gradedResults.length) * 100) : 0;
+---
+
+{evaluation ? (
+  <AppLayout
+    title={`Resultados — ${evaluation.title}`}
+    pageTitle={`Resultados: ${evaluation.title}`}
+    activeSection="courses"
+    role="teacher"
+    schoolName="Colegio Norte"
+    lang={lang}
+    activeRoute={`/app/teacher/evaluations/${id}/results`}
+    breadcrumbs={[
+      { label: 'Colegio Norte' },
+      { label: 'Panel Docente', href: `/${lang}/app/teacher` },
+      { label: evaluation.guideTitle, href: `/${lang}/app/teacher/guides/${evaluation.guideId}` },
+      { label: 'Resultados' },
+    ]}
+  >
+
+    <!-- ── HEADER ── -->
+    <div style="background:var(--paper); border:2px solid var(--ink); padding:16px 20px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; box-shadow:4px 4px 0 rgba(18,17,14,0.08);">
+      <div>
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+          <span class={evaluation.mode === 'virtual' ? 'badge badge-active' : 'badge badge-warning'} style="font-size:10px; font-weight:800;">
+            {evaluation.mode === 'virtual' ? 'VIRTUAL' : 'PRESENCIAL'}
+          </span>
+          {evaluation.mode === 'virtual' && (
+            <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">{evaluation.timeLimitMinutes} min · {evaluation.maxAttempts} intentos máx</span>
+          )}
+        </div>
+        <h1 style="font-family:var(--serif); font-size:22px; font-weight:700; color:var(--ink); margin:0 0 4px 0;">{evaluation.title}</h1>
+        <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">Guía: {evaluation.guideTitle} · Aprobación: {evaluation.passingScore}%</div>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <a href={`/${lang}/app/teacher/guides/${evaluation.guideId}`} class="btn btn-secondary btn-sm" style="font-size:11px;">← Volver a la Guía</a>
+        {evaluation.mode === 'in_person' && (
+          <a href={`/${lang}/app/teacher/evaluations/${id}/grade`} class="btn btn-primary btn-sm" style="font-size:11.5px; font-weight:700;">Cargar Notas →</a>
+        )}
+      </div>
+    </div>
+
+    <!-- ── STAT CARDS ── -->
+    <div class="stat-grid" style="margin-bottom:24px;">
+      <div class="stat-card" style="border:2px solid var(--ink);">
+        <div class="stat-label">PROMEDIO GENERAL</div>
+        <div class="stat-num" style={`color:${avgScore >= (evaluation.passingScore || 70) ? 'var(--ink)' : 'var(--rust)'}; font-size:30px;`}>
+          {gradedResults.length > 0 ? `${avgScore.toFixed(1)}%` : '—'}
+        </div>
+        <div class="stat-sub">{gradedResults.length} calificados</div>
+      </div>
+      <div class="stat-card" style="border:2px solid var(--ink);">
+        <div class="stat-label">TASA DE APROBACIÓN</div>
+        <div class="stat-num" style={`color:${passRate >= 70 ? 'var(--ink)' : 'var(--rust)'}; font-size:30px;`}>
+          {gradedResults.length > 0 ? `${passRate}%` : '—'}
+        </div>
+        <div class="stat-sub">{passedCount} aprobaron · Mínimo {evaluation.passingScore}%</div>
+      </div>
+      <div class="stat-card" style="border:2px solid var(--ink);">
+        <div class="stat-label">NOTA MÁS ALTA</div>
+        <div class="stat-num" style="color:var(--ink); font-size:30px;">{gradedResults.length > 0 ? `${highScore}%` : '—'}</div>
+        <div class="stat-sub">Mejor calificación</div>
+      </div>
+      <div class="stat-card" style="border:2px solid var(--ink);">
+        <div class="stat-label">NOTA MÁS BAJA</div>
+        <div class="stat-num accent" style={`color:${lowScore < (evaluation.passingScore || 70) ? 'var(--rust)' : 'var(--ink)'}; font-size:30px;`}>
+          {gradedResults.length > 0 ? `${lowScore}%` : '—'}
+        </div>
+        <div class="stat-sub">Peor calificación</div>
+      </div>
+    </div>
+
+    <!-- ── TABLA DE RESULTADOS ── -->
+    <div class="panel" style="border:2px solid var(--ink); box-shadow:6px 6px 0 rgba(18,17,14,0.08); margin-bottom:20px;">
+      <div class="panel-header" style="background:var(--ink);">
+        <h2 style="font-size:12px; color:#FFFFFF; letter-spacing:0.08em;">CALIFICACIONES POR ALUMNO — {results.length} REGISTROS</h2>
+      </div>
+      <div class="panel-body" style="padding:0; overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
+          <thead>
+            <tr style="border-bottom:2px solid var(--ink); background:var(--cream);">
+              <th style="text-align:left; padding:10px 16px; font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink);">Estudiante</th>
+              <th style="text-align:center; padding:10px 12px; font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink);">Intento</th>
+              <th style="text-align:left; padding:10px 16px; font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink);">Calificación</th>
+              <th style="text-align:center; padding:10px 12px; font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink);">Estado</th>
+              <th style="text-align:right; padding:10px 16px; font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink);">Fecha</th>
+            </tr>
+          </thead>
+          <tbody>
+            {results.map((r, i) => (
+              <tr style={`border-bottom:1.5px solid var(--line); ${i % 2 === 0 ? 'background:var(--paper);' : 'background:var(--cream);'}`}>
+                <td style="padding:12px 16px;">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <div style="width:28px; height:28px; background:var(--cream); border:1.5px solid var(--ink); border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:9px; font-weight:800; flex-shrink:0;">
+                      {r.studentName.split(' ').map((n: string) => n[0]).slice(0,2).join('')}
+                    </div>
+                    <div>
+                      <div style="font-weight:600; color:var(--ink);">{r.studentName}</div>
+                      <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);">Grupo {r.groupCode}</div>
+                    </div>
+                  </div>
+                </td>
+                <td style="padding:12px; text-align:center; font-family:var(--mono); font-size:12px; color:var(--ink);">N° {r.attemptNumber}</td>
+                <td style="padding:12px 16px;">
+                  {r.status === 'pending' ? (
+                    <span style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">Pendiente</span>
+                  ) : (
+                    <div style="display:flex; align-items:center; gap:8px;">
+                      <span style="font-family:var(--mono); font-size:13px; font-weight:800; color:var(--ink); min-width:40px;">{r.score}%</span>
+                      <div style="flex:1; height:6px; background:var(--cream); border:1px solid var(--ink); min-width:80px; max-width:120px;">
+                        <div style={`width:${r.score}%; height:100%; background:${r.score >= (evaluation.passingScore || 70) ? '#5B8A4A' : 'var(--rust)'};`}></div>
+                      </div>
+                    </div>
+                  )}
+                </td>
+                <td style="padding:12px; text-align:center;">
+                  <span class={r.status === 'graded' ? 'badge badge-active' : r.status === 'failed' ? 'badge badge-suspended' : 'badge badge-warning'} style="font-size:9.5px; font-weight:800;">
+                    {r.status === 'graded' ? 'APROBADO' : r.status === 'failed' ? 'REPROBADO' : 'PENDIENTE'}
+                  </span>
+                </td>
+                <td style="padding:12px 16px; text-align:right; font-family:var(--mono); font-size:10.5px; color:var(--ink-soft);">
+                  {r.submittedAt ? new Date(r.submittedAt).toLocaleDateString('es-CO', {day:'2-digit', month:'short'}) : '—'}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── PREGUNTAS CON MAYOR TASA DE ERROR (solo eval-1) ── -->
+    {id === 'eval-1' && (
+      <div class="panel" style="border:1.5px solid var(--ink); padding:18px;">
+        <div style="font-family:var(--mono); font-size:11px; font-weight:800; text-transform:uppercase; color:var(--ink); margin-bottom:12px; border-bottom:1.5px solid var(--ink); padding-bottom:6px;">
+          PREGUNTAS CON MAYOR TASA DE ERROR
+        </div>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:var(--cream); border:1.5px solid var(--line-strong); border-left:4px solid var(--rust);">
+            <div>
+              <div style="font-family:var(--mono); font-size:10px; color:var(--rust); font-weight:700; margin-bottom:2px;">Pregunta 1 · Referencia: § 2 (Membrana Plasmática)</div>
+              <div style="font-size:12.5px; color:var(--ink);">¿Qué estructura celular controla el ingreso y egreso de sustancias?</div>
+            </div>
+            <div style="font-family:var(--mono); font-size:14px; font-weight:800; color:var(--rust); margin-left:16px; white-space:nowrap;">30% error</div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:var(--cream); border:1.5px solid var(--line-strong); border-left:4px solid #8B7355;">
+            <div>
+              <div style="font-family:var(--mono); font-size:10px; color:#8B7355; font-weight:700; margin-bottom:2px;">Pregunta 3 · Referencia: § 4 (Dato clave — Membrana Nuclear)</div>
+              <div style="font-size:12.5px; color:var(--ink);">Las células eucariotas poseen membrana nuclear. (V/F)</div>
+            </div>
+            <div style="font-family:var(--mono); font-size:14px; font-weight:800; color:#8B7355; margin-left:16px; white-space:nowrap;">25% error</div>
+          </div>
+        </div>
+      </div>
+    )}
+
+  </AppLayout>
+) : (
+  <AppLayout title="Evaluación no encontrada" pageTitle="Error" activeSection="courses" role="teacher" schoolName="Colegio Norte" lang={lang} activeRoute="/app/teacher" breadcrumbs={[{ label: 'Error' }]}>
+    <div style="padding:40px; text-align:center;">
+      <h2>Evaluación no encontrada</h2>
+      <a href={`/${lang}/app/teacher/courses`} class="btn btn-primary">Volver a Mis Cursos</a>
+    </div>
+  </AppLayout>
+)}

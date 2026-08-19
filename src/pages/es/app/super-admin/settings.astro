@@ -9,35 +9,94 @@ const lang = 'es';
 
 <AppLayout
   title="Configuración"
-  pageTitle="Configuración Global del Sistema"
+  pageTitle="Configuración & Gobernanza Global"
   activeSection="settings"
   lang={lang}
   activeRoute="/app/super-admin/settings"
   breadcrumbs={[{ label: 'Sistema' }, { label: 'Configuración' }]}
 >
-  <div class="panel" style="max-width: 800px;">
-    <div class="panel-header">
-      <h2>Parámetros Globales de la Plataforma</h2>
-    </div>
-    <div class="panel-body padded">
-      <div class="form-grid">
-        <div class="form-field">
-          <label>Nombre de la Plataforma</label>
-          <input type="text" value="SchoolOS Multi-Tenant" readonly />
-        </div>
-        <div class="form-field">
-          <label>Versión del Sistema</label>
-          <input type="text" value="v1.0.4-preview" readonly />
-        </div>
-        <div class="form-field full">
-          <label>Política de Retención de Datos</label>
-          <input type="text" value="7 Años (Cumplimiento Estatutario de Registros Educativos)" readonly />
-        </div>
-        <div class="form-field full">
-          <label>Regla de Verificación de Acceso Judicial</label>
-          <input type="text" value="Confirmación Estricta Obligatoria de Dos Super Administradores" readonly />
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+    
+    <!-- PANEL 1: PARÁMETROS DEL SISTEMA -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2>01 · IDENTIDAD Y NÚCLEO MULTI-TENANT</h2>
+      </div>
+      <div class="panel-body padded">
+        <div class="form-grid">
+          <div class="form-field full">
+            <label>Nombre de la Plataforma</label>
+            <input type="text" value="SchoolOS Multi-Tenant Governance Suite" readonly />
+          </div>
+          <div class="form-field">
+            <label>Versión del Sistema</label>
+            <input type="text" value="v1.0.4-editorial-preview" readonly style="font-family:var(--mono);" />
+          </div>
+          <div class="form-field">
+            <label>Entorno de Ejecución</label>
+            <input type="text" value="Production (High-Availability)" readonly style="font-family:var(--mono);" />
+          </div>
+          <div class="form-field full">
+            <label>Dominio Base Multi-Tenant</label>
+            <input type="text" value="*.schoolos.com (SSL Wildcard Activo)" readonly style="font-family:var(--mono);" />
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- PANEL 2: SEGURIDAD Y PRIVACIDAD -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2>02 · PROTOCOLOS DE SEGURIDAD Y CUMPLIMIENTO</h2>
+      </div>
+      <div class="panel-body padded">
+        <div class="form-grid">
+          <div class="form-field full">
+            <label>Política de Retención de Datos</label>
+            <input type="text" value="7 Años (Cumplimiento Estatutario de Registros Educativos)" readonly />
+          </div>
+          <div class="form-field full">
+            <label>Regla de Verificación de Acceso Judicial</label>
+            <input type="text" value="Confirmación Estricta Obligatoria de Dos Super Administradores" readonly />
+          </div>
+          <div class="form-field">
+            <label>Cifrado en Reposo</label>
+            <input type="text" value="AES-256-GCM Hardware" readonly style="font-family:var(--mono);" />
+          </div>
+          <div class="form-field">
+            <label>Auditoría Inmutable</label>
+            <input type="text" value="SHA-256 Append-Only Ledger" readonly style="font-family:var(--mono);" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL 3: TELEMETRÍA Y BACKUPS -->
+    <div class="panel" style="grid-column: span 2;">
+      <div class="panel-header">
+        <h2>03 · COPIAS DE SEGURIDAD Y CONTINUIDAD OPERATIVA</h2>
+      </div>
+      <div class="panel-body padded">
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px;">
+          <div style="background:var(--cream); border:1px solid var(--line-strong); padding:14px 16px;">
+            <div style="font-family:var(--mono); font-size:10px; text-transform:uppercase; color:var(--ink-soft);">Frecuencia de Snapshots</div>
+            <div style="font-family:var(--serif); font-size:18px; font-weight:700; margin-top:4px;">Cada 6 Horas</div>
+            <div style="font-family:var(--mono); font-size:11px; color:var(--sage-dark); margin-top:2px;">Último: hace 42 minutos</div>
+          </div>
+          <div style="background:var(--cream); border:1px solid var(--line-strong); padding:14px 16px;">
+            <div style="font-family:var(--mono); font-size:10px; text-transform:uppercase; color:var(--ink-soft);">Geo-Redundancia</div>
+            <div style="font-family:var(--serif); font-size:18px; font-weight:700; margin-top:4px;">3 Regiones Activas</div>
+            <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:2px;">Bogotá · São Paulo · Virginia</div>
+          </div>
+          <div style="background:var(--cream); border:1px solid var(--line-strong); padding:14px 16px;">
+            <div style="font-family:var(--mono); font-size:10px; text-transform:uppercase; color:var(--ink-soft);">Objetivo de Recuperación (RPO)</div>
+            <div style="font-family:var(--serif); font-size:18px; font-weight:700; margin-top:4px;">&lt; 15 Minutos</div>
+            <div style="font-family:var(--mono); font-size:11px; color:var(--orange-vibrant); margin-top:2px;">SLA 99.8% Garantizado</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </AppLayout>
+

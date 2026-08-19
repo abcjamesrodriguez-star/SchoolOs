@@ -1,0 +1,388 @@
+---
+// ============================================================
+// SchoolOS — Student Command Center (/en/app/school-admin/students)
+// Official SchoolOS Table, Early Warning System, Behavior & Enrollment
+// ============================================================
+import AppLayout from '../../../../../layouts/AppLayout.astro';
+import StudentRegisterModal from '../../../../../components/app/school-admin/StudentRegisterModal.astro';
+import StudentCitationModal from '../../../../../components/app/school-admin/StudentCitationModal.astro';
+import { getStudents, getAcademicStats } from '../../../../../data/app/mock-academic';
+
+const lang = 'en';
+const students = getStudents(lang);
+const stats = getAcademicStats(lang);
+
+const riskStudents = students.filter(s => s.academicStatus === 'risk' || s.overallAverage < 8.0);
+const honorStudents = students.filter(s => s.academicStatus === 'honor' || s.overallAverage >= 9.0);
+const conditionalEnrollment = students.filter(s => s.enrollmentType === 'conditional');
+---
+
+<AppLayout
+  title="Student Directory"
+  pageTitle="Student Records & Early Warning System"
+  activeSection="students"
+  role="school_admin"
+  schoolName="Colegio Norte"
+  lang={lang}
+  activeRoute="/app/school-admin/students"
+  breadcrumbs={[{ label: 'Colegio Norte', href: `/${lang}/app/school-admin` }, { label: 'Students & Records' }]}
+>
+
+  <!-- ── 1. EXECUTIVE METRICS ────────────────────────────────────── -->
+  <div class="stat-grid" style="margin-bottom:18px;">
+    <div class="stat-card">
+      <div class="stat-label">TOTAL ACTIVE ENROLLMENT</div>
+      <div class="stat-num">{stats.totalStudents} <span style="font-size:16px; font-weight:400; color:var(--ink-soft);">/ {stats.maxStudentsPlan}</span></div>
+      <div class="stat-sub">{stats.planUsagePercent}% capacity utilized (2026 Cycle)</div>
+    </div>
+
+    <div class="stat-card" style="border-left:4px solid var(--rust);">
+      <div class="stat-label">EARLY WARNING (TERM 1 RISK)</div>
+      <div class="stat-num" style="color:var(--rust);">{riskStudents.length}</div>
+      <div class="stat-sub" style="font-weight:700; color:var(--rust);">Students with failing subjects or absences</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-label">AVERAGE ATTENDANCE TODAY</div>
+      <div class="stat-num" style="color:var(--olive-dark);">{stats.averageAttendanceRate}%</div>
+      <div class="stat-sub">2 excused medical leaves reported</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-label">BEHAVIOR & COMMITMENTS</div>
+      <div class="stat-num">{conditionalEnrollment.length}</div>
+      <div class="stat-sub">Conditional enrollment / Active observation files</div>
+    </div>
+  </div>
+
+  <!-- ── 2. EXECUTIVE EARLY WARNING BANNER ──────────────────────── -->
+  <div class="panel" style="margin-bottom:18px; border-left:4px solid var(--rust); background:#FFF8F6;">
+    <div class="panel-body" style="padding:12px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+      <div style="font-size:13px; color:var(--ink);">
+        <strong style="color:var(--rust); font-family:var(--mono); font-size:11px; text-transform:uppercase; margin-right:8px;">[Term 1 Academic Alert]</strong>
+        Detected <strong>{riskStudents.length} students with subjects at risk</strong> before term grades closure.
+        <span style="color:var(--ink-soft); margin-left:6px;">Recommended: Issue guardian citations and review recovery lesson plans.</span>
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          onclick="alert('Generating official PDF term summary report for Academic Board.');"
+          style="font-size:11px; font-weight:700;"
+        >
+          Term Summary PDF
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary btn-sm"
+          onclick="window.openStudentCitationModal('Samuel Castillo', '11th Grade A (11-1) · Marta Castillo (+57 310 456 7890)', 'SC', 'Academic Support Plan');"
+          style="font-size:11px; font-weight:700; white-space:nowrap;"
+        >
+          Schedule Support Meeting →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 3. SEARCH & CONTROL TOOLBAR ────────────────────────────── -->
+  <div class="panel" style="margin-bottom:20px; background:var(--cream); padding:12px 16px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+      
+      <!-- Search -->
+      <div style="position:relative; flex:1; min-width:280px;">
+        <svg style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--ink-soft); pointer-events:none;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input
+          type="text"
+          id="studentSearchInput"
+          placeholder="Search by student, ID document, guardian, phone, room or grade..."
+          style="width:100%; padding:7px 12px 7px 32px; border:1px solid var(--ink); background:var(--paper); font-family:var(--sans); font-size:12.5px; border-radius:2px;"
+        />
+      </div>
+
+      <!-- Grade Filter -->
+      <div>
+        <select id="filterGrade" style="border:1px solid var(--ink); background:var(--paper); padding:7px 12px; font-family:var(--mono); font-size:11.5px; border-radius:2px;">
+          <option value="all">All Grades</option>
+          <option value="8">8th Grade</option>
+          <option value="9">9th Grade</option>
+          <option value="10">10th Grade</option>
+          <option value="11">11th Grade</option>
+        </select>
+      </div>
+
+      <!-- Academic Status Filter -->
+      <div>
+        <select id="filterAcademicStatus" style="border:1px solid var(--ink); background:var(--paper); padding:7px 12px; font-family:var(--mono); font-size:11.5px; border-radius:2px;">
+          <option value="all">Status: All</option>
+          <option value="risk">Academic Risk (Term 1)</option>
+          <option value="honor">Honor Roll (>=9.0)</option>
+          <option value="normal">Standard Standing</option>
+          <option value="conditional">Conditional Enrollment</option>
+        </select>
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="display:flex; gap:8px;">
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          onclick="alert('Mock: Exporting official government CSV/Excel roster file.');"
+          style="font-size:11.5px; font-weight:700;"
+        >
+          Export CSV
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary btn-sm"
+          onclick="document.getElementById('studentRegisterModal').style.display='flex';"
+          style="font-size:11.5px; font-weight:700;"
+        >
+          ＋ Enroll Student
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── 4. OFFICIAL SCHOOLOS TABLE ──────────────────────────────── -->
+  <div class="panel" style="margin-bottom:30px;">
+    <div class="panel-header" style="background:var(--paper); display:flex; justify-content:space-between; align-items:center; padding:12px 20px; border-bottom:1.5px solid var(--ink);">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-weight:800; font-size:10.5px; padding:2px 7px;">
+          ACTIVE RECORDS
+        </span>
+        <h2 style="font-family:var(--serif); font-size:16.5px; margin:0; font-weight:700; color:var(--ink);">
+          Student Enrollment & Performance Directory
+        </h2>
+      </div>
+
+      <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">
+        Showing <strong id="studentCountVisible">{students.length}</strong> of <strong>{students.length}</strong> records
+      </div>
+    </div>
+
+    <div class="panel-body">
+      <table class="data-table" id="studentsTable">
+        <thead>
+          <tr>
+            <th style="width:260px;">Student & ID Document</th>
+            <th style="width:130px;">Grade / Section</th>
+            <th>Guardian & Contact</th>
+            <th style="width:140px;">Term 1 Average</th>
+            <th style="width:130px;">Attendance</th>
+            <th style="width:140px;">Conduct & Clearance</th>
+            <th style="width:150px; text-align:right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {students.map((s) => (
+            <tr
+              class="student-table-row"
+              data-student-id={s.id}
+              data-grade-group={s.gradeLevel}
+              data-academic-status={s.academicStatus}
+              data-enrollment-type={s.enrollmentType}
+              data-search-text={`${s.name} ${s.documentNumber} ${s.documentType} ${s.gradeLevel} ${s.groupCode} ${s.guardianName} ${s.guardianPhone} ${s.guardianEmail} ${s.medicalInfo?.eps || ''} ${s.medicalInfo?.bloodType || ''}`.toLowerCase()}
+            >
+              <!-- Col 1: Student & Document -->
+              <td class="cell-name">
+                <div style="display:flex; align-items:center; gap:12px;">
+                  <div style={`width:34px; height:34px; background:${s.academicStatus === 'risk' ? 'var(--rust)' : s.academicStatus === 'honor' ? 'var(--olive-dark)' : 'var(--ink)'}; color:#FFFFFF; font-family:var(--mono); font-size:12.5px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; border-radius:2px;`}>
+                    {s.avatarInitials}
+                  </div>
+                  <div>
+                    <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                      <a href={`/${lang}/app/school-admin/students/${s.id}`} style="font-weight:700; font-size:14px;">
+                        {s.name}
+                      </a>
+                      {s.enrollmentType === 'conditional' && (
+                        <span class="badge badge-suspended" style="font-size:8.5px; padding:1px 4px;">
+                          CONDITIONAL
+                        </span>
+                      )}
+                    </div>
+                    <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:1px;">
+                      {s.documentType} {s.documentNumber} · {s.email}
+                    </div>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Col 2: Grade / Section -->
+              <td>
+                <span class="plan-tag" style="background:var(--cream); font-weight:800; font-size:11px; padding:3px 8px; border:1.5px solid var(--ink);">
+                  {s.gradeLevel}
+                </span>
+              </td>
+
+              <!-- Col 3: Guardian & Contact -->
+              <td class="cell-muted">
+                <div style="font-size:12.5px; color:var(--ink); font-weight:700;">
+                  {s.guardianName} <span style="font-size:11px; font-weight:400; color:var(--ink-soft);">({s.guardianRelation || 'Guardian'})</span>
+                </div>
+                <div style="font-size:11px; font-family:var(--mono); color:var(--rust); margin-top:2px; font-weight:700; display:flex; align-items:center; gap:4px;">
+                  <span>Tel: {s.guardianPhone || '+57 310 445 8921'}</span>
+                </div>
+              </td>
+
+              <!-- Col 4: Average Grade -->
+              <td>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <span style={`font-family:var(--mono); font-weight:800; font-size:14.5px; color:${s.overallAverage < 8.0 ? 'var(--rust)' : s.overallAverage >= 9.0 ? 'var(--olive-dark)' : 'var(--ink)'};`}>
+                    {s.overallAverage} <span style="font-size:10.5px; font-weight:400; color:var(--ink-soft);">/ 10</span>
+                  </span>
+                  {s.academicStatus === 'risk' ? (
+                    <span class="badge badge-suspended" style="font-size:9px; padding:1px 4px;">At Risk</span>
+                  ) : s.academicStatus === 'honor' ? (
+                    <span class="badge badge-active" style="font-size:9px; padding:1px 4px;">Honor</span>
+                  ) : (
+                    <span class="plan-tag" style="font-size:9px; padding:1px 4px;">Passing</span>
+                  )}
+                </div>
+                <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); margin-top:2px;">
+                  {s.enrolledCourses.length} enrolled courses
+                </div>
+              </td>
+
+              <!-- Col 5: Attendance -->
+              <td>
+                <div style={`font-family:var(--mono); font-size:13px; font-weight:700; color:${s.attendanceRate < 92 ? 'var(--rust)' : 'var(--olive-dark)'};`}>
+                  {s.attendanceRate}%
+                </div>
+                <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);">
+                  {s.unexcusedAbsences > 0 ? (
+                    <strong style="color:var(--rust);">{s.unexcusedAbsences} unexcused absences</strong>
+                  ) : (
+                    'Zero unexcused absences'
+                  )}
+                </div>
+              </td>
+
+              <!-- Col 6: Conduct & Clearance -->
+              <td>
+                {s.behaviorRecords && s.behaviorRecords.some(b => b.status === 'monitoring' || b.status === 'active') ? (
+                  <span class="badge badge-suspended" style="font-size:9.5px; padding:1px 5px; display:inline-block; margin-bottom:2px;">
+                    Active Observation
+                  </span>
+                ) : (
+                  <span class="badge badge-active" style="font-size:9.5px; padding:1px 5px; display:inline-block; margin-bottom:2px;">
+                    Good Standing
+                  </span>
+                )}
+                <div style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft);">
+                  {s.pazYSalvoStatus === 'al_dia' ? 'Clearance: All Clear' : 'Clearance: Pending'}
+                </div>
+              </td>
+
+              <!-- Col 7: Actions -->
+              <td class="cell-actions">
+                <div style="display:inline-flex; gap:6px;">
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-sm btn-open-citation"
+                    data-student-name={s.name}
+                    data-student-sub={`${s.gradeLevel} · Guardian: ${s.guardianName} (${s.guardianPhone || ''})`}
+                    data-student-avatar={s.avatarInitials}
+                    data-student-status={s.academicStatus === 'risk' ? 'Academic Support Plan' : s.academicStatus === 'honor' ? 'Honor Recognition' : 'Academic Follow-up'}
+                    style="font-size:11px; font-weight:700;"
+                    title="Schedule guardian meeting"
+                  >
+                    Meeting
+                  </button>
+                  <a
+                    href={`/${lang}/app/school-admin/students/${s.id}`}
+                    class="btn btn-primary btn-sm"
+                    style="font-size:11px; font-weight:700;"
+                  >
+                    Profile →
+                  </a>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── 5. MODALS ───────────────────────────────────────────────── -->
+  <StudentRegisterModal id="studentRegisterModal" lang={lang} />
+  <StudentCitationModal id="studentCitationModal" lang={lang} />
+
+</AppLayout>
+
+<script is:inline>
+  (function() {
+    var searchInput = document.getElementById('studentSearchInput');
+    var filterGrade = document.getElementById('filterGrade');
+    var filterAcademicStatus = document.getElementById('filterAcademicStatus');
+    var tableRows = document.querySelectorAll('.student-table-row');
+    var countVisible = document.getElementById('studentCountVisible');
+
+    function applyFilters() {
+      var query = (searchInput?.value || '').trim().toLowerCase();
+      var selectedGrade = filterGrade?.value || 'all';
+      var selectedStatus = filterAcademicStatus?.value || 'all';
+
+      var visible = 0;
+
+      tableRows.forEach(function(row) {
+        var text = row.getAttribute('data-search-text') || '';
+        var gradeText = row.getAttribute('data-grade-group') || '';
+        var status = row.getAttribute('data-academic-status') || '';
+        var enrollType = row.getAttribute('data-enrollment-type') || '';
+
+        var matchSearch = !query || text.includes(query);
+        
+        var matchGrade = true;
+        if (selectedGrade !== 'all') {
+          matchGrade = gradeText.includes(selectedGrade + '°') || gradeText.includes(selectedGrade + 'th') || gradeText.includes(selectedGrade + '-');
+        }
+
+        var matchStatus = true;
+        if (selectedStatus === 'risk') matchStatus = (status === 'risk');
+        if (selectedStatus === 'honor') matchStatus = (status === 'honor');
+        if (selectedStatus === 'normal') matchStatus = (status === 'normal');
+        if (selectedStatus === 'conditional') matchStatus = (enrollType === 'conditional');
+
+        if (matchSearch && matchGrade && matchStatus) {
+          row.style.display = '';
+          visible++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      if (countVisible) {
+        countVisible.textContent = visible;
+      }
+    }
+
+    searchInput?.addEventListener('input', applyFilters);
+    filterGrade?.addEventListener('change', applyFilters);
+    filterAcademicStatus?.addEventListener('change', applyFilters);
+
+    window.openStudentCitationModal = function(studentName, studentSub, studentAvatar, studentStatus) {
+      var modal = document.getElementById('studentCitationModal');
+      var nameElem = document.getElementById('citationStudentTargetName');
+      var subElem = document.getElementById('citationStudentTargetSub');
+      var avatarElem = document.getElementById('citationStudentAvatar');
+      var badgeElem = document.getElementById('citationStudentBadge');
+
+      if (nameElem) nameElem.textContent = studentName || 'Student';
+      if (subElem) subElem.textContent = studentSub || 'Guardian details';
+      if (avatarElem) avatarElem.textContent = studentAvatar || 'ST';
+      if (badgeElem) badgeElem.textContent = studentStatus || 'Academic Follow-up';
+      if (modal) modal.style.display = 'flex';
+    };
+
+    document.querySelectorAll('.btn-open-citation').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var name = btn.getAttribute('data-student-name') || '';
+        var sub = btn.getAttribute('data-student-sub') || '';
+        var avatar = btn.getAttribute('data-student-avatar') || 'ST';
+        var status = btn.getAttribute('data-student-status') || 'Academic Follow-up';
+        window.openStudentCitationModal(name, sub, avatar, status);
+      });
+    });
+  })();
+</script>
