@@ -3,12 +3,28 @@
 // SchoolOS — Panel de Control Super Admin (/es/app/super-admin)
 // ============================================================
 import AppLayout from '../../../../layouts/AppLayout.astro';
-import { getMockDashboardStats, getMockSchools, getMockAuditLogs } from '../../../../data/app/mock-data';
+import { schoolService } from '../../../../services/schoolService';
+import { userService } from '../../../../services/userService';
+import { auditService } from '../../../../services/auditService';
 
 const lang = 'es';
-const stats = getMockDashboardStats(lang);
-const recentSchools = getMockSchools(lang).slice(0, 4);
-const recentLogs = getMockAuditLogs(lang);
+let schools: any[] = [];
+let users: any[] = [];
+let recentLogs: any[] = [];
+
+try {
+  schools = await schoolService.getSchools();
+  users = await userService.getUsers();
+  recentLogs = await auditService.getRecentLogs(4);
+} catch (e) {
+  console.error('Error cargando datos en vivo de Supabase:', e);
+}
+
+const activeSchools = schools.filter((s) => s.status === 'active').length;
+const trialSchools = schools.filter((s) => s.status === 'trial').length;
+const suspendedSchools = schools.filter((s) => s.status === 'suspended').length;
+const totalStudents = schools.reduce((acc, s) => acc + (s.studentCount || 0), 0);
+const recentSchools = schools.slice(0, 5);
 
 function getStatusLabel(status: string) {
   switch (status) {
@@ -58,11 +74,11 @@ function getStatusLabel(status: string) {
 
             <div class="module-card-stat">
               <div class="module-card-progress-row">
-                <span style="font-family:var(--serif); font-size:24px; font-weight:700;">{stats.activeSchools}</span>
-                <span style="color:var(--sage-dark);">{stats.activeSchoolsSub}</span>
+                <span style="font-family:var(--serif); font-size:24px; font-weight:700;">{activeSchools}</span>
+                <span style="color:var(--sage-dark);">{activeSchools} de {schools.length} en operación</span>
               </div>
               <div class="module-progress-track">
-                <div class="module-progress-fill" style="width: 78%; background: var(--sage-dark);"></div>
+                <div class="module-progress-fill" style={`width: ${schools.length ? Math.round((activeSchools / schools.length) * 100) : 100}%; background: var(--sage-dark);`}></div>
               </div>
             </div>
           </div>
@@ -94,11 +110,11 @@ function getStatusLabel(status: string) {
 
             <div class="module-card-stat">
               <div class="module-card-progress-row">
-                <span style="font-family:var(--serif); font-size:24px; font-weight:700;">{stats.totalStudents}</span>
-                <span>{stats.totalStudentsSub}</span>
+                <span style="font-family:var(--serif); font-size:24px; font-weight:700;">{totalStudents.toLocaleString()}</span>
+                <span>En {schools.length} instituciones</span>
               </div>
               <div class="module-progress-track">
-                <div class="module-progress-fill" style="width: 86%;"></div>
+                <div class="module-progress-fill" style="width: 100%;"></div>
               </div>
             </div>
           </div>
@@ -125,23 +141,21 @@ function getStatusLabel(status: string) {
                 <line x1="10" y1="24" x2="160" y2="24" stroke="#F25C2B" stroke-width="3"/>
                 <circle cx="160" cy="24" r="6" fill="#F25C2B"/>
                 <circle cx="160" cy="24" r="2" fill="#FFFFFF"/>
-                <text x="10" y="14" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#12110E" font-weight="700">11 EN TRIAL</text>
-                <text x="140" y="42" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#F25C2B" font-weight="700">91% CAPACIDAD</text>
               </svg>
             </div>
 
             <div class="module-card-stat">
               <div class="module-card-progress-row">
-                <span style="font-family:var(--serif); font-size:24px; font-weight:700; color:var(--orange-vibrant);">{stats.trialSchools} en Prueba</span>
-                <span style="color:var(--danger); font-weight:700;">{stats.suspendedSchools} Susp.</span>
+                <span style="font-family:var(--serif); font-size:24px; font-weight:700;">{trialSchools}</span>
+                <span style="color:var(--orange-vibrant);">{trialSchools} en prueba</span>
               </div>
               <div class="module-progress-track">
-                <div class="module-progress-fill" style="width: 91%; background: var(--orange-vibrant);"></div>
+                <div class="module-progress-fill" style={`width: ${schools.length ? Math.round((trialSchools / schools.length) * 100) : 0}%; background: var(--orange-vibrant);`}></div>
               </div>
             </div>
           </div>
           <a class="module-card-footer footer-orange" href={`/${lang}/app/super-admin/plans`}>
-            <span>Supervisar Planes</span>
+            <span>Ver Tiers & Cuotas</span>
             <span class="arrow-symbol">→</span>
           </a>
         </div>
@@ -251,11 +265,11 @@ function getStatusLabel(status: string) {
         </div>
         <div class="admin-profile-widget">
           <div class="admin-avatar-lg">
-            MP
+            KS
           </div>
           <div class="admin-profile-details">
-            <span class="admin-name">MARIA P.</span>
-            <span class="admin-quote">"Gobernanza activa. El sistema opera a plena capacidad. ↗"</span>
+            <span class="admin-name">KUMIKA SATO</span>
+            <span class="admin-quote">"Gobernanza activa en Supabase. Sesión raíz asegurada. ↗"</span>
           </div>
         </div>
       </div>

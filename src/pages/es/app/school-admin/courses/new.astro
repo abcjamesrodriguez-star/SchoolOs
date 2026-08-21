@@ -1,12 +1,7 @@
 ---
-// ============================================================
-// SchoolOS — Crear Curso (/es/app/school-admin/courses/new)
-// ============================================================
 import AppLayout from '../../../../../layouts/AppLayout.astro';
-import { getTeachers } from '../../../../../data/app/mock-academic';
 
 const lang = 'es';
-const teachers = getTeachers(lang);
 ---
 
 <AppLayout
@@ -14,11 +9,11 @@ const teachers = getTeachers(lang);
   pageTitle="Apertura de Curso o Asignatura"
   activeSection="courses"
   role="school_admin"
-  schoolName="Colegio Norte"
+  schoolName="Institución"
   lang={lang}
   activeRoute="/app/school-admin/courses/new"
   breadcrumbs={[
-    { label: 'Colegio Norte', href: `/${lang}/app/school-admin` },
+    { label: 'Institución', href: `/${lang}/app/school-admin` },
     { label: 'Cursos', href: `/${lang}/app/school-admin/courses` },
     { label: 'Nuevo' },
   ]}
@@ -34,68 +29,50 @@ const teachers = getTeachers(lang);
       </div>
 
       <div class="panel-body padded">
-        <form onsubmit="event.preventDefault(); alert('¡Curso creado con éxito! Se ha asignado al docente seleccionado.'); window.location.href='/es/app/school-admin/courses';">
+        <form onsubmit="event.preventDefault(); alert('La creación real de cursos aún no está conectada a Supabase.');">
           <div class="form-grid">
             <div class="form-field full">
               <label>Nombre de la Asignatura / Curso</label>
-              <input type="text" placeholder="Ej. Biología Celular y Genética" required />
+              <input type="text" placeholder="Nombre del curso" required />
             </div>
 
             <div class="form-field">
               <label>Grado / Grupo</label>
-              <select required>
-                <option value="8A">8° Grado A</option>
-                <option value="8B">8° Grado B</option>
-                <option value="9A">9° Grado A</option>
-                <option value="9C">9° Grado C</option>
-                <option value="10A" selected>10° Grado A</option>
-                <option value="10B">10° Grado B</option>
-                <option value="11A">11° Grado A</option>
-                <option value="11B">11° Grado B</option>
-              </select>
+              <input type="text" placeholder="Ej. 10A" required />
             </div>
 
             <div class="form-field">
               <label>Área de Conocimiento</label>
-              <select required>
-                <option selected>Ciencias Naturales</option>
-                <option>Matemáticas & Cálculo</option>
-                <option>Lenguaje & Literatura</option>
-                <option>Ciencias Sociales & Historia</option>
-                <option>Inglés & Bilingüismo</option>
-                <option>Artes & Educación Física</option>
-              </select>
+              <input type="text" placeholder="Área" required />
             </div>
 
             <div class="form-field full">
               <label>Docente Titular Responsable</label>
-              <select required>
-                {teachers.map((t) => (
-                  <option value={t.id}>{t.name} — {t.roleTitle}</option>
-                ))}
+              <select required disabled>
+                <option>Sin docentes reales vinculados</option>
               </select>
-              <span class="hint">El docente tendrá permisos para crear guías y evaluaciones en este curso.</span>
+              <span class="hint">Cuando existan docentes en Supabase, se podrán asignar aquí.</span>
             </div>
 
             <div class="form-field">
               <label>Horario Semanal</label>
-              <input type="text" placeholder="Ej. Lun, Mié 08:00 - 09:30" required />
+              <input type="text" placeholder="Horario" />
             </div>
 
             <div class="form-field">
               <label>Cupo Máximo de Alumnos</label>
-              <input type="number" value="32" min="5" max="50" required />
+              <input type="number" placeholder="0" min="0" max="80" />
             </div>
 
             <div class="form-field full">
               <label>Periodo Lectivo</label>
-              <input type="text" value="2026 - Periodo 1" readonly style="background:var(--cream); font-family:var(--mono);" />
+              <input type="text" placeholder="Periodo" />
             </div>
           </div>
 
           <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px; padding-top:16px; border-top:1px solid var(--line);">
             <a href={`/${lang}/app/school-admin/courses`} class="btn btn-secondary">Cancelar</a>
-            <button type="submit" class="btn btn-primary">Crear y Habilitar Curso →</button>
+            <button type="submit" class="btn btn-primary" disabled>Crear curso cuando backend esté listo</button>
           </div>
         </form>
       </div>

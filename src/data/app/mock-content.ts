@@ -502,6 +502,10 @@ export function getAllTeacherStudents(): StudentSummary[] {
   return ALL_STUDENTS;
 }
 
+export function getStudentsByCourse(courseId: string): StudentSummary[] {
+  return ALL_STUDENTS.filter((s) => s.courseId === courseId);
+}
+
 // ------------------------------------------------------------
 // GETTERS — Dashboard Stats
 // ------------------------------------------------------------

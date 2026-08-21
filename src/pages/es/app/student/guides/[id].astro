@@ -1,0 +1,221 @@
+---
+// ============================================================
+// SchoolOS — Panel Estudiante: Visualizador de Guía
+// Fase 4 | Ruta dinámica: /es/app/student/guides/[id]
+// ============================================================
+import AppLayout from '../../../../../layouts/AppLayout.astro';
+import { getGuideForStudent, getGuideProgressById, getPendingEvaluations } from '../../../../../data/app/mock-student';
+import { getEvaluationsByGuide } from '../../../../../data/app/mock-content';
+
+export function getStaticPaths() {
+  return [
+    { params: { id: 'gd-1' } },
+    { params: { id: 'gd-2' } },
+    { params: { id: 'gd-3' } },
+  ];
+}
+
+const { id } = Astro.params;
+const lang = 'es';
+const guide = getGuideForStudent(id);
+const progress = getGuideProgressById(id);
+const evaluations = guide ? getEvaluationsByGuide(guide.id) : [];
+const pendingEvals = getPendingEvaluations().filter((p) => p.guideId === id);
+
+if (!guide) {
+  return Astro.redirect(`/${lang}/app/student`);
+}
+
+const blockTypeLabel: Record<string, string> = {
+  heading: 'Título de Sección',
+  paragraph: 'Párrafo',
+  image: 'Imagen',
+  callout: 'Dato Clave',
+};
+---
+
+<AppLayout
+  title={guide.title}
+  pageTitle={guide.title}
+  activeSection="courses"
+  role="student"
+  schoolName="Colegio Norte"
+  lang={lang}
+  activeRoute={`/app/student/guides/${id}`}
+  breadcrumbs={[
+    { label: 'Colegio Norte' },
+    { label: 'Panel Estudiante', href: `/${lang}/app/student` },
+    { label: 'Mis Cursos', href: `/${lang}/app/student/courses` },
+    { label: guide.title },
+  ]}
+>
+
+  <div style="display:grid; grid-template-columns: 1fr 260px; gap:24px; align-items:start;">
+
+    <!-- CUERPO PRINCIPAL DE LA GUÍA -->
+    <div>
+      <!-- Meta-header de la guía -->
+      <div style="background:var(--paper); border:2px solid var(--ink); border-radius:8px; padding:18px 22px; margin-bottom:24px; box-shadow:4px 4px 0 rgba(18,17,14,0.07);">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
+          <div>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+              <span class="badge badge-active" style="font-size:9px;">PUBLICADA</span>
+              <span style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft);">{guide.courseName}</span>
+            </div>
+            <h1 style="font-family:var(--serif); font-size:22px; font-weight:900; margin:0 0 6px 0; line-height:1.3;">{guide.title}</h1>
+            <p style="font-size:13.5px; color:var(--ink-soft); margin:0; line-height:1.6;">{guide.description}</p>
+          </div>
+          <div style="text-align:right; flex-shrink:0;">
+            <div style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft); font-weight:700;">TIEMPO EST.</div>
+            <div style="font-family:var(--serif); font-size:24px; font-weight:900; color:var(--ink);">{guide.estimatedMinutes}</div>
+            <div style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft);">minutos</div>
+          </div>
+        </div>
+        <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--line); display:flex; align-items:center; gap:8px;">
+          <img
+            src="/avatars/women/fila-1-columna-1.png"
+            alt={guide.teacherName}
+            style="width:24px; height:24px; border-radius:50%; border:1px solid var(--line); object-fit:cover;"
+          />
+          <span style="font-size:12px; color:var(--ink-soft);">Por <strong style="color:var(--ink);">{guide.teacherName}</strong> · Actualizada el {new Date(guide.updatedAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+          {progress?.status === 'read' && (
+            <span style="font-family:var(--mono); font-size:9.5px; font-weight:800; padding:2px 7px; border-radius:3px; background:#E8F5E9; color:#4A7C59; margin-left:auto;">✓ LEÍDA</span>
+          )}
+        </div>
+      </div>
+
+      <!-- BLOQUES DE CONTENIDO -->
+      <div style="display:flex; flex-direction:column; gap:0;">
+        {guide.blocks.map((block, idx) => (
+          <div id={block.id} style="scroll-margin-top:80px;">
+            {block.type === 'heading' && (
+              <div style="padding:20px 0 8px 0; margin-top:8px;">
+                <div style="font-family:var(--mono); font-size:9.5px; color:var(--rust); font-weight:700; margin-bottom:4px; text-transform:uppercase;">
+                  § {idx + 1} · {blockTypeLabel[block.type]}
+                </div>
+                <h2 style="font-family:var(--serif); font-size:20px; font-weight:800; color:var(--ink); margin:0; border-bottom:2px solid var(--ink); padding-bottom:8px;">
+                  {block.title || block.content}
+                </h2>
+              </div>
+            )}
+            {block.type === 'paragraph' && (
+              <div style="background:var(--paper); border:1.5px solid var(--line); border-radius:8px; padding:18px 20px; margin:8px 0;">
+                <div style="font-family:var(--mono); font-size:9px; color:var(--ink-soft); font-weight:700; margin-bottom:6px; text-transform:uppercase;">
+                  Bloque {block.id}
+                </div>
+                <p style="font-size:14.5px; line-height:1.8; color:var(--ink); margin:0;">{block.content}</p>
+              </div>
+            )}
+            {block.type === 'callout' && (
+              <div style="background:#FFFCF4; border:2px solid var(--rust); border-left:5px solid var(--rust); border-radius:8px; padding:16px 20px; margin:10px 0;">
+                <div style="font-family:var(--mono); font-size:10px; color:var(--rust); font-weight:800; margin-bottom:6px; text-transform:uppercase; display:flex; align-items:center; gap:6px;">
+                  <span>💡</span> {block.title || 'Dato Clave'}
+                </div>
+                <p style="font-size:14px; line-height:1.7; color:var(--ink); margin:0; font-weight:500;">{block.content}</p>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <!-- SECCIÓN DE EVALUACIONES VINCULADAS -->
+      {evaluations.length > 0 && (
+        <div style="margin-top:32px; background:var(--paper); border:2px solid var(--ink); border-radius:8px; overflow:hidden; box-shadow:4px 4px 0 rgba(18,17,14,0.07);">
+          <div style="background:var(--ink); padding:12px 20px;">
+            <h3 style="font-family:var(--mono); font-size:11px; font-weight:800; color:#FFFFFF; margin:0; text-transform:uppercase; letter-spacing:0.06em;">
+              EVALUACIONES VINCULADAS A ESTA GUÍA
+            </h3>
+          </div>
+          {evaluations.map((ev) => {
+            const isPending = pendingEvals.some((p) => p.evaluationId === ev.id);
+            return (
+              <div style="padding:16px 20px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                <div>
+                  <span class={`badge ${ev.mode === 'virtual' ? 'badge-active' : 'badge-warning'}`} style="font-size:9px; margin-bottom:4px;">
+                    {ev.mode === 'virtual' ? 'VIRTUAL' : 'PRESENCIAL'}
+                  </span>
+                  <div style="font-weight:700; font-size:14px; color:var(--ink);">{ev.title}</div>
+                  <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft);">
+                    {ev.timeLimitMinutes ? `⏱ ${ev.timeLimitMinutes} min · ` : ''}{ev.questions.length} preguntas · Intentos: {ev.maxAttempts}
+                  </div>
+                </div>
+                {isPending && (
+                  <a
+                    href={`/${lang}/app/student/evaluations/${ev.id}/take`}
+                    class="btn btn-primary btn-sm"
+                    style="font-size:11.5px; font-weight:800; background:var(--rust); border-color:var(--rust);"
+                  >
+                    Iniciar Evaluación →
+                  </a>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+    </div>
+
+    <!-- SIDEBAR FLOTANTE DE ÍNDICE -->
+    <div style="position:sticky; top:24px; display:flex; flex-direction:column; gap:16px;">
+
+      <!-- Índice de Navegación -->
+      <div style="background:var(--paper); border:2px solid var(--ink); border-radius:8px; overflow:hidden; box-shadow:4px 4px 0 rgba(18,17,14,0.07);">
+        <div style="background:var(--cream); border-bottom:1.5px solid var(--ink); padding:10px 14px;">
+          <div style="font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink);">Índice de Secciones</div>
+        </div>
+        <div style="padding:8px 0;">
+          {guide.blocks.filter((b) => b.type === 'heading').map((block, idx) => (
+            <a
+              href={`#${block.id}`}
+              style="display:block; padding:8px 14px; font-size:12.5px; color:var(--ink); text-decoration:none; border-left:3px solid transparent; transition:all 0.2s;"
+              onmouseover="this.style.borderLeftColor='var(--rust)'; this.style.background='var(--cream)';"
+              onmouseout="this.style.borderLeftColor='transparent'; this.style.background='transparent';"
+            >
+              <span style="font-family:var(--mono); font-size:9.5px; color:var(--rust); font-weight:700;">§ {idx + 1} </span>
+              {block.title || block.content}
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <!-- Acciones -->
+      <div style="background:var(--paper); border:2px solid var(--ink); border-radius:8px; padding:14px; box-shadow:4px 4px 0 rgba(18,17,14,0.07);">
+        <div style="font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink); margin-bottom:10px;">Acciones</div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <button
+            style="width:100%; padding:10px 12px; background:var(--cream); border:1.5px solid var(--ink); border-radius:5px; font-size:12px; font-weight:700; cursor:pointer; text-align:left; display:flex; justify-content:space-between; align-items:center;"
+            onclick="window.print()"
+          >
+            <span>📄 Descargar PDF</span>
+            <span style="font-size:10px; color:var(--ink-soft);">→</span>
+          </button>
+          {pendingEvals.length > 0 && (
+            <a
+              href={`/${lang}/app/student/evaluations/${pendingEvals[0].evaluationId}/take`}
+              style="width:100%; padding:10px 12px; background:var(--rust); border:1.5px solid var(--rust); border-radius:5px; font-size:12px; font-weight:800; cursor:pointer; text-align:left; display:flex; justify-content:space-between; align-items:center; color:#FFFFFF; text-decoration:none;"
+            >
+              <span>⚡ Presentar Evaluación</span>
+              <span>→</span>
+            </a>
+          )}
+          <a
+            href={`/${lang}/app/student/courses`}
+            style="width:100%; padding:8px 12px; background:transparent; border:1.5px solid var(--line); border-radius:5px; font-size:11.5px; font-weight:700; cursor:pointer; text-align:center; color:var(--ink-soft); text-decoration:none;"
+          >
+            ← Mis Cursos
+          </a>
+        </div>
+      </div>
+
+      <!-- Info del bloque -->
+      <div style="background:var(--cream); border:1.5px solid var(--line); border-radius:8px; padding:12px 14px; font-size:11.5px; color:var(--ink-soft); line-height:1.5;">
+        <strong style="color:var(--ink); display:block; margin-bottom:4px;">💡 Tip de estudio</strong>
+        Lee cada bloque con calma. Los términos en <strong style="color:var(--rust);">negrita rojo</strong> pueden aparecer en la evaluación.
+      </div>
+
+    </div>
+
+  </div>
+
+</AppLayout>

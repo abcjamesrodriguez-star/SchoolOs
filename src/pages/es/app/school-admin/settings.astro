@@ -3,10 +3,8 @@
 // SchoolOS — Configuración del Colegio (/es/app/school-admin/settings)
 // ============================================================
 import AppLayout from '../../../../layouts/AppLayout.astro';
-import { getAcademicStats } from '../../../../data/app/mock-academic';
 
 const lang = 'es';
-const stats = getAcademicStats(lang);
 ---
 
 <AppLayout
@@ -14,10 +12,10 @@ const stats = getAcademicStats(lang);
   pageTitle="Configuración Institucional & Plan"
   activeSection="settings"
   role="school_admin"
-  schoolName="Colegio Norte"
+  schoolName="Institución"
   lang={lang}
   activeRoute="/app/school-admin/settings"
-  breadcrumbs={[{ label: 'Colegio Norte', href: `/${lang}/app/school-admin` }, { label: 'Configuración' }]}
+  breadcrumbs={[{ label: 'Institución', href: `/${lang}/app/school-admin` }, { label: 'Configuración' }]}
 >
   <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px;">
     
@@ -31,27 +29,27 @@ const stats = getAcademicStats(lang);
           <div class="form-grid">
             <div class="form-field full">
               <label>Nombre Oficial de la Institución</label>
-              <input type="text" value="Colegio Norte" required />
+              <input id="settings-school-name" type="text" value="" placeholder="Sin información" required />
             </div>
 
             <div class="form-field">
               <label>Código DANE / Registro Educativo</label>
-              <input type="text" value="111001849201" style="font-family:var(--mono);" />
+              <input id="settings-school-dane" type="text" value="" placeholder="Sin información" style="font-family:var(--mono);" />
             </div>
 
             <div class="form-field">
               <label>Ciudad y País</label>
-              <input type="text" value="Bogotá, Colombia" required />
+              <input id="settings-school-city" type="text" value="" placeholder="Sin información" required />
             </div>
 
             <div class="form-field full">
               <label>Dirección Sede Principal</label>
-              <input type="text" value="Carrera 15 # 124-30, Bogotá D.C." />
+              <input id="settings-school-address" type="text" value="" placeholder="Sin información" />
             </div>
 
             <div class="form-field full">
               <label>Correo Electrónico de Rectoría</label>
-              <input type="email" value="rectoria@colegionorte.edu.co" required style="font-family:var(--mono);" />
+              <input id="settings-school-email" type="email" value="" placeholder="Sin información" required style="font-family:var(--mono);" />
             </div>
           </div>
 
@@ -70,32 +68,71 @@ const stats = getAcademicStats(lang);
       <div class="panel-body padded">
         <div style="background:var(--cream); border:1px solid var(--ink); padding:16px; margin-bottom:18px;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-weight:700;">Plan Professional</span>
-            <span class="badge badge-active">ACTIVO & AL DÍA</span>
+            <span id="settings-plan-name" class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-weight:700;">Sin plan cargado</span>
+            <span id="settings-plan-status" class="badge badge-pending">Sin información</span>
           </div>
-          <div style="font-family:var(--serif); font-size:22px; font-weight:700; margin:6px 0;">$499 USD / mes</div>
-          <div style="font-size:12px; color:var(--ink-soft);">
-            Renovación automática el 2 de julio de 2027.
-          </div>
+          <div id="settings-plan-price" style="font-family:var(--serif); font-size:22px; font-weight:700; margin:6px 0;">--</div>
+          <div id="settings-plan-renewal" style="font-size:12px; color:var(--ink-soft);">Sin información de facturación.</div>
         </div>
 
         <div style="margin-bottom:18px;">
           <div style="display:flex; justify-content:space-between; font-family:var(--mono); font-size:11.5px; margin-bottom:6px;">
             <span>Consumo de Matrícula:</span>
-            <strong>{stats.totalStudents} / {stats.maxStudentsPlan} alumnos ({stats.planUsagePercent}%)</strong>
+            <strong id="settings-capacity-label">0 / 0 alumnos (0%)</strong>
           </div>
           <div style="width:100%; height:6px; background:var(--line); overflow:hidden;">
-            <div style={`width:${stats.planUsagePercent}%; height:100%; background:var(--rust);`}></div>
+            <div id="settings-capacity-bar" style="width:0%; height:100%; background:var(--rust);"></div>
           </div>
           <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:4px;">
-            {stats.maxStudentsPlan - stats.totalStudents} cupos restantes disponibles.
+            <span id="settings-capacity-free">Sin cupos cargados.</span>
           </div>
         </div>
 
         <div style="border-top:1px dashed var(--line); padding-top:16px;">
-          <button class="btn btn-secondary btn-sm" style="width:100%; text-align:center;" onclick="alert('Mock: Solicitando ampliación de cupos a Super Admin');">
+          <button class="btn btn-secondary btn-sm" style="width:100%; text-align:center;" type="button" disabled>
             Solicitar Ampliación de Cupos al Equipo SchoolOS →
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL 3: SEGURIDAD DE CUENTA -->
+    <div class="panel" style="grid-column: span 2;">
+      <div class="panel-header">
+        <h2>03 · SEGURIDAD DE CUENTA DEL RECTOR</h2>
+      </div>
+      <div class="panel-body padded">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; align-items:start;">
+          <div style="background:var(--cream); border:1px solid var(--line-strong); padding:16px;">
+            <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft);">Protocolo institucional</div>
+            <div style="font-family:var(--serif); font-size:19px; font-weight:700; color:var(--ink); margin-top:6px;">Cambios auditados por Super Admin</div>
+            <div style="font-size:13px; color:var(--ink-soft); margin-top:8px; line-height:1.45;">
+              Por seguridad no se muestran contraseñas anteriores. Si pierdes acceso, crea una solicitud y el equipo central ejecutará el cambio desde un canal seguro.
+            </div>
+          </div>
+
+          <form id="own-password-ticket-form" style="border:1px solid var(--ink); background:var(--paper); padding:16px;">
+            <div class="form-field" style="margin-bottom:12px;">
+              <label>Motivo de la solicitud</label>
+              <textarea id="own-password-ticket-reason" rows="4" required placeholder="Describe por qué necesitas restablecer la contraseña."></textarea>
+            </div>
+            <div class="form-field" style="margin-bottom:12px;">
+              <label>Método preferido</label>
+              <select id="own-password-ticket-method">
+                <option value="manual_support">Soporte manual</option>
+                <option value="recovery_link">Enlace de recuperación</option>
+              </select>
+            </div>
+            <div id="own-password-ticket-feedback" style="display:none; padding:10px 14px; margin-bottom:12px; font-family:var(--mono); font-size:12px; font-weight:600;"></div>
+            <button id="own-password-ticket-submit" type="submit" class="btn btn-primary btn-sm">Solicitar cambio de contraseña</button>
+          </form>
+        </div>
+
+        <div style="margin-top:22px;">
+          <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:10px;">Mis solicitudes recientes</div>
+          <div id="own-password-ticket-list" style="border:1px solid var(--line-strong);">
+            <div class="empty-state" style="padding:22px;">Cargando solicitudes...</div>
+          </div>
         </div>
       </div>
     </div>
@@ -103,26 +140,26 @@ const stats = getAcademicStats(lang);
     <!-- PANEL 3: DOMINIO Y CONECTIVIDAD -->
     <div class="panel" style="grid-column: span 2;">
       <div class="panel-header">
-        <h2>03 · DOMINIO WEB & PROTOCOLOS DE ACCESO</h2>
+        <h2>04 · DOMINIO WEB & PROTOCOLOS DE ACCESO</h2>
       </div>
       <div class="panel-body padded">
         <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:16px;">
           <div style="background:var(--cream); border:1px solid var(--line-strong); padding:14px 16px;">
             <div style="font-family:var(--mono); font-size:10px; text-transform:uppercase; color:var(--ink-soft);">Subdominio Asignado</div>
-            <div style="font-family:var(--mono); font-size:13px; font-weight:700; color:var(--ink); margin-top:4px;">colegio-norte.schoolos.com</div>
-            <div style="font-family:var(--mono); font-size:11px; color:var(--olive-dark); margin-top:2px;">✓ SSL Wildcard Activo</div>
+            <div id="settings-subdomain" style="font-family:var(--mono); font-size:13px; font-weight:700; color:var(--ink); margin-top:4px;">Sin información</div>
+            <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:2px;">Pendiente configurar dominio</div>
           </div>
 
           <div style="background:var(--cream); border:1px solid var(--line-strong); padding:14px 16px;">
             <div style="font-family:var(--mono); font-size:10px; text-transform:uppercase; color:var(--ink-soft);">Zona Horaria del Tenant</div>
             <div style="font-family:var(--serif); font-size:15px; font-weight:700; color:var(--ink); margin-top:4px;">America/Bogota (UTC-5)</div>
-            <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:2px;">Sincronizado con Colombia</div>
+            <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:2px;">Configuración regional predeterminada</div>
           </div>
 
           <div style="background:var(--cream); border:1px solid var(--line-strong); padding:14px 16px;">
             <div style="font-family:var(--mono); font-size:10px; text-transform:uppercase; color:var(--ink-soft);">Auditoría del Sistema</div>
-            <div style="font-family:var(--serif); font-size:15px; font-weight:700; color:var(--danger); margin-top:4px;">Under Investigation</div>
-            <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:2px;">Orden EXP-2026-0417</div>
+            <div id="settings-audit-status" style="font-family:var(--serif); font-size:15px; font-weight:700; color:var(--ink); margin-top:4px;">Sin alertas</div>
+            <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:2px;">Sin información judicial cargada</div>
           </div>
         </div>
       </div>
@@ -130,3 +167,147 @@ const stats = getAcademicStats(lang);
 
   </div>
 </AppLayout>
+
+<script>
+  import { schoolAdminTenantService } from '../../../../services/schoolAdminTenantService';
+  import { passwordResetTicketService } from '../../../../services/passwordResetTicketService';
+
+  function badgeClass(status) {
+    if (status === 'completed') return 'badge-active';
+    if (status === 'rejected' || status === 'failed') return 'badge-revoked';
+    if (status === 'expired' || status === 'cancelled') return 'badge-expired';
+    return 'badge-pending';
+  }
+
+  function escapeHtml(value) {
+    return String(value || '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
+  }
+
+  function renderTickets(tickets) {
+    const list = document.getElementById('own-password-ticket-list');
+    if (!list) return;
+
+    if (!tickets.length) {
+      list.innerHTML = '<div class="empty-state" style="padding:22px;">No tienes solicitudes de contraseña registradas.</div>';
+      return;
+    }
+
+    list.innerHTML = tickets.map((ticket) => `
+      <div style="display:grid; grid-template-columns:140px 1fr 130px; gap:14px; padding:14px 16px; border-bottom:1px solid var(--line); align-items:center;">
+        <span class="badge ${badgeClass(ticket.status)}">${escapeHtml(ticket.status)}</span>
+        <div>
+          <div style="font-weight:700;">${escapeHtml(ticket.reason)}</div>
+          <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); margin-top:3px;">${escapeHtml(ticket.resetMethod)}</div>
+        </div>
+        <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); text-align:right;">${new Date(ticket.createdAt).toLocaleDateString('es-CO')}</div>
+      </div>
+    `).join('');
+  }
+
+  async function loadOwnPasswordTickets() {
+    try {
+      const tickets = await passwordResetTicketService.getMyTickets();
+      renderTickets(tickets);
+    } catch (err) {
+      console.error('Error cargando tickets propios:', err);
+      const list = document.getElementById('own-password-ticket-list');
+      if (list) list.innerHTML = '<div class="empty-state" style="padding:22px;">No fue posible cargar las solicitudes.</div>';
+    }
+  }
+
+  async function hydrateSettings() {
+    try {
+      const [context, stats] = await Promise.all([
+        schoolAdminTenantService.getTenantContext(),
+        schoolAdminTenantService.getTenantStats(),
+      ]);
+
+      if (context?.school) {
+        const school = context.school;
+        const name = document.getElementById('settings-school-name');
+        const email = document.getElementById('settings-school-email');
+        const city = document.getElementById('settings-school-city');
+        const dane = document.getElementById('settings-school-dane');
+        const address = document.getElementById('settings-school-address');
+        const plan = document.getElementById('settings-plan-name');
+        const status = document.getElementById('settings-plan-status');
+        const subdomain = document.getElementById('settings-subdomain');
+        const audit = document.getElementById('settings-audit-status');
+
+        if (name) name.value = school.name || '';
+        if (email) email.value = school.rectorEmail || context.user?.email || '';
+        if (city) city.value = [school.location, school.country].filter(Boolean).join(', ');
+        if (dane) dane.value = '';
+        if (address) address.value = school.address || '';
+        if (plan) plan.textContent = school.planName ? `Plan ${school.planName}` : 'Sin plan cargado';
+        if (status) {
+          status.textContent = school.status || 'Sin información';
+          status.className = `badge badge-${school.status || 'pending'}`;
+        }
+        if (subdomain) subdomain.textContent = school.domain || school.slug || 'Sin información';
+        if (audit) audit.textContent = school.auditStatus && school.auditStatus !== 'none' ? school.auditStatus : 'Sin alertas';
+      }
+
+      if (stats) {
+        const label = document.getElementById('settings-capacity-label');
+        const bar = document.getElementById('settings-capacity-bar');
+        const free = document.getElementById('settings-capacity-free');
+        if (label) label.textContent = `${stats.totalStudents} / ${stats.maxStudentsPlan} alumnos (${stats.planUsagePercent}%)`;
+        if (bar) bar.style.width = `${Math.min(stats.planUsagePercent, 100)}%`;
+        if (free) free.textContent = `${Math.max(stats.maxStudentsPlan - stats.totalStudents, 0)} cupos restantes disponibles.`;
+      }
+    } catch (error) {
+      console.warn('No se pudo hidratar configuración del tenant:', error);
+    }
+  }
+
+  const settingsLoad = Promise.all([
+    hydrateSettings(),
+    loadOwnPasswordTickets(),
+  ]);
+  (window as any).SchoolOSApp?.registerPageLoad(settingsLoad);
+
+  const form = document.getElementById('own-password-ticket-form');
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const reasonInput = document.getElementById('own-password-ticket-reason');
+    const methodInput = document.getElementById('own-password-ticket-method');
+    const feedback = document.getElementById('own-password-ticket-feedback');
+    const submit = document.getElementById('own-password-ticket-submit');
+    const reason = reasonInput?.value.trim() || '';
+
+    if (!reason) {
+      feedback.style.cssText = 'display:block; padding:10px 14px; background:#FEE2E2; border:1px solid var(--danger); color:var(--danger); font-family:var(--mono); font-size:12px; font-weight:600; margin-bottom:12px;';
+      feedback.textContent = 'Escribe el motivo de la solicitud.';
+      return;
+    }
+
+    try {
+      submit.disabled = true;
+      submit.textContent = 'Enviando solicitud...';
+      feedback.style.display = 'none';
+
+      await passwordResetTicketService.createOwnSchoolAdminTicket({
+        reason,
+        resetMethod: methodInput?.value || 'manual_support',
+      });
+
+      feedback.style.cssText = 'display:block; padding:10px 14px; background:#E6F4EA; border:1px solid var(--sage-dark); color:var(--sage-dark); font-family:var(--mono); font-size:12px; font-weight:600; margin-bottom:12px;';
+      feedback.textContent = 'Solicitud enviada al Super Admin.';
+      reasonInput.value = '';
+      await loadOwnPasswordTickets();
+    } catch (err) {
+      console.error('Error creando solicitud propia:', err);
+      feedback.style.cssText = 'display:block; padding:10px 14px; background:#FEE2E2; border:1px solid var(--danger); color:var(--danger); font-family:var(--mono); font-size:12px; font-weight:600; margin-bottom:12px;';
+      feedback.textContent = 'No fue posible enviar la solicitud. Verifica tu sesión de rector.';
+    } finally {
+      submit.disabled = false;
+      submit.textContent = 'Solicitar cambio de contraseña';
+    }
+  });
+</script>

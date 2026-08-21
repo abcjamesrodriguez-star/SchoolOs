@@ -1,6 +1,6 @@
 ---
 // ============================================================
-// SchoolOS — Formulario de Registro de Nueva Escuela (/es/app/super-admin/schools/new)
+// SchoolOS — Wizard de Creación de Escuela (/es/app/super-admin/schools/new)
 // ============================================================
 import AppLayout from '../../../../../layouts/AppLayout.astro';
 
@@ -9,13 +9,13 @@ const lang = 'es';
 
 <AppLayout
   title="Nueva Escuela"
-  pageTitle="Aprovisionar Nueva Escuela"
+  pageTitle="Wizard de Aprovisionamiento Escolar"
   activeSection="schools"
   lang={lang}
   activeRoute="/app/super-admin/schools/new"
   breadcrumbs={[
     { label: 'Instituciones', href: `/${lang}/app/super-admin/schools` },
-    { label: 'Nueva Escuela' },
+    { label: 'Nueva Escuela (Wizard)' },
   ]}
 >
   <div style="margin-bottom:16px;">
@@ -24,81 +24,554 @@ const lang = 'es';
     </a>
   </div>
 
-  <div class="panel" style="max-width: 860px;">
+  <!-- WIZARD STEPPER HEADER -->
+  <div class="wizard-stepper-bar" style="display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:24px;">
+    <div class="step-tab active" id="tabStep1" style="background:var(--paper); border:1px solid var(--ink); padding:12px 16px; border-left:4px solid var(--orange-vibrant); cursor:pointer;">
+      <div style="font-family:var(--mono); font-size:10px; font-weight:700; color:var(--orange-vibrant);">PASO 01</div>
+      <div style="font-family:var(--sans); font-size:13px; font-weight:700; color:var(--ink); margin-top:2px;">Identidad & Logo</div>
+    </div>
+    <div class="step-tab" id="tabStep2" style="background:var(--paper); border:1px solid var(--line-strong); padding:12px 16px; border-left:4px solid transparent; cursor:pointer; opacity:0.65;">
+      <div style="font-family:var(--mono); font-size:10px; font-weight:700; color:var(--ink-soft);">PASO 02</div>
+      <div style="font-family:var(--sans); font-size:13px; font-weight:700; color:var(--ink); margin-top:2px;">Ubicación & Contacto</div>
+    </div>
+    <div class="step-tab" id="tabStep3" style="background:var(--paper); border:1px solid var(--line-strong); padding:12px 16px; border-left:4px solid transparent; cursor:pointer; opacity:0.65;">
+      <div style="font-family:var(--mono); font-size:10px; font-weight:700; color:var(--ink-soft);">PASO 03</div>
+      <div style="font-family:var(--sans); font-size:13px; font-weight:700; color:var(--ink); margin-top:2px;">Plan & Capacidad</div>
+    </div>
+    <div class="step-tab" id="tabStep4" style="background:var(--paper); border:1px solid var(--line-strong); padding:12px 16px; border-left:4px solid transparent; cursor:pointer; opacity:0.65;">
+      <div style="font-family:var(--mono); font-size:10px; font-weight:700; color:var(--ink-soft);">PASO 04</div>
+      <div style="font-family:var(--sans); font-size:13px; font-weight:700; color:var(--ink); margin-top:2px;">Rectoría & Resumen</div>
+    </div>
+  </div>
+
+  <div class="panel" style="max-width: 900px;">
     <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
       <div style="display:flex; align-items:center; gap:12px;">
-        <span style="font-family:var(--mono); font-size:11px; background:var(--ink); color:#FFFFFF; padding:4px 8px; font-weight:700;">PASO 01</span>
-        <h2 style="margin:0;">DATOS DE LA INSTITUCIÓN & APROVISIONAMIENTO</h2>
+        <span id="currentStepBadge" style="font-family:var(--mono); font-size:11px; background:var(--ink); color:#FFFFFF; padding:4px 8px; font-weight:700;">PASO 01 DE 04</span>
+        <h2 id="stepHeaderTitle" style="margin:0;">IDENTIDAD, BRANDING & LOGOTIPO</h2>
       </div>
-      <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">MULTI-TENANT ISOLATED DB</span>
+      <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">SUPABASE CLOUD STORAGE</span>
     </div>
     
     <div class="panel-body padded" style="padding:28px 32px;">
-      <form id="newSchoolForm">
-        <div class="form-grid">
-          <div class="form-field">
-            <label for="schoolName">Nombre Oficial de la Escuela / Colegio *</label>
-            <input type="text" id="schoolName" placeholder="ej. Gimnasio Moderno del Norte" required style="border:1px solid var(--ink); background:var(--paper); padding:10px 14px; font-size:14px; font-weight:600;" />
-            <span class="hint" style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">Nombre institucional legal registrado.</span>
-          </div>
+      <form id="wizardSchoolForm">
+        
+        <!-- ==========================================
+             PASO 1: IDENTIDAD & LOGO
+             ========================================== -->
+        <div class="wizard-step-content" id="stepContent1">
+          <div style="display:grid; grid-template-columns:1fr 240px; gap:28px; align-items:start;">
+            <div class="form-grid" style="display:flex; flex-direction:column; gap:18px;">
+              <div class="form-field">
+                <label for="schoolName" style="font-weight:700; font-size:13px;">Nombre Oficial de la Escuela / Colegio *</label>
+                <input type="text" id="schoolName" placeholder="ej. Cafelitos Baseball & Academic Academy" required style="border:1px solid var(--ink); background:var(--paper); padding:10px 14px; font-size:14px; font-weight:600; width:100%;" />
+                <span class="hint" style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:4px; display:block;">Nombre legal e institucional.</span>
+              </div>
 
-          <div class="form-field">
-            <label for="schoolSlug">Identificador de Subdominio (Slug Único) *</label>
-            <input type="text" id="schoolSlug" placeholder="gimnasio-norte" required style="border:1px solid var(--ink); background:var(--cream); padding:10px 14px; font-family:var(--mono); font-size:13.5px;" />
-            <span class="hint" style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">URL del Tenant: <strong style="color:var(--orange-vibrant);">[slug].schoolos.com</strong></span>
-          </div>
+              <div class="form-field">
+                <label for="schoolSlug" style="font-weight:700; font-size:13px;">Identificador de Subdominio (Slug Único) *</label>
+                <div style="display:flex; align-items:center; border:1px solid var(--ink); background:var(--cream);">
+                  <input type="text" id="schoolSlug" placeholder="cafelitos" required style="border:none; background:transparent; padding:10px 14px; font-family:var(--mono); font-size:13.5px; font-weight:700; flex:1; outline:none;" />
+                  <span style="padding-right:14px; font-family:var(--mono); font-size:12px; color:var(--ink-soft); font-weight:600;">.schoolos.com</span>
+                </div>
+                <span class="hint" style="font-family:var(--mono); font-size:11px; color:var(--orange-vibrant); margin-top:4px; display:block;">Dominio institucional reservado en SchoolOS.</span>
+              </div>
 
-          <div class="form-field">
-            <label for="country">Ciudad y País de Operación *</label>
-            <input type="text" id="country" placeholder="ej. Bogotá, Colombia" required style="border:1px solid var(--ink); background:var(--paper); padding:10px 14px; font-size:14px;" />
-            <span class="hint" style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">Para jurisdicción legal y zona de retención.</span>
-          </div>
+              <div class="form-field">
+                <label for="slogan" style="font-weight:700; font-size:13px;">Lema / Slogan Institucional</label>
+                <input type="text" id="slogan" placeholder="ej. Formando campeones en el campo y en la vida" style="border:1px solid var(--ink); background:var(--paper); padding:10px 14px; font-size:13.5px; width:100%;" />
+              </div>
 
-          <div class="form-field">
-            <label for="timezone">Zona Horaria Académica</label>
-            <select id="timezone" style="border:1px solid var(--ink); background:var(--paper); padding:10px 14px; font-size:13.5px;">
-              <option value="America/Bogota">America/Bogota (UTC-5)</option>
-              <option value="America/Mexico_City">America/Mexico_City (UTC-6)</option>
-              <option value="America/Lima">America/Lima (UTC-5)</option>
-              <option value="America/Santiago">America/Santiago (UTC-4)</option>
-              <option value="America/Argentina/Buenos_Aires">America/Buenos_Aires (UTC-3)</option>
-            </select>
-          </div>
+              <div class="form-field">
+                <label for="brandColor" style="font-weight:700; font-size:13px;">Color Distintivo de la Institución</label>
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <input type="color" id="brandColor" value="#12110E" style="width:40px; height:38px; border:1px solid var(--ink); cursor:pointer; padding:2px; background:var(--paper);" />
+                  <input type="text" id="brandColorHex" value="#12110E" style="border:1px solid var(--ink); background:var(--paper); padding:8px 12px; font-family:var(--mono); font-size:13px; width:110px;" />
+                  <span style="font-size:12px; color:var(--ink-soft);">Color temático en boletines y certificados.</span>
+                </div>
+              </div>
+            </div>
 
-          <div class="form-field">
-            <label for="plan">Plan de Suscripción Inicial *</label>
-            <select id="plan" required style="border:1px solid var(--ink); background:var(--paper); padding:10px 14px; font-size:13.5px;">
-              <option value="Starter">Starter — Hasta 200 estudiantes ($199/mes)</option>
-              <option value="Professional" selected>Professional — Hasta 1,500 estudiantes ($499/mes)</option>
-              <option value="Enterprise">Enterprise — Escala ilimitada personalizada</option>
-            </select>
-          </div>
+            <!-- LOGO UPLOAD BOX -->
+            <div style="border:2px dashed var(--ink); padding:20px; text-align:center; background:var(--cream); border-radius:4px; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:260px;">
+              <div id="logoPreviewContainer" style="width:110px; height:110px; border:1px solid var(--ink); background:var(--paper); display:flex; align-items:center; justify-content:center; margin-bottom:12px; overflow:hidden; position:relative;">
+                <img id="logoPreviewImg" src="" alt="Previsualización" style="max-width:100%; max-height:100%; object-fit:contain; display:none;" />
+                <div id="logoPlaceholder" style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); padding:8px;">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto 6px; display:block;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                  SIN LOGO
+                </div>
+              </div>
 
-          <div class="form-field">
-            <label for="adminEmail">Correo del Primer Administrador (Super Usuario) *</label>
-            <input type="email" id="adminEmail" placeholder="rectoria@gimnasionorte.edu.co" required style="border:1px solid var(--ink); background:var(--paper); padding:10px 14px; font-size:14px; font-family:var(--mono);" />
-            <span class="hint" style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">Recibirá el enlace de seguridad para activar el tenant.</span>
+              <input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/webp,image/svg+xml" style="display:none;" />
+              <button type="button" id="btnUploadLogo" class="btn btn-secondary btn-sm" style="font-size:11.5px; font-weight:700; width:100%;">
+                📁 Subir Logo / Escudo
+              </button>
+              <button type="button" id="btnRemoveLogo" style="background:none; border:none; color:var(--danger); font-size:11px; font-family:var(--mono); margin-top:8px; cursor:pointer; display:none;">
+                ✕ Quitar imagen
+              </button>
+              <span style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft); margin-top:8px; line-height:1.3;">PNG, JPG, WEBP o SVG (Máx 5MB). Almacenado en Supabase Storage.</span>
+            </div>
           </div>
         </div>
 
-        <div class="form-actions" style="margin-top:32px; padding-top:20px; border-top:1px solid var(--line); display:flex; gap:16px; align-items:center;">
-          <button type="submit" class="btn btn-primary" style="padding:12px 24px; font-size:13px; font-weight:700;">
-            Aprovisionar e Inicializar Tenant →
+        <!-- ==========================================
+             PASO 2: UBICACIÓN & CONTACTO
+             ========================================== -->
+        <div class="wizard-step-content" id="stepContent2" style="display:none;">
+          <div class="form-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+            <div class="form-field" style="grid-column:1 / -1;">
+              <label for="country" style="font-weight:700; font-size:13px;">Ciudad y País de Operación *</label>
+              <input type="text" id="country" placeholder="ej. Barranquilla, Colombia" required style="border:1px solid var(--ink); background:var(--paper); padding:10px 14px; font-size:14px; width:100%;" />
+            </div>
+
+            <div class="form-field">
+              <label for="address" style="font-weight:700; font-size:13px;">Dirección de la Sede Principal</label>
+              <input type="text" id="address" placeholder="ej. Cra. 53 #82-140, Sede Norte" style="border:1px solid var(--ink); background:var(--paper); padding:10px 14px; font-size:13.5px; width:100%;" />
+            </div>
+
+            <div class="form-field">
+              <label for="phone" style="font-weight:700; font-size:13px;">Teléfono / PBX Institucional</label>
+              <input type="tel" id="phone" placeholder="ej. +57 (605) 385-2020" style="border:1px solid var(--ink); background:var(--paper); padding:10px 14px; font-size:13.5px; width:100%;" />
+            </div>
+
+            <div class="form-field">
+              <label for="contactEmail" style="font-weight:700; font-size:13px;">Correo Electrónico de Contacto *</label>
+              <input type="email" id="contactEmail" placeholder="contacto@cafelitosacademy.edu.co" required style="border:1px solid var(--ink); background:var(--paper); padding:10px 14px; font-size:13.5px; font-family:var(--mono); width:100%;" />
+            </div>
+
+            <div class="form-field">
+              <label for="timezone" style="font-weight:700; font-size:13px;">Zona Horaria del Calendario Académico</label>
+              <select id="timezone" style="border:1px solid var(--ink); background:var(--paper); padding:10px 14px; font-size:13.5px; width:100%;">
+                <option value="America/Bogota (UTC-5)">America/Bogota (UTC-5)</option>
+                <option value="America/Mexico_City (UTC-6)">America/Mexico_City (UTC-6)</option>
+                <option value="America/Lima (UTC-5)">America/Lima (UTC-5)</option>
+                <option value="America/Santiago (UTC-4)">America/Santiago (UTC-4)</option>
+                <option value="America/Argentina/Buenos_Aires (UTC-3)">America/Buenos_Aires (UTC-3)</option>
+                <option value="America/Caracas (UTC-4)">America/Caracas (UTC-4)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================
+             PASO 3: PLAN & CAPACIDAD
+             ========================================== -->
+        <div class="wizard-step-content" id="stepContent3" style="display:none;">
+          <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-bottom:24px;">
+            
+            <label class="plan-select-card" style="border:2px solid var(--line-strong); background:var(--paper); padding:18px; cursor:pointer; display:flex; flex-direction:column; transition:all 0.15s ease;">
+              <input type="radio" name="planChoice" value="Starter" style="display:none;" />
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span class="plan-tag">Starter</span>
+                <span style="font-family:var(--mono); font-size:11px; font-weight:700;">$199/m</span>
+              </div>
+              <div style="font-size:12px; color:var(--ink-soft); line-height:1.4;">Ideal para academias de hasta 200 estudiantes.</div>
+            </label>
+
+            <label class="plan-select-card active" style="border:2px solid var(--orange-vibrant); background:var(--cream); padding:18px; cursor:pointer; display:flex; flex-direction:column; box-shadow:3px 3px 0 rgba(18, 17, 14, 0.1);">
+              <input type="radio" name="planChoice" value="Professional" checked style="display:none;" />
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span class="plan-tag" style="background:var(--ink); color:#FFFFFF;">Professional</span>
+                <span style="font-family:var(--mono); font-size:11px; font-weight:700; color:var(--orange-vibrant);">$499/m</span>
+              </div>
+              <div style="font-size:12px; color:var(--ink-soft); line-height:1.4;">Hasta 1,500 estudiantes con auditoría y dominio propio.</div>
+            </label>
+
+            <label class="plan-select-card" style="border:2px solid var(--line-strong); background:var(--paper); padding:18px; cursor:pointer; display:flex; flex-direction:column; transition:all 0.15s ease;">
+              <input type="radio" name="planChoice" value="Enterprise" style="display:none;" />
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span class="plan-tag">Enterprise</span>
+                <span style="font-family:var(--mono); font-size:11px; font-weight:700;">A Medida</span>
+              </div>
+              <div style="font-size:12px; color:var(--ink-soft); line-height:1.4;">Redes educativas e infraestructura dedicada.</div>
+            </label>
+          </div>
+
+          <div class="form-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+            <div class="form-field">
+              <label for="initialStudents" style="font-weight:700; font-size:13px;">Estimación de Alumnos Iniciales</label>
+              <input type="number" id="initialStudents" value="120" min="0" max="5000" style="border:1px solid var(--ink); background:var(--paper); padding:10px 14px; font-size:14px; font-family:var(--mono); width:100%;" />
+            </div>
+
+            <div class="form-field">
+              <label for="schoolStatus" style="font-weight:700; font-size:13px;">Estado Operativo Inicial</label>
+              <select id="schoolStatus" style="border:1px solid var(--ink); background:var(--paper); padding:10px 14px; font-size:13.5px; width:100%;">
+                <option value="active" selected>Activa (Producción Completa)</option>
+                <option value="trial">Periodo de Prueba (Trial 14 Días)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================
+             PASO 4: RECTORÍA & RESUMEN FINAL
+             ========================================== -->
+        <div class="wizard-step-content" id="stepContent4" style="display:none;">
+          <div style="background:var(--cream); border:1px solid var(--ink); padding:18px 22px; margin-bottom:24px;">
+            <div style="font-family:var(--mono); font-size:11px; font-weight:700; color:var(--orange-vibrant); text-transform:uppercase; margin-bottom:6px;">
+              ⚡ Aprovisionamiento del Primer Administrador Escolar (Rector)
+            </div>
+            <div style="font-size:12.5px; color:var(--ink-soft); line-height:1.4;">
+              Se creará automáticamente la cuenta directiva de nivel 2 para que el rector o director pueda ingresar a <strong>SchoolOS</strong> y administrar materias, docentes y estudiantes.
+            </div>
+          </div>
+
+          <div class="form-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+            <div class="form-field">
+              <label for="rectorName" style="font-weight:700; font-size:13px;">Nombre Completo del Rector / Director *</label>
+              <input type="text" id="rectorName" placeholder="ej. Coach Mike Johnson" required style="border:1px solid var(--ink); background:var(--paper); padding:10px 14px; font-size:14px; font-weight:600; width:100%;" />
+            </div>
+
+            <div class="form-field">
+              <label for="rectorEmail" style="font-weight:700; font-size:13px;">Correo de Acceso del Rector *</label>
+              <input type="email" id="rectorEmail" placeholder="rectoria@cafelitosacademy.edu.co" required style="border:1px solid var(--ink); background:var(--paper); padding:10px 14px; font-size:13.5px; font-family:var(--mono); width:100%;" />
+            </div>
+          </div>
+
+          <!-- RESUMEN EN VIVO -->
+          <div style="margin-top:24px; border-top:1px solid var(--line); padding-top:20px;">
+            <div style="font-family:var(--mono); font-size:11px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; margin-bottom:12px;">
+              Resumen de Aprovisionamiento:
+            </div>
+            <div style="background:var(--paper); border:1px solid var(--line-strong); padding:14px 18px; font-family:var(--mono); font-size:12px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+              <div><strong>Escuela:</strong> <span id="sumSchoolName">-</span></div>
+              <div><strong>Subdominio:</strong> <span id="sumSlug" style="color:var(--orange-vibrant);">-</span></div>
+              <div><strong>Ubicación:</strong> <span id="sumLocation">-</span></div>
+              <div><strong>Plan:</strong> <span id="sumPlan">Professional</span></div>
+              <div><strong>Rector:</strong> <span id="sumRector">-</span></div>
+              <div><strong>Email Rector:</strong> <span id="sumRectorEmail">-</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================
+             FOOTER / BOTONES DE NAVEGACIÓN
+             ========================================== -->
+        <div class="form-actions" style="margin-top:32px; padding-top:20px; border-top:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;">
+          <button type="button" id="btnPrevStep" class="btn btn-secondary" style="padding:12px 20px; font-size:13px; display:none;">
+            ← Anterior
           </button>
-          <a class="btn btn-secondary" href={`/${lang}/app/super-admin/schools`} style="padding:12px 20px; font-size:13px;">
-            Cancelar
-          </a>
+          <div style="display:flex; gap:12px; margin-left:auto;">
+            <a class="btn btn-secondary" href={`/${lang}/app/super-admin/schools`} style="padding:12px 20px; font-size:13px;">
+              Cancelar
+            </a>
+            <button type="button" id="btnNextStep" class="btn btn-primary" style="padding:12px 26px; font-size:13px; font-weight:700;">
+              Siguiente Paso →
+            </button>
+            <button type="submit" id="btnSubmitWizard" class="btn btn-primary" style="padding:12px 26px; font-size:13px; font-weight:700; background:var(--orange-vibrant); display:none;">
+              🚀 Crear Institución en Supabase
+            </button>
+          </div>
         </div>
+
       </form>
     </div>
   </div>
 
-  <script is:inline define:vars={{ lang }}>
-    document.getElementById('newSchoolForm')?.addEventListener('submit', (e) => {
+  <!-- SCRIPT DEL WIZARD (VITE BUNDLED) -->
+  <script>
+    import { schoolService } from '../../../../../services/schoolService';
+    import { provisionRectorAccount } from '../../../../../services/rectorProvisioningService';
+
+    let currentStep = 1;
+    let selectedLogoFile: File | null = null;
+
+    // Elementos UI
+    const stepTitles = [
+      'IDENTIDAD, BRANDING & LOGOTIPO',
+      'UBICACIÓN, SEDES & CONTACTO',
+      'PLAN DE SUSCRIPCIÓN & CAPACIDAD',
+      'RECTORÍA & APROVISIONAMIENTO'
+    ];
+
+    const tabStep1 = document.getElementById('tabStep1');
+    const tabStep2 = document.getElementById('tabStep2');
+    const tabStep3 = document.getElementById('tabStep3');
+    const tabStep4 = document.getElementById('tabStep4');
+    const tabs = [tabStep1, tabStep2, tabStep3, tabStep4];
+
+    const stepContent1 = document.getElementById('stepContent1');
+    const stepContent2 = document.getElementById('stepContent2');
+    const stepContent3 = document.getElementById('stepContent3');
+    const stepContent4 = document.getElementById('stepContent4');
+    const contents = [stepContent1, stepContent2, stepContent3, stepContent4];
+
+    const currentStepBadge = document.getElementById('currentStepBadge');
+    const stepHeaderTitle = document.getElementById('stepHeaderTitle');
+    const btnPrevStep = document.getElementById('btnPrevStep');
+    const btnNextStep = document.getElementById('btnNextStep');
+    const btnSubmitWizard = document.getElementById('btnSubmitWizard');
+
+    // Inputs para Auto-Slug y Resumen
+    const inputName = document.getElementById('schoolName') as HTMLInputElement;
+    const inputSlug = document.getElementById('schoolSlug') as HTMLInputElement;
+    const inputCountry = document.getElementById('country') as HTMLInputElement;
+    const inputContactEmail = document.getElementById('contactEmail') as HTMLInputElement;
+    const inputRectorName = document.getElementById('rectorName') as HTMLInputElement;
+    const inputRectorEmail = document.getElementById('rectorEmail') as HTMLInputElement;
+    const inputBrandColor = document.getElementById('brandColor') as HTMLInputElement;
+    const inputBrandColorHex = document.getElementById('brandColorHex') as HTMLInputElement;
+
+    // Auto-generar slug al escribir el nombre
+    inputName?.addEventListener('input', () => {
+      if (!inputSlug.dataset.manualEdited) {
+        const slugified = inputName.value
+          .toLowerCase()
+          .trim()
+          .replace(/[áàäâ]/g, 'a')
+          .replace(/[éèëê]/g, 'e')
+          .replace(/[íìïî]/g, 'i')
+          .replace(/[óòöô]/g, 'o')
+          .replace(/[úùüû]/g, 'u')
+          .replace(/ñ/g, 'n')
+          .replace(/[^a-z0-9]/g, '-')
+          .replace(/-+/g, '-')
+          .replace(/^-|-$/g, '');
+        inputSlug.value = slugified;
+      }
+    });
+
+    inputSlug?.addEventListener('input', () => {
+      inputSlug.dataset.manualEdited = 'true';
+    });
+
+    // Sincronizar Color Pickers
+    inputBrandColor?.addEventListener('input', () => {
+      if (inputBrandColorHex) inputBrandColorHex.value = inputBrandColor.value;
+    });
+    inputBrandColorHex?.addEventListener('input', () => {
+      if (inputBrandColor) inputBrandColor.value = inputBrandColorHex.value;
+    });
+
+    // Selección de Planes
+    const planCards = document.querySelectorAll('.plan-select-card');
+    planCards.forEach((card) => {
+      card.addEventListener('click', () => {
+        planCards.forEach((c) => {
+          c.classList.remove('active');
+          (c as HTMLElement).style.borderColor = 'var(--line-strong)';
+          (c as HTMLElement).style.background = 'var(--paper)';
+        });
+        card.classList.add('active');
+        (card as HTMLElement).style.borderColor = 'var(--orange-vibrant)';
+        (card as HTMLElement).style.background = 'var(--cream)';
+        const radio = card.querySelector('input[type="radio"]') as HTMLInputElement;
+        if (radio) radio.checked = true;
+      });
+    });
+
+    // Manejo de Subida de Logo & Previsualización
+    const logoFileInput = document.getElementById('logoFileInput') as HTMLInputElement;
+    const btnUploadLogo = document.getElementById('btnUploadLogo');
+    const btnRemoveLogo = document.getElementById('btnRemoveLogo');
+    const logoPreviewImg = document.getElementById('logoPreviewImg') as HTMLImageElement;
+    const logoPlaceholder = document.getElementById('logoPlaceholder');
+
+    btnUploadLogo?.addEventListener('click', () => logoFileInput?.click());
+
+    logoFileInput?.addEventListener('change', () => {
+      const file = logoFileInput.files?.[0];
+      if (file) {
+        if (file.size > 5 * 1024 * 1024) {
+          alert('El logo no debe exceder los 5MB.');
+          return;
+        }
+        selectedLogoFile = file;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          if (logoPreviewImg && logoPlaceholder) {
+            logoPreviewImg.src = e.target?.result as string;
+            logoPreviewImg.style.display = 'block';
+            logoPlaceholder.style.display = 'none';
+            if (btnRemoveLogo) btnRemoveLogo.style.display = 'inline-block';
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    btnRemoveLogo?.addEventListener('click', () => {
+      selectedLogoFile = null;
+      if (logoFileInput) logoFileInput.value = '';
+      if (logoPreviewImg && logoPlaceholder) {
+        logoPreviewImg.src = '';
+        logoPreviewImg.style.display = 'none';
+        logoPlaceholder.style.display = 'block';
+        if (btnRemoveLogo) btnRemoveLogo.style.display = 'none';
+      }
+    });
+
+    // Cambiar de Paso
+    function goToStep(step: number) {
+      if (step < 1 || step > 4) return;
+      currentStep = step;
+
+      // Actualizar Tabs
+      tabs.forEach((tab, i) => {
+        if (i + 1 === currentStep) {
+          tab?.classList.add('active');
+          if (tab) {
+            tab.style.borderLeftColor = 'var(--orange-vibrant)';
+            tab.style.opacity = '1';
+          }
+        } else {
+          tab?.classList.remove('active');
+          if (tab) {
+            tab.style.borderLeftColor = 'transparent';
+            tab.style.opacity = i + 1 < currentStep ? '0.9' : '0.65';
+          }
+        }
+      });
+
+      // Actualizar Contenidos
+      contents.forEach((content, i) => {
+        if (content) content.style.display = i + 1 === currentStep ? 'block' : 'none';
+      });
+
+      // Actualizar Encabezado
+      if (currentStepBadge) currentStepBadge.textContent = `PASO 0${currentStep} DE 04`;
+      if (stepHeaderTitle) stepHeaderTitle.textContent = stepTitles[currentStep - 1];
+
+      // Actualizar Botones
+      if (btnPrevStep) btnPrevStep.style.display = currentStep > 1 ? 'inline-block' : 'none';
+      if (btnNextStep) btnNextStep.style.display = currentStep < 4 ? 'inline-block' : 'none';
+      if (btnSubmitWizard) btnSubmitWizard.style.display = currentStep === 4 ? 'inline-block' : 'none';
+
+      // Actualizar Resumen en Paso 4
+      if (currentStep === 4) {
+        const sumName = document.getElementById('sumSchoolName');
+        const sumSlug = document.getElementById('sumSlug');
+        const sumLocation = document.getElementById('sumLocation');
+        const sumPlan = document.getElementById('sumPlan');
+        const sumRector = document.getElementById('sumRector');
+        const sumRectorEmail = document.getElementById('sumRectorEmail');
+        const selectedPlan = (document.querySelector('input[name="planChoice"]:checked') as HTMLInputElement)?.value;
+
+        if (sumName) sumName.textContent = inputName.value || '-';
+        if (sumSlug) sumSlug.textContent = `${inputSlug.value || 'slug'}.schoolos.com`;
+        if (sumLocation) sumLocation.textContent = inputCountry.value || '-';
+        if (sumPlan) sumPlan.textContent = selectedPlan || 'Professional';
+        if (sumRector) sumRector.textContent = inputRectorName.value || '-';
+        if (sumRectorEmail) sumRectorEmail.textContent = inputRectorEmail.value || '-';
+      }
+    }
+
+    btnNextStep?.addEventListener('click', () => {
+      // Validaciones por paso
+      if (currentStep === 1) {
+        if (!inputName.value.trim()) {
+          alert('Por favor ingresa el nombre oficial de la escuela.');
+          inputName.focus();
+          return;
+        }
+        if (!inputSlug.value.trim()) {
+          alert('Por favor ingresa un subdominio/slug válido.');
+          inputSlug.focus();
+          return;
+        }
+      } else if (currentStep === 2) {
+        if (!inputCountry.value.trim()) {
+          alert('Por favor ingresa la ciudad y país.');
+          inputCountry.focus();
+          return;
+        }
+        if (!inputContactEmail.value.trim() || !inputContactEmail.value.includes('@')) {
+          alert('Por favor ingresa un correo de contacto válido.');
+          inputContactEmail.focus();
+          return;
+        }
+      }
+      goToStep(currentStep + 1);
+    });
+
+    btnPrevStep?.addEventListener('click', () => goToStep(currentStep - 1));
+
+    // Clicks directos en tabs
+    tabs.forEach((tab, index) => {
+      tab?.addEventListener('click', () => goToStep(index + 1));
+    });
+
+    // ENVÍO FINAL DEL WIZARD A SUPABASE
+    document.getElementById('wizardSchoolForm')?.addEventListener('submit', async (e) => {
       e.preventDefault();
-      alert('Mock: Institución creada con éxito y tenant provisionado. Redirigiendo al listado general.');
-      window.location.href = '/' + lang + '/app/super-admin/schools';
+
+      if (!inputRectorName.value.trim()) {
+        alert('Por favor ingresa el nombre del rector.');
+        goToStep(4);
+        inputRectorName.focus();
+        return;
+      }
+      if (!inputRectorEmail.value.trim() || !inputRectorEmail.value.includes('@')) {
+        alert('Por favor ingresa el correo del rector.');
+        goToStep(4);
+        inputRectorEmail.focus();
+        return;
+      }
+
+      if (btnSubmitWizard) {
+        btnSubmitWizard.disabled = true;
+        btnSubmitWizard.textContent = 'Guardando en Supabase...';
+      }
+
+      try {
+        const slug = inputSlug.value.trim();
+        let logoUrl = undefined;
+
+        // 1. Subir logo a Supabase Storage si se seleccionó archivo
+        if (selectedLogoFile) {
+          if (btnSubmitWizard) btnSubmitWizard.textContent = 'Subiendo Logo a Storage...';
+          logoUrl = await schoolService.uploadSchoolLogo(selectedLogoFile, slug);
+        }
+
+        if (btnSubmitWizard) btnSubmitWizard.textContent = 'Creando Registro Institucional...';
+
+        const selectedPlan = ((document.querySelector('input[name="planChoice"]:checked') as HTMLInputElement)?.value || 'Professional') as any;
+        const initialStudents = parseInt((document.getElementById('initialStudents') as HTMLInputElement)?.value || '0', 10);
+        const schoolStatus = ((document.getElementById('schoolStatus') as HTMLSelectElement)?.value || 'active') as any;
+
+        // 2. Insertar Escuela en Supabase
+        const newSchool = await schoolService.createSchool({
+          name: inputName.value.trim(),
+          slug: slug,
+          domain: `${slug}.schoolos.com`,
+          location: inputCountry.value.trim(),
+          country: inputCountry.value.trim(),
+          timezone: (document.getElementById('timezone') as HTMLSelectElement)?.value || 'America/Bogota (UTC-5)',
+          planName: selectedPlan,
+          contactEmail: inputContactEmail.value.trim(),
+          status: schoolStatus,
+          logoUrl: logoUrl,
+          slogan: (document.getElementById('slogan') as HTMLInputElement)?.value.trim() || undefined,
+          address: (document.getElementById('address') as HTMLInputElement)?.value.trim() || undefined,
+          phone: (document.getElementById('phone') as HTMLInputElement)?.value.trim() || undefined,
+          brandColor: inputBrandColor.value || '#12110E',
+          rectorName: inputRectorName.value.trim(),
+          rectorEmail: inputRectorEmail.value.trim(),
+          studentCount: initialStudents,
+        });
+
+        if (btnSubmitWizard) btnSubmitWizard.textContent = 'Abriendo tenant para Rectoría...';
+
+        // 3. Crear el usuario Auth + perfil school_admin vinculado al tenant
+        await provisionRectorAccount({
+          schoolId: newSchool.id,
+          name: inputRectorName.value.trim(),
+          email: inputRectorEmail.value.trim(),
+          password: 'Rector2026!*',
+          jobTitle: 'Rector General',
+          appointmentDate: new Date().toISOString().split('T')[0],
+          status: 'active',
+        });
+
+        alert(`¡Institución "${newSchool.name}" creada y aprovisionada exitosamente en Supabase!`);
+        window.location.href = '/es/app/super-admin/schools';
+      } catch (err: any) {
+        alert('Error al crear la escuela: ' + (err?.message || err));
+        if (btnSubmitWizard) {
+          btnSubmitWizard.disabled = false;
+          btnSubmitWizard.textContent = '🚀 Crear Institución en Supabase';
+        }
+      }
     });
   </script>
 </AppLayout>
-

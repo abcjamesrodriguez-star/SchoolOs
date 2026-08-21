@@ -1,0 +1,68 @@
+---
+// ============================================================
+// SchoolOS — Panel Estudiante: Toma de Evaluación
+// Ruta: /es/app/student/evaluations/[id]/take
+// Layout ESPECIAL: SIN sidebar, pantalla de concentración total
+// ============================================================
+import { getActiveEvaluationForStudent } from '../../../../../../data/app/mock-student';
+import EvaluationRunner from '../../../../../../components/app/student/EvaluationRunner';
+import '../../../../../../styles/app.css';
+
+export function getStaticPaths() {
+  return [
+    { params: { id: 'eval-1' } },
+    { params: { id: 'eval-2' } },
+  ];
+}
+
+const { id } = Astro.params;
+const lang = 'es';
+const evaluation = getActiveEvaluationForStudent(id);
+
+if (!evaluation) {
+  return Astro.redirect(`/${lang}/app/student`);
+}
+---
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{evaluation.title} — SchoolOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;700;900&family=IBM+Plex+Mono:wght@400;700;800&family=Inter:wght@400;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --cream: #F4EFE6;
+      --paper: #FCFAF7;
+      --ink: #12110E;
+      --ink-soft: #524E44;
+      --rust: #C3532C;
+      --line: #E8E3DA;
+      --serif: 'Fraunces', Georgia, serif;
+      --mono: 'IBM Plex Mono', monospace;
+      --sans: 'Inter', -apple-system, sans-serif;
+    }
+    body {
+      font-family: var(--sans);
+      background: var(--cream);
+      color: var(--ink);
+    }
+    button { font-family: var(--sans); }
+  </style>
+</head>
+<body>
+  <EvaluationRunner
+    client:load
+    evaluation={evaluation}
+    lang={lang}
+    guideId={evaluation.guideId}
+  />
+</body>
+</html>

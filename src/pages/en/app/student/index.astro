@@ -1,0 +1,438 @@
+---
+// ============================================================
+// SchoolOS — Student Panel: The Student Cockpit (English)
+// Redesigned Phase 4 | Session: Mateo Gómez (10th A)
+// ============================================================
+import AppLayout from '../../../../layouts/AppLayout.astro';
+import {
+  getStudentProfile,
+  getPendingEvaluations,
+  getStudentCourses,
+  getTodayStudentSchedule,
+  getTeacherClassroomNotes,
+  getActiveStudyProgress,
+  getEvaluationHistory,
+} from '../../../../data/app/mock-student';
+
+const lang = 'en';
+const student = getStudentProfile();
+const pending = getPendingEvaluations();
+const courses = getStudentCourses();
+const schedule = getTodayStudentSchedule();
+const notes = getTeacherClassroomNotes();
+const activeStudy = getActiveStudyProgress();
+const history = getEvaluationHistory();
+const urgentEval = pending.length > 0 ? pending[0] : null;
+---
+
+<AppLayout
+  title="My Day — Mateo Gómez"
+  pageTitle="My School Day"
+  activeSection="dashboard"
+  role="student"
+  schoolName="Colegio Norte"
+  lang={lang}
+  activeRoute="/app/student"
+  breadcrumbs={[{ label: 'Colegio Norte' }, { label: 'Student' }, { label: 'My Day Today' }]}
+>
+
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <!-- ── 1. TOP BANNER: PERSONALIZED GREETING & LIVE CONTEXT ── -->
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <div style="background:var(--paper); border:2px solid var(--ink); border-radius:10px; padding:18px 24px; margin-bottom:20px; box-shadow:4px 4px 0 rgba(18,17,14,0.08); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+    
+    <div style="display:flex; align-items:center; gap:14px;">
+      <div style="position:relative;">
+        <img
+          src={student.avatarUrl || '/avatars/men/fila-1-columna-2.png'}
+          alt={student.name}
+          style="width:50px; height:50px; border-radius:50%; border:2px solid var(--ink); object-fit:cover;"
+        />
+        <span style="position:absolute; bottom:0; right:0; width:14px; height:14px; border-radius:50%; background:#4ADE80; border:2px solid var(--paper);" title="Attendance: Present today"></span>
+      </div>
+      <div>
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:2px;">
+          <span style="font-family:var(--mono); font-size:10px; font-weight:800; background:var(--rust); color:#FFFFFF; padding:2px 7px; border-radius:3px; letter-spacing:0.04em;">
+            {student.grade}
+          </span>
+          <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">
+            Group {student.groupCode} · {student.schoolName}
+          </span>
+        </div>
+        <h1 style="font-family:var(--serif); font-size:22px; font-weight:900; color:var(--ink); margin:0;">
+          Welcome back, {student.name.split(' ')[0]}! 👋
+        </h1>
+      </div>
+    </div>
+
+    <!-- Friendly performance indicators -->
+    <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+      <div style="background:var(--cream); border:1.5px solid var(--line); border-radius:8px; padding:8px 16px; text-align:right;">
+        <div style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft); font-weight:700; text-transform:uppercase;">Current GPA</div>
+        <div style="display:flex; align-items:baseline; gap:4px; justify-content:flex-end;">
+          <span style="font-family:var(--serif); font-size:22px; font-weight:900; color:var(--ink); line-height:1;">{student.generalAverage}</span>
+          <span style="font-family:var(--mono); font-size:11px; color:#4A7C59; font-weight:800;">/ 10.0</span>
+        </div>
+        <div style="font-family:var(--mono); font-size:9.5px; color:#4A7C59; font-weight:800;">⭐ Rank #4 of 30</div>
+      </div>
+
+      <div style="background:#E8F5E9; border:1.5px solid #A5D6A7; border-radius:8px; padding:8px 14px; text-align:center;">
+        <div style="font-family:var(--mono); font-size:9px; color:#2E7D32; font-weight:800; text-transform:uppercase;">Attendance Today</div>
+        <div style="font-family:var(--mono); font-size:14px; font-weight:900; color:#1B5E20; margin-top:2px;">PRESENT ✓</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <!-- ── 2. TODAY'S SCHEDULE STRIP (SYNCED WITH SCHOOL DAY) ── -->
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <div style="background:var(--paper); border:2px solid var(--ink); border-radius:10px; overflow:hidden; margin-bottom:24px; box-shadow:4px 4px 0 rgba(18,17,14,0.08);">
+    
+    <div style="background:var(--ink); color:#FFFFFF; padding:10px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="background:#4ADE80; width:8px; height:8px; border-radius:50%; display:inline-block; box-shadow:0 0 6px #4ADE80;"></span>
+        <span style="font-family:var(--mono); font-size:11px; font-weight:800; letter-spacing:0.06em; text-transform:uppercase;">
+          Today's Schedule · Tuesday, August 18, 2026
+        </span>
+      </div>
+      <div style="font-family:var(--mono); font-size:11px; color:#E8E2D9;">
+        Current time: <strong style="color:#FFF8F5;">08:42 AM</strong> · Term 1 · Week 6
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: repeat(5, 1fr); background:var(--cream); border-top:1px solid var(--ink);">
+      {schedule.map((slot) => {
+        const isActive = slot.status === 'active';
+        const isDone = slot.status === 'done';
+        const isBreak = slot.status === 'break';
+
+        let bg = 'var(--paper)';
+        let borderTop = 'none';
+        let opacity = '1';
+
+        if (isActive) {
+          bg = '#FFFDF9';
+          borderTop = '4px solid var(--rust)';
+        } else if (isDone) {
+          bg = 'var(--cream)';
+          opacity = '0.65';
+        } else if (isBreak) {
+          bg = '#F4EFE6';
+          opacity = '0.75';
+        }
+
+        return (
+          <div style={`padding:12px 14px; border-right:1.5px solid var(--ink); background:${bg}; border-top:${borderTop}; opacity:${opacity}; display:flex; flex-direction:column; justify-content:space-between;`}>
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
+                <span style={`font-family:var(--mono); font-size:9.5px; font-weight:800; color:${isActive ? 'var(--rust)' : 'var(--ink-soft)'};`}>
+                  {slot.time}
+                </span>
+                {isActive && (
+                  <span style="font-family:var(--mono); font-size:8px; font-weight:900; background:var(--rust); color:#FFFFFF; padding:1px 4px; border-radius:2px;">
+                    LIVE NOW
+                  </span>
+                )}
+              </div>
+              <div style={`font-family:var(--serif); font-size:13.5px; font-weight:${isActive ? '800' : '700'}; color:var(--ink); line-height:1.25; margin:3px 0;`}>
+                {slot.courseName}
+              </div>
+            </div>
+            <div style="margin-top:6px;">
+              <div style={`font-family:var(--mono); font-size:10px; font-weight:${isActive ? '700' : '500'}; color:${isActive ? 'var(--rust)' : 'var(--ink-soft)'};`}>
+                📍 {slot.room}
+              </div>
+              <div style="font-family:var(--mono); font-size:9px; color:var(--ink-soft);">
+                {slot.teacherName}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <!-- ── 3. MAIN BODY: 2 COLUMNS (ACTION vs COMMUNICATION) ── -->
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <div style="display:grid; grid-template-columns: 1.8fr 1.2fr; gap:24px; margin-bottom:28px;">
+
+    <!-- ── LEFT COLUMN: WHAT TO DO TODAY ── -->
+    <div style="display:flex; flex-direction:column; gap:20px;">
+
+      <!-- 1. MAXIMUM URGENCY: PENDING ASSESSMENT -->
+      {urgentEval && (
+        <div style="background:#FFFDF9; border:2.5px solid var(--rust); border-radius:10px; box-shadow:6px 6px 0 rgba(195,83,44,0.15); overflow:hidden;">
+          <div style="background:var(--rust); color:#FFFFFF; padding:10px 18px; display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:14px;">🚨</span>
+              <span style="font-family:var(--mono); font-size:10.5px; font-weight:900; letter-spacing:0.06em; text-transform:uppercase;">
+                URGENT MISSION · PENDING ASSESSMENT
+              </span>
+            </div>
+            <span style="font-family:var(--mono); font-size:10.5px; background:rgba(0,0,0,0.25); padding:2px 8px; border-radius:3px; font-weight:800;">
+              Due this Friday
+            </span>
+          </div>
+
+          <div style="padding:20px 22px;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
+              <div>
+                <span style="font-family:var(--mono); font-size:10px; font-weight:800; color:var(--rust); text-transform:uppercase;">
+                  {urgentEval.courseName} · Prof. Diana Restrepo
+                </span>
+                <h3 style="font-family:var(--serif); font-size:19px; font-weight:900; color:var(--ink); margin:4px 0 6px 0; line-height:1.25;">
+                  {urgentEval.evaluationTitle}
+                </h3>
+                <p style="font-size:13px; color:var(--ink-soft); margin:0; line-height:1.5;">
+                  4-question online quiz covering cell membrane and organelles. 45-minute timer once started.
+                </p>
+              </div>
+            </div>
+
+            <!-- Quiz chips -->
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px;">
+              <div style="background:var(--cream); border:1px solid var(--line); border-radius:5px; padding:5px 10px; font-family:var(--mono); font-size:10.5px; color:var(--ink);">
+                ⏱ <strong>{urgentEval.timeLimitMinutes} min</strong> limit
+              </div>
+              <div style="background:var(--cream); border:1px solid var(--line); border-radius:5px; padding:5px 10px; font-family:var(--mono); font-size:10.5px; color:var(--ink);">
+                📝 <strong>4 questions</strong>
+              </div>
+              <div style="background:var(--cream); border:1px solid var(--line); border-radius:5px; padding:5px 10px; font-family:var(--mono); font-size:10.5px; color:var(--ink);">
+                🔄 Attempts: <strong>{urgentEval.attemptsUsed}/{urgentEval.maxAttempts}</strong>
+              </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <a
+                href={`/${lang}/app/student/evaluations/${urgentEval.evaluationId}/take`}
+                style="flex:1; min-width:200px; display:inline-flex; align-items:center; justify-content:center; gap:8px; background:var(--rust); color:#FFFFFF; border:2px solid var(--rust); border-radius:6px; padding:12px 18px; font-size:13.5px; font-weight:900; text-decoration:none; box-shadow:3px 3px 0 rgba(0,0,0,0.15); transition:all 0.15s;"
+              >
+                <span>⚡ Take Assessment Now</span>
+                <span>→</span>
+              </a>
+              <a
+                href={`/${lang}/app/student/guides/${urgentEval.guideId}`}
+                style="display:inline-flex; align-items:center; justify-content:center; gap:6px; background:var(--paper); color:var(--ink); border:2px solid var(--ink); border-radius:6px; padding:12px 16px; font-size:12.5px; font-weight:800; text-decoration:none;"
+              >
+                <span>📖 Review Guide First</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <!-- 2. CARD: RESUME STUDY GUIDE -->
+      <div style="background:var(--paper); border:2px solid var(--ink); border-radius:10px; box-shadow:4px 4px 0 rgba(18,17,14,0.08); overflow:hidden;">
+        <div style="background:var(--cream); border-bottom:1.5px solid var(--ink); padding:12px 20px; display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:14px;">📖</span>
+            <h3 style="font-family:var(--mono); font-size:11px; font-weight:900; margin:0; text-transform:uppercase; color:var(--ink); letter-spacing:0.04em;">
+              Resume Reading · Material for Today's Class
+            </h3>
+          </div>
+          <span style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); font-weight:700;">
+            {activeStudy.estimatedMinutesLeft} min left
+          </span>
+        </div>
+
+        <div style="padding:18px 22px;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+            <div>
+              <div style="font-family:var(--mono); font-size:10px; font-weight:800; color:var(--rust); text-transform:uppercase;">
+                {activeStudy.courseName} · {activeStudy.teacherName}
+              </div>
+              <h4 style="font-family:var(--serif); font-size:17px; font-weight:800; margin:3px 0; color:var(--ink);">
+                {activeStudy.guideTitle}
+              </h4>
+              <div style="font-size:12.5px; color:var(--ink-soft);">
+                Currently at: <strong style="color:var(--ink);">{activeStudy.currentSectionTitle}</strong>
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <span style="font-family:var(--mono); font-size:18px; font-weight:900; color:var(--rust);">{activeStudy.progressPercent}%</span>
+            </div>
+          </div>
+
+          <!-- Progress bar -->
+          <div style="height:8px; background:var(--line); border-radius:4px; overflow:hidden; margin-bottom:16px;">
+            <div style={`height:100%; width:${activeStudy.progressPercent}%; background:var(--rust); border-radius:4px;`}></div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <span style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft);">
+              You've read 3 of 5 structured blocks
+            </span>
+            <a
+              href={`/${lang}/app/student/guides/${activeStudy.guideId}#${activeStudy.currentBlockId}`}
+              class="btn btn-secondary btn-sm"
+              style="font-size:11.5px; font-weight:800; border-radius:5px;"
+            >
+              Open at Section § 4 →
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. QUICK ACCESS TO 4 ENROLLED COURSES -->
+      <div style="background:var(--paper); border:2px solid var(--ink); border-radius:10px; box-shadow:4px 4px 0 rgba(18,17,14,0.08); overflow:hidden;">
+        <div style="background:var(--cream); border-bottom:1.5px solid var(--ink); padding:12px 20px; display:flex; justify-content:space-between; align-items:center;">
+          <h3 style="font-family:var(--mono); font-size:11px; font-weight:900; margin:0; text-transform:uppercase; color:var(--ink); letter-spacing:0.04em;">
+            Your Enrolled Subjects (4)
+          </h3>
+          <a href={`/${lang}/app/student/courses`} style="font-family:var(--mono); font-size:10.5px; color:var(--rust); font-weight:800; text-decoration:none;">
+            View all →
+          </a>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; padding:14px 16px;">
+          {courses.map((c) => {
+            const avgColor = c.currentAverage >= 8.5 ? '#4A7C59' : '#C8860A';
+            return (
+              <a
+                href={`/${lang}/app/student/courses`}
+                style="display:flex; justify-content:space-between; align-items:center; background:var(--cream); border:1.5px solid var(--line); border-radius:8px; padding:10px 14px; text-decoration:none; color:inherit; transition:border-color 0.15s;"
+                onmouseover="this.style.borderColor='var(--rust)';"
+                onmouseout="this.style.borderColor='var(--line)';"
+              >
+                <div>
+                  <div style="font-family:var(--mono); font-size:9px; color:var(--ink-soft); font-weight:700; text-transform:uppercase;">
+                    {c.subject}
+                  </div>
+                  <div style="font-weight:700; font-size:13px; color:var(--ink); margin-top:2px;">
+                    {c.courseName.split(' ')[0]} {c.courseName.split(' ')[1] || ''}
+                  </div>
+                  <div style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft);">
+                    {c.guidesRead}/{c.guidesTotal} guides read
+                  </div>
+                </div>
+                <div style="text-align:right;">
+                  <div style={`font-family:var(--mono); font-size:16px; font-weight:900; color:${avgColor};`}>
+                    {c.currentAverage.toFixed(1)}
+                  </div>
+                </div>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── RIGHT COLUMN: TEACHER NOTICES & YOUR GRADES ── -->
+    <div style="display:flex; flex-direction:column; gap:20px;">
+
+      <!-- 1. TEACHER NOTICEBOARD -->
+      <div style="background:var(--paper); border:2px solid var(--ink); border-radius:10px; box-shadow:4px 4px 0 rgba(18,17,14,0.08); overflow:hidden;">
+        <div style="background:var(--cream); border-bottom:1.5px solid var(--ink); padding:12px 18px; display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-size:14px;">💬</span>
+            <h3 style="font-family:var(--mono); font-size:11px; font-weight:900; margin:0; text-transform:uppercase; color:var(--ink);">
+              Teacher Notices
+            </h3>
+          </div>
+          <span style="font-family:var(--mono); font-size:9.5px; color:var(--rust); font-weight:800; background:#FFF0EE; padding:2px 6px; border-radius:3px;">
+            2 NOTICES
+          </span>
+        </div>
+
+        <div style="padding:0;">
+          {notes.map((note) => (
+            <div style="padding:14px 18px; border-bottom:1px solid var(--line);">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <img
+                    src={note.teacherAvatarUrl}
+                    alt={note.teacherName}
+                    style="width:24px; height:24px; border-radius:50%; border:1px solid var(--ink); object-fit:cover;"
+                  />
+                  <div>
+                    <strong style="font-size:12px; color:var(--ink);">{note.teacherName}</strong>
+                    <span style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft); margin-left:4px;">· {note.postedAgo}</span>
+                  </div>
+                </div>
+                <span style="font-family:var(--mono); font-size:8.5px; font-weight:800; padding:1px 5px; border-radius:2px; background:var(--cream); border:1px solid var(--line); color:var(--rust);">
+                  {note.badgeLabel}
+                </span>
+              </div>
+
+              <p style="font-size:12.5px; color:var(--ink); line-height:1.55; margin:0 0 10px 0; background:var(--cream); border-left:3px solid var(--rust); padding:8px 12px; border-radius:0 4px 4px 0;">
+                "{note.message}"
+              </p>
+
+              {note.actionText && (
+                <a
+                  href={note.actionHref.replace('/es/', '/en/')}
+                  style="display:inline-flex; align-items:center; gap:4px; font-family:var(--mono); font-size:10.5px; font-weight:800; color:var(--rust); text-decoration:none;"
+                >
+                  {note.actionText} →
+                </a>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- 2. LATEST GRADES -->
+      <div style="background:var(--paper); border:2px solid var(--ink); border-radius:10px; box-shadow:4px 4px 0 rgba(18,17,14,0.08); overflow:hidden;">
+        <div style="background:var(--cream); border-bottom:1.5px solid var(--ink); padding:12px 18px; display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-size:14px;">🏆</span>
+            <h3 style="font-family:var(--mono); font-size:11px; font-weight:900; margin:0; text-transform:uppercase; color:var(--ink);">
+              Latest Grades
+            </h3>
+          </div>
+          <a href={`/${lang}/app/student/grades`} style="font-family:var(--mono); font-size:10px; color:var(--rust); font-weight:800; text-decoration:none;">
+            Report Card →
+          </a>
+        </div>
+
+        <div style="padding:0;">
+          {history.map((att) => (
+            <div style="padding:12px 18px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <div style="font-size:12.5px; font-weight:700; color:var(--ink);">{att.evaluationTitle}</div>
+                <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);">{att.courseName} · 4 days ago</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-family:var(--mono); font-size:16px; font-weight:900; color:#4A7C59;">{att.score} / 100</div>
+                <span style="font-family:var(--mono); font-size:8.5px; font-weight:800; color:#4A7C59; background:#E8F5E9; padding:1px 5px; border-radius:2px;">
+                  PASSED ✓
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- 3. UPCOMING KEY DATES -->
+      <div style="background:var(--paper); border:2px solid var(--ink); border-radius:10px; padding:16px 18px; box-shadow:4px 4px 0 rgba(18,17,14,0.08);">
+        <div style="font-family:var(--mono); font-size:10.5px; font-weight:900; text-transform:uppercase; color:var(--ink); margin-bottom:12px; border-bottom:1.5px solid var(--ink); padding-bottom:6px;">
+          📅 KEY UPCOMING DATES
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px; font-size:12px;">
+          <div style="border-left:3px solid var(--rust); padding-left:10px;">
+            <div style="font-family:var(--mono); font-size:9.5px; color:var(--rust); font-weight:800;">THIS FRIDAY</div>
+            <strong style="color:var(--ink);">Biology Quiz Deadline</strong>
+            <div style="font-size:11px; color:var(--ink-soft);">Until 11:59 PM (Online)</div>
+          </div>
+          <div style="border-left:3px solid var(--ink); padding-left:10px;">
+            <div style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft); font-weight:800;">FRIDAY AUGUST 22</div>
+            <strong style="color:var(--ink);">Teacher Workshop Day</strong>
+            <div style="font-size:11px; color:var(--ink-soft);">No on-campus classes</div>
+          </div>
+          <div style="border-left:3px solid var(--ink); padding-left:10px;">
+            <div style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft); font-weight:800;">SEPTEMBER 5</div>
+            <strong style="color:var(--ink);">Term 1 Grade Closeout</strong>
+            <div style="font-size:11px; color:var(--ink-soft);">Final official grading cutoff</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</AppLayout>

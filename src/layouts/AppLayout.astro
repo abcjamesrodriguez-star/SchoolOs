@@ -28,7 +28,7 @@ const {
   breadcrumbs,
   activeSection,
   role = 'super_admin',
-  schoolName = 'Colegio Norte',
+  schoolName = 'Institución',
   lang = 'es',
   activeRoute = '/app/super-admin',
 } = Astro.props;
@@ -57,19 +57,30 @@ const roleLabels = {
     />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
-    <!-- Auth check script -->
-    <script is:inline>
+    <!-- Fast local redirect only. Real Supabase session validation happens before showing the app. -->
+    <script is:inline define:vars={{ role }}>
       (function () {
         try {
-          var auth = localStorage.getItem('schoolos-auth');
-          if (!auth) {
-            window.location.replace('/login?redirect=' + encodeURIComponent(window.location.pathname));
+          var userRaw = localStorage.getItem('schoolos-user');
+          if (!userRaw) return;
+          var user = JSON.parse(userRaw);
+          if (role && user.role !== role) {
+            if (user.role === 'super_admin') window.location.replace('/es/app/super-admin');
+            else if (user.role === 'school_admin') window.location.replace('/es/app/school-admin');
+            else if (user.role === 'teacher') window.location.replace('/es/app/teacher');
+            else if (user.role === 'student') window.location.replace('/es/app/student');
           }
         } catch (_) {}
       })();
     </script>
   </head>
-  <body>
+  <body class="auth-pending" data-expected-role={role}>
+    <div class="auth-loading-screen" aria-hidden="true">
+      <div class="auth-loading-card">
+        <div class="auth-loading-spinner"></div>
+        <div class="auth-loading-text">{lang === 'es' ? 'Cargando...' : 'Loading...'}</div>
+      </div>
+    </div>
     <div class="app-shell">
       <Sidebar activeSection={activeSection} role={role} schoolName={schoolName} lang={lang} />
       <main class="app-main">
@@ -86,5 +97,96 @@ const roleLabels = {
         </div>
       </main>
     </div>
+    <script>
+      import { authService } from '../services/authService';
+      import { schoolService } from '../services/schoolService';
+
+      const schoolOSApp = ((window as any).SchoolOSApp = (window as any).SchoolOSApp || {});
+      schoolOSApp.pageLoads = schoolOSApp.pageLoads || [];
+      schoolOSApp.registerPageLoad = (promise) => {
+        if (promise) schoolOSApp.pageLoads.push(Promise.resolve(promise));
+        return promise;
+      };
+
+      function redirectForRole(role) {
+        if (role === 'super_admin') return '/es/app/super-admin';
+        if (role === 'school_admin') return '/es/app/school-admin';
+        if (role === 'teacher') return '/es/app/teacher';
+        if (role === 'student') return '/es/app/student';
+        return '/login';
+      }
+
+      async function validateRealSession() {
+        try {
+          const user = await authService.getCurrentUser();
+          if (!user) {
+            window.location.replace('/login?redirect=' + encodeURIComponent(window.location.pathname));
+            return null;
+          }
+
+          if (user.status === 'suspended') {
+            await authService.signOut();
+            window.location.replace('/login?account=suspended');
+            return null;
+          }
+
+          const expectedRole = document.body.dataset.expectedRole;
+          if (expectedRole && user.role !== expectedRole) {
+            window.location.replace(redirectForRole(user.role));
+            return null;
+          }
+
+          localStorage.setItem('schoolos-user', JSON.stringify(user));
+          localStorage.setItem('schoolos-auth', 'true');
+          return user;
+        } catch (error) {
+          console.warn('No se pudo validar la sesión real:', error);
+          window.location.replace('/login?redirect=' + encodeURIComponent(window.location.pathname));
+          return null;
+        }
+      }
+
+      async function hydrateTenantContext(user) {
+        try {
+          if (!user || user.role !== 'school_admin' || !user.schoolId) return;
+
+          const school = await schoolService.getSchoolById(user.schoolId);
+          if (!school) return;
+
+          user.schoolName = school.name;
+          user.schoolStatus = school.status;
+          localStorage.setItem('schoolos-user', JSON.stringify(user));
+
+          document.querySelectorAll('[data-tenant-name]').forEach((el) => {
+            const text = el.textContent === el.textContent?.toUpperCase()
+              ? school.name.toUpperCase()
+              : school.name;
+            el.textContent = text;
+          });
+
+          if (school.status === 'suspended') {
+            window.location.replace('/login?tenant=suspended');
+          }
+        } catch (error) {
+          console.warn('No se pudo hidratar el tenant de Rectoría:', error);
+        }
+      }
+
+      async function waitForPageData() {
+        await new Promise((resolve) => window.setTimeout(resolve, 0));
+        const pageLoads = [...schoolOSApp.pageLoads];
+        if (!pageLoads.length) return;
+        await Promise.allSettled(pageLoads);
+      }
+
+      (async function bootApp() {
+        const user = await validateRealSession();
+        if (!user) return;
+        await hydrateTenantContext(user);
+        await waitForPageData();
+        document.body.classList.remove('auth-pending');
+        document.body.classList.add('auth-ready');
+      })();
+    </script>
   </body>
 </html>

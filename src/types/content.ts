@@ -42,6 +42,8 @@ export interface Question {
   options?: string[];             // [ "Opción A", "Opción B", "Opción C", "Opción D" ]
   correctAnswerIndex: number;     // Índice de la opción correcta (o 0 para V / 1 para F)
   explanation?: string;           // Explicación pedagógica de la respuesta
+  imageUrl?: string;              // Imagen o diagrama vinculado a la pregunta
+  imageCaption?: string;          // Pie de foto de la imagen
   referencedBlockIds: string[];   // IDs de los bloques donde se explica el tema
 }
 

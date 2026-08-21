@@ -1,0 +1,240 @@
+---
+// ============================================================
+// SchoolOS — Panel Estudiante: Resultado de Evaluación
+// Ruta: /es/app/student/evaluations/[id]/result
+// Lee el resultado del sessionStorage guardado por EvaluationRunner
+// ============================================================
+import AppLayout from '../../../../../../layouts/AppLayout.astro';
+import { getActiveEvaluationForStudent, getGuideForStudent } from '../../../../../../data/app/mock-student';
+
+export function getStaticPaths() {
+  return [
+    { params: { id: 'eval-1' } },
+    { params: { id: 'eval-2' } },
+  ];
+}
+
+const { id } = Astro.params;
+const lang = 'es';
+const evaluation = getActiveEvaluationForStudent(id);
+
+if (!evaluation) {
+  return Astro.redirect(`/${lang}/app/student`);
+}
+
+const guide = getGuideForStudent(evaluation.guideId);
+---
+
+<AppLayout
+  title={`Resultado — ${evaluation.title}`}
+  pageTitle="Resultado de Evaluación"
+  activeSection="courses"
+  role="student"
+  schoolName="Colegio Norte"
+  lang={lang}
+  activeRoute={`/app/student/evaluations/${id}/result`}
+  breadcrumbs={[
+    { label: 'Colegio Norte' },
+    { label: 'Panel Estudiante', href: `/${lang}/app/student` },
+    { label: 'Resultado de Evaluación' },
+  ]}
+>
+
+  <!-- Resultado cargado dinámicamente desde sessionStorage -->
+  <div id="result-container">
+    <!-- Estado de carga inicial -->
+    <div id="loading-state" style="text-align:center; padding:60px 24px;">
+      <div style="font-size:48px; margin-bottom:16px;">⏳</div>
+      <div style="font-family:var(--mono); font-size:13px; color:var(--ink-soft);">Cargando tu resultado…</div>
+    </div>
+
+    <!-- Resultado (oculto inicialmente, JS lo muestra) -->
+    <div id="result-content" style="display:none;">
+      <!-- Header de resultado -->
+      <div id="result-header" style="background:var(--paper); border:2px solid var(--ink); border-radius:10px; padding:28px 32px; margin-bottom:24px; box-shadow:5px 5px 0 rgba(18,17,14,0.08);">
+        <!-- JS lo rellena -->
+      </div>
+
+      <!-- Desglose por preguntas -->
+      <div id="result-details" style="display:flex; flex-direction:column; gap:14px; margin-bottom:28px;">
+        <!-- JS lo rellena -->
+      </div>
+
+      <!-- Acciones finales -->
+      <div style="display:flex; gap:12px; flex-wrap:wrap;">
+        <a
+          href={`/${lang}/app/student`}
+          class="btn btn-secondary"
+          style="font-size:13px; font-weight:700; padding:12px 20px;"
+        >
+          ← Volver al Dashboard
+        </a>
+        {guide && (
+          <a
+            href={`/${lang}/app/student/guides/${guide.id}`}
+            class="btn btn-secondary"
+            style="font-size:13px; font-weight:700; padding:12px 20px;"
+          >
+            📖 Repasar la Guía de Estudio
+          </a>
+        )}
+        <a
+          href={`/${lang}/app/student/grades`}
+          class="btn btn-secondary"
+          style="font-size:13px; font-weight:700; padding:12px 20px;"
+        >
+          Ver Boletín de Notas →
+        </a>
+      </div>
+    </div>
+
+    <!-- Sin datos (sesión expirada) -->
+    <div id="no-data-state" style="display:none; text-align:center; padding:60px 24px;">
+      <div style="font-size:48px; margin-bottom:16px;">🔒</div>
+      <h2 style="font-family:var(--serif); font-size:20px; font-weight:800; margin-bottom:8px;">Resultado no disponible</h2>
+      <p style="color:var(--ink-soft); font-size:13.5px; margin-bottom:24px;">
+        No se encontró ningún intento reciente. Presenta la evaluación primero.
+      </p>
+      <a href={`/${lang}/app/student/evaluations/${id}/take`} class="btn btn-primary" style="font-size:13px; font-weight:800;">
+        Ir a presentar la evaluación →
+      </a>
+    </div>
+  </div>
+
+</AppLayout>
+
+<script define:vars={{ evaluationId: id, guideId: evaluation.guideId, lang }}>
+  document.addEventListener('DOMContentLoaded', () => {
+    const raw = sessionStorage.getItem(`eval_result_${evaluationId}`);
+    const loadingEl = document.getElementById('loading-state');
+    const contentEl = document.getElementById('result-content');
+    const noDataEl = document.getElementById('no-data-state');
+
+    if (!raw) {
+      loadingEl.style.display = 'none';
+      noDataEl.style.display = 'block';
+      return;
+    }
+
+    const result = JSON.parse(raw);
+    const { score, passed, totalQuestions, correctCount, wrongCount, unansweredCount, timeSpentSeconds, submittedAt, timedOut, details } = result;
+    const timeSpentMin = Math.floor(timeSpentSeconds / 60);
+    const timeSpentSec = timeSpentSeconds % 60;
+    const submittedDate = new Date(submittedAt).toLocaleString('es-CO', {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit',
+    });
+
+    // ── HEADER ──
+    const headerColor = passed ? '#4A7C59' : '#C3532C';
+    const headerBg = passed ? '#E8F5E9' : '#FFF0EE';
+    document.getElementById('result-header').innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:20px;">
+        <div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--rust); font-weight:800; text-transform:uppercase; margin-bottom:6px;">
+            ${timedOut ? '⏰ Tiempo agotado · ' : ''}Evaluación completada
+          </div>
+          <h1 style="font-family:'Fraunces',Georgia,serif; font-size:22px; font-weight:900; margin:0 0 8px 0; color:var(--ink);">
+            ${result.evaluationTitle || 'Resultado de Evaluación'}
+          </h1>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-soft);">
+            📅 ${submittedDate} · ⏱ ${timeSpentMin}m ${timeSpentSec}s empleados
+          </div>
+        </div>
+        <div style="text-align:center; background:${headerBg}; border:2px solid ${headerColor}; border-radius:10px; padding:16px 24px; min-width:140px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:${headerColor}; font-weight:800; margin-bottom:6px; text-transform:uppercase;">Tu calificación</div>
+          <div style="font-family:'Fraunces',Georgia,serif; font-size:48px; font-weight:900; color:${headerColor}; line-height:1;">${score}</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:${headerColor}; font-weight:700;">/ 100 · ${passed ? '✓ APROBADO' : '✗ REPROBADO'}</div>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-top:20px; padding-top:16px; border-top:1.5px solid var(--line);">
+        ${[
+          { label: 'Correctas', value: correctCount, color: '#4A7C59', bg: '#E8F5E9' },
+          { label: 'Incorrectas', value: wrongCount, color: '#C3532C', bg: '#FFF0EE' },
+          { label: 'Sin responder', value: unansweredCount, color: '#C8860A', bg: '#FFF8E1' },
+          { label: 'Total preguntas', value: totalQuestions, color: '#12110E', bg: '#F4EFE6' },
+        ].map(({ label, value, color, bg }) => `
+          <div style="text-align:center; background:${bg}; border:1.5px solid ${color}30; border-radius:8px; padding:12px;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:${color}; font-weight:700; text-transform:uppercase; margin-bottom:4px;">${label}</div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:24px; font-weight:900; color:${color};">${value}</div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+
+    // ── DESGLOSE POR PREGUNTA ──
+    const detailsContainer = document.getElementById('result-details');
+    detailsContainer.innerHTML = `
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink); letter-spacing:0.06em;">
+        DESGLOSE POR PREGUNTA
+      </div>
+    `;
+
+    details.forEach((detail, idx) => {
+      const isCorrect = detail.isCorrect;
+      const isUnanswered = detail.selectedOptionIndex === null || detail.selectedOptionIndex === undefined;
+      const iconColor = isCorrect ? '#4A7C59' : isUnanswered ? '#C8860A' : '#C3532C';
+      const icon = isCorrect ? '✓' : isUnanswered ? '?' : '✗';
+      const borderColor = isCorrect ? '#4A7C59' : isUnanswered ? '#C8860A' : '#C3532C';
+
+      const blockLinks = (!isCorrect && detail.referencedBlockIds?.length > 0)
+        ? detail.referencedBlockIds.map((bid) => `
+            <a href="/${lang}/app/student/guides/${guideId}#${bid}"
+               style="display:inline-flex; align-items:center; gap:5px; padding:5px 10px; background:#FFF0EE; border:1.5px solid #C3532C; border-radius:4px; font-size:10.5px; font-weight:700; color:#C3532C; text-decoration:none;">
+              📖 Repasar concepto en la guía (${bid})
+            </a>
+          `).join('')
+        : '';
+
+      const card = document.createElement('div');
+      card.style.cssText = `background:var(--paper); border:2px solid ${borderColor}; border-radius:8px; padding:18px 20px; box-shadow:3px 3px 0 ${borderColor}25;`;
+      card.innerHTML = `
+        <div style="display:flex; gap:14px; align-items:flex-start;">
+          <div style="display:flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:50%; background:${isCorrect ? '#E8F5E9' : isUnanswered ? '#FFF8E1' : '#FFF0EE'}; border:2px solid ${iconColor}; font-size:14px; font-weight:900; color:${iconColor}; flex-shrink:0;">
+            ${icon}
+          </div>
+          <div style="flex:1;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:${iconColor}; font-weight:800; margin-bottom:4px; text-transform:uppercase;">
+              Pregunta ${idx + 1} · ${isCorrect ? 'Correcta' : isUnanswered ? 'Sin responder' : 'Incorrecta'}
+            </div>
+            <p style="font-size:14px; font-weight:600; color:var(--ink); margin:0 0 12px 0; line-height:1.5;">${detail.prompt}</p>
+
+            ${detail.options ? `
+              <div style="display:flex; flex-direction:column; gap:5px; margin-bottom:12px;">
+                ${detail.options.map((opt, oi) => {
+                  const isUserAnswer = oi === detail.selectedOptionIndex;
+                  const isCorrectAnswer = oi === detail.correctAnswerIndex;
+                  let bg = 'transparent', border = '#E8E3DA', color = '#524E44';
+                  if (isCorrectAnswer) { bg = '#E8F5E9'; border = '#4A7C59'; color = '#4A7C59'; }
+                  if (isUserAnswer && !isCorrect) { bg = '#FFF0EE'; border = '#C3532C'; color = '#C3532C'; }
+                  return `
+                    <div style="display:flex; align-items:center; gap:10px; padding:7px 12px; background:${bg}; border:1.5px solid ${border}; border-radius:6px;">
+                      <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:800; color:${color};">${String.fromCharCode(65 + oi)}</span>
+                      <span style="font-size:13px; color:${color}; font-weight:${isCorrectAnswer || isUserAnswer ? 700 : 400};">${opt}</span>
+                      ${isCorrectAnswer ? '<span style="margin-left:auto; font-size:10px; color:#4A7C59; font-weight:800;">✓ CORRECTA</span>' : ''}
+                      ${isUserAnswer && !isCorrect ? '<span style="margin-left:auto; font-size:10px; color:#C3532C; font-weight:800;">← Tu respuesta</span>' : ''}
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            ` : ''}
+
+            ${detail.explanation ? `
+              <div style="background:#FFFCF4; border:1.5px solid #E8E3DA; border-left:3px solid #C3532C; border-radius:6px; padding:10px 12px; margin-bottom:10px;">
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#C3532C; font-weight:800; margin-bottom:4px;">💡 EXPLICACIÓN</div>
+                <p style="font-size:13px; color:var(--ink); margin:0; line-height:1.6;">${detail.explanation}</p>
+              </div>
+            ` : ''}
+
+            ${blockLinks ? `<div style="display:flex; gap:8px; flex-wrap:wrap;">${blockLinks}</div>` : ''}
+          </div>
+        </div>
+      `;
+      detailsContainer.appendChild(card);
+    });
+
+    // Mostrar contenido
+    loadingEl.style.display = 'none';
+    contentEl.style.display = 'block';
+  });
+</script>

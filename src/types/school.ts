@@ -28,4 +28,12 @@ export interface School {
   activeClassesCount: number;
   createdAt: string;
   contactEmail: string;
+  logoUrl?: string;
+  bannerUrl?: string;
+  slogan?: string;
+  address?: string;
+  phone?: string;
+  brandColor?: string;
+  rectorName?: string;
+  rectorEmail?: string;
 }

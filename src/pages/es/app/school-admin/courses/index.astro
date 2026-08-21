@@ -4,15 +4,8 @@
 // Diseño: Navegación por Capas (Cards > Modal 80% > Horario & Highlight)
 // ============================================================
 import AppLayout from '../../../../../layouts/AppLayout.astro';
-import SubjectDepartmentGrid from '../../../../../components/app/school-admin/SubjectDepartmentGrid.astro';
-import { getDepartments } from '../../../../../data/app/mock-academic';
 
 const lang = 'es';
-const departments = getDepartments(lang);
-
-const totalTeachers = departments.reduce((acc, d) => acc + d.teachersCount, 0);
-const totalGroups = departments.reduce((acc, d) => acc + d.totalGroupsCount, 0);
-const totalStudents = departments.reduce((acc, d) => acc + d.totalStudents, 0);
 ---
 
 <AppLayout
@@ -20,32 +13,32 @@ const totalStudents = departments.reduce((acc, d) => acc + d.totalStudents, 0);
   pageTitle="Catálogo de Asignaturas & Horarios"
   activeSection="courses"
   role="school_admin"
-  schoolName="Colegio Norte"
+  schoolName="Institución"
   lang={lang}
   activeRoute="/app/school-admin/courses"
-  breadcrumbs={[{ label: 'Colegio Norte', href: `/${lang}/app/school-admin` }, { label: 'Cursos & Materias' }]}
+  breadcrumbs={[{ label: 'Institución', href: `/${lang}/app/school-admin` }, { label: 'Cursos & Materias' }]}
 >
   <!-- STATS GENERALES DEL COLEGIO -->
   <div class="stat-grid" style="margin-bottom:24px;">
     <div class="stat-card">
       <div class="stat-label">Áreas & Asignaturas</div>
-      <div class="stat-num">{departments.length}</div>
-      <div class="stat-sub">Planes curriculares activos</div>
+      <div class="stat-num" id="courses-stat-departments">0</div>
+      <div class="stat-sub" id="courses-stat-departments-sub">Sin información cargada</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Planta Docente</div>
-      <div class="stat-num">{totalTeachers}</div>
-      <div class="stat-sub">100% con asignación lectiva</div>
+      <div class="stat-num" id="courses-stat-teachers">0</div>
+      <div class="stat-sub">Docentes vinculados al tenant</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Grupos y Secciones</div>
-      <div class="stat-num">{totalGroups}</div>
-      <div class="stat-sub">Desde 8° hasta 11° grado</div>
+      <div class="stat-num" id="courses-stat-groups">0</div>
+      <div class="stat-sub" id="courses-stat-groups-sub">Sin cursos creados todavía</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Alumnos Matriculados</div>
-      <div class="stat-num accent" style="color:var(--rust);">{totalStudents}</div>
-      <div class="stat-sub">Ciclo Lectivo 2026 - Periodo 1</div>
+      <div class="stat-num accent" id="courses-stat-students" style="color:var(--rust);">0</div>
+      <div class="stat-sub">Usuarios estudiante en este tenant</div>
     </div>
   </div>
 
@@ -56,7 +49,127 @@ const totalStudents = departments.reduce((acc, d) => acc + d.totalStudents, 0);
       <a href={`/${lang}/app/school-admin/courses/new`} class="btn btn-primary btn-sm">＋ Nuevo Curso / Grupo</a>
     </div>
     <div class="panel-body padded">
-      <SubjectDepartmentGrid departments={departments} lang={lang} id="coursesGrid" />
+      <div id="liveCoursesRoot">
+        <div style="border:2px dashed var(--ink); background:var(--paper); padding:38px; text-align:center;">
+          <div style="font-family:var(--serif); font-size:22px; font-weight:700; color:var(--ink); margin-bottom:6px;">Sin información académica cargada</div>
+          <div style="font-size:13px; color:var(--ink-soft); max-width:620px; margin:0 auto 18px;">
+            Cuando existan cursos reales en Supabase para este tenant, aparecerán aquí.
+          </div>
+          <a href="/es/app/school-admin/courses/new" class="btn btn-primary btn-sm">＋ Nuevo Curso / Grupo</a>
+        </div>
+      </div>
     </div>
   </div>
 </AppLayout>
+
+<script>
+  import { schoolAdminTenantService } from '../../../../../services/schoolAdminTenantService';
+
+  function escapeHtml(value) {
+    return String(value || '').replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;',
+    }[char]));
+  }
+
+  function renderLiveCourses(courses, stats) {
+    const root = document.getElementById('liveCoursesRoot');
+    if (!root) return;
+
+    const teacherEl = document.getElementById('courses-stat-teachers');
+    const studentEl = document.getElementById('courses-stat-students');
+    const groupsEl = document.getElementById('courses-stat-groups');
+    const groupsSub = document.getElementById('courses-stat-groups-sub');
+    const departmentsEl = document.getElementById('courses-stat-departments');
+    const departmentsSub = document.getElementById('courses-stat-departments-sub');
+
+    const departments = new Set(courses.map((course) => course.departmentName || 'Sin área'));
+    if (teacherEl) teacherEl.textContent = String(stats?.totalTeachers || 0);
+    if (studentEl) studentEl.textContent = String(stats?.totalStudents || 0);
+    if (groupsEl) groupsEl.textContent = String(courses.length);
+    if (groupsSub) groupsSub.textContent = courses.length ? 'Cursos vivos desde Supabase' : 'Sin cursos creados todavía';
+    if (departmentsEl) departmentsEl.textContent = String(courses.length ? departments.size : 0);
+    if (departmentsSub) departmentsSub.textContent = courses.length ? 'Áreas detectadas por cursos' : 'Pendiente crear áreas académicas';
+
+    if (!courses.length) {
+      root.innerHTML = `
+        <div style="border:2px dashed var(--ink); background:var(--paper); padding:38px; text-align:center;">
+          <div style="font-family:var(--serif); font-size:22px; font-weight:700; color:var(--ink); margin-bottom:6px;">Este tenant aún no tiene cursos vivos</div>
+          <div style="font-size:13px; color:var(--ink-soft); max-width:620px; margin:0 auto 18px;">
+            El acceso del rector ya funciona. El siguiente paso de datos es crear áreas, cursos, asignaciones docentes y matrículas en Supabase para este <strong>school_id</strong>.
+          </div>
+          <a href="/es/app/school-admin/courses/new" class="btn btn-primary btn-sm">＋ Nuevo Curso / Grupo</a>
+        </div>
+      `;
+      return;
+    }
+
+    root.innerHTML = `
+      <div style="margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+        <div style="position:relative; flex:1; min-width:280px;">
+          <input id="liveCourseSearch" type="text" placeholder="Buscar curso, código, docente o grupo..." style="width:100%; padding:10px 14px; border:1px solid var(--ink); background:var(--cream); font-family:var(--sans); font-size:13px; border-radius:2px;" />
+        </div>
+        <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">${courses.length} CURSOS VIVOS · ${departments.size} ÁREAS</div>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Curso / Grupo</th>
+            <th>Área</th>
+            <th>Docentes</th>
+            <th>Estudiantes</th>
+            <th>Periodo</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${courses.map((course) => {
+            const search = `${course.code} ${course.name} ${course.gradeLevel} ${course.groupLetter} ${course.departmentName || ''} ${course.teacherNames.join(' ')}`.toLowerCase();
+            return `
+              <tr class="live-course-row" data-search-text="${escapeHtml(search)}">
+                <td class="cell-name">
+                  <div style="font-weight:700; color:var(--ink);">${escapeHtml(course.name)}</div>
+                  <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">${escapeHtml(course.code)} · ${escapeHtml(course.gradeLevel)} ${escapeHtml(course.groupLetter)}</div>
+                </td>
+                <td><span class="plan-tag">${escapeHtml(course.departmentName || 'Sin área')}</span></td>
+                <td class="cell-muted">${escapeHtml(course.teacherNames.join(', ') || 'Sin docente asignado')}</td>
+                <td style="font-family:var(--mono); font-weight:700;">${course.studentCount} / ${course.maxCapacity}</td>
+                <td class="cell-muted">${escapeHtml(course.academicTerm)}</td>
+                <td><span class="badge badge-${course.status === 'active' ? 'active' : 'suspended'}">${escapeHtml(course.status)}</span></td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    `;
+
+    const search = document.getElementById('liveCourseSearch');
+    search?.addEventListener('input', () => {
+      const query = search.value.trim().toLowerCase();
+      document.querySelectorAll('.live-course-row').forEach((row) => {
+        const text = row.getAttribute('data-search-text') || '';
+        row.style.display = !query || text.includes(query) ? '' : 'none';
+      });
+    });
+  }
+
+  async function hydrateCourses() {
+    try {
+      const context = await schoolAdminTenantService.getTenantContext();
+      if (!context) return;
+      const [courses, stats] = await Promise.all([
+        schoolAdminTenantService.getTenantCourses(),
+        schoolAdminTenantService.getTenantStats(),
+      ]);
+      renderLiveCourses(courses, stats);
+    } catch (error) {
+      console.warn('No se pudo hidratar cursos del tenant:', error);
+    }
+  }
+
+  const coursesLoad = hydrateCourses();
+  (window as any).SchoolOSApp?.registerPageLoad(coursesLoad);
+</script>

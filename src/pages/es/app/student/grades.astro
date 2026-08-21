@@ -1,0 +1,182 @@
+---
+// ============================================================
+// SchoolOS — Panel Estudiante: Boletín de Notas
+// Fase 4 | Mateo Gómez
+// ============================================================
+import AppLayout from '../../../../layouts/AppLayout.astro';
+import {
+  getStudentGrades,
+  getStudentGeneralAverage,
+  getEvaluationHistory,
+  getStudentProfile,
+} from '../../../../data/app/mock-student';
+
+const lang = 'es';
+const student = getStudentProfile();
+const grades = getStudentGrades();
+const history = getEvaluationHistory();
+const generalAverage = getStudentGeneralAverage();
+
+const statusLabel: Record<string, string> = {
+  passing: 'APROBADO',
+  warning: 'EN RIESGO',
+  failing: 'REPROBADO',
+};
+const statusColor: Record<string, string> = {
+  passing: '#4A7C59',
+  warning: '#C8860A',
+  failing: 'var(--rust)',
+};
+const statusBg: Record<string, string> = {
+  passing: '#E8F5E9',
+  warning: '#FFF8E1',
+  failing: '#FFF0EE',
+};
+---
+
+<AppLayout
+  title="Boletín de Notas — Mateo Gómez"
+  pageTitle="Boletín de Calificaciones"
+  activeSection="grades"
+  role="student"
+  schoolName="Colegio Norte"
+  lang={lang}
+  activeRoute="/app/student/grades"
+  breadcrumbs={[
+    { label: 'Colegio Norte' },
+    { label: 'Panel Estudiante', href: `/${lang}/app/student` },
+    { label: 'Boletín de Notas' },
+  ]}
+>
+
+  <!-- HEADER OFICIAL DEL BOLETÍN -->
+  <div style="background:var(--paper); border:2px solid var(--ink); border-radius:8px; padding:20px 24px; margin-bottom:24px; box-shadow:4px 4px 0 rgba(18,17,14,0.08);">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px;">
+      <div>
+        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); font-weight:700; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:4px;">
+          Reporte Académico Oficial · Periodo 1 · 2026
+        </div>
+        <h1 style="font-family:var(--serif); font-size:22px; font-weight:900; margin:0 0 4px 0;">
+          {student.name}
+        </h1>
+        <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">
+          {student.grade} · Grupo {student.groupCode} · {student.schoolName}
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); font-weight:700; text-transform:uppercase;">Promedio General</div>
+        <div style="font-family:var(--serif); font-size:42px; font-weight:900; color:var(--ink); line-height:1;">{generalAverage.toFixed(1)}</div>
+        <div style="font-family:var(--mono); font-size:11px; color:#4A7C59; font-weight:700;">/ 10.0 · EXCELENTE</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 340px; gap:24px;">
+
+    <!-- TABLA DE NOTAS -->
+    <div>
+      <div style="font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink); margin-bottom:12px; letter-spacing:0.06em;">
+        CALIFICACIONES POR MATERIA
+      </div>
+      <div style="background:var(--paper); border:2px solid var(--ink); border-radius:8px; overflow:hidden; box-shadow:4px 4px 0 rgba(18,17,14,0.07);">
+        <!-- Table Header -->
+        <div style="display:grid; grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr; gap:0; background:var(--cream); border-bottom:2px solid var(--ink); padding:10px 18px;">
+          <div style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--ink-soft); text-transform:uppercase;">Materia</div>
+          <div style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--ink-soft); text-transform:uppercase;">Docente</div>
+          <div style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--ink-soft); text-transform:uppercase; text-align:center;">Evaluaciones</div>
+          <div style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--ink-soft); text-transform:uppercase; text-align:center;">Promedio</div>
+          <div style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--ink-soft); text-transform:uppercase; text-align:center;">Estado</div>
+        </div>
+        <!-- Table Rows -->
+        {grades.map((g, i) => (
+          <div style={`display:grid; grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr; gap:0; padding:14px 18px; border-bottom:${i < grades.length - 1 ? '1px solid var(--line)' : 'none'}; align-items:center;`}>
+            <div>
+              <div style="font-weight:700; font-size:13px; color:var(--ink);">{g.courseName}</div>
+              <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);">{g.period}</div>
+            </div>
+            <div style="font-size:12px; color:var(--ink-soft);">{g.teacherName}</div>
+            <div style="text-align:center; font-family:var(--mono); font-size:12px; color:var(--ink);">
+              {g.evaluationsCompleted}/{g.evaluationsTotal}
+            </div>
+            <div style={`text-align:center; font-family:var(--mono); font-size:18px; font-weight:900; color:${statusColor[g.status]};`}>
+              {g.currentAverage.toFixed(1)}
+            </div>
+            <div style="text-align:center;">
+              <span style={`font-family:var(--mono); font-size:9px; font-weight:800; padding:3px 7px; border-radius:3px; background:${statusBg[g.status]}; color:${statusColor[g.status]};`}>
+                {statusLabel[g.status]}
+              </span>
+            </div>
+          </div>
+        ))}
+        <!-- Totals Row -->
+        <div style="display:grid; grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr; gap:0; padding:12px 18px; background:var(--cream); border-top:2px solid var(--ink); align-items:center;">
+          <div style="font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink); grid-column: 1 / 4;">PROMEDIO GENERAL DEL PERIODO</div>
+          <div style="text-align:center; font-family:var(--mono); font-size:20px; font-weight:900; color:var(--ink);">{generalAverage.toFixed(1)}</div>
+          <div style="text-align:center;">
+            <span style="font-family:var(--mono); font-size:9px; font-weight:800; padding:3px 7px; border-radius:3px; background:#E8F5E9; color:#4A7C59;">EXCELENTE</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLUMNA DERECHA: HISTORIAL -->
+    <div style="display:flex; flex-direction:column; gap:20px;">
+
+      <!-- HISTORIAL DE EVALUACIONES -->
+      <div>
+        <div style="font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink); margin-bottom:12px; letter-spacing:0.06em;">
+          HISTORIAL DE EVALUACIONES
+        </div>
+        <div style="background:var(--paper); border:2px solid var(--ink); border-radius:8px; overflow:hidden; box-shadow:4px 4px 0 rgba(18,17,14,0.07);">
+          {history.length > 0 ? history.map((att, i) => (
+            <div style={`padding:14px 16px; border-bottom:${i < history.length - 1 ? '1px solid var(--line)' : 'none'};`}>
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                <div style="flex:1;">
+                  <div style="font-weight:700; font-size:12.5px; color:var(--ink); line-height:1.3;">{att.evaluationTitle}</div>
+                  <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); margin-top:2px;">{att.courseName}</div>
+                  <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);">Intento {att.attemptNumber} · {att.timeSpentMinutes} min</div>
+                </div>
+                <div style="text-align:right;">
+                  <div style={`font-family:var(--mono); font-size:18px; font-weight:900; color:${att.passed ? '#4A7C59' : 'var(--rust)'};`}>{att.score}</div>
+                  <div style="font-family:var(--mono); font-size:9px; color:var(--ink-soft);">/ 100</div>
+                  <span style={`font-family:var(--mono); font-size:8.5px; font-weight:800; padding:2px 5px; border-radius:2px; background:${att.passed ? '#E8F5E9' : '#FFF0EE'}; color:${att.passed ? '#4A7C59' : 'var(--rust)'};`}>
+                    {att.passed ? 'APROBADO' : 'REPROBADO'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )) : (
+            <div style="padding:20px; text-align:center; color:var(--ink-soft); font-size:13px;">
+              Sin historial de evaluaciones aún.
+            </div>
+          )}
+        </div>
+      </div>
+
+      <!-- LEYENDA -->
+      <div style="background:var(--paper); border:2px solid var(--line); border-radius:8px; padding:16px;">
+        <div style="font-family:var(--mono); font-size:10px; font-weight:800; color:var(--ink); margin-bottom:10px; text-transform:uppercase;">Escala de Calificación</div>
+        <div style="display:flex; flex-direction:column; gap:8px; font-size:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="color:var(--ink);">Excelente</span>
+            <span style="font-family:var(--mono); font-weight:800; color:#4A7C59;">9.0 – 10.0</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="color:var(--ink);">Sobresaliente</span>
+            <span style="font-family:var(--mono); font-weight:800; color:#4A7C59;">8.0 – 8.9</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="color:var(--ink);">Aceptable</span>
+            <span style="font-family:var(--mono); font-weight:800; color:#C8860A;">6.0 – 7.9</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="color:var(--ink);">Insuficiente</span>
+            <span style="font-family:var(--mono); font-weight:800; color:var(--rust);">0 – 5.9</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</AppLayout>

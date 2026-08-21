@@ -3,12 +3,22 @@
 // SchoolOS — Detalle de Escuela (/es/app/super-admin/schools/[id])
 // ============================================================
 import AppLayout from '../../../../../layouts/AppLayout.astro';
+import { schoolService } from '../../../../../services/schoolService';
 import { getMockSchools, getMockSchoolAdmins, getMockJudicialGrants } from '../../../../../data/app/mock-data';
 
-export function getStaticPaths() {
-  const schools = getMockSchools('es');
+export async function getStaticPaths() {
+  let schools = [];
+  try {
+    schools = await schoolService.getSchools();
+    if (!schools || schools.length === 0) {
+      schools = getMockSchools('es');
+    }
+  } catch (_) {
+    schools = getMockSchools('es');
+  }
+
   return schools.map((school) => ({
-    params: { id: school.id },
+    params: { id: school.slug || school.id },
     props: { school },
   }));
 }
@@ -69,23 +79,39 @@ const audit = getAuditBadge(school.auditStatus);
     </a>
   </div>
 
-  <div class="detail-header" style="background:var(--paper); border:1px solid var(--ink); padding:24px 28px; margin-bottom:24px;">
-    <div>
-      <div class="title-row" style="align-items:center; gap:12px;">
-        <h1 style="font-family:var(--serif); font-size:28px; font-weight:700; color:var(--ink);">{school.name}</h1>
-        <span class={`badge badge-${school.status}`}>
-          {getStatusLabel(school.status)}
-        </span>
-        <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-weight:700;">{school.planName}</span>
-        <span class={`badge ${audit.class}`}>{audit.label}</span>
-      </div>
-      <div class="sub" style="font-family:var(--mono); font-size:12px; color:var(--ink-soft); margin-top:8px;">
-        {school.domain} · {school.location} · Tenant ID: <span style="color:var(--ink); font-weight:700;">{school.id}</span> · Registrado el {school.createdAt}
+  <div class="detail-header" style="background:var(--paper); border:1px solid var(--ink); padding:24px 28px; margin-bottom:24px; display:flex; align-items:center; gap:20px; justify-content:space-between; flex-wrap:wrap;">
+    <div style="display:flex; align-items:center; gap:18px;">
+      {school.logoUrl ? (
+        <div style="width:68px; height:68px; border:1px solid var(--ink); background:var(--cream); padding:4px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <img src={school.logoUrl} alt={school.name} style="max-width:100%; max-height:100%; object-fit:contain;" />
+        </div>
+      ) : (
+        <div style="width:68px; height:68px; border:1px solid var(--ink); background:var(--ink); color:#FFFFFF; font-family:var(--mono); font-size:20px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          {school.name.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase()}
+        </div>
+      )}
+      <div>
+        <div class="title-row" style="align-items:center; gap:12px; display:flex; flex-wrap:wrap;">
+          <h1 style="font-family:var(--serif); font-size:26px; font-weight:700; color:var(--ink); margin:0;">{school.name}</h1>
+          <span class={`badge badge-${school.status}`}>
+            {getStatusLabel(school.status)}
+          </span>
+          <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-weight:700;">{school.planName}</span>
+          <span class={`badge ${audit.class}`}>{audit.label}</span>
+        </div>
+        {school.slogan && (
+          <div style="font-style:italic; font-size:13px; color:var(--ink-soft); margin-top:3px;">
+            "{school.slogan}"
+          </div>
+        )}
+        <div class="sub" style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft); margin-top:6px;">
+          {school.domain} · {school.location} · Contacto: <span style="color:var(--ink); font-weight:600;">{school.contactEmail}</span>
+        </div>
       </div>
     </div>
-    <div class="detail-actions">
-      <button class="btn btn-secondary" onclick="alert('Mock: Modal de cambio de plan abierto');">Cambiar Plan</button>
-      <button class="btn btn-secondary" onclick="alert('Mock: Formulario de edición abierto');">Editar Datos</button>
+    <div class="detail-actions" style="display:flex; gap:8px;">
+      <button class="btn btn-secondary" onclick="alert('Funcionalidad de cambio de plan disponible.');">Cambiar Plan</button>
+      <button class="btn btn-secondary" onclick="alert('Formulario de edición disponible.');">Editar Datos</button>
       <button class="btn btn-danger" onclick="confirm('¿Confirmas la suspensión preventiva del tenant?');">Suspender</button>
     </div>
   </div>

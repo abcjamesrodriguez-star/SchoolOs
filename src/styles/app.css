@@ -52,6 +52,67 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+body.auth-pending .app-content {
+  visibility: hidden;
+}
+
+body.auth-ready .auth-loading-screen {
+  display: none;
+}
+
+.auth-loading-screen {
+  position: fixed;
+  left: 256px;
+  right: 0;
+  top: 73px;
+  bottom: 0;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--paper);
+  pointer-events: none;
+}
+
+.auth-loading-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border: 1px solid var(--line-strong);
+  background: #FFFFFF;
+  box-shadow: 4px 4px 0 rgba(18, 17, 14, 0.06);
+}
+
+.auth-loading-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--line);
+  border-top-color: var(--orange-vibrant);
+  border-radius: 50%;
+  animation: loading-spin 0.75s linear infinite;
+}
+
+.auth-loading-text {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+@keyframes loading-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+  .auth-loading-screen {
+    left: 0;
+    top: 73px;
+  }
+}
+
 a {
   color: inherit;
   text-decoration: none;
@@ -1581,5 +1642,151 @@ details.collapsible summary .summary-meta {
   }
   .search-input {
     width: 100%;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════ */
+/* ── REGLAS GLOBALES DE IMPRESIÓN Y EXPORTACIÓN PDF ── */
+/* ═══════════════════════════════════════════════════════════════════ */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 0mm; /* Suprime automáticamente la URL, fecha, título y 1 of 3 del navegador */
+  }
+
+  html, body {
+    background: #ffffff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    min-height: auto !important;
+    height: auto !important;
+    width: 100% !important;
+    overflow: visible !important;
+  }
+
+  /* Ocultar toda la interfaz circundante */
+  .no-print,
+  .app-sidebar,
+  .app-topbar,
+  .wizard-topbar,
+  .wizard-editor-col,
+  nav,
+  header,
+  footer,
+  button,
+  input,
+  textarea,
+  select,
+  .toast,
+  [role="alert"],
+  [role="dialog"] {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  .wizard-split-grid {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .wizard-pdf-col {
+    position: static !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: block !important;
+  }
+
+  #printableGuidePdf {
+    box-sizing: border-box !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding-left: 15mm !important;
+    padding-right: 15mm !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    min-height: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Repetición del encabezado y pie de página en cada hoja */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  thead {
+    display: table-header-group !important;
+  }
+
+  tfoot {
+    display: table-footer-group !important;
+  }
+
+  /* Margen superior e inferior repetitivo para cada página */
+  .pdf-thead-cell {
+    padding-top: 15mm !important;
+    padding-bottom: 12px !important;
+  }
+
+  .pdf-tfoot-cell {
+    padding-top: 12px !important;
+    padding-bottom: 15mm !important;
+  }
+
+  /* Protección contra cortes y solapamientos entre páginas */
+  .pdf-item,
+  .pdf-block,
+  .pdf-question-card,
+  .pdf-header,
+  .pdf-footer {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    display: block !important;
+  }
+
+  /* Forzado estricto de hoja nueva independiente para la Hoja de Respuestas ICFES */
+  .pdf-icfes-sheet-page {
+    page-break-before: always !important;
+    break-before: page !important;
+    display: block !important;
+    clear: both !important;
+    width: 100% !important;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    border-top: none !important;
+  }
+
+  /* Marca de agua institucional al 20% repetida en cada página */
+  .pdf-watermark {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 320px !important;
+    height: 320px !important;
+    opacity: 0.18 !important;
+    z-index: 0 !important;
+    pointer-events: none !important;
+    display: flex !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  #printableGuidePdf * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 }

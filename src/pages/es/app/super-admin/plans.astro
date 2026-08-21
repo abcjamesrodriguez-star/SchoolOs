@@ -3,10 +3,44 @@
 // SchoolOS — Planes de Suscripción (/es/app/super-admin/plans)
 // ============================================================
 import AppLayout from '../../../../layouts/AppLayout.astro';
-import { getMockPlans } from '../../../../data/app/mock-data';
+import { schoolService } from '../../../../services/schoolService';
 
 const lang = 'es';
-const plans = getMockPlans(lang);
+let schools: any[] = [];
+try {
+  schools = await schoolService.getSchools();
+} catch (e) {
+  console.error('Error fetching schools:', e);
+}
+
+const totalSchools = schools.length || 1;
+const starterCount = schools.filter((s) => (s.planName || '').toLowerCase().includes('starter')).length;
+const proCount = schools.filter((s) => (s.planName || '').toLowerCase().includes('pro')).length;
+const enterpriseCount = schools.filter((s) => (s.planName || '').toLowerCase().includes('enterprise')).length;
+
+const plans = [
+  {
+    name: 'Starter',
+    limit: 'Hasta 200 alumnos',
+    price: '$199 USD/mes',
+    schoolsCount: starterCount,
+    status: 'Activo',
+  },
+  {
+    name: 'Professional',
+    limit: 'Hasta 1,500 alumnos',
+    price: '$499 USD/mes',
+    schoolsCount: proCount,
+    status: 'Activo (Popular)',
+  },
+  {
+    name: 'Enterprise',
+    limit: 'Alumnos ilimitados',
+    price: 'A Medida',
+    schoolsCount: enterpriseCount,
+    status: 'Activo',
+  },
+];
 ---
 
 <AppLayout
@@ -25,7 +59,7 @@ const plans = getMockPlans(lang);
       <div style="padding:20px 22px; border-bottom:1px solid var(--line);">
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <span class="plan-tag">Starter</span>
-          <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">42 ESCUELAS</span>
+          <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">{starterCount} ESCUELAS</span>
         </div>
         <div style="font-family:var(--serif); font-size:28px; font-weight:700; margin-top:8px;">$199 <span style="font-size:13px; font-family:var(--mono); font-weight:normal; color:var(--ink-soft);">USD / mes</span></div>
         <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:4px;">Hasta 200 estudiantes</div>
@@ -45,7 +79,7 @@ const plans = getMockPlans(lang);
       <div style="padding:20px 22px; border-bottom:1px solid var(--line);">
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-weight:700;">Professional</span>
-          <span style="font-family:var(--mono); font-size:11px; color:var(--orange-vibrant); font-weight:700;">118 ESCUELAS (MAYORITARIO)</span>
+          <span style="font-family:var(--mono); font-size:11px; color:var(--orange-vibrant); font-weight:700;">{proCount} ESCUELAS</span>
         </div>
         <div style="font-family:var(--serif); font-size:28px; font-weight:700; margin-top:8px;">$499 <span style="font-size:13px; font-family:var(--mono); font-weight:normal; color:var(--ink-soft);">USD / mes</span></div>
         <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:4px;">Hasta 1,500 estudiantes</div>
@@ -65,7 +99,7 @@ const plans = getMockPlans(lang);
       <div style="padding:20px 22px; border-bottom:1px solid var(--line);">
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <span class="plan-tag">Enterprise</span>
-          <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">24 REDES ESCOLARES</span>
+          <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">{enterpriseCount} ESCUELAS</span>
         </div>
         <div style="font-family:var(--serif); font-size:28px; font-weight:700; margin-top:8px;">A Medida <span style="font-size:13px; font-family:var(--mono); font-weight:normal; color:var(--ink-soft);">/ anual</span></div>
         <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:4px;">Estudiantes ilimitados</div>
@@ -108,9 +142,9 @@ const plans = getMockPlans(lang);
               <td>
                 <div style="display:flex; align-items:center; gap:8px; font-family:var(--mono); font-size:11.5px;">
                   <div style="width:80px; height:4px; background:var(--line); border-radius:2px; overflow:hidden;">
-                    <div style={`width:${(p.schoolsCount / 184 * 100).toFixed(0)}%; height:100%; background:var(--ink);`}></div>
+                    <div style={`width:${((p.schoolsCount / totalSchools) * 100).toFixed(0)}%; height:100%; background:var(--ink);`}></div>
                   </div>
-                  <span>{(p.schoolsCount / 184 * 100).toFixed(1)}%</span>
+                  <span>{((p.schoolsCount / totalSchools) * 100).toFixed(1)}%</span>
                 </div>
               </td>
               <td><span class="badge badge-active">{p.status}</span></td>

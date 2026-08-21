@@ -14,19 +14,57 @@ const t = useTranslations(lang).app.sidebar;
 
 const isSchoolAdmin = role === 'school_admin';
 const isTeacher = role === 'teacher';
+const isStudent = role === 'student';
 ---
 
 <aside class="app-sidebar">
   <div class="brand">
-    <a href={isTeacher ? `/${lang}/app/teacher` : isSchoolAdmin ? `/${lang}/app/school-admin` : `/${lang}/app/super-admin`}>
+    <a href={isStudent ? `/${lang}/app/student` : isTeacher ? `/${lang}/app/teacher` : isSchoolAdmin ? `/${lang}/app/school-admin` : `/${lang}/app/super-admin`}>
       School<span>OS</span>
     </a>
-    <div class="brand-sub">{isTeacher ? schoolName.toUpperCase() : isSchoolAdmin ? schoolName.toUpperCase() : 'GOVERNANCE & AUDIT'}</div>
-    <span class="role-tag">{isTeacher ? (lang === 'es' ? 'Docente' : 'Teacher') : isSchoolAdmin ? (lang === 'es' ? 'School Admin' : 'School Admin') : t.brandRole}</span>
+    <div class="brand-sub" data-tenant-name>{isStudent ? schoolName.toUpperCase() : isTeacher ? schoolName.toUpperCase() : isSchoolAdmin ? schoolName.toUpperCase() : 'GOVERNANCE & AUDIT'}</div>
+    <span class="role-tag">{isStudent ? (lang === 'es' ? 'Estudiante' : 'Student') : isTeacher ? (lang === 'es' ? 'Docente' : 'Teacher') : isSchoolAdmin ? (lang === 'es' ? 'School Admin' : 'School Admin') : t.brandRole}</span>
   </div>
 
   <nav class="app-nav">
-    {isTeacher ? (
+    {isStudent ? (
+      /* ── NAVEGACIÓN STUDENT (ALUMNO) ────────────────────── */
+      <>
+        <div class="group-label">{lang === 'es' ? 'Mi Aprendizaje' : 'My Learning'}</div>
+
+        <a href={`/${lang}/app/student`} class={activeSection === 'dashboard' ? 'active' : ''}>
+          <span class="nav-icon-box">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          </span>
+          <span>{lang === 'es' ? 'Mi Dashboard' : 'My Dashboard'}</span>
+        </a>
+
+        <a href={`/${lang}/app/student/courses`} class={activeSection === 'courses' ? 'active' : ''}>
+          <span class="nav-icon-box">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+          </span>
+          <span>{lang === 'es' ? 'Mis Materias' : 'My Courses'}</span>
+        </a>
+
+        <div class="group-label">{lang === 'es' ? 'Evaluaciones' : 'Evaluations'}</div>
+
+        <a href={`/${lang}/app/student/grades`} class={activeSection === 'grades' ? 'active' : ''}>
+          <span class="nav-icon-box">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+          </span>
+          <span>{lang === 'es' ? 'Boletín de Notas' : 'Grade Report'}</span>
+        </a>
+
+        <div class="group-label">{lang === 'es' ? 'Comunidad' : 'Community'}</div>
+
+        <a href={`/${lang}/app/student/news`} class={activeSection === 'news' ? 'active' : ''}>
+          <span class="nav-icon-box">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          </span>
+          <span>{lang === 'es' ? 'Noticias del Colegio' : 'School News'}</span>
+        </a>
+      </>
+    ) : isTeacher ? (
       /* ── NAVEGACIÓN TEACHER (DOCENTE) ──────────────────────── */
       <>
         <div class="group-label">{lang === 'es' ? 'Mi Jornada' : 'My Day'}</div>

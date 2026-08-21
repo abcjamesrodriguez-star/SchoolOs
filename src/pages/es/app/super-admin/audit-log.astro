@@ -3,10 +3,15 @@
 // SchoolOS — Registro de Auditoría (/es/app/super-admin/audit-log)
 // ============================================================
 import AppLayout from '../../../../layouts/AppLayout.astro';
-import { getMockAuditLogs } from '../../../../data/app/mock-data';
+import { auditService } from '../../../../services/auditService';
 
 const lang = 'es';
-const logs = getMockAuditLogs(lang);
+let logs: any[] = [];
+try {
+  logs = await auditService.getRecentLogs(20);
+} catch (e) {
+  console.error('Error fetching audit logs:', e);
+}
 ---
 
 <AppLayout

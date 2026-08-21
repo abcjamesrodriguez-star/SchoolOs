@@ -1,0 +1,100 @@
+---
+// ============================================================
+// SchoolOS — Student Panel: News & Announcements (English)
+// Phase 4 | Mateo Gómez
+// ============================================================
+import AppLayout from '../../../../layouts/AppLayout.astro';
+import { getSchoolNews } from '../../../../data/app/mock-student';
+
+const lang = 'en';
+const news = getSchoolNews();
+
+const categoryLabel: Record<string, string> = {
+  academic: 'ACADEMIC',
+  events: 'EVENTS',
+  admin: 'ADMINISTRATIVE',
+  sports: 'SPORTS',
+};
+const categoryColor: Record<string, string> = {
+  academic: 'var(--rust)',
+  events: '#2B7EDE',
+  admin: '#4A7C59',
+  sports: '#9B59B6',
+};
+const categoryBg: Record<string, string> = {
+  academic: '#FFF0EE',
+  events: '#EBF3FD',
+  admin: '#E8F5E9',
+  sports: '#F5EEF8',
+};
+
+function formatDate(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
+---
+
+<AppLayout
+  title="School Announcements — Mateo Gómez"
+  pageTitle="School News & Announcements"
+  activeSection="news"
+  role="student"
+  schoolName="Colegio Norte"
+  lang={lang}
+  activeRoute="/app/student/news"
+  breadcrumbs={[
+    { label: 'Colegio Norte' },
+    { label: 'Student Panel', href: `/${lang}/app/student` },
+    { label: 'News' },
+  ]}
+>
+
+  <!-- HEADER -->
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:12px;">
+    <div>
+      <h1 style="font-family:var(--serif); font-size:22px; font-weight:800; margin:0 0 4px 0;">
+        Official Announcements
+      </h1>
+      <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">
+        {news.length} announcements published · Read only
+      </div>
+    </div>
+    <a
+      href={`/${lang}/app/student`}
+      class="btn btn-secondary btn-sm"
+      style="font-size:11.5px; font-weight:700;"
+    >
+      ← Back to Dashboard
+    </a>
+  </div>
+
+  <!-- NEWS LIST -->
+  <div style="display:flex; flex-direction:column; gap:16px; max-width:800px;">
+    {news.map((n) => (
+      <article style="background:var(--paper); border:2px solid var(--ink); border-radius:10px; overflow:hidden; box-shadow:4px 4px 0 rgba(18,17,14,0.07);">
+        <!-- Article Header -->
+        <div style="background:var(--cream); border-bottom:1.5px solid var(--line); padding:12px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+          <span style={`font-family:var(--mono); font-size:9.5px; font-weight:800; padding:3px 8px; border-radius:3px; background:${categoryBg[n.category]}; color:${categoryColor[n.category]};`}>
+            {categoryLabel[n.category]}
+          </span>
+          <span style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft);">
+            {formatDate(n.publishedAt)}
+          </span>
+        </div>
+        <!-- Article Body -->
+        <div style="padding:18px 20px;">
+          <h2 style="font-family:var(--serif); font-size:18px; font-weight:800; margin:0 0 10px 0; color:var(--ink); line-height:1.4;">
+            {n.title}
+          </h2>
+          <p style="font-size:14px; color:var(--ink-soft); line-height:1.7; margin:0 0 14px 0;">
+            {n.body}
+          </p>
+          <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); border-top:1px solid var(--line); padding-top:10px;">
+            Published by: <strong style="color:var(--ink);">{n.authorName}</strong>
+          </div>
+        </div>
+      </article>
+    ))}
+  </div>
+
+</AppLayout>

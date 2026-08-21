@@ -1,6 +1,6 @@
 ---
 // ============================================================
-// SchoolOS — Panel Docente: Dashboard & Métricas Académicas
+// SchoolOS — Panel Docente: Dashboard & Seguimiento del Periodo
 // Fase 3 | Prof. Diana Restrepo | teacherId: usr-1
 // ============================================================
 import AppLayout from '../../../../layouts/AppLayout.astro';
@@ -11,6 +11,7 @@ const courses = getTeacherCourses();
 const guides = getAllTeacherGuides();
 const stats = getTeacherDashboardStats();
 const allStudents = getAllTeacherStudents();
+const riskStudents = allStudents.filter(s => s.status === 'risk');
 ---
 
 <AppLayout
@@ -25,41 +26,42 @@ const allStudents = getAllTeacherStudents();
 >
 
   <!-- ── 1. CINTILLO SUPERIOR ── -->
-  <div style="background:var(--paper); border:2px solid var(--ink); padding:14px 20px; margin-bottom:24px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; box-shadow:4px 4px 0 rgba(18,17,14,0.08);">
+  <div style="background:var(--paper); border:2px solid var(--ink); border-radius:8px; padding:16px 22px; margin-bottom:24px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; box-shadow:4px 4px 0 rgba(18,17,14,0.08);">
     <div style="display:flex; align-items:center; gap:12px;">
-      <span class="plan-tag" style="background:var(--rust); color:#FFFFFF; border-color:var(--rust); font-weight:900; font-size:11px; padding:3px 8px; letter-spacing:0.06em;">
-        CONSOLIDADO GENERAL
+      <span class="plan-tag" style="background:var(--rust); color:#FFFFFF; border-color:var(--rust); font-weight:900; font-size:11px; padding:3px 8px; border-radius:3px; letter-spacing:0.06em;">
+        CONSOLIDADO DEL PERIODO
       </span>
       <span style="font-family:var(--mono); font-size:12.5px; font-weight:700; color:var(--ink);">
         Biología y Ciencias Naturales · Periodo 1 · Semana 6 de 18
       </span>
     </div>
-    <a href={`/${lang}/app/teacher`} class="btn btn-secondary btn-sm" style="font-size:11px; font-weight:800; border-color:var(--rust); color:var(--rust);">
-      ⚡ Volver al Modo Aula en Vivo →
-    </a>
+    
+    <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">
+      📅 Próximo corte: <strong>Viernes 5 de Septiembre</strong>
+    </div>
   </div>
 
   <!-- ── 2. LAS 4 MÉTRICAS GLOBALES ── -->
   <div class="stat-grid" style="margin-bottom:24px;">
-    <div class="stat-card" style="border:2px solid var(--ink);">
+    <div class="stat-card" style="border:2px solid var(--ink); border-radius:8px;">
       <div class="stat-label">CURSOS ASIGNADOS</div>
       <div class="stat-num" style="color:var(--ink); font-size:32px;">{stats.activeCourses}</div>
       <div class="stat-sub"><a href={`/${lang}/app/teacher/courses`} style="color:var(--rust); font-weight:700;">Ver mis cursos →</a></div>
     </div>
 
-    <div class="stat-card" style="border:2px solid var(--ink);">
-      <div class="stat-label">GUÍAS PUBLICADAS</div>
+    <div class="stat-card" style="border:2px solid var(--ink); border-radius:8px;">
+      <div class="stat-label">GUÍAS ACTIVAS</div>
       <div class="stat-num" style="color:var(--ink); font-size:32px;">{stats.guidesPublished}</div>
       <div class="stat-sub">Material pedagógico activo</div>
     </div>
 
-    <div class="stat-card" style="border:2px solid var(--ink);">
+    <div class="stat-card" style="border:2px solid var(--ink); border-radius:8px;">
       <div class="stat-label">TOTAL ESTUDIANTES</div>
       <div class="stat-num" style="color:var(--ink); font-size:32px;">{stats.totalStudents}</div>
       <div class="stat-sub"><a href={`/${lang}/app/teacher/students`} style="color:var(--rust); font-weight:700;">Directorio completo →</a></div>
     </div>
 
-    <div class="stat-card" style="border:2px solid var(--ink);">
+    <div class="stat-card" style="border:2px solid var(--ink); border-radius:8px;">
       <div class="stat-label">PENDIENTES POR CALIFICAR</div>
       <div class="stat-num accent" style="color:var(--rust); font-size:32px;">{stats.pendingToGrade}</div>
       <div class="stat-sub" style="color:var(--rust); font-weight:700;">1 evaluación física pendiente</div>
@@ -72,58 +74,78 @@ const allStudents = getAllTeacherStudents();
     <!-- COLUMNA IZQUIERDA -->
     <div style="display:flex; flex-direction:column; gap:20px;">
 
-      <!-- AVANCE CURRICULAR (SYLLABUS) -->
-      <div class="panel" style="border:2px solid var(--ink); box-shadow:6px 6px 0 rgba(18,17,14,0.08);">
-        <div class="panel-header" style="background:var(--cream); display:flex; justify-content:space-between; align-items:center;">
-          <h2 style="font-size:13px; margin:0;">AVANCE CURRICULAR POR GRUPO</h2>
-          <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">Periodo 1 · 2026</span>
-        </div>
-
-        <div class="panel-body" style="padding:0;">
-          {courses.map((course) => (
-            <div style="padding:16px 20px; border-bottom:1.5px solid var(--line);">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <div>
-                  <strong style="font-family:var(--serif); font-size:15.5px; color:var(--ink);">{course.name}</strong>
-                  <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-left:8px;">{course.studentCount} alumnos · {course.room}</span>
-                </div>
-                <span class="badge badge-active" style="font-size:9.5px;">PROMEDIO: {course.averageScore.toFixed(1)}</span>
-              </div>
-              <div style="display:flex; align-items:center; gap:12px; margin-top:8px;">
-                <div style="flex:1; height:6px; background:var(--cream); border:1px solid var(--ink);">
-                  <div style={`width:${course.averageScore * 10}%; height:100%; background:var(--rust);`}></div>
-                </div>
-                <a href={`/${lang}/app/teacher/courses/${course.id}`} class="btn btn-secondary btn-sm" style="font-size:10.5px;">Detalle →</a>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <!-- MESA DE CALIFICACIONES -->
-      <div class="panel" style="border:2px solid var(--rust); box-shadow:6px 6px 0 rgba(195,83,44,0.12);">
-        <div class="panel-header" style="background:var(--cream); display:flex; justify-content:space-between; align-items:center;">
-          <h2 style="font-size:13px; margin:0; color:var(--rust);">MESA DE EVALUACIONES</h2>
-          <span style="font-family:var(--mono); font-size:11px; font-weight:700; color:var(--rust);">1 POR CALIFICAR</span>
+      <!-- MESA DE CALIFICACIONES Y PENDIENTES -->
+      <div class="panel" style="border:2px solid var(--rust); border-radius:8px; box-shadow:5px 5px 0 rgba(195,83,44,0.12); background:var(--paper); overflow:hidden;">
+        <div class="panel-header" style="background:var(--cream); border-bottom:1.5px solid var(--ink); padding:12px 20px; display:flex; justify-content:space-between; align-items:center;">
+          <h2 style="font-size:13px; margin:0; color:var(--rust); font-weight:800;">MESA DE EVALUACIONES</h2>
+          <span style="font-family:var(--mono); font-size:11px; font-weight:700; color:var(--rust); background:#FFF0EE; padding:2px 8px; border-radius:3px; border:1px solid #F5C6BC;">
+            1 POR CALIFICAR
+          </span>
         </div>
         <div class="panel-body" style="padding:0;">
           <div style="padding:16px 20px; border-bottom:1.5px solid var(--line); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; background:#FFFDF9;">
             <div>
               <span class="badge badge-warning" style="font-size:9px;">PRESENCIAL</span>
-              <h4 style="font-family:var(--serif); font-size:15px; margin:4px 0 2px 0;">Evaluación: Leyes de Mendel</h4>
-              <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">Biología 10°A · 25 alumnos</div>
+              <h4 style="font-family:var(--serif); font-size:16px; font-weight:700; margin:4px 0 2px 0;">Evaluación: Leyes de Mendel</h4>
+              <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">Biología 10°A · 25 alumnos sin calificar</div>
             </div>
-            <a href={`/${lang}/app/teacher/evaluations/eval-2/grade`} class="btn btn-primary btn-sm" style="font-size:11px; font-weight:800;">Cargar Planilla →</a>
+            <a href={`/${lang}/app/teacher/evaluations/eval-2/grade`} class="btn btn-primary btn-sm" style="font-size:11.5px; font-weight:800; border-radius:4px;">
+              Cargar Planilla →
+            </a>
           </div>
 
           <div style="padding:16px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
             <div>
               <span class="badge badge-active" style="font-size:9px;">VIRTUAL</span>
-              <h4 style="font-family:var(--serif); font-size:15px; margin:4px 0 2px 0;">Cuestionario: Célula Eucariota</h4>
-              <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">24 entregas · 78.5% prom</div>
+              <h4 style="font-family:var(--serif); font-size:16px; font-weight:700; margin:4px 0 2px 0;">Cuestionario: Célula Eucariota</h4>
+              <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">24 entregas · Promedio 78.5%</div>
             </div>
-            <a href={`/${lang}/app/teacher/evaluations/eval-1/results`} class="btn btn-secondary btn-sm" style="font-size:11px;">Ver Resultados →</a>
+            <a href={`/${lang}/app/teacher/evaluations/eval-1/results`} class="btn btn-secondary btn-sm" style="font-size:11.5px; font-weight:700; border-radius:4px;">
+              Ver Resultados →
+            </a>
           </div>
+        </div>
+      </div>
+
+      <!-- ALUMNOS EN SEGUIMIENTO PRIORITARIO (CROSS-CURSO) -->
+      <div class="panel" style="border:2px solid var(--ink); border-radius:8px; box-shadow:5px 5px 0 rgba(18,17,14,0.08); background:var(--paper); overflow:hidden;">
+        <div class="panel-header" style="background:var(--cream); border-bottom:1.5px solid var(--ink); padding:12px 20px; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <h2 style="font-size:13px; margin:0; font-weight:800;">ESTUDIANTES EN SEGUIMIENTO ACADÉMICO</h2>
+            <div style="font-size:11px; color:var(--ink-soft); margin-top:2px;">Alumnos con promedio bajo o actividades pendientes antes del corte de notas</div>
+          </div>
+          <span class="plan-tag" style="background:var(--rust); color:#FFFFFF; border-color:var(--rust); font-size:9.5px; font-weight:900;">
+            {riskStudents.length} ALUMNOS
+          </span>
+        </div>
+
+        <div class="panel-body" style="padding:0;">
+          {riskStudents.map((std) => (
+            <div style="padding:12px 18px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <img
+                  src={std.avatarUrl || '/avatars/women/fila-1-columna-1.png'}
+                  alt={std.name}
+                  style="width:32px; height:32px; border-radius:50%; border:1.5px solid var(--ink); object-fit:cover;"
+                />
+                <div>
+                  <div style="font-weight:700; font-size:13px; color:var(--ink);">{std.name}</div>
+                  <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft);">{std.courseName} · Grupo {std.groupCode}</div>
+                </div>
+              </div>
+
+              <div style="display:flex; align-items:center; gap:14px;">
+                <div style="text-align:right;">
+                  <div style="font-family:var(--mono); font-size:13px; font-weight:900; color:var(--rust);">{std.averageScore.toFixed(1)} / 10</div>
+                  <div style="font-family:var(--mono); font-size:10px; color:var(--rust); font-weight:700;">{std.pendingCount} pendiente{std.pendingCount > 1 ? 's' : ''}</div>
+                </div>
+
+                <a href={`/${lang}/app/teacher/courses/${std.courseId}`} class="btn btn-secondary btn-sm" style="font-size:10.5px; font-weight:700; border-radius:3px;">
+                  Ver Salón →
+                </a>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -133,24 +155,24 @@ const allStudents = getAllTeacherStudents();
     <div style="display:flex; flex-direction:column; gap:20px;">
 
       <!-- ACCIONES DIRECTAS -->
-      <div class="panel" style="border:2px solid var(--ink); box-shadow:4px 4px 0 rgba(18,17,14,0.08);">
-        <div class="panel-header" style="background:var(--ink); color:#FFFFFF;">
-          <h2 style="font-size:12px; color:#FFFFFF; letter-spacing:0.08em;">ACCIONES DE DOCENCIA</h2>
+      <div class="panel" style="border:2px solid var(--ink); border-radius:8px; box-shadow:4px 4px 0 rgba(18,17,14,0.08); overflow:hidden;">
+        <div class="panel-header" style="background:var(--ink); color:#FFFFFF; padding:12px 18px;">
+          <h2 style="font-size:12px; color:#FFFFFF; letter-spacing:0.08em; margin:0;">ACCIONES DE DOCENCIA</h2>
         </div>
-        <div class="panel-body padded" style="display:flex; flex-direction:column; gap:10px;">
-          <a href={`/${lang}/app/teacher/grades`} class="btn btn-primary" style="justify-content:space-between; display:flex; font-size:12px; padding:11px 14px; font-weight:700;">
+        <div class="panel-body padded" style="display:flex; flex-direction:column; gap:10px; padding:16px;">
+          <a href={`/${lang}/app/teacher/grades`} class="btn btn-primary" style="justify-content:space-between; display:flex; font-size:12px; padding:11px 14px; font-weight:700; border-radius:5px; text-decoration:none;">
             <span>Planilla de Calificaciones</span>
             <span>→</span>
           </a>
-          <a href={`/${lang}/app/teacher/courses/crs-bio-10a/guides/new`} class="btn btn-secondary" style="justify-content:space-between; display:flex; font-size:12px; padding:10px 12px;">
+          <a href={`/${lang}/app/teacher/courses/crs-bio-10a/guides/new`} class="btn btn-secondary" style="justify-content:space-between; display:flex; font-size:12px; padding:10px 12px; border-radius:5px; text-decoration:none;">
             <span>+ Crear Guía con Wizard</span>
             <span>+</span>
           </a>
-          <a href={`/${lang}/app/teacher/guides/gd-1/evaluations/new`} class="btn btn-secondary" style="justify-content:space-between; display:flex; font-size:12px; padding:10px 12px;">
+          <a href={`/${lang}/app/teacher/guides/gd-1/evaluations/new`} class="btn btn-secondary" style="justify-content:space-between; display:flex; font-size:12px; padding:10px 12px; border-radius:5px; text-decoration:none;">
             <span>+ Diseñar Evaluación / Quiz</span>
             <span>+</span>
           </a>
-          <a href={`/${lang}/app/teacher/students`} class="btn btn-secondary" style="justify-content:space-between; display:flex; font-size:12px; padding:10px 12px;">
+          <a href={`/${lang}/app/teacher/students`} class="btn btn-secondary" style="justify-content:space-between; display:flex; font-size:12px; padding:10px 12px; border-radius:5px; text-decoration:none;">
             <span>Directorio de Alumnos</span>
             <span>→</span>
           </a>
@@ -158,17 +180,17 @@ const allStudents = getAllTeacherStudents();
       </div>
 
       <!-- CRONOGRAMA -->
-      <div class="panel" style="border:1.5px solid var(--ink); background:var(--paper); padding:16px;">
-        <div style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; color:var(--ink); margin-bottom:10px; border-bottom:1.5px solid var(--ink); padding-bottom:4px;">
+      <div class="panel" style="border:2px solid var(--ink); border-radius:8px; background:var(--paper); padding:16px; box-shadow:4px 4px 0 rgba(18,17,14,0.08);">
+        <div style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; color:var(--ink); margin-bottom:12px; border-bottom:1.5px solid var(--ink); padding-bottom:6px;">
           AGENDA INSTITUCIONAL
         </div>
-        <div style="display:flex; flex-direction:column; gap:10px; font-size:12px;">
-          <div style="border-left:3px solid var(--rust); padding-left:8px;">
+        <div style="display:flex; flex-direction:column; gap:12px; font-size:12px;">
+          <div style="border-left:3px solid var(--rust); padding-left:10px;">
             <div style="font-family:var(--mono); font-size:9.5px; color:var(--rust); font-weight:800;">VIERNES 22 AGOSTO</div>
             <strong style="color:var(--ink);">Jornada Pedagógica</strong>
             <div style="font-size:11px; color:var(--ink-soft);">Sin estudiantes</div>
           </div>
-          <div style="border-left:3px solid var(--ink); padding-left:8px;">
+          <div style="border-left:3px solid var(--ink); padding-left:10px;">
             <div style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft); font-weight:800;">VIERNES 5 SEPTIEMBRE</div>
             <strong style="color:var(--ink);">Cierre de Calificaciones P1</strong>
             <div style="font-size:11px; color:var(--ink-soft);">Cierre oficial del periodo</div>

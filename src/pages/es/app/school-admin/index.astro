@@ -1,321 +1,145 @@
 ---
-// ============================================================
-// SchoolOS — Despacho de Rectoría (Dashboard de Protocolos)
-// Estructura: Operación Diaria · Convivencia Ley 1620 · Alerta Académica
-// ============================================================
 import AppLayout from '../../../../layouts/AppLayout.astro';
 import InviteUserModal from '../../../../components/app/school-admin/InviteUserModal.astro';
-import { getAcademicStats, getNews } from '../../../../data/app/mock-academic';
 
 const lang = 'es';
-const stats = getAcademicStats(lang);
-const news = getNews(lang);
 ---
 
 <AppLayout
   title="Despacho de Rectoría"
-  pageTitle="Centro de Mando & Protocolos Escolares"
+  pageTitle="Centro de Mando Institucional"
   activeSection="dashboard"
   role="school_admin"
-  schoolName="Colegio Norte"
+  schoolName="Institución"
   lang={lang}
   activeRoute="/app/school-admin"
-  breadcrumbs={[{ label: 'Colegio Norte' }, { label: 'Despacho de Rectoría' }]}
+  breadcrumbs={[{ label: 'Institución' }, { label: 'Despacho de Rectoría' }]}
 >
-
-  <!-- ── 1. CINTILLO SUPERIOR: PULSO OPERATIVO EN TIEMPO REAL ── -->
   <div style="background:var(--paper); border:2px solid var(--ink); padding:14px 20px; margin-bottom:24px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; box-shadow:4px 4px 0 rgba(18, 17, 14, 0.08);">
     <div style="display:flex; align-items:center; gap:12px;">
-      <span class="plan-tag" style="background:var(--rust); color:#FFFFFF; border-color:var(--rust); font-weight:900; font-size:11px; padding:3px 8px; letter-spacing:0.06em;">
-        JORNADA LECTIVA ACTIVA
-      </span>
-      <span style="font-family:var(--mono); font-size:12.5px; font-weight:700; color:var(--ink);">
-        Lunes 17 de Agosto, 2026 · Sede Principal Bogotá (DANE: 111001849201)
-      </span>
+      <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-weight:900; font-size:11px; padding:3px 8px; letter-spacing:0.06em;">TENANT ACTIVO</span>
+      <span style="font-family:var(--mono); font-size:12.5px; font-weight:700; color:var(--ink);" data-tenant-name>INSTITUCIÓN</span>
     </div>
-
-    <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">
-      Ciclo: <strong>2026 - Periodo 1</strong> · <strong>Semana 6 de 18 (Etapa de Alerta Preventiva)</strong>
-    </div>
+    <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">Datos vivos desde Supabase</div>
   </div>
 
-  <!-- ── 2. LAS 4 MÉTRICAS DE CONTROL RECTORAL ────────────────── -->
   <div class="stat-grid" style="margin-bottom:24px;">
-    <!-- Métrica 1: Asistencia -->
     <div class="stat-card" style="border:2px solid var(--ink);">
-      <div class="stat-label">ASISTENCIA ESTUDIANTIL HOY</div>
-      <div class="stat-num" style="color:var(--ink); font-size:32px;">96.2%</div>
-      <div class="stat-sub"><strong>860</strong> presentes · <strong>34</strong> inasistencias reportadas</div>
+      <div class="stat-label">Estudiantes</div>
+      <div class="stat-num" id="dashboard-stat-students" style="color:var(--ink); font-size:32px;">0</div>
+      <div class="stat-sub" id="dashboard-stat-students-sub">Sin información cargada</div>
     </div>
-
-    <!-- Métrica 2: Novedades de Planta -->
     <div class="stat-card" style="border:2px solid var(--ink);">
-      <div class="stat-label">DOCENTES EN AULA (PLANTA)</div>
-      <div class="stat-num" style="color:var(--ink); font-size:32px;">51 <span style="font-size:18px; font-weight:400; color:var(--ink-soft);">/ 52</span></div>
-      <div class="stat-sub" style="color:var(--rust); font-weight:800;">1 novedad de salud (Prof. Salas)</div>
+      <div class="stat-label">Docentes</div>
+      <div class="stat-num" id="dashboard-stat-teachers" style="color:var(--ink); font-size:32px;">0</div>
+      <div class="stat-sub" id="dashboard-stat-teachers-sub">Sin información cargada</div>
     </div>
-
-    <!-- Métrica 3: Alerta Académica Preventiva -->
     <div class="stat-card" style="border:2px solid var(--ink);">
-      <div class="stat-label">ALERTA ACADÉMICA (&lt; 7.0)</div>
-      <div class="stat-num accent" style="color:var(--rust); font-size:32px;">42</div>
-      <div class="stat-sub">Alumnos con 2+ materias en riesgo</div>
+      <div class="stat-label">Cursos</div>
+      <div class="stat-num accent" id="dashboard-stat-courses" style="color:var(--rust); font-size:32px;">0</div>
+      <div class="stat-sub" id="dashboard-stat-courses-sub">Sin cursos creados todavía</div>
     </div>
-
-    <!-- Métrica 4: Casos Convivenciales Ley 1620 -->
     <div class="stat-card" style="border:2px solid var(--ink);">
-      <div class="stat-label">CONVIVENCIA (PASO 4 RECTORAL)</div>
-      <div class="stat-num" style="color:var(--ink); font-size:32px;">2</div>
-      <div class="stat-sub">Actas escaladas para firma rectoral</div>
+      <div class="stat-label">Capacidad</div>
+      <div class="stat-num" id="dashboard-stat-capacity" style="color:var(--ink); font-size:32px;">0%</div>
+      <div class="stat-sub" id="dashboard-stat-capacity-sub">Sin matrícula activa</div>
     </div>
   </div>
 
-  <!-- ── 3. CUERPO PRINCIPAL: LOS 3 PROTOCOLOS EN ACCIÓN ──────── -->
   <div style="display:grid; grid-template-columns: 2fr 1fr; gap:24px; margin-bottom:28px;">
-    
-    <!-- COLUMNA IZQUIERDA: MESA DE ATENCIÓN DE PROTOCOLOS PRIORITARIOS -->
-    <div style="display:flex; flex-direction:column; gap:20px;">
-      
-      <!-- ── PROTOCOLO A: NOVEDADES DIARIAS DE PLANTA DOCENTE ── -->
-      <div class="panel" style="border:2px solid var(--ink); box-shadow:6px 6px 0 rgba(18, 17, 14, 0.08);">
-        <div class="panel-header" style="background:var(--cream); display:flex; justify-content:space-between; align-items:center;">
-          <div style="display:flex; align-items:center; gap:8px;">
-            <span class="plan-tag" style="background:var(--rust); color:#FFFFFF; border-color:var(--rust); font-size:10px; font-weight:900;">
-              PROTOCOLO 1 · OPERACIÓN MATUTINA
-            </span>
-            <h2 style="font-size:13px; margin:0;">SUPLENCIA DOCENTE INMEDIATA</h2>
-          </div>
-          <span style="font-family:var(--mono); font-size:11px; font-weight:700; color:var(--rust);">REQUERIMIENTO ACTIVO</span>
-        </div>
-
-        <div class="panel-body padded" style="background:#FFFDF9;">
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
-            <div>
-              <h3 style="font-family:var(--serif); font-size:16.5px; font-weight:700; color:var(--ink); margin:0 0 4px 0;">
-                Prof. Jorge Salas — Incapacidad médica reportada a primera hora
-              </h3>
-              <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">
-                Grupo asignado: <strong>Matemáticas 10-2 (30 alumnos)</strong> · Bloque: <strong>Hoy 10:30 - 12:00</strong> · <strong>Salón 205</strong>
-              </div>
-            </div>
-          </div>
-
-          <!-- Cuadro de Resolución Inteligente -->
-          <div style="background:var(--cream); border:1.5px solid var(--ink); padding:12px 14px; margin:12px 0; font-size:12.5px;">
-            <div style="font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--rust); margin-bottom:4px;">
-              SOLUCIÓN DISPONIBLE EN EL PLANTEL:
-            </div>
-            <div>
-              El <strong>Prof. Carlos Gómez</strong> (Área de Matemáticas) tiene bloque libre hoy a las 10:30 AM (cuenta con 6h semanales disponibles).
-            </div>
-          </div>
-
-          <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <button class="btn btn-primary btn-sm" onclick="alert('Suplencia asignada con éxito al Prof. Carlos Gómez. El sistema actualizó el horario y notificó al docente.');" style="font-size:11.5px; font-weight:700;">
-              Asignar Cobertura a Prof. Carlos Gómez
-            </button>
-            <a href={`/${lang}/app/school-admin/courses`} class="btn btn-secondary btn-sm" style="font-size:11.5px;">
-              Ver Horario de Salones en Vivo →
-            </a>
-          </div>
+    <div class="panel" style="border:2px solid var(--ink);">
+      <div class="panel-header">
+        <h2>Actividad Institucional</h2>
+      </div>
+      <div class="panel-body" id="dashboard-live-activity" style="padding:34px; text-align:center;">
+        <div style="font-family:var(--serif); font-size:21px; font-weight:700; color:var(--ink); margin-bottom:6px;">Sin información operativa</div>
+        <div style="font-size:13px; color:var(--ink-soft); max-width:640px; margin:0 auto;">
+          Cuando se creen cursos, estudiantes, docentes, novedades y reportes reales para este tenant, se mostrarán aquí.
         </div>
       </div>
-
-      <!-- ── PROTOCOLO B: RUTA DE CONVIVENCIA ESCOLAR (LEY 1620 - PASO 4) ── -->
-      <div class="panel" style="border:2px solid var(--ink); box-shadow:6px 6px 0 rgba(18, 17, 14, 0.08);">
-        <div class="panel-header" style="background:var(--cream); display:flex; justify-content:space-between; align-items:center;">
-          <div style="display:flex; align-items:center; gap:8px;">
-            <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-size:10px; font-weight:900;">
-              PROTOCOLO 2 · CONVIVENCIA ESCOLAR
-            </span>
-            <h2 style="font-size:13px; margin:0;">CASOS ESCALADOS A RECTORÍA (LEY 1620)</h2>
-          </div>
-          <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">2 ACTAS POR FIRMAR</span>
-        </div>
-
-        <div class="panel-body" style="padding:0;">
-          <!-- Caso Convivencial 1 -->
-          <div style="padding:16px 20px; border-bottom:1.5px solid var(--line);">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; flex-wrap:wrap; gap:8px;">
-              <div>
-                <span class="badge badge-suspended" style="font-size:9.5px; font-weight:800;">FALTA TIPO II (REINCIDENCIA)</span>
-                <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-left:6px;">Grado 10-1 · Estudiante: Mateo Gómez</span>
-              </div>
-              <span style="font-family:var(--mono); font-size:10.5px; color:var(--rust); font-weight:700;">PASO 4: FIRMA RECTORAL PENDIENTE</span>
-            </div>
-
-            <h4 style="font-family:var(--serif); font-size:15px; font-weight:700; color:var(--ink); margin:2px 0 6px 0;">
-              Acta de Compromiso Convivencial y Reparación de Aula
-            </h4>
-
-            <p style="font-size:12px; color:var(--ink-soft); line-height:1.45; margin:0 0 10px 0;">
-              Proceso adelantado por Coordinación de Convivencia con la acudiente <strong>Rosa Gómez</strong> y la docente <strong>Diana Restrepo</strong>. Compromiso de conducta y servicio pedagógico suscrito.
-            </p>
-
-            <div style="display:flex; gap:10px;">
-              <a href={`/${lang}/app/school-admin/students/std-1`} class="btn btn-secondary btn-sm" style="font-size:11px; font-weight:700;">
-                Abrir Observador & Refrendar Firma →
-              </a>
-            </div>
-          </div>
-
-          <!-- Caso Convivencial 2 -->
-          <div style="padding:16px 20px;">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; flex-wrap:wrap; gap:8px;">
-              <div>
-                <span class="badge badge-active" style="font-size:9.5px; font-weight:800;">FALTA TIPO I (CONCILIACIÓN)</span>
-                <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-left:6px;">Grado 11-1 · Estudiante: Samuel Castillo</span>
-              </div>
-              <span style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft);">PENDIENTE CIERRE</span>
-            </div>
-
-            <h4 style="font-family:var(--serif); font-size:15px; font-weight:700; color:var(--ink); margin:2px 0 6px 0;">
-              Compromiso de Asistencia y Puntualidad en Laboratorios
-            </h4>
-
-            <p style="font-size:12px; color:var(--ink-soft); margin:0 0 10px 0;">
-              Acuerdo suscrito con la acudiente Marta Castillo por inasistencias reiteradas a primera hora.
-            </p>
-
-            <div style="display:flex; gap:10px;">
-              <a href={`/${lang}/app/school-admin/students/std-3`} class="btn btn-secondary btn-sm" style="font-size:11px;">
-                Ver Ficha del Alumno →
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── PROTOCOLO C: RADAR DE ALERTA ACADÉMICA PREVENTIVA (ETAPA 2) ── -->
-      <div class="panel" style="border:2px solid var(--ink); box-shadow:6px 6px 0 rgba(18, 17, 14, 0.08);">
-        <div class="panel-header" style="background:var(--cream); display:flex; justify-content:space-between; align-items:center;">
-          <div style="display:flex; align-items:center; gap:8px;">
-            <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-size:10px; font-weight:900;">
-              PROTOCOLO 3 · EVALUACIÓN PEDAGÓGICA
-            </span>
-            <h2 style="font-size:13px; margin:0;">ALERTA PREVENTIVA DE MITAD DE PERIODO (SEMANA 6)</h2>
-          </div>
-          <span style="font-family:var(--mono); font-size:11px; font-weight:700; color:var(--rust);">42 CASOS EN RIESGO</span>
-        </div>
-
-        <div class="panel-body padded">
-          <p style="font-size:12.5px; color:var(--ink-soft); line-height:1.45; margin:0 0 14px 0;">
-            El sistema consolidó las notas parciales. Hay <strong>42 estudiantes</strong> con 2 o más asignaturas con promedio inferior a <strong>7.0 / 10</strong>. Conforme al Decreto 1290, se deben remitir informes de alerta temprana antes de los exámenes finales.
-          </p>
-
-          <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-bottom:16px; font-family:var(--mono); font-size:11px;">
-            <div style="background:var(--cream); border:1px solid var(--line-strong); padding:10px;">
-              <span style="color:var(--ink-soft); font-size:9.5px; display:block;">ESTUDIANTES EN RIESGO:</span>
-              <strong style="font-size:15px; color:var(--rust);">42 alumnos</strong>
-            </div>
-            <div style="background:var(--cream); border:1px solid var(--line-strong); padding:10px;">
-              <span style="color:var(--ink-soft); font-size:9.5px; display:block;">PLANES DE REFUERZO:</span>
-              <strong style="font-size:15px; color:var(--ink);">38 asignados (90%)</strong>
-            </div>
-            <div style="background:var(--cream); border:1px solid var(--line-strong); padding:10px;">
-              <span style="color:var(--ink-soft); font-size:9.5px; display:block;">CITACIONES EMITIDAS:</span>
-              <strong style="font-size:15px; color:var(--ink);">14 / 42 enviadas</strong>
-            </div>
-          </div>
-
-          <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <a href={`/${lang}/app/school-admin/students`} class="btn btn-primary btn-sm" style="font-size:11.5px; font-weight:700;">
-              Ver Listado de Alumnos en Riesgo (42) →
-            </a>
-            <button type="button" class="btn btn-secondary btn-sm" onclick="alert('Se enviará circular preventiva formal a los correos de los 42 acudientes con el detalle de las materias en riesgo.');" style="font-size:11.5px;">
-              Enviar Citación Masiva a Acudientes
-            </button>
-          </div>
-        </div>
-      </div>
-
     </div>
 
-    <!-- COLUMNA DERECHA: MESA DE ACCIONES RECTORALES & COMANDOS DIRECTOS -->
     <div style="display:flex; flex-direction:column; gap:20px;">
-      
-      <!-- MESA DE ACCIONES DIRECTAS -->
       <div class="panel" style="border:2px solid var(--ink); box-shadow:4px 4px 0 rgba(18, 17, 14, 0.08);">
         <div class="panel-header" style="background:var(--ink); color:#FFFFFF;">
-          <h2 style="font-size:12px; color:#FFFFFF; letter-spacing:0.08em;">ACCIONES EJECUTIVAS DE RECTORÍA</h2>
+          <h2 style="font-size:12px; color:#FFFFFF; letter-spacing:0.08em;">Acciones de Rectoría</h2>
         </div>
         <div class="panel-body padded" style="display:flex; flex-direction:column; gap:10px;">
-          
-          <a href={`/${lang}/app/school-admin/news`} class="btn btn-primary" style="justify-content:space-between; display:flex; font-size:12px; padding:11px 14px; font-weight:700;">
-            <span>Redactar Circular Urgente</span>
-            <span>→</span>
-          </a>
-
-          <button type="button" class="btn btn-secondary" onclick="alert('Convocatoria formal generada para la Comisión de Evaluación y Promoción del Periodo 1.');" style="justify-content:space-between; display:flex; font-size:12px; padding:10px 12px;">
-            <span>Convocar Comisión de Evaluación</span>
-            <span>👥</span>
-          </button>
-
-          <a href={`/${lang}/app/school-admin/courses`} class="btn btn-secondary" style="justify-content:space-between; display:flex; font-size:12px; padding:10px 12px;">
-            <span>Ver Horarios & Salones en Vivo</span>
-            <span>→</span>
-          </a>
-
-          <button type="button" class="btn btn-secondary" onclick="alert('Generando consolidado general de calificaciones por grado en formato oficial PDF...');" style="justify-content:space-between; display:flex; font-size:12px; padding:10px 12px;">
-            <span>Descargar Consolidado de Notas</span>
-            <span>↓</span>
-          </button>
-
-          <button type="button" class="btn btn-secondary" onclick="document.getElementById('inviteModal').style.display='flex';" style="justify-content:space-between; display:flex; font-size:12px; padding:10px 12px;">
-            <span>Matricular / Invitar Persona</span>
-            <span>＋</span>
-          </button>
-
+          <a href={`/${lang}/app/school-admin/courses`} class="btn btn-secondary" style="justify-content:space-between; display:flex; font-size:12px; padding:10px 12px;"><span>Ver cursos</span><span>→</span></a>
+          <a href={`/${lang}/app/school-admin/teachers`} class="btn btn-secondary" style="justify-content:space-between; display:flex; font-size:12px; padding:10px 12px;"><span>Ver docentes</span><span>→</span></a>
+          <a href={`/${lang}/app/school-admin/students`} class="btn btn-secondary" style="justify-content:space-between; display:flex; font-size:12px; padding:10px 12px;"><span>Ver estudiantes</span><span>→</span></a>
+          <button type="button" class="btn btn-primary" onclick="document.getElementById('inviteModal').style.display='flex';" style="justify-content:space-between; display:flex; font-size:12px; padding:10px 12px;"><span>Invitar usuario</span><span>＋</span></button>
         </div>
       </div>
 
-      <!-- HITOS Y CRONOGRAMA DE LA SEMANA -->
-      <div class="panel" style="border:1.5px solid var(--ink); background:var(--paper); padding:18px;">
-        <div style="font-family:var(--mono); font-size:11px; font-weight:800; text-transform:uppercase; color:var(--ink); margin-bottom:12px; border-bottom:1.5px solid var(--ink); padding-bottom:6px;">
-          AGENDA INSTITUCIONAL DE LA SEMANA
-        </div>
-
-        <div style="display:flex; flex-direction:column; gap:12px; font-size:12px;">
-          <div style="border-left:3px solid var(--rust); padding-left:10px;">
-            <div style="font-family:var(--mono); font-size:10px; font-weight:700; color:var(--rust);">VIERNES 22 DE AGOSTO</div>
-            <strong style="color:var(--ink);">Jornada Pedagógica Docente</strong>
-            <div style="color:var(--ink-soft); font-size:11px;">Sin asistencia de estudiantes (Actualización curricular).</div>
-          </div>
-
-          <div style="border-left:3px solid var(--ink); padding-left:10px;">
-            <div style="font-family:var(--mono); font-size:10px; font-weight:700; color:var(--ink-soft);">MIÉRCOLES 27 DE AGOSTO</div>
-            <strong style="color:var(--ink);">Inscripciones Olimpiadas STEM</strong>
-            <div style="color:var(--ink-soft); font-size:11px;">Postulación de proyectos de 8° a 11° grado.</div>
-          </div>
-
-          <div style="border-left:3px solid var(--line-strong); padding-left:10px;">
-            <div style="font-family:var(--mono); font-size:10px; font-weight:700; color:var(--ink-soft);">VIERNES 5 DE SEPTIEMBRE</div>
-            <strong style="color:var(--ink);">Cierre de Calificaciones P1</strong>
-            <div style="color:var(--ink-soft); font-size:11px;">Límite para que los 52 docentes suban notas finales.</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- CAPACIDAD DE MATRÍCULA -->
       <div class="panel" style="border:1.5px solid var(--ink); background:var(--cream); padding:16px;">
-        <div style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; color:var(--ink-soft); margin-bottom:6px;">
-          Capacidad de Matrícula
-        </div>
-        <div style="font-family:var(--serif); font-size:20px; font-weight:700; color:var(--ink);">
-          {stats.totalStudents} / {stats.maxStudentsPlan} estudiantes
-        </div>
+        <div style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; color:var(--ink-soft); margin-bottom:6px;">Capacidad de Matrícula</div>
+        <div style="font-family:var(--serif); font-size:20px; font-weight:700; color:var(--ink);"><span id="dashboard-capacity-text">0 / 0 estudiantes</span></div>
         <div style="width:100%; height:5px; background:var(--line); margin:8px 0; border:1px solid var(--ink);">
-          <div style={`width:${stats.planUsagePercent}%; height:100%; background:var(--rust);`}></div>
+          <div id="dashboard-capacity-bar" style="width:0%; height:100%; background:var(--rust);"></div>
         </div>
         <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); display:flex; justify-content:space-between;">
-          <span>Ocupación: {stats.planUsagePercent}%</span>
-          <span>{stats.maxStudentsPlan - stats.totalStudents} cupos</span>
+          <span id="dashboard-capacity-usage">Ocupación: 0%</span>
+          <span id="dashboard-capacity-free">0 cupos</span>
         </div>
       </div>
-
     </div>
-
   </div>
 
   <InviteUserModal id="inviteModal" defaultRole="teacher" lang={lang} />
 </AppLayout>
+
+<script>
+  import { schoolAdminTenantService } from '../../../../services/schoolAdminTenantService';
+
+  async function hydrateDashboard() {
+    try {
+      const context = await schoolAdminTenantService.getTenantContext();
+      if (!context) return;
+      const stats = await schoolAdminTenantService.getTenantStats();
+      if (!stats) return;
+
+      const students = document.getElementById('dashboard-stat-students');
+      const studentsSub = document.getElementById('dashboard-stat-students-sub');
+      const teachers = document.getElementById('dashboard-stat-teachers');
+      const teachersSub = document.getElementById('dashboard-stat-teachers-sub');
+      const courses = document.getElementById('dashboard-stat-courses');
+      const coursesSub = document.getElementById('dashboard-stat-courses-sub');
+      const capacity = document.getElementById('dashboard-stat-capacity');
+      const capacitySub = document.getElementById('dashboard-stat-capacity-sub');
+      const capacityText = document.getElementById('dashboard-capacity-text');
+      const capacityBar = document.getElementById('dashboard-capacity-bar');
+      const capacityUsage = document.getElementById('dashboard-capacity-usage');
+      const capacityFree = document.getElementById('dashboard-capacity-free');
+      const activity = document.getElementById('dashboard-live-activity');
+
+      if (students) students.textContent = String(stats.totalStudents);
+      if (studentsSub) studentsSub.textContent = stats.totalStudents ? 'Estudiantes vinculados al tenant' : 'Sin estudiantes vinculados';
+      if (teachers) teachers.textContent = String(stats.totalTeachers);
+      if (teachersSub) teachersSub.textContent = stats.totalTeachers ? 'Docentes vinculados al tenant' : 'Sin docentes vinculados';
+      if (courses) courses.textContent = String(stats.activeCourses);
+      if (coursesSub) coursesSub.textContent = stats.activeCourses ? 'Cursos activos en Supabase' : 'Sin cursos creados todavía';
+      if (capacity) capacity.textContent = `${stats.planUsagePercent}%`;
+      if (capacitySub) capacitySub.textContent = `${Math.max(stats.maxStudentsPlan - stats.totalStudents, 0)} cupos disponibles`;
+      if (capacityText) capacityText.textContent = `${stats.totalStudents} / ${stats.maxStudentsPlan} estudiantes`;
+      if (capacityBar) capacityBar.style.width = `${Math.min(stats.planUsagePercent, 100)}%`;
+      if (capacityUsage) capacityUsage.textContent = `Ocupación: ${stats.planUsagePercent}%`;
+      if (capacityFree) capacityFree.textContent = `${Math.max(stats.maxStudentsPlan - stats.totalStudents, 0)} cupos`;
+
+      if (activity && (stats.totalStudents || stats.totalTeachers || stats.activeCourses)) {
+        activity.innerHTML = `
+          <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; text-align:left;">
+            <div style="border:1px solid var(--line-strong); background:var(--cream); padding:16px;"><div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); text-transform:uppercase;">Estudiantes</div><div style="font-family:var(--serif); font-size:24px; font-weight:700;">${stats.totalStudents}</div></div>
+            <div style="border:1px solid var(--line-strong); background:var(--cream); padding:16px;"><div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); text-transform:uppercase;">Docentes</div><div style="font-family:var(--serif); font-size:24px; font-weight:700;">${stats.totalTeachers}</div></div>
+            <div style="border:1px solid var(--line-strong); background:var(--cream); padding:16px;"><div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); text-transform:uppercase;">Cursos</div><div style="font-family:var(--serif); font-size:24px; font-weight:700;">${stats.activeCourses}</div></div>
+          </div>
+        `;
+      }
+    } catch (error) {
+      console.warn('No se pudo hidratar dashboard de Rectoría:', error);
+    }
+  }
+
+  const dashboardLoad = hydrateDashboard();
+  (window as any).SchoolOSApp?.registerPageLoad(dashboardLoad);
+</script>

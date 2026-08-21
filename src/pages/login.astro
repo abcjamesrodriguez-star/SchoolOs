@@ -345,9 +345,17 @@ const i18nData = {
 
     <!-- Translations store and language controller script -->
     <script is:inline define:vars={{ i18nData }}>
+      window.i18nData = i18nData;
+    </script>
+
+    <!-- Script de autenticación empaquetado por Vite -->
+    <script>
+      import { authService } from '../services/authService';
+
+      // Translations setup
+      const i18nData = (window as any).i18nData;
       let currentLang = 'es';
 
-      // Detect language preference
       try {
         const savedLang = localStorage.getItem('schoolos-lang');
         if (savedLang === 'en' || savedLang === 'es') {
@@ -358,124 +366,163 @@ const i18nData = {
         }
       } catch (_) {}
 
-      function applyTranslations(lang) {
+      function applyTranslations(lang: string) {
         currentLang = lang;
         try {
           localStorage.setItem('schoolos-lang', lang);
         } catch (_) {}
 
-        const t = i18nData[lang] || i18nData.es;
+        const t = (i18nData && i18nData[lang]) || (i18nData && i18nData.es);
+        if (!t) return;
 
-        document.getElementById('htmlRoot').setAttribute('lang', lang);
-        document.getElementById('metaTitle').textContent = t.metaTitle;
-        document.getElementById('cardTitle').textContent = t.title;
-        document.getElementById('cardIntro').textContent = t.intro;
-        document.getElementById('labelUser').textContent = t.userLabel;
-        document.getElementById('labelPass').textContent = t.passLabel;
-        document.getElementById('btnSubmit').textContent = t.submitBtn;
-        document.getElementById('linkBackHome').textContent = t.backHome;
-        document.getElementById('linkBackHome').setAttribute('href', '/' + lang + '/');
-        document.getElementById('backHomeTop').setAttribute('href', '/' + lang + '/');
+        document.getElementById('htmlRoot')?.setAttribute('lang', lang);
+        const metaTitle = document.getElementById('metaTitle');
+        if (metaTitle) metaTitle.textContent = t.metaTitle;
+        const cardTitle = document.getElementById('cardTitle');
+        if (cardTitle) cardTitle.textContent = t.title;
+        const cardIntro = document.getElementById('cardIntro');
+        if (cardIntro) cardIntro.textContent = t.intro;
+        const labelUser = document.getElementById('labelUser');
+        if (labelUser) labelUser.textContent = t.userLabel;
+        const labelPass = document.getElementById('labelPass');
+        if (labelPass) labelPass.textContent = t.passLabel;
+        const btnSubmit = document.getElementById('btnSubmit');
+        if (btnSubmit) btnSubmit.textContent = t.submitBtn;
+        const linkBackHome = document.getElementById('linkBackHome');
+        if (linkBackHome) {
+          linkBackHome.textContent = t.backHome;
+          linkBackHome.setAttribute('href', '/' + lang + '/');
+        }
+        document.getElementById('backHomeTop')?.setAttribute('href', '/' + lang + '/');
 
-        // Toggle active button style
-        document.getElementById('btnLangEn').classList.toggle('active', lang === 'en');
-        document.getElementById('btnLangEs').classList.toggle('active', lang === 'es');
+        document.getElementById('btnLangEn')?.classList.toggle('active', lang === 'en');
+        document.getElementById('btnLangEs')?.classList.toggle('active', lang === 'es');
       }
 
-      // Initial apply
       applyTranslations(currentLang);
 
-      // Language Switcher clicks
       document.getElementById('btnLangEn')?.addEventListener('click', () => applyTranslations('en'));
       document.getElementById('btnLangEs')?.addEventListener('click', () => applyTranslations('es'));
 
-      const userInput = document.getElementById('username');
-      const passInput = document.getElementById('password');
-      const errorMsg = document.getElementById('errorMsg');
+      const userInput = document.getElementById('username') as HTMLInputElement;
+      const passInput = document.getElementById('password') as HTMLInputElement;
+      const errorMsg = document.getElementById('errorMsg') as HTMLElement;
+      const btnSubmit = document.getElementById('btnSubmit') as HTMLButtonElement;
 
-      function setActivePill(pillId, user, pass) {
+      function setActivePill(pillId: string, user: string, pass: string) {
         document.querySelectorAll('.role-pill').forEach(p => p.classList.remove('active'));
         document.getElementById(pillId)?.classList.add('active');
-        userInput.value = user;
-        passInput.value = pass;
+        if (userInput) userInput.value = user;
+        if (passInput) passInput.value = pass;
       }
 
       document.getElementById('pillRector')?.addEventListener('click', () => setActivePill('pillRector', 'rector', '123'));
-      document.getElementById('pillSuperAdmin')?.addEventListener('click', () => setActivePill('pillSuperAdmin', 'admin', '123'));
+      document.getElementById('pillSuperAdmin')?.addEventListener('click', () => setActivePill('pillSuperAdmin', 'kumikasato45@gmail.com', 'SuperAdmin2026!*'));
       document.getElementById('pillTeacher')?.addEventListener('click', () => setActivePill('pillTeacher', 'profesor', '123'));
       document.getElementById('pillStudent')?.addEventListener('click', () => setActivePill('pillStudent', 'estudiante', '123'));
 
-      // Submit
-      document.getElementById('loginForm')?.addEventListener('submit', (e) => {
+      // Submit con Supabase Auth Real
+      document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const username = userInput.value.trim().toLowerCase();
-        const password = passInput.value.trim();
+        const inputVal = userInput ? userInput.value.trim() : '';
+        const password = passInput ? passInput.value.trim() : '';
 
-        if (password !== '123') {
-          errorMsg.style.display = 'block';
-          passInput.value = '';
-          passInput.focus();
-          return;
-        }
-
-        let role = 'school_admin';
-        let targetUrl = '/' + currentLang + '/app/school-admin';
-        let userData = {
-          name: 'Diana Restrepo',
-          email: 'diana.restrepo@colegionorte.edu.co',
-          role: 'school_admin',
-          schoolId: 'colegio-norte',
-          schoolName: 'Colegio Norte',
-        };
-
-        if (username === 'admin' || username === 'superadmin' || username.includes('schoolos.com')) {
-          role = 'super_admin';
-          targetUrl = '/' + currentLang + '/app/super-admin';
-          userData = {
-            name: 'Maria P.',
-            email: 'maria.p@schoolos.com',
-            role: 'super_admin',
-            schoolId: null,
-          };
-        } else if (username === 'rector' || username === 'rectoria' || username.includes('diana')) {
-          role = 'school_admin';
-          targetUrl = '/' + currentLang + '/app/school-admin';
-          userData = {
-            name: 'Diana Restrepo',
-            email: 'diana.restrepo@colegionorte.edu.co',
-            role: 'school_admin',
-            schoolId: 'colegio-norte',
-            schoolName: 'Colegio Norte',
-          };
-        } else if (username === 'profesor' || username === 'teacher' || username.includes('restrepo') || username.includes('diana')) {
-          role = 'teacher';
-          targetUrl = '/' + currentLang + '/app/teacher';
-          userData = {
-            name: 'Prof. Diana Restrepo',
-            email: 'diana.restrepo@colegio-norte.edu.co',
-            role: 'teacher',
-            schoolId: 'colegio-norte',
-            schoolName: 'Colegio Norte',
-          };
-        } else if (username === 'estudiante' || username === 'student' || username.includes('mateo')) {
-          role = 'student';
-          targetUrl = '/' + currentLang + '/app/school-admin/students/std-1';
-          userData = {
-            name: 'Mateo Gómez',
-            email: 'mateo.g@colegionorte.edu.co',
-            role: 'student',
-            schoolId: 'colegio-norte',
-          };
+        if (errorMsg) errorMsg.style.display = 'none';
+        if (btnSubmit) {
+          btnSubmit.disabled = true;
+          btnSubmit.textContent = 'Verificando con Supabase...';
         }
 
         try {
-          localStorage.setItem('schoolos-auth', 'true');
-          localStorage.setItem('schoolos-user', JSON.stringify(userData));
-        } catch (_) {}
+          // 1. Caso Real: Si es un email o el atajo de admin, login con Supabase Auth
+          if (inputVal.includes('@') || inputVal === 'admin') {
+            const emailToUse = inputVal === 'admin' ? 'kumikasato45@gmail.com' : inputVal;
+            const user = await authService.signIn(emailToUse, password);
 
-        const params = new URLSearchParams(window.location.search);
-        const redirectTo = params.get('redirect') || targetUrl;
-        window.location.href = redirectTo;
+            let targetUrl = '/' + currentLang + '/app/super-admin';
+            if (user.role === 'school_admin') targetUrl = '/' + currentLang + '/app/school-admin';
+            if (user.role === 'teacher') targetUrl = '/' + currentLang + '/app/teacher';
+            if (user.role === 'student') targetUrl = '/' + currentLang + '/app/student';
+
+            localStorage.setItem('schoolos-auth', 'true');
+            localStorage.setItem('schoolos-user', JSON.stringify(user));
+
+            const params = new URLSearchParams(window.location.search);
+            const redirectTo = params.get('redirect') || targetUrl;
+            window.location.href = redirectTo;
+            return;
+          }
+
+          // 2. Fallback Demo Mock para otros roles ('rector', 'profesor', 'estudiante')
+          if (password === '123') {
+            let role = 'school_admin';
+            let targetUrl = '/' + currentLang + '/app/school-admin';
+            let userData = {
+              name: 'Diana Restrepo',
+              email: 'diana.restrepo@colegionorte.edu.co',
+              role: 'school_admin',
+              schoolId: '20e98b23-c8d8-4ed3-92ff-376d85106988',
+              schoolName: 'Cafelitos Baseball Academy',
+            };
+
+            if (inputVal === 'superadmin') {
+              role = 'super_admin';
+              targetUrl = '/' + currentLang + '/app/super-admin';
+              userData = {
+                name: 'Kumika Sato',
+                email: 'kumikasato45@gmail.com',
+                role: 'super_admin',
+                schoolId: null,
+                schoolName: 'SchoolOS Global',
+              };
+            } else if (inputVal === 'profesor' || inputVal === 'teacher') {
+              role = 'teacher';
+              targetUrl = '/' + currentLang + '/app/teacher';
+              userData = {
+                name: 'Prof. Diana Restrepo',
+                email: 'diana.restrepo@colegio-norte.edu.co',
+                role: 'teacher',
+                schoolId: '20e98b23-c8d8-4ed3-92ff-376d85106988',
+                schoolName: 'Cafelitos Baseball Academy',
+              };
+            } else if (inputVal === 'estudiante' || inputVal === 'student') {
+              role = 'student';
+              targetUrl = '/' + currentLang + '/app/student';
+              userData = {
+                name: 'Mateo Gómez',
+                email: 'mateo.g@colegio-norte.edu.co',
+                role: 'student',
+                schoolId: '20e98b23-c8d8-4ed3-92ff-376d85106988',
+                schoolName: 'Cafelitos Baseball Academy',
+              };
+            }
+
+            localStorage.setItem('schoolos-auth', 'true');
+            localStorage.setItem('schoolos-user', JSON.stringify(userData));
+
+            const params = new URLSearchParams(window.location.search);
+            const redirectTo = params.get('redirect') || targetUrl;
+            window.location.href = redirectTo;
+            return;
+          }
+
+          throw new Error('Credenciales inválidas. Verifica tu correo y contraseña.');
+        } catch (err: any) {
+          if (errorMsg) {
+            errorMsg.textContent = err?.message || 'Error al iniciar sesión en Supabase.';
+            errorMsg.style.display = 'block';
+          }
+          if (passInput) {
+            passInput.value = '';
+            passInput.focus();
+          }
+        } finally {
+          if (btnSubmit) {
+            btnSubmit.disabled = false;
+            const t = (i18nData && i18nData[currentLang]) || (i18nData && i18nData.es);
+            btnSubmit.textContent = t?.submitBtn || 'Entrar al Sistema →';
+          }
+        }
       });
     </script>
   </body>
