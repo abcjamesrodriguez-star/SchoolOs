@@ -25,11 +25,11 @@ const students10A = allStudents.filter(s => s.courseId === 'crs-bio-10a');
   pageTitle="Centro de Calificaciones"
   activeSection="grades"
   role="teacher"
-  schoolName="Colegio Norte"
+  schoolName="Raptor Crew"
   lang={lang}
   activeRoute="/app/teacher/grades"
   breadcrumbs={[
-    { label: 'Colegio Norte' },
+    { label: 'Raptor Crew' },
     { label: 'Panel Docente', href: `/${lang}/app/teacher` },
     { label: 'Calificaciones' },
   ]}
@@ -89,7 +89,7 @@ const students10A = allStudents.filter(s => s.courseId === 'crs-bio-10a');
             <div style="padding:18px 20px 14px 20px; border-bottom:1.5px solid var(--line);">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                 <span class="plan-tag" style={`font-size:9.5px; font-weight:900; padding:2px 7px; border-radius:3px; ${hasPending ? 'background:#FCEAE6; color:var(--rust); border-color:var(--rust);' : 'background:#E5EFE0; color:#2E5E1E; border-color:#5B8A4A;'}`}>
-                  {hasPending ? `🔴 ${pendingCount} PENDIENTES` : '🟢 AL DÍA'}
+                  {hasPending ? ` ${pendingCount} PENDIENTES` : ' AL DÍA'}
                 </span>
                 <span style="font-family:var(--mono); font-size:11px; font-weight:700; color:var(--ink-soft);">
                   {course.room}
@@ -124,7 +124,7 @@ const students10A = allStudents.filter(s => s.courseId === 'crs-bio-10a');
                 <div style={`display:flex; justify-content:space-between; align-items:center; font-size:11px; padding:4px 8px; border-radius:4px; ${hasPending ? 'background:#FFF4F2; border:1px solid #F5C6BC;' : 'background:#FFFFFF; border:1px solid #E8E2D9;'}`}>
                   <span style="color:var(--ink); font-weight:700;">Eval. Mendel (30%)</span>
                   <span style={`font-family:var(--mono); font-size:10px; font-weight:800; ${hasPending ? 'color:var(--rust);' : 'color:#2E5E1E;'}`}>
-                    {hasPending ? `⏳ ${pendingCount} sin nota` : '✓ Calificada'}
+                    {hasPending ? ` ${pendingCount} sin nota` : '✓ Calificada'}
                   </span>
                 </div>
               </div>
@@ -196,7 +196,7 @@ const students10A = allStudents.filter(s => s.courseId === 'crs-bio-10a');
             onclick="switchMainTab('planilla');"
             style="padding:6px 16px; font-family:var(--mono); font-size:11px; font-weight:800; border:none; border-radius:4px; cursor:pointer; background:var(--ink); color:#FFFFFF; transition:all 0.15s ease;"
           >
-            📊 Planilla de Notas
+             Planilla de Notas
           </button>
 
           <button
@@ -205,7 +205,7 @@ const students10A = allStudents.filter(s => s.courseId === 'crs-bio-10a');
             onclick="switchMainTab('resumen');"
             style="padding:6px 16px; font-family:var(--mono); font-size:11px; font-weight:800; border:none; border-radius:4px; cursor:pointer; background:transparent; color:var(--ink); transition:all 0.15s ease;"
           >
-            📋 Resumen & Boletín
+             Resumen & Boletín
           </button>
         </div>
 
@@ -259,7 +259,7 @@ const students10A = allStudents.filter(s => s.courseId === 'crs-bio-10a');
           onclick="filterByStatus('risk');"
           style="font-family:var(--mono); font-size:9.5px; font-weight:800; background:#FFF0EE; color:var(--rust); border:1px solid #F5C6BC; padding:3px 6px; border-radius:3px; cursor:pointer;"
         >
-          Filtrar ⚠️
+          Filtrar 
         </button>
       </div>
 
@@ -570,7 +570,7 @@ const students10A = allStudents.filter(s => s.courseId === 'crs-bio-10a');
           
           <!-- Input de Búsqueda -->
           <div style="position:relative; width:180px;">
-            <span style="position:absolute; left:8px; top:50%; transform:translateY(-50%); font-size:11px; color:var(--ink-soft);">🔍</span>
+            <span style="position:absolute; left:8px; top:50%; transform:translateY(-50%); font-size:11px; color:var(--ink-soft);"></span>
             <input
               type="text"
               id="studentSearchInput"
@@ -598,7 +598,7 @@ const students10A = allStudents.filter(s => s.courseId === 'crs-bio-10a');
               class="grade-filter-pill"
               style="font-size:10px; padding:4px 8px;"
             >
-              ⚠️ Riesgo (<span id="pillCountRisk">2</span>)
+               Riesgo (<span id="pillCountRisk">2</span>)
             </button>
             <button
               type="button"
@@ -616,7 +616,7 @@ const students10A = allStudents.filter(s => s.courseId === 'crs-bio-10a');
               class="grade-filter-pill"
               style="font-size:10px; padding:4px 8px;"
             >
-              ⭐ Superior (<span id="pillCountHonor">13</span>)
+               Superior (<span id="pillCountHonor">13</span>)
             </button>
           </div>
 
@@ -692,7 +692,7 @@ const students10A = allStudents.filter(s => s.courseId === 'crs-bio-10a');
               class="btn btn-secondary btn-sm"
               style="font-size:10.5px; font-weight:800; padding:5px 10px; border-radius:4px; display:flex; align-items:center; gap:3px; cursor:pointer;"
             >
-              ⚡ Herramientas ▾
+               Herramientas ▾
             </button>
             <div
               id="toolsDropdownMenu"
@@ -704,7 +704,7 @@ const students10A = allStudents.filter(s => s.courseId === 'crs-bio-10a');
                 onmouseenter="this.style.background='var(--cream)';"
                 onmouseleave="this.style.background='transparent';"
               >
-                <span>✏️</span> Llenar casillas vacías con 70
+                <span></span> Llenar casillas vacías con 70
               </div>
               <div
                 onclick="applyGroupCurve(); toggleToolsDropdown();"
@@ -712,7 +712,7 @@ const students10A = allStudents.filter(s => s.courseId === 'crs-bio-10a');
                 onmouseenter="this.style.background='var(--cream)';"
                 onmouseleave="this.style.background='transparent';"
               >
-                <span>📈</span> Aplicar curva grupal (+5 pts)
+                <span></span> Aplicar curva grupal (+5 pts)
               </div>
               <div style="height:1px; background:#ECE7DE; margin:3px 0;"></div>
               <div
@@ -721,7 +721,7 @@ const students10A = allStudents.filter(s => s.courseId === 'crs-bio-10a');
                 onmouseenter="this.style.background='var(--cream)';"
                 onmouseleave="this.style.background='transparent';"
               >
-                <span>📥</span> Exportar a CSV / Excel
+                <span></span> Exportar a CSV / Excel
               </div>
             </div>
           </div>
@@ -1515,7 +1515,7 @@ const students10A = allStudents.filter(s => s.courseId === 'crs-bio-10a');
           kpiStatus.style.color = '#2E5E1E';
           kpiStatus.style.border = '1px solid #A8C99B';
         } else {
-          kpiStatus.innerText = `⚠ Repartir pesos`;
+          kpiStatus.innerText = ` Repartir pesos`;
           kpiStatus.style.background = '#FFF8EE';
           kpiStatus.style.color = '#B35C00';
           kpiStatus.style.border = '1px solid #EFCA88';
@@ -1560,11 +1560,11 @@ const students10A = allStudents.filter(s => s.courseId === 'crs-bio-10a');
     }
 
     function exportToCSV() {
-      showToast('📥 Descargando archivo CSV: Calificaciones_10A_P1.csv', 'success');
+      showToast(' Descargando archivo CSV: Calificaciones_10A_P1.csv', 'success');
     }
 
     function savePlanillaGrades() {
-      showToast('✅ 30 Calificaciones guardadas y sincronizadas en el boletín institucional.');
+      showToast(' 30 Calificaciones guardadas y sincronizadas en el boletín institucional.');
     }
   </script>
 

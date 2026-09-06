@@ -89,7 +89,7 @@ export const AssessmentSummaryModal: React.FC<Props> = ({
 
           <div style={{ background: flagged > 0 ? '#FEF3C7' : '#FAF9F6', border: flagged > 0 ? '1.5px solid #D97706' : '1.5px solid var(--line-strong)', padding: '10px', textAlign: 'center' }}>
             <div style={{ fontFamily: 'var(--mono)', fontSize: 20, fontWeight: 900, color: flagged > 0 ? '#92400E' : 'var(--ink)' }}>{flagged}</div>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 800, color: flagged > 0 ? '#92400E' : 'var(--ink-soft)', textTransform: 'uppercase' }}>Marcadas 🚩</div>
+            <div style={{ fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 800, color: flagged > 0 ? '#92400E' : 'var(--ink-soft)', textTransform: 'uppercase' }}>Marcadas </div>
           </div>
         </div>
 
@@ -97,7 +97,7 @@ export const AssessmentSummaryModal: React.FC<Props> = ({
         {unanswered > 0 && (
           <div style={{ background: '#FFF8F5', borderLeft: '4px solid var(--rust)', padding: '10px 14px', marginBottom: 16 }}>
             <div style={{ fontFamily: 'var(--mono)', fontSize: 10.5, fontWeight: 800, color: 'var(--rust)', textTransform: 'uppercase', marginBottom: 2 }}>
-              ⚠️ Preguntas Pendientes:
+               Preguntas Pendientes:
             </div>
             <p style={{ fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--ink)', margin: 0 }}>
               Tienes <strong>{unanswered} pregunta(s)</strong> sin responder. Las preguntas en blanco se calificarán como incorrectas.
@@ -136,7 +136,7 @@ export const AssessmentSummaryModal: React.FC<Props> = ({
                       cursor: 'pointer',
                     }}
                   >
-                    Pregunta {q.order} {!isAns ? '(Pendiente)' : '🚩'}
+                    Pregunta {q.order} {!isAns ? '(Pendiente)' : ''}
                   </button>
                 );
               })}
@@ -186,7 +186,7 @@ export const AssessmentSummaryModal: React.FC<Props> = ({
               boxShadow: '3px 3px 0 var(--ink)',
             }}
           >
-            <span>{isSubmitting ? '⏳ Calificando...' : '🚀 Sí, Entregar Ahora'}</span>
+            <span>{isSubmitting ? ' Calificando...' : ' Sí, Entregar Ahora'}</span>
           </button>
         </div>
       </div>

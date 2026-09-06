@@ -218,7 +218,7 @@ export default function EvaluationRunner({ evaluation, lang = 'es', guideId }: E
           </div>
 
           <div style={{ background: '#FFF8F6', border: '1.5px solid #F5C6BC', borderRadius: '8px', padding: '14px 16px', marginBottom: '24px' }}>
-            <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '10px', fontWeight: 800, color: '#C3532C', marginBottom: '6px' }}>⚠ INSTRUCCIONES</div>
+            <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '10px', fontWeight: 800, color: '#C3532C', marginBottom: '6px' }}> INSTRUCCIONES</div>
             <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '13px', color: '#524E44', lineHeight: 1.7 }}>
               <li>Lee cada pregunta con calma antes de seleccionar tu respuesta.</li>
               <li>Puedes marcar preguntas para revisarlas antes de enviar.</li>
@@ -235,7 +235,7 @@ export default function EvaluationRunner({ evaluation, lang = 'es', guideId }: E
               cursor: 'pointer', letterSpacing: '0.04em',
             }}
           >
-            ⚡ Iniciar Evaluación
+             Iniciar Evaluación
           </button>
           <a
             href={`/${lang}/app/student${guideId ? `/guides/${guideId}` : ''}`}
@@ -268,7 +268,7 @@ export default function EvaluationRunner({ evaluation, lang = 'es', guideId }: E
           boxShadow: '6px 6px 0 rgba(18,17,14,0.10)', textAlign: 'center',
         }}>
           <div style={{ fontSize: '48px', marginBottom: '12px' }}>
-            {status === 'timeout' ? '⏰' : passed ? '🎉' : '📋'}
+            {status === 'timeout' ? '' : passed ? '' : ''}
           </div>
           <h2 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: '22px', fontWeight: 900, margin: '0 0 8px 0' }}>
             {status === 'timeout' ? '¡Tiempo agotado!' : 'Evaluación enviada'}
@@ -320,7 +320,7 @@ export default function EvaluationRunner({ evaluation, lang = 'es', guideId }: E
         {/* Timer + Progreso */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '13px', fontWeight: 900, color: timerColor }}>
-            ⏱ {formatTime(timeRemaining)}
+             {formatTime(timeRemaining)}
           </div>
           <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '12px', color: '#524E44' }}>
             <span style={{ fontWeight: 800, color: '#12110E' }}>{answeredCount}</span>/{totalQuestions} respondidas
@@ -357,7 +357,7 @@ export default function EvaluationRunner({ evaluation, lang = 'es', guideId }: E
             {/* Número de pregunta */}
             <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '10.5px', color: '#C3532C', fontWeight: 800, marginBottom: '8px', textTransform: 'uppercase' }}>
               Pregunta {currentIndex + 1} de {totalQuestions}
-              {isFlagged && <span style={{ marginLeft: '10px', color: '#C8860A' }}>🏳 Marcada para revisión</span>}
+              {isFlagged && <span style={{ marginLeft: '10px', color: '#C8860A' }}> Marcada para revisión</span>}
             </div>
 
             {/* Enunciado */}
@@ -443,7 +443,7 @@ export default function EvaluationRunner({ evaluation, lang = 'es', guideId }: E
                 cursor: 'pointer', color: isFlagged ? '#C8860A' : '#524E44',
               }}
             >
-              {isFlagged ? '🏳 Marcada' : '🏴 Marcar'}
+              {isFlagged ? ' Marcada' : ' Marcar'}
             </button>
 
             {currentIndex < totalQuestions - 1 ? (
@@ -539,7 +539,7 @@ export default function EvaluationRunner({ evaluation, lang = 'es', guideId }: E
                 cursor: 'pointer',
               }}
             >
-              🚨 Enviar Evaluación
+               Enviar Evaluación
             </button>
             {unansweredCount > 0 && (
               <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '9.5px', color: '#C8860A', textAlign: 'center', marginTop: '6px' }}>
@@ -567,7 +567,7 @@ export default function EvaluationRunner({ evaluation, lang = 'es', guideId }: E
             </h3>
             {unansweredCount > 0 && (
               <div style={{ background: '#FFF8E1', border: '1.5px solid #F4C150', borderRadius: '8px', padding: '12px 14px', marginBottom: '16px' }}>
-                <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '10px', fontWeight: 800, color: '#C8860A', marginBottom: '4px' }}>⚠ ADVERTENCIA</div>
+                <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '10px', fontWeight: 800, color: '#C8860A', marginBottom: '4px' }}> ADVERTENCIA</div>
                 <p style={{ fontSize: '13.5px', color: '#12110E', margin: 0 }}>
                   Tienes <strong>{unansweredCount}</strong> pregunta{unansweredCount > 1 ? 's' : ''} sin responder. Las preguntas sin responder contarán como incorrectas.
                 </p>

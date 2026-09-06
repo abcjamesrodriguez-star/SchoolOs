@@ -6,11 +6,6 @@
 import AppLayout from '../../../../../layouts/AppLayout.astro';
 import { getAllTeacherGuides, getGuideById, getEvaluationsByGuide } from '../../../../../data/app/mock-content';
 
-export async function getStaticPaths() {
-  const guides = getAllTeacherGuides();
-  return guides.map((g) => ({ params: { id: g.id } }));
-}
-
 const lang = 'es';
 const { id } = Astro.params;
 const guide = getGuideById(id!);
@@ -23,11 +18,11 @@ const evaluations = guide ? getEvaluationsByGuide(guide.id) : [];
     pageTitle={guide.title}
     activeSection="courses"
     role="teacher"
-    schoolName="Colegio Norte"
+    schoolName="Raptor Crew"
     lang={lang}
     activeRoute={`/app/teacher/guides/${id}`}
     breadcrumbs={[
-      { label: 'Colegio Norte' },
+      { label: 'Raptor Crew' },
       { label: 'Panel Docente', href: `/${lang}/app/teacher` },
       { label: guide.courseName, href: `/${lang}/app/teacher/courses/${guide.courseId}` },
       { label: guide.title },
@@ -67,7 +62,7 @@ const evaluations = guide ? getEvaluationsByGuide(guide.id) : [];
           <!-- Encabezado del documento -->
           <div style="border-bottom:3px solid var(--ink); padding-bottom:16px; margin-bottom:24px;">
             <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); text-transform:uppercase; margin-bottom:4px;">
-              {guide.courseName} · {guide.estimatedMinutes} min · Colegio Norte
+              {guide.courseName} · {guide.estimatedMinutes} min · Raptor Crew
             </div>
             <h2 style="font-family:var(--serif); font-size:22px; font-weight:700; color:var(--ink); margin:0 0 6px 0;">{guide.title}</h2>
             {guide.description && <p style="font-size:12.5px; color:var(--ink-soft); margin:0; line-height:1.5;">{guide.description}</p>}
@@ -128,7 +123,7 @@ const evaluations = guide ? getEvaluationsByGuide(guide.id) : [];
             <div style="font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--rust); margin-bottom:8px;">BORRADOR — No visible para alumnos</div>
             <p style="font-size:12px; color:var(--ink-soft); margin:0 0 12px 0; line-height:1.5;">Esta guía aún no ha sido publicada. Los alumnos no pueden verla.</p>
             <button class="btn btn-primary" onclick="alert('Guía publicada. Los alumnos ya pueden acceder al contenido.')" style="width:100%; font-size:12px; font-weight:700; justify-content:center;">
-              🚀 Publicar Guía
+               Publicar Guía
             </button>
           </div>
         )}
@@ -164,7 +159,7 @@ const evaluations = guide ? getEvaluationsByGuide(guide.id) : [];
 
   </AppLayout>
 ) : (
-  <AppLayout title="Guía no encontrada" pageTitle="Error" activeSection="courses" role="teacher" schoolName="Colegio Norte" lang={lang} activeRoute="/app/teacher" breadcrumbs={[{ label: 'Colegio Norte' }, { label: 'Error' }]}>
+  <AppLayout title="Guía no encontrada" pageTitle="Error" activeSection="courses" role="teacher" schoolName="Raptor Crew" lang={lang} activeRoute="/app/teacher" breadcrumbs={[{ label: 'Raptor Crew' }, { label: 'Error' }]}>
     <div style="padding:40px; text-align:center;">
       <h2>Guía no encontrada</h2>
       <a href={`/${lang}/app/teacher/courses`} class="btn btn-primary">Volver a Mis Cursos</a>

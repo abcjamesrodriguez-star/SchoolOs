@@ -104,7 +104,7 @@ export const PRESET_PEDAGOGICAL_IMAGES: PedagogicalImagePreset[] = [
   {
     id: 'osmosis',
     name: 'Ósmosis & Plasmólisis',
-    icon: '🧫',
+    icon: '',
     caption: 'Comportamiento osmótico en células vegetales: Turgencia (Hipotónico), Normal (Isotónico) y Plasmólisis (Hipertónico).',
     src: `data:image/svg+xml;utf8,${encodeURIComponent(`
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 170" width="100%" height="100%">
@@ -139,7 +139,7 @@ export const PRESET_PEDAGOGICAL_IMAGES: PedagogicalImagePreset[] = [
   {
     id: 'microscope',
     name: 'Microscopio Óptico',
-    icon: '🔬',
+    icon: '',
     caption: 'Esquema de microscopio óptico compuesto con objetivos de 10x y 40x para análisis histológico.',
     src: `data:image/svg+xml;utf8,${encodeURIComponent(`
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 160" width="100%" height="100%">
@@ -165,7 +165,7 @@ export const PRESET_PEDAGOGICAL_IMAGES: PedagogicalImagePreset[] = [
   {
     id: 'dna',
     name: 'Estructura ADN',
-    icon: '🧬',
+    icon: '',
     caption: 'Doble hélice de ADN con emparejamiento de bases nitrogenadas A-T y G-C.',
     src: `data:image/svg+xml;utf8,${encodeURIComponent(`
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 150" width="100%" height="100%">
@@ -189,7 +189,7 @@ export const PRESET_PEDAGOGICAL_IMAGES: PedagogicalImagePreset[] = [
   {
     id: 'cell',
     name: 'Célula Vegetal',
-    icon: '🌿',
+    icon: '',
     caption: 'Estructura anatómica de la célula vegetal: Pared celulósica, membrana plasmática, vacuola y cloroplastos.',
     src: `data:image/svg+xml;utf8,${encodeURIComponent(`
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 160" width="100%" height="100%">
@@ -230,7 +230,7 @@ const TEMPLATES: TemplatePreset[] = [
   {
     id: 'lab',
     name: 'Guía de Laboratorio / Práctica',
-    icon: '🔬',
+    icon: '',
     badge: 'Experimental',
     description: 'Protocolo de observación, materiales, hipótesis y análisis de resultados con esquema visual.',
     getState: (courseId, courseName) => {
@@ -327,7 +327,7 @@ const TEMPLATES: TemplatePreset[] = [
   {
     id: 'theory',
     name: 'Guía Teórica y Comprensión',
-    icon: '📖',
+    icon: '',
     badge: 'Conceptual',
     description: 'Exposición temática con vocabulario clave, recuadros de profundización y test formativo.',
     getState: (courseId, courseName) => {
@@ -400,7 +400,7 @@ const TEMPLATES: TemplatePreset[] = [
   {
     id: 'case',
     name: 'Estudio de Caso / Taller Práctico',
-    icon: '🧠',
+    icon: '',
     badge: 'Aplicado',
     description: 'Análisis de un problema del mundo real, preguntas de indagación y debate guiado.',
     getState: (courseId, courseName) => {
@@ -451,7 +451,7 @@ const TEMPLATES: TemplatePreset[] = [
   {
     id: 'blank',
     name: 'Lienzo en Blanco',
-    icon: '📄',
+    icon: '',
     badge: 'Desde cero',
     description: 'Estructura mínima limpia para redactar tu guía paso a paso a tu manera.',
     getState: () => ({
@@ -532,7 +532,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
       try {
         localStorage.setItem('schoolos_custom_school_logo', dataUrl);
       } catch (_) {}
-      triggerToast('✨ Logo institucional personalizado cargado.');
+      triggerToast(' Logo institucional personalizado cargado.');
     };
     reader.readAsDataURL(file);
   }
@@ -573,7 +573,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
       updatedAt: new Date().toISOString(),
     }));
     setShowTemplateModal(false);
-    triggerToast(`✨ Plantilla "${tpl.name}" cargada en el editor.`);
+    triggerToast(` Plantilla "${tpl.name}" cargada en el editor.`);
   }
 
   // ── MANEJO DE BLOQUES ──
@@ -650,7 +650,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
       updatedAt: new Date().toISOString(),
     }));
     setActiveTab('questions');
-    triggerToast('🎯 Nueva pregunta vinculada.');
+    triggerToast(' Nueva pregunta vinculada.');
   }
 
   function updateQuestion(id: string, updates: Partial<StudioQuestion>) {
@@ -674,7 +674,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
     const originalTitle = document.title;
     const cleanGuideName = (guide.title || 'Guia-Pedagogica').trim().replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s-_]/g, '');
     document.title = `${cleanGuideName} — ${courseName} — Colegio Norte`;
-    triggerToast('🖨 Abriendo diálogo de impresión / descarga como PDF...');
+    triggerToast(' Abriendo diálogo de impresión / descarga como PDF...');
     setTimeout(() => {
       window.print();
       setTimeout(() => {
@@ -723,7 +723,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
     return (
       <div style={{ maxWidth: 680, margin: '40px auto', background: 'var(--paper)', border: '2.5px solid var(--ink)', padding: '36px 32px', boxShadow: '8px 8px 0 var(--ink)' }}>
         <div style={{ display: 'inline-block', padding: '4px 10px', background: guide.status === 'published' ? 'var(--rust)' : 'var(--ink)', color: '#fff', fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
-          {guide.status === 'published' ? '🚀 ¡GUÍA PUBLICADA CON ÉXITO!' : '💾 BORRADOR GUARDADO CORRECTAMENTE'}
+          {guide.status === 'published' ? ' ¡GUÍA PUBLICADA CON ÉXITO!' : ' BORRADOR GUARDADO CORRECTAMENTE'}
         </div>
 
         <h2 style={{ fontFamily: 'var(--serif)', fontSize: 26, fontWeight: 700, color: 'var(--ink)', margin: '0 0 10px 0', lineHeight: 1.25 }}>
@@ -760,7 +760,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
               boxShadow: '3px 3px 0 var(--ink)',
             }}
           >
-            📥 Descargar Guía en PDF
+             Descargar Guía en PDF
           </button>
 
           <a
@@ -798,7 +798,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
               cursor: 'pointer',
             }}
           >
-            📄 Ver Hoja PDF
+             Ver Hoja PDF
           </button>
 
           <button
@@ -981,7 +981,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
                           }}
                         >
                           <div style={{ fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 900, color: block.calloutVariant === 'activity' ? '#2D4327' : 'var(--rust)', textTransform: 'uppercase', marginBottom: 4 }}>
-                            § {block.order} · {block.calloutVariant === 'activity' ? '🧪 ' : block.calloutVariant === 'warning' ? '⚠️ ' : block.calloutVariant === 'vocabulary' ? '📖 ' : '💡 '}
+                            § {block.order} · {block.calloutVariant === 'activity' ? ' ' : block.calloutVariant === 'warning' ? ' ' : block.calloutVariant === 'vocabulary' ? ' ' : ' '}
                             {block.title || 'Información Destacada'}
                           </div>
                           <p style={{ fontFamily: 'var(--sans)', fontSize: 12.5, color: '#12110E', margin: 0, lineHeight: 1.55, whiteSpace: 'pre-line' }}>
@@ -1281,7 +1281,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
               marginBottom: 16,
             }}
           >
-            <span>✂ PÁGINA IMPRESA INDEPENDIENTE (HOJA DE RESPUESTAS DESPRENDIBLE)</span>
+            <span> PÁGINA IMPRESA INDEPENDIENTE (HOJA DE RESPUESTAS DESPRENDIBLE)</span>
             <span style={{ color: 'var(--rust)', background: '#fff', padding: '1px 6px', borderRadius: 2 }}>TIPO ICFES / SABER</span>
           </div>
 
@@ -1350,8 +1350,8 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
                       </span>
                       <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#666' }}>
                         <strong>INCORRECTO:</strong>
-                        <span>( ✖ )</span>
-                        <span>( ✔ )</span>
+                        <span>(  )</span>
+                        <span>(  )</span>
                         <span>( ⭘ )</span>
                       </span>
                     </div>
@@ -1483,7 +1483,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
             />
             <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 10 }}>
               <label style={{ padding: '4px 10px', background: 'var(--ink)', color: '#fff', fontFamily: 'var(--mono)', fontSize: 10.5, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                📁 Cambiar Imagen
+                 Cambiar Imagen
                 <input
                   type="file"
                   accept="image/*"
@@ -1530,7 +1530,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
               textAlign: 'center',
             }}
           >
-            <span>📁 Subir imagen desde tu computador</span>
+            <span> Subir imagen desde tu computador</span>
             <input
               type="file"
               accept="image/*"
@@ -1667,7 +1667,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
                 gap: 5,
               }}
             >
-              📝 Solo Editor
+               Solo Editor
             </button>
             <button
               onClick={() => setViewLayout('pdf')}
@@ -1685,7 +1685,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
                 gap: 5,
               }}
             >
-              📄 Hoja PDF Completa
+               Hoja PDF Completa
             </button>
           </div>
 
@@ -1698,7 +1698,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
               type="button"
               onClick={() => {
                 setAnswerSheetMode('inline');
-                triggerToast('📝 Modalidad: Responder directamente en la misma guía.');
+                triggerToast(' Modalidad: Responder directamente en la misma guía.');
               }}
               style={{
                 padding: '5px 9px',
@@ -1712,13 +1712,13 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
               }}
               title="Responder marcando directamente en la misma guía"
             >
-              📝 En la misma guía
+               En la misma guía
             </button>
             <button
               type="button"
               onClick={() => {
                 setAnswerSheetMode('icfes');
-                triggerToast('🎯 Modalidad: Hoja de respuestas estilo ICFES / Saber al final.');
+                triggerToast(' Modalidad: Hoja de respuestas estilo ICFES / Saber al final.');
               }}
               style={{
                 padding: '5px 9px',
@@ -1732,13 +1732,13 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
               }}
               title="Generar hoja de respuestas estilo ICFES / Saber con óvalos al final"
             >
-              🎯 Hoja ICFES al final
+               Hoja ICFES al final
             </button>
             <button
               type="button"
               onClick={() => {
                 setAnswerSheetMode('both');
-                triggerToast('📄 Modalidad: Ambas (Casillas en la guía + Hoja ICFES al final).');
+                triggerToast(' Modalidad: Ambas (Casillas en la guía + Hoja ICFES al final).');
               }}
               style={{
                 padding: '5px 9px',
@@ -1752,7 +1752,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
               }}
               title="Incluir ambas modalidades: casillas en la guía y hoja ICFES al final"
             >
-              📄 Ambas
+               Ambas
             </button>
           </div>
 
@@ -1772,7 +1772,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
               gap: 6,
             }}
           >
-            ⚡ Plantillas Pedagógicas
+             Plantillas Pedagógicas
           </button>
 
           {/* Botón de Configuración de Logo & Marca de Agua */}
@@ -1794,7 +1794,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
             }}
             title="Personalizar el logo de la institución y la marca de agua al 20%"
           >
-            <span>🛡 Logo & Marca de Agua ▾</span>
+            <span> Logo & Marca de Agua ▾</span>
             {customLogoUrl ? (
               <span style={{ background: 'var(--rust)', color: '#fff', fontSize: 9, padding: '1px 5px', borderRadius: 2, fontWeight: 900 }}>
                 SUBIDO
@@ -1836,7 +1836,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
             }}
             title="Descargar la guía en PDF o imprimirla en papel"
           >
-            📥 Descargar PDF / Imprimir
+             Descargar PDF / Imprimir
           </button>
 
           {/* Botón de Vista Previa de Resolución Online */}
@@ -1844,7 +1844,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
             type="button"
             onClick={() => {
               if (guide.questions.length === 0) {
-                triggerToast('⚠️ Añade al menos 1 pregunta para probar la resolución interactiva.');
+                triggerToast(' Añade al menos 1 pregunta para probar la resolución interactiva.');
                 setActiveTab('questions');
                 return;
               }
@@ -1866,7 +1866,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
             }}
             title="Probar cómo resolverán los estudiantes esta guía de forma virtual online"
           >
-            <span>🎮 Resolver Online (Preview)</span>
+            <span> Resolver Online (Preview)</span>
           </button>
 
           <button
@@ -1882,7 +1882,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
               cursor: 'pointer',
             }}
           >
-            💾 Borrador
+             Borrador
           </button>
 
           <button
@@ -1902,7 +1902,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
               boxShadow: '2px 2px 0 var(--ink)',
             }}
           >
-            🚀 Publicar al Curso
+             Publicar al Curso
           </button>
         </div>
       </div>
@@ -2002,7 +2002,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
                   Identidad Visual de la Guía
                 </div>
                 <h2 style={{ fontFamily: 'var(--serif)', fontSize: 20, fontWeight: 800, margin: '2px 0 0 0', color: 'var(--ink)' }}>
-                  🛡️ Logo & Marca de Agua
+                   Logo & Marca de Agua
                 </h2>
               </div>
               <button
@@ -2054,7 +2054,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
                     textAlign: 'center',
                   }}
                 >
-                  <span>📁 Subir Logo Propio (PNG / JPG / SVG)</span>
+                  <span> Subir Logo Propio (PNG / JPG / SVG)</span>
                   <input
                     type="file"
                     accept="image/*"
@@ -2243,7 +2243,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--line)', flexWrap: 'wrap' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'var(--mono)', fontSize: 11 }}>
-                  <span style={{ color: 'var(--ink-soft)', fontWeight: 700 }}>⏱ MINUTOS:</span>
+                  <span style={{ color: 'var(--ink-soft)', fontWeight: 700 }}> MINUTOS:</span>
                   <input
                     type="number"
                     min={5}
@@ -2254,7 +2254,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
                   />
                 </div>
                 <div style={{ fontFamily: 'var(--mono)', fontSize: 10.5, color: 'var(--ink-soft)' }}>
-                  📊 <strong>{guide.blocks.length}</strong> bloques · <strong>{guide.questions.length}</strong> preguntas
+                   <strong>{guide.blocks.length}</strong> bloques · <strong>{guide.questions.length}</strong> preguntas
                 </div>
               </div>
             </div>
@@ -2275,7 +2275,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
                   cursor: 'pointer',
                 }}
               >
-                📝 Bloques ({guide.blocks.length})
+                 Bloques ({guide.blocks.length})
               </button>
 
               <button
@@ -2295,7 +2295,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
                   gap: 5,
                 }}
               >
-                🎯 Preguntas / Checkpoints ({guide.questions.length})
+                 Preguntas / Checkpoints ({guide.questions.length})
               </button>
             </div>
 
@@ -2333,12 +2333,12 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
                             }}
                             style={{ fontFamily: 'var(--mono)', fontSize: 10.5, fontWeight: 700, padding: '2px 6px', border: '1px solid var(--ink)', background: '#fff' }}
                           >
-                            <option value="heading">📑 Título</option>
+                            <option value="heading"> Título</option>
                             <option value="paragraph">¶ Párrafo</option>
-                            <option value="callout:idea">💡 Idea Clave</option>
-                            <option value="callout:activity">🧪 Actividad</option>
-                            <option value="callout:vocabulary">📖 Glosario</option>
-                            <option value="callout:warning">⚠️ Atención</option>
+                            <option value="callout:idea"> Idea Clave</option>
+                            <option value="callout:activity"> Actividad</option>
+                            <option value="callout:vocabulary"> Glosario</option>
+                            <option value="callout:warning"> Atención</option>
                             <option value="image">▣ Imagen</option>
                           </select>
                         </div>
@@ -2350,7 +2350,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
                             style={{ padding: '2px 6px', background: '#FFF8F5', border: '1px solid var(--rust)', color: 'var(--rust)', fontFamily: 'var(--mono)', fontSize: 9.5, fontWeight: 800, cursor: 'pointer' }}
                             title="Preguntar sobre este bloque"
                           >
-                            + 🎯 Preguntar
+                            +  Preguntar
                           </button>
                           <button type="button" onClick={() => moveBlock(index, 'up')} disabled={index === 0} style={{ padding: '2px 5px', border: '1px solid var(--ink)', background: 'transparent', cursor: index === 0 ? 'not-allowed' : 'pointer', opacity: index === 0 ? 0.3 : 1 }}>▲</button>
                           <button type="button" onClick={() => moveBlock(index, 'down')} disabled={index === guide.blocks.length - 1} style={{ padding: '2px 5px', border: '1px solid var(--ink)', background: 'transparent', cursor: index === guide.blocks.length - 1 ? 'not-allowed' : 'pointer', opacity: index === guide.blocks.length - 1 ? 0.3 : 1 }}>▼</button>
@@ -2406,8 +2406,8 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
                       <div style={{ flex: 1, height: 1, background: 'var(--line)' }} />
                       <div style={{ display: 'flex', gap: 4, padding: '0 6px' }}>
                         <button type="button" onClick={() => addBlock('paragraph', index + 1)} style={{ padding: '2px 6px', background: 'var(--paper)', border: '1px solid var(--ink)', fontFamily: 'var(--mono)', fontSize: 9.5, fontWeight: 700, cursor: 'pointer' }}>+ ¶ Texto</button>
-                        <button type="button" onClick={() => addBlock('heading', index + 1)} style={{ padding: '2px 6px', background: 'var(--paper)', border: '1px solid var(--ink)', fontFamily: 'var(--mono)', fontSize: 9.5, fontWeight: 700, cursor: 'pointer' }}>+ 📑 Título</button>
-                        <button type="button" onClick={() => addBlock('callout', index + 1, 'idea')} style={{ padding: '2px 6px', background: '#FFF8F5', border: '1px solid var(--rust)', color: 'var(--rust)', fontFamily: 'var(--mono)', fontSize: 9.5, fontWeight: 700, cursor: 'pointer' }}>+ 💡 Idea</button>
+                        <button type="button" onClick={() => addBlock('heading', index + 1)} style={{ padding: '2px 6px', background: 'var(--paper)', border: '1px solid var(--ink)', fontFamily: 'var(--mono)', fontSize: 9.5, fontWeight: 700, cursor: 'pointer' }}>+  Título</button>
+                        <button type="button" onClick={() => addBlock('callout', index + 1, 'idea')} style={{ padding: '2px 6px', background: '#FFF8F5', border: '1px solid var(--rust)', color: 'var(--rust)', fontFamily: 'var(--mono)', fontSize: 9.5, fontWeight: 700, cursor: 'pointer' }}>+  Idea</button>
                         <button type="button" onClick={() => addBlock('image', index + 1)} style={{ padding: '2px 6px', background: 'var(--paper)', border: '1px solid var(--ink)', fontFamily: 'var(--mono)', fontSize: 9.5, fontWeight: 700, cursor: 'pointer' }}>+ ▣ Imagen</button>
                       </div>
                       <div style={{ flex: 1, height: 1, background: 'var(--line)' }} />
@@ -2437,7 +2437,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
                   <div style={{ background: '#F0FDF4', border: '1.5px solid #16A34A', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
                     <div>
                       <div style={{ fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 900, color: '#166534', textTransform: 'uppercase' }}>
-                        🎮 PASARELA DE EVALUACIÓN VIRTUAL
+                         PASARELA DE EVALUACIÓN VIRTUAL
                       </div>
                       <div style={{ fontFamily: 'var(--sans)', fontSize: 11.5, color: '#14532D', marginTop: 1 }}>
                         Prueba cómo el estudiante resolverá estas {guide.questions.length} preguntas online.
@@ -2471,7 +2471,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
                 <div style={{ background: '#FFF8F5', border: '1.5px solid var(--rust)', padding: '10px 12px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                     <span style={{ fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 900, color: 'var(--rust)', textTransform: 'uppercase' }}>
-                      🎯 FORMATO DE RESPUESTAS DEL ESTUDIANTE:
+                       FORMATO DE RESPUESTAS DEL ESTUDIANTE:
                     </span>
                     <span style={{ fontFamily: 'var(--mono)', fontSize: 9.5, color: 'var(--ink-soft)' }}>
                       {answerSheetMode === 'inline' ? 'Casillas en la guía' : answerSheetMode === 'icfes' ? 'Burbujas tipo ICFES' : 'Casillas + Hoja ICFES'}
@@ -2482,7 +2482,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
                       type="button"
                       onClick={() => {
                         setAnswerSheetMode('inline');
-                        triggerToast('📝 Modalidad: Responder directamente en la misma guía.');
+                        triggerToast(' Modalidad: Responder directamente en la misma guía.');
                       }}
                       style={{
                         padding: '6px 8px',
@@ -2496,13 +2496,13 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
                         textAlign: 'center',
                       }}
                     >
-                      📝 En la misma guía
+                       En la misma guía
                     </button>
                     <button
                       type="button"
                       onClick={() => {
                         setAnswerSheetMode('icfes');
-                        triggerToast('🎯 Modalidad: Hoja de respuestas estilo ICFES al final.');
+                        triggerToast(' Modalidad: Hoja de respuestas estilo ICFES al final.');
                       }}
                       style={{
                         padding: '6px 8px',
@@ -2516,13 +2516,13 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
                         textAlign: 'center',
                       }}
                     >
-                      🎯 Hoja ICFES
+                       Hoja ICFES
                     </button>
                     <button
                       type="button"
                       onClick={() => {
                         setAnswerSheetMode('both');
-                        triggerToast('📄 Modalidad: Ambas (En la guía + Hoja ICFES).');
+                        triggerToast(' Modalidad: Ambas (En la guía + Hoja ICFES).');
                       }}
                       style={{
                         padding: '6px 8px',
@@ -2536,7 +2536,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
                         textAlign: 'center',
                       }}
                     >
-                      📄 Ambas
+                       Ambas
                     </button>
                   </div>
                 </div>
@@ -2599,7 +2599,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
                       <div style={{ background: '#FAF9F6', border: '1px dashed var(--line-strong)', padding: '6px 8px', fontSize: 11 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                           <span style={{ fontFamily: 'var(--mono)', fontSize: 9.5, fontWeight: 800, color: 'var(--ink-soft)', textTransform: 'uppercase' }}>
-                            🖼️ Imagen / Figura Didáctica:
+                             Imagen / Figura Didáctica:
                           </span>
                           {q.imageUrl && (
                             <button
@@ -2632,7 +2632,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
                               whiteSpace: 'nowrap',
                             }}
                           >
-                            <span>Subir 📁</span>
+                            <span>Subir </span>
                             <input
                               type="file"
                               accept="image/*"
@@ -2700,7 +2700,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
                   }}
                   title="Descargar esta guía como PDF o imprimirla"
                 >
-                  📥 Descargar PDF
+                   Descargar PDF
                 </button>
               </div>
             </div>
@@ -2768,7 +2768,7 @@ export default function GuideWizard({ courseId, courseName, lang, returnUrl }: P
                 onClick={triggerDownloadPdf}
                 style={{ padding: '6px 16px', background: 'var(--rust)', color: '#fff', border: 'none', fontFamily: 'var(--mono)', fontSize: 11.5, fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
               >
-                📥 Descargar PDF / Imprimir
+                 Descargar PDF / Imprimir
               </button>
               <button onClick={() => setViewLayout('split')} style={{ padding: '6px 12px', background: '#fff', color: 'var(--ink)', border: 'none', fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 800, cursor: 'pointer' }}>
                 ← Volver a Vista Dividida

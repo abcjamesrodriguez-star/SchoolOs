@@ -1,0 +1,224 @@
+﻿---
+// ============================================================
+// SchoolOS — Modal de Gestión de Novedades & Baja Docente
+// Opciones: Suspensión Temporal (Licencia) o Desvinculación Definitiva
+// Cero emojis, estilo sobrio institucional
+// ============================================================
+interface Props {
+  id?: string;
+}
+
+const { id = 'teacherDeactivateModal' } = Astro.props;
+---
+
+<div
+  id={id}
+  class="custom-modal-backdrop"
+  style="display:none; position:fixed; inset:0; background:rgba(18, 17, 14, 0.75); z-index:9999; align-items:center; justify-content:center; padding:20px; overflow-y:auto;"
+  role="dialog"
+  aria-modal="true"
+>
+  <div class="panel" style="width:100%; max-width:580px; background:var(--paper); border:2px solid var(--ink); box-shadow:8px 8px 0 var(--ink); max-height:90vh; display:flex; flex-direction:column; overflow:hidden;">
+    
+    <!-- HEADER -->
+    <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center; padding:14px 20px; background:var(--cream); border-bottom:2px solid var(--ink); flex-shrink:0;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="plan-tag" style="background:var(--rust); color:#FFFFFF; border-color:var(--rust); font-size:10px; font-weight:900;">
+          GESTIÓN DE NOVEDADES
+        </span>
+        <h2 style="font-family:var(--serif); font-size:16.5px; margin:0; font-weight:700; color:var(--ink);">
+          Novedad / Baja Institucional de Docente
+        </h2>
+      </div>
+      <button type="button" onclick={`document.getElementById('${id}').style.display='none';`} style="background:none; border:none; font-family:var(--mono); font-size:18px; font-weight:700; cursor:pointer; color:var(--ink);">✕</button>
+    </div>
+
+    <!-- FEEDBACK ALERT -->
+    <div id={`${id}Feedback`} style="display:none; padding:12px 20px; font-family:var(--mono); font-size:12px; font-weight:700;"></div>
+
+    <!-- BODY -->
+    <div class="panel-body padded" style="background:#FFFDF9; padding:20px; overflow-y:auto; flex:1;">
+      
+      <!-- FICHA RESUMEN DEL DOCENTE -->
+      <div id={`${id}TeacherSummary`} style="background:#FFFFFF; border:1.5px solid var(--ink); padding:12px 16px; margin-bottom:18px; box-shadow:2px 2px 0 var(--ink); display:flex; align-items:center; gap:14px;">
+        <!-- Se llena dinámicamente -->
+      </div>
+
+      <input type="hidden" id={`${id}TeacherId`} value="" />
+      <input type="hidden" id={`${id}CurrentStatus`} value="" />
+
+      <!-- SELECCIÓN DE TIPO DE ACCIÓN -->
+      <div style="margin-bottom:16px;">
+        <label style="font-family:var(--mono); font-size:11px; font-weight:800; text-transform:uppercase; color:var(--ink); display:block; margin-bottom:8px;">
+          Selecciona la acción a ejecutar:
+        </label>
+
+        <!-- Opción 1: Suspender / Reactivar -->
+        <label style="display:flex; align-items:flex-start; gap:10px; padding:12px; border:1.5px solid var(--ink); background:var(--paper); margin-bottom:10px; cursor:pointer;">
+          <input type="radio" name={`${id}ActionType`} id={`${id}RadioToggle`} value="toggle" checked style="margin-top:3px;" />
+          <div>
+            <div id={`${id}ToggleTitle`} style="font-weight:800; font-size:13.5px; color:var(--ink);">
+              Suspender Acceso Temporal (Licencia / Incapacidad)
+            </div>
+            <div id={`${id}ToggleDesc`} style="font-size:11.5px; color:var(--ink-soft); margin-top:2px;">
+              El profesor conservará sus materias y registros históricos, pero no podrá iniciar sesión en la plataforma hasta que se reactive su cuenta.
+            </div>
+          </div>
+        </label>
+
+        <!-- Opción 2: Retiro Definitivo -->
+        <label style="display:flex; align-items:flex-start; gap:10px; padding:12px; border:1.5px solid var(--rust); background:#FFF5F5; cursor:pointer;">
+          <input type="radio" name={`${id}ActionType`} id={`${id}RadioDelete`} value="delete" style="margin-top:3px;" />
+          <div>
+            <div style="font-weight:800; font-size:13.5px; color:var(--rust);">
+              Dar de Baja Definitiva (Desvinculación de Planta)
+            </div>
+            <div style="font-size:11.5px; color:var(--ink-soft); margin-top:2px;">
+              Retira al docente de la institución, libera su plaza en el plan contratado y desasigna sus materias de la Malla Curricular para que queden disponibles para el nuevo docente reemplazante.
+            </div>
+          </div>
+        </label>
+      </div>
+
+      <!-- MOTIVO / OBSERVACIÓN -->
+      <div style="margin-bottom:14px;">
+        <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; text-transform:uppercase; display:block; margin-bottom:4px;">
+          Motivo / Justificación Institucional (Opcional)
+        </label>
+        <textarea
+          id={`${id}Reason`}
+          rows="2"
+          placeholder="Ej: Fin de contrato laboral, traslado de sede, licencia de maternidad o renuncia voluntaria..."
+          style="width:100%; border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-family:var(--sans); font-size:12px; box-sizing:border-box;"
+        ></textarea>
+      </div>
+
+    </div>
+
+    <!-- FOOTER ACTIONS -->
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 20px; border-top:1.5px solid var(--line); background:var(--paper); flex-shrink:0;">
+      <button type="button" class="btn btn-secondary btn-sm" onclick={`document.getElementById('${id}').style.display='none';`}>
+        Cancelar
+      </button>
+
+      <button type="button" id={`${id}ConfirmBtn`} onclick={`window._submitTeacherDeactivation('${id}')`} class="btn btn-primary" style="background:var(--rust); border-color:var(--rust); color:#FFFFFF; font-weight:800; font-size:12px;">
+        Confirmar Novedad
+      </button>
+    </div>
+
+  </div>
+</div>
+
+
+<script>
+  import { teacherService } from '../../../services/teacherService';
+
+  function escapeHtmlText(str: any) {
+    return String(str || '').replace(/[&<>"']/g, function(char) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[char] as string;
+    });
+  }
+
+  function escapeHtmlAttr(str: any) {
+    return String(str || '').replace(/"/g, '&quot;');
+  }
+
+  (window as any).openTeacherDeactivateModal = function(teacherData: any) {
+    if (!teacherData) return;
+    const modal = document.querySelector('[data-teacher-deactivate-modal]') as HTMLElement || document.getElementById('TeacherDeactivateModal');
+    if (!modal) return;
+    const modalId = modal.id;
+
+    const teacherIdInput = document.getElementById(modalId + 'TeacherId') as HTMLInputElement;
+    const currentStatusInput = document.getElementById(modalId + 'CurrentStatus') as HTMLInputElement;
+    const summary = document.getElementById(modalId + 'TeacherSummary');
+    const toggleTitle = document.getElementById(modalId + 'ToggleTitle');
+    const toggleDesc = document.getElementById(modalId + 'ToggleDesc');
+    const feedback = document.getElementById(modalId + 'Feedback');
+
+    if (feedback) feedback.style.display = 'none';
+
+    if (teacherIdInput) teacherIdInput.value = teacherData.id || '';
+    if (currentStatusInput) currentStatusInput.value = teacherData.status || 'active';
+
+    const isSuspended = teacherData.status === 'suspended';
+
+    if (toggleTitle) {
+      toggleTitle.textContent = isSuspended
+        ? 'Reactivar Acceso del Docente'
+        : 'Suspender Acceso Temporal (Licencia / Incapacidad)';
+    }
+    if (toggleDesc) {
+      toggleDesc.textContent = isSuspended
+        ? 'Restaura el acceso del profesor a la plataforma para que pueda volver a gestionar sus cursos.'
+        : 'El profesor conservará sus materias y registros históricos, pero no podrá iniciar sesión.';
+    }
+
+    if (summary) {
+      summary.innerHTML = `
+        <div style="width:44px; height:44px; border:1.5px solid var(--ink); background:#FFFFFF; display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden;">
+          <img src="${escapeHtmlAttr(teacherData.avatarUrl || '/avatars/women/fila-2-columna-1.png')}" alt="" style="width:100%; height:100%; object-fit:contain;" />
+        </div>
+        <div>
+          <div style="font-weight:800; font-size:14.5px; color:var(--ink);">
+            ${escapeHtmlText(teacherData.name)}
+          </div>
+          <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:2px;">
+            Código: <strong>${escapeHtmlText(teacherData.documentId || 'DOC')}</strong> · ${escapeHtmlText(teacherData.specialty || 'Docente')} · Estado: <strong>${isSuspended ? 'Suspendido' : 'Activo'}</strong>
+          </div>
+        </div>
+      `;
+    }
+
+    modal.style.display = 'flex';
+  };
+
+  (window as any)._submitTeacherDeactivation = async function(mId: string) {
+    const teacherId = (document.getElementById(mId + 'TeacherId') as HTMLInputElement)?.value;
+    const currentStatus = (document.getElementById(mId + 'CurrentStatus') as HTMLInputElement)?.value;
+    const isDelete = (document.getElementById(mId + 'RadioDelete') as HTMLInputElement)?.checked === true;
+    const confirmBtn = document.getElementById(mId + 'ConfirmBtn') as HTMLButtonElement;
+    const modal = document.getElementById(mId);
+
+    if (confirmBtn) {
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = 'Procesando novedad…';
+    }
+
+    try {
+      const newStatus = currentStatus === 'suspended' ? 'active' : 'suspended';
+      await teacherService.manageTeacherStatus({
+        teacherId,
+        isDelete,
+        newStatus,
+      });
+
+      const feedback = document.getElementById(mId + 'Feedback');
+      if (feedback) {
+        feedback.style.cssText = 'display:block; background:#E6F4EA; border-bottom:2px solid var(--sage-dark); color:var(--sage-dark); padding:12px 20px; font-family:var(--mono); font-size:12px; font-weight:700;';
+        feedback.textContent = isDelete ? '✓ Docente retirado y dado de baja exitosamente.' : '✓ Estado de acceso actualizado exitosamente.';
+      }
+
+      setTimeout(function() {
+        if (modal) modal.style.display = 'none';
+        if (confirmBtn) {
+          confirmBtn.disabled = false;
+          confirmBtn.textContent = 'Confirmar Novedad';
+        }
+        window.location.reload();
+      }, 1200);
+
+    } catch (err: any) {
+      console.error('Error procesando novedad:', err);
+      const feedback = document.getElementById(mId + 'Feedback');
+      if (feedback) {
+        feedback.style.cssText = 'display:block; background:#FEE2E2; border-bottom:2px solid var(--danger); color:var(--danger); padding:12px 20px; font-family:var(--mono); font-size:12px; font-weight:700;';
+        feedback.textContent = err?.message || 'Error al procesar novedad';
+      }
+      if (confirmBtn) {
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = 'Reintentar';
+      }
+    }
+  };
+</script>

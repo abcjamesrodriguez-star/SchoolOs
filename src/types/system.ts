@@ -16,6 +16,7 @@ export interface User {
   avatarUrl?: string;
   createdAt: string;
   lastLoginAt?: string;
+  passwordResetRequired?: boolean;
 }
 
 export type DataScope =

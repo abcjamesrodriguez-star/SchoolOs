@@ -114,7 +114,7 @@ export const AssessmentHeader: React.FC<Props> = ({
               }}
               title="Tiempo restante para completar la evaluación"
             >
-              <span>⏱️</span>
+              <span></span>
               <span>{timeFormatted}</span>
             </div>
           )}
@@ -136,7 +136,7 @@ export const AssessmentHeader: React.FC<Props> = ({
               boxShadow: '2px 2px 0 rgba(255,255,255,0.4)',
             }}
           >
-            <span>🚀 Finalizar Evaluación</span>
+            <span> Finalizar Evaluación</span>
           </button>
         </div>
       </div>

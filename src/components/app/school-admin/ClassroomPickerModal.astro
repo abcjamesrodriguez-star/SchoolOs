@@ -1,0 +1,97 @@
+---
+// ============================================================
+// SchoolOS — Modal / Popup de Selección Rápida de Salones / Cursos
+// Cero emojis, estilo sobrio editorial institucional
+// ============================================================
+interface Props {
+  id?: string;
+}
+
+const { id = 'classroomPickerModal' } = Astro.props;
+---
+
+<div
+  id={id}
+  class="custom-modal-backdrop"
+  style="display:none; position:fixed; inset:0; background:rgba(18, 17, 14, 0.75); z-index:9999; align-items:center; justify-content:center; padding:20px; overflow-y:auto;"
+  role="dialog"
+  aria-modal="true"
+>
+  <div class="panel" style="width:100%; max-width:620px; background:var(--paper); border:2px solid var(--ink); box-shadow:8px 8px 0 var(--ink); max-height:85vh; display:flex; flex-direction:column; overflow:hidden;">
+    
+    <!-- HEADER -->
+    <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center; padding:14px 20px; background:var(--cream); border-bottom:2px solid var(--ink); flex-shrink:0;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; font-size:10px; font-weight:900;">
+          GRUPOS & CURSOS
+        </span>
+        <h2 style="font-family:var(--serif); font-size:16.5px; margin:0; font-weight:700; color:var(--ink);">
+          Seleccionar Salón / Curso para Revisar Horario
+        </h2>
+      </div>
+      <button type="button" onclick={`document.getElementById('${id}').style.display='none';`} style="background:none; border:none; font-family:var(--mono); font-size:18px; font-weight:700; cursor:pointer; color:var(--ink);">✕</button>
+    </div>
+
+    <!-- CUADRÍCULA DE SALONES CON SCROLL -->
+    <div class="panel-body padded" style="background:#FFFDF9; padding:20px; overflow-y:auto; flex:1;">
+      <div id={`${id}Grid`} style="display:grid; grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:10px;">
+        <!-- Se llena dinámicamente -->
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div style="display:flex; justify-content:flex-end; padding:12px 20px; border-top:1.5px solid var(--line); background:var(--paper); flex-shrink:0;">
+      <button type="button" class="btn btn-secondary btn-sm" onclick={`document.getElementById('${id}').style.display='none';`}>
+        Cerrar
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script is:inline define:vars={{ modalId: id }}>
+  (function() {
+    var modal = document.getElementById(modalId);
+    if (!modal) return;
+
+    var onSelectCallback = null;
+
+    window.openClassroomPickerModal = function(classroomsList, currentSelectedRoom, callback) {
+      onSelectCallback = callback;
+      var grid = document.getElementById(modalId + 'Grid');
+      if (!grid) return;
+
+      if (!classroomsList || !classroomsList.length) {
+        grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:20px; font-size:12px; color:var(--ink-soft);">No hay salones habilitados en la institución.</div>';
+      } else {
+        grid.innerHTML = classroomsList.map(function(room) {
+          var isSelected = room === currentSelectedRoom;
+          var bg = isSelected ? 'var(--ink)' : '#FFFFFF';
+          var color = isSelected ? '#FFFFFF' : 'var(--ink)';
+
+          return `
+            <div
+              class="classroom-picker-card"
+              onclick="window._selectRoomFromPicker('${room}')"
+              style="background:${bg}; color:${color}; border:1.5px solid var(--ink); padding:14px; text-align:center; box-shadow:2px 2px 0 var(--ink); cursor:pointer; font-family:var(--mono); font-size:14px; font-weight:900;"
+            >
+              Salón ${room}
+            </div>
+          `;
+        }).join('');
+      }
+
+      modal.style.display = 'flex';
+    };
+
+    window._selectRoomFromPicker = function(room) {
+      modal.style.display = 'none';
+      if (typeof onSelectCallback === 'function') {
+        onSelectCallback(room);
+      } else if (typeof window._selectClassroom === 'function') {
+        window._selectClassroom(room);
+      }
+    };
+
+  })();
+</script>

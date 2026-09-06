@@ -1,0 +1,335 @@
+---
+export const prerender = false;
+import AvatarPickerModal from '../../../components/app/school-admin/AvatarPickerModal.astro';
+import { createAdminSupabase } from '../../../lib/supabase-admin';
+
+const token = Astro.url.searchParams.get('token') || '';
+let teacher: any = { name: 'Docente' };
+let school: any = { name: 'Institución' };
+let errorMsg = '';
+
+if (!token) {
+  errorMsg = 'Falta el token de activación en el enlace. Revisa el correo oficial de vinculación o solicita un reenvío.';
+} else {
+  try {
+    let payload: any;
+    if (token.includes('.')) {
+      const parts = token.split('.');
+      payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf-8'));
+    } else {
+      payload = JSON.parse(Buffer.from(token, 'base64url').toString('utf-8'));
+    }
+    const teacherId = payload.teacherId || payload.userId;
+    if (teacherId) {
+      const admin = createAdminSupabase();
+      const { data: tData } = await admin
+        .from('users')
+        .select('*, school:schools(id, name, logo_url)')
+        .eq('id', teacherId)
+        .maybeSingle();
+
+      if (tData) {
+        teacher = tData;
+        if (tData.school) school = tData.school;
+      }
+    }
+  } catch (err) {
+    console.warn('[activate-teacher] Error decodificando token en SSR:', err);
+  }
+}
+---
+
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Activación de Cuenta Docente — SchoolOS</title>
+  <link rel="stylesheet" href="/styles/global.css" />
+  <style>
+    :root {
+      --ink: #12110E;
+      --paper: #FAF8F5;
+      --cream: #F2EFE9;
+      --rust: #C84B31;
+      --sage-dark: #2E5E1E;
+      --mono: 'JetBrains Mono', monospace;
+      --serif: 'Playfair Display', Georgia, serif;
+      --sans: system-ui, -apple-system, sans-serif;
+    }
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--sans);
+      margin: 0;
+      padding: 30px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+    }
+    .activation-card {
+      width: 100%;
+      max-width: 600px;
+      background: #FFFFFF;
+      border: 2px solid var(--ink);
+      box-shadow: 8px 8px 0 var(--ink);
+      padding: 0;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+
+  <div style="text-align:center; margin-bottom:20px; max-width:600px;">
+    <div style="font-family:var(--mono); font-size:11px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:var(--rust); margin-bottom:4px;">
+      VINCULACIÓN DOCENTE · {school?.name ? school.name.toUpperCase() : 'PORTAL INSTITUCIONAL'}
+    </div>
+    <h1 style="font-family:var(--serif); font-size:26px; font-weight:800; margin:0 0 6px; color:var(--ink);">
+      Activación de Cuenta Docente
+    </h1>
+    <div style="font-size:13px; color:var(--ink-soft);">
+      Por seguridad, corrobora tu código docente y número de WhatsApp para activar tus credenciales.
+    </div>
+  </div>
+
+  <div class="activation-card">
+    
+    <!-- HEADER DEL EXPEDIENTE (SIN REVELAR EL CÓDIGO PRIVADO) -->
+    <div style="background:var(--cream); padding:16px 20px; border-bottom:2px solid var(--ink); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+      <div>
+        <div style="font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink-soft);">
+          EXPEDIENTE ASOCIADO
+        </div>
+        <div id="dynamicUserName" style="font-size:16px; font-weight:800; color:var(--ink); margin-top:2px;">
+          {teacher?.name || 'Docente'}
+        </div>
+        <div style="font-size:12px; color:var(--ink-soft);">
+          {teacher?.specialty || teacher?.job_title || 'Planta Docente'}
+        </div>
+      </div>
+      <div>
+        <span class="plan-tag" style="background:var(--rust); color:#FFFFFF; border-color:var(--rust); font-size:10px; font-weight:800;">
+          VERIFICACIÓN PENDIENTE
+        </span>
+      </div>
+    </div>
+
+    {errorMsg ? (
+      <div style="padding:32px 20px; text-align:center;">
+        <div style="font-family:var(--mono); font-size:13px; font-weight:800; color:var(--rust); margin-bottom:8px; text-transform:uppercase;">
+          Error de Activación
+        </div>
+        <div style="font-size:14px; font-weight:700; color:var(--ink); margin-bottom:12px;">
+          {errorMsg}
+        </div>
+        <div style="font-size:12.5px; color:var(--ink-soft);">
+          Comunícate con la rectoría o secretaría de tu colegio para recibir una nueva invitación.
+        </div>
+      </div>
+    ) : (
+      <form id="teacherActivationForm" style="padding:22px; display:flex; flex-direction:column; gap:16px; background:#FFFDF9;">
+        <input type="hidden" id="activationToken" value={token} />
+        <input type="hidden" id="teacherAvatarUrl" value={teacher?.avatar_url || '/avatars/women/fila-2-columna-1.png'} />
+
+        <!-- 1. CÓDIGO DOCENTE (CAMPO VACÍO PARA CONSTATAR IDENTIDAD) -->
+        <div style="background:#FFFFFF; border:1.5px solid var(--ink); padding:14px; box-shadow:2px 2px 0 var(--ink);">
+          <label style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:4px; color:var(--ink);">
+            1. Código Oficial Docente *
+          </label>
+          <input
+            type="text"
+            id="inputTeacherCode"
+            required
+            autocomplete="off"
+            placeholder="Ej: DOC-2026-XXX"
+            style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:8px 10px; font-family:var(--mono); font-size:13.5px; font-weight:800; box-sizing:border-box;"
+          />
+          <div style="font-size:11px; color:var(--ink-soft); margin-top:4px;">
+            Ingresa el código que te asignó la rectoría y que recibiste en el correo de invitación.
+          </div>
+        </div>
+
+        <!-- 2. NÚMERO DE WHATSAPP / CELULAR (CAMPO VACÍO PARA CONSTATAR CONTACTO) -->
+        <div style="background:#FFFFFF; border:1.5px solid var(--ink); padding:14px; box-shadow:2px 2px 0 var(--ink);">
+          <label style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:4px; color:var(--ink);">
+            2. Número de WhatsApp / Teléfono Móvil *
+          </label>
+          <input
+            type="tel"
+            id="inputPhone"
+            required
+            autocomplete="off"
+            placeholder="Ej: 312 456 7890 o 1234578"
+            style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:8px 10px; font-family:var(--mono); font-size:13px; font-weight:700; box-sizing:border-box;"
+          />
+          <div style="font-size:11px; color:var(--ink-soft); margin-top:4px;">
+            Ingresa el número de WhatsApp registrado ante la institución.
+          </div>
+        </div>
+
+        <!-- 3. AVATAR INSTITUCIONAL -->
+        <div style="background:#FFFFFF; border:1.5px solid var(--ink); padding:14px; box-shadow:2px 2px 0 var(--ink);">
+          <label style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:8px; color:var(--ink);">
+            3. Avatar / Identidad Visual del Docente *
+          </label>
+          <div style="display:flex; align-items:center; gap:16px;">
+            <div style="width:68px; height:68px; border:2px solid var(--ink); background:#FFFFFF; display:flex; align-items:center; justify-content:center; overflow:hidden; box-shadow:2px 2px 0 var(--ink);">
+              <img id="teacherAvatarImg" src={teacher?.avatar_url || '/avatars/women/fila-2-columna-1.png'} alt="Avatar" style="width:100%; height:100%; object-fit:contain;" />
+            </div>
+            <div>
+              <button
+                type="button"
+                class="btn btn-secondary btn-sm"
+                onclick="window.openAvatarPicker && window.openAvatarPicker('teacherActivationAvatarModal', 'Mujer', 'teacherAvatarUrl', 'teacherAvatarImg');"
+                style="font-size:11px; font-weight:800; padding:6px 12px; border:1.5px solid var(--ink); background:#FFFFFF; cursor:pointer;"
+              >
+                Cambiar Avatar Institucional
+              </button>
+              <div style="font-size:11px; color:var(--ink-soft); margin-top:4px;">
+                Este avatar se mostrará en tus clases, materias y calificaciones.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. CONTRASEÑA DE ACCESO -->
+        <div style="background:#FFFFFF; border:1.5px solid var(--ink); padding:14px; box-shadow:2px 2px 0 var(--ink);">
+          <label style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:4px; color:var(--ink);">
+            4. Crear Contraseña de Acceso Personal *
+          </label>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div style="position:relative;">
+              <input
+                type="password"
+                id="userPassword"
+                required
+                minlength="6"
+                placeholder="Contraseña (mín 6)"
+                style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:8px 30px 8px 10px; font-size:12.5px; font-family:var(--mono); box-sizing:border-box;"
+              />
+              <button type="button" onclick="document.getElementById('userPassword').type = document.getElementById('userPassword').type === 'password' ? 'text' : 'password'" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; opacity:0.6;">👁️</button>
+            </div>
+            <div style="position:relative;">
+              <input
+                type="password"
+                id="userPasswordConfirm"
+                required
+                minlength="6"
+                placeholder="Repetir contraseña"
+                style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:8px 30px 8px 10px; font-size:12.5px; font-family:var(--mono); box-sizing:border-box;"
+              />
+              <button type="button" onclick="document.getElementById('userPasswordConfirm').type = document.getElementById('userPasswordConfirm').type === 'password' ? 'text' : 'password'" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; opacity:0.6;">👁️</button>
+            </div>
+          </div>
+          <div style="font-size:11px; color:var(--ink-soft); margin-top:4px;">
+            Esta será tu clave definitiva para ingresar a tus cursos, subir notas y crear guías.
+          </div>
+        </div>
+
+        <!-- FEEDBACK -->
+        <div id="activationFeedback" style="display:none; padding:12px; font-family:var(--mono); font-size:12px; font-weight:700;"></div>
+
+        <!-- BOTÓN DE ACTIVACIÓN -->
+        <button
+          type="submit"
+          id="btnSubmitActivation"
+          style="padding:13px; background:var(--ink); color:#FFFFFF; border:2px solid var(--ink); font-family:var(--mono); font-size:12.5px; font-weight:800; letter-spacing:0.04em; text-transform:uppercase; cursor:pointer; box-shadow:3px 3px 0 var(--ink); margin-top:4px;"
+        >
+          Activar Cuenta Docente y Entrar a la Plataforma →
+        </button>
+      </form>
+    )}
+
+  </div>
+
+  <AvatarPickerModal id="teacherActivationAvatarModal" />
+
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('teacherActivationForm') as HTMLFormElement;
+    const submitBtn = document.getElementById('btnSubmitActivation') as HTMLButtonElement;
+    const feedback = document.getElementById('activationFeedback');
+
+    if (!form) return;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const tokenEl = document.getElementById('activationToken') as HTMLInputElement;
+      const activationToken = tokenEl?.value || new URLSearchParams(window.location.search).get('token') || '';
+      const docCode = (document.getElementById('inputTeacherCode') as HTMLInputElement)?.value.trim();
+      const phone = (document.getElementById('inputPhone') as HTMLInputElement)?.value.trim();
+      const avatarUrl = (document.getElementById('teacherAvatarUrl') as HTMLInputElement)?.value || '';
+      const pass1 = (document.getElementById('userPassword') as HTMLInputElement)?.value || '';
+      const pass2 = (document.getElementById('userPasswordConfirm') as HTMLInputElement)?.value || '';
+
+      if (!activationToken) {
+        if (feedback) {
+          feedback.style.cssText = 'display:block; background:#FEE2E2; border:1.5px solid var(--rust); color:var(--rust); margin-bottom:6px; padding: 10px;';
+          feedback.textContent = '❌ Falta el token de activación. Usa el enlace completo que recibiste en el correo.';
+        }
+        return;
+      }
+
+      if (!pass1 || pass1.length < 6 || pass1 !== pass2) {
+        if (feedback) {
+          feedback.style.cssText = 'display:block; background:#FEE2E2; border:1.5px solid var(--rust); color:var(--rust); margin-bottom:6px; padding: 10px;';
+          feedback.textContent = '❌ Las contraseñas no coinciden o tienen menos de 6 caracteres.';
+        }
+        return;
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Procesando credenciales…';
+      }
+
+      try {
+        const res = await fetch('/api/auth/activate-teacher', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token: activationToken,
+            teacherCode: docCode,
+            phone,
+            password: pass1,
+            avatarUrl,
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || 'Error al procesar la activación.');
+        }
+
+        if (feedback) {
+          feedback.style.cssText = 'display:block; background:#E6F4EA; border:1.5px solid var(--sage-dark); color:var(--sage-dark); margin-bottom:6px; padding: 10px;';
+          feedback.textContent = '✅ ¡Cuenta activada exitosamente! Redirigiendo al inicio de sesión...';
+        }
+
+        if (submitBtn) submitBtn.textContent = 'Acceso Concedido';
+
+        setTimeout(() => {
+          const userEmail = data.user?.email || '';
+          window.location.href = `/login?confirmado=1&email=${encodeURIComponent(userEmail)}`;
+        }, 1200);
+
+      } catch (err: any) {
+        if (feedback) {
+          feedback.style.cssText = 'display:block; background:#FEE2E2; border:1.5px solid var(--rust); color:var(--rust); margin-bottom:6px; padding: 10px;';
+          feedback.textContent = '❌ Error: ' + (err.message || 'Error desconocido');
+        }
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Intentar nuevamente';
+        }
+      }
+    });
+  });
+  </script>
+
+</body>
+</html>

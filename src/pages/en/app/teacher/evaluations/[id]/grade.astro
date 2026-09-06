@@ -6,13 +6,6 @@
 import AppLayout from '../../../../../../layouts/AppLayout.astro';
 import { getEvaluationById, getResultsByEvaluation } from '../../../../../../data/app/mock-content';
 
-export async function getStaticPaths() {
-  return [
-    { params: { id: 'eval-1' } },
-    { params: { id: 'eval-2' } },
-  ];
-}
-
 const lang = 'en';
 const { id } = Astro.params;
 const evaluation = getEvaluationById(id!);
@@ -137,7 +130,7 @@ const students = getResultsByEvaluation(id!);
     <div style="display:flex; gap:14px; flex-wrap:wrap; align-items:center;">
       <button
         class="btn btn-primary"
-        onclick="alert('✅ All student grades have been posted successfully. Students can now view their scores.')"
+        onclick="alert(' All student grades have been posted successfully. Students can now view their scores.')"
         style="font-size:13px; font-weight:800; padding:12px 24px;"
       >
         ✓ Save All Grades

@@ -1,8 +1,13 @@
 ---
+// ============================================================
+// SchoolOS — Directorio de Planta Docente & Gestión Académica (Rectoría)
+// Cero emojis, estilo sobrio editorial institucional
+// ============================================================
 import AppLayout from '../../../../../layouts/AppLayout.astro';
 import TeacherRegisterModal from '../../../../../components/app/school-admin/TeacherRegisterModal.astro';
 import TeacherScheduleModal from '../../../../../components/app/school-admin/TeacherScheduleModal.astro';
 import TeacherSubstituteModal from '../../../../../components/app/school-admin/TeacherSubstituteModal.astro';
+import TeacherDeactivateModal from '../../../../../components/app/school-admin/TeacherDeactivateModal.astro';
 
 const lang = 'es';
 ---
@@ -17,117 +22,304 @@ const lang = 'es';
   activeRoute="/app/school-admin/teachers"
   breadcrumbs={[{ label: 'Institución', href: `/${lang}/app/school-admin` }, { label: 'Cuerpo Docente' }]}
 >
+  <!-- STATS HEADER -->
   <div class="stat-grid" style="margin-bottom:18px;">
     <div class="stat-card">
       <div class="stat-label">DOCENTES EN PLANTA</div>
       <div class="stat-num" id="teacher-stat-total">0</div>
-      <div class="stat-sub" id="teacher-stat-total-sub">Sin información cargada</div>
+      <div class="stat-sub" id="teacher-stat-total-sub">Cargando planta docente...</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">DOCENTES ACTIVOS</div>
       <div class="stat-num" id="teacher-stat-active">0</div>
-      <div class="stat-sub" id="teacher-stat-active-sub">Sin información cargada</div>
+      <div class="stat-sub" id="teacher-stat-active-sub">Cargando datos vivos...</div>
+    </div>
+    <div class="stat-card" style="border-left:4px solid var(--rust);">
+      <div class="stat-label">INVITACIONES PENDIENTES</div>
+      <div class="stat-num" id="teacher-stat-invited" style="color:var(--rust);">0</div>
+      <div class="stat-sub">Por activar su cuenta oficial</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">DISPONIBILIDAD SUPLENCIAS</div>
-      <div class="stat-num" style="color:var(--olive-dark);">0</div>
-      <div class="stat-sub">Módulo pendiente por conectar</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">CUMPLIMIENTO NOTAS</div>
-      <div class="stat-num">--</div>
-      <div class="stat-sub">Sin información académica</div>
+      <div class="stat-label">DIRECTORES DE GRUPO</div>
+      <div class="stat-num" id="teacher-stat-directors">0</div>
+      <div class="stat-sub">Docentes titulares de curso</div>
     </div>
   </div>
 
-  <div class="panel" style="margin-bottom:18px; border-left:4px solid var(--ink);">
-    <div id="teacher-live-notice" class="panel-body" style="padding:12px 18px;">
+  <!-- BANNER INFORMATIVO -->
+  <div class="panel" style="margin-bottom:18px; border-left:4px solid var(--ink); background:var(--paper);">
+    <div class="panel-body" style="padding:12px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
       <div style="font-size:13px; color:var(--ink);">
-        <strong style="font-family:var(--mono); font-size:11px; text-transform:uppercase; margin-right:8px;">[Tenant en vivo]</strong>
-        La planta docente se cargará desde Supabase para esta institución.
+        <strong style="font-family:var(--mono); font-size:11px; text-transform:uppercase; margin-right:8px;">[Gestión de Personal]</strong>
+        <span>Vincula docentes, supervisa su activación por correo y gestiona novedades o directores de grupo.</span>
       </div>
+      <button
+        type="button"
+        class="btn btn-primary btn-sm"
+        onclick="window.openTeacherRegisterModal && window.openTeacherRegisterModal();"
+        style="font-size:11.5px; font-weight:800;"
+      >
+        ＋ Vincular Nuevo Docente
+      </button>
     </div>
   </div>
 
+  <!-- BARRA DE BÚSQUEDA Y FILTROS -->
   <div class="panel" style="margin-bottom:20px; background:var(--cream); padding:12px 16px;">
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
       <div style="position:relative; flex:1; min-width:280px;">
-        <input id="teacherSearchInput" type="text" placeholder="Filtrar por docente, correo o especialidad..." style="width:100%; padding:7px 12px; border:1px solid var(--ink); background:var(--paper); font-family:var(--sans); font-size:12.5px; border-radius:2px;" />
+        <input
+          id="teacherSearchInput"
+          type="text"
+          placeholder="Buscar por nombre, código docente, correo, salón o especialidad..."
+          style="width:100%; padding:8px 12px; border:1.5px solid var(--ink); background:var(--paper); font-family:var(--sans); font-size:12.5px; box-sizing:border-box;"
+        />
       </div>
-      <select id="filterCapacity" style="border:1px solid var(--ink); background:var(--paper); padding:7px 12px; font-family:var(--mono); font-size:11.5px; border-radius:2px;">
-        <option value="all">Todos los Docentes</option>
-        <option value="free">Disponibles para Suplencias</option>
-        <option value="directors">Directores de Grupo</option>
-        <option value="leave">Con Novedad de Salud</option>
-      </select>
-      <button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('inviteModal').style.display='flex';" style="font-size:11.5px; font-weight:700;">＋ Vincular Docente</button>
+
+      <div style="display:flex; gap:8px;">
+        <select
+          id="filterCapacity"
+          style="border:1.5px solid var(--ink); background:var(--paper); padding:8px 12px; font-family:var(--mono); font-size:11.5px; font-weight:700;"
+        >
+          <option value="all">Todos los Docentes</option>
+          <option value="active">Solo Docentes Activos</option>
+          <option value="invited">Solo Invitación Pendiente</option>
+          <option value="directors">Solo Directores de Grupo</option>
+          <option value="suspended">Solo Suspendidos / Novedad</option>
+        </select>
+      </div>
     </div>
   </div>
 
+  <!-- TABLA PRINCIPAL DE DOCENTES -->
   <div id="departmentsContainer" style="display:flex; flex-direction:column; gap:22px; margin-bottom:30px;">
     <div class="panel" style="border:2px dashed var(--ink); background:var(--paper);">
       <div class="panel-body" style="padding:34px; text-align:center;">
-        <div style="font-family:var(--serif); font-size:21px; font-weight:700; color:var(--ink); margin-bottom:6px;">Sin docentes vinculados</div>
-        <div style="font-size:13px; color:var(--ink-soft); margin-bottom:16px;">Cuando existan docentes reales en Supabase, aparecerán aquí.</div>
-        <button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('inviteModal').style.display='flex';">＋ Vincular Docente</button>
+        <div style="font-family:var(--serif); font-size:21px; font-weight:700; color:var(--ink); margin-bottom:6px;">
+          Cargando planta docente...
+        </div>
+        <div style="font-size:13px; color:var(--ink-soft); margin-bottom:16px;">
+          Obteniendo expedientes en tiempo real.
+        </div>
       </div>
     </div>
   </div>
 
   <TeacherScheduleModal id="teacherScheduleModal" lang={lang} />
   <TeacherSubstituteModal id="teacherSubstituteModal" lang={lang} teachers={[]} />
-  <TeacherRegisterModal id="inviteModal" lang={lang} departments={[]} />
+  <TeacherRegisterModal id="teacherRegisterModal" lang={lang} />
+  <TeacherDeactivateModal id="teacherDeactivateModal" />
 </AppLayout>
 
 <script>
   import { schoolAdminTenantService } from '../../../../../services/schoolAdminTenantService';
+  import { teacherService } from '../../../../../services/teacherService';
+  import { scheduleService } from '../../../../../services/scheduleService';
 
-  function escapeHtml(value) {
+  function escapeHtml(value: any) {
     return String(value || '').replace(/[&<>"']/g, (char) => ({
       '&': '&amp;',
       '<': '&lt;',
       '>': '&gt;',
       '"': '&quot;',
       "'": '&#039;',
-    }[char]));
+    }[char] || char));
   }
 
-  function renderLiveTeachers(teachers) {
+  let cachedTeachers: any[] = [];
+  let cachedHoursMap: Record<string, number> = {};
+  let currentSchoolId = '';
+
+  async function loadTeacherHours() {
+    try {
+      const res = await scheduleService.getTeacherHoursMap(currentSchoolId);
+      cachedHoursMap = res.hoursMap || {};
+    } catch (err) {
+      console.warn('Error cargando horas de docentes:', err);
+    }
+  }
+
+  function renderLiveTeachers(teachers: any[]) {
+    cachedTeachers = teachers || [];
     const container = document.getElementById('departmentsContainer');
     if (!container) return;
 
     const total = teachers.length;
-    const active = teachers.filter((teacher) => teacher.status === 'active').length;
-    document.getElementById('teacher-stat-total').textContent = String(total);
-    document.getElementById('teacher-stat-total-sub').textContent = total ? 'Datos vivos del tenant actual' : 'Sin docentes vinculados';
-    document.getElementById('teacher-stat-active').innerHTML = `${active} <span style="font-size:16px; font-weight:400; color:var(--ink-soft);">/ ${total}</span>`;
-    document.getElementById('teacher-stat-active-sub').textContent = total ? 'Docentes activos en Supabase' : 'Vincula el primer docente desde el botón superior';
+    const active = teachers.filter((t) => t.status === 'active').length;
+    const invited = teachers.filter((t) => t.status === 'invited' || t.status === 'pending_activation').length;
+    const directors = teachers.filter((t) => (t.jobTitle || '').startsWith('Director de Grupo')).length;
 
-    if (!total) return;
+    const totalEl = document.getElementById('teacher-stat-total');
+    const totalSubEl = document.getElementById('teacher-stat-total-sub');
+    const activeEl = document.getElementById('teacher-stat-active');
+    const activeSubEl = document.getElementById('teacher-stat-active-sub');
+    const invitedEl = document.getElementById('teacher-stat-invited');
+    const directorsEl = document.getElementById('teacher-stat-directors');
+
+    if (totalEl) totalEl.textContent = String(total);
+    if (totalSubEl) totalSubEl.textContent = total ? 'Docentes registrados en la institución' : 'Sin docentes vinculados';
+    if (activeEl) activeEl.innerHTML = `${active} <span style="font-size:16px; font-weight:400; color:var(--ink-soft);">/ ${total}</span>`;
+    if (activeSubEl) activeSubEl.textContent = total ? 'Cuentas activadas y operativas' : 'Vincula el primer docente';
+    if (invitedEl) invitedEl.textContent = String(invited);
+    if (directorsEl) directorsEl.textContent = String(directors);
+
+    if (!total) {
+      container.innerHTML = `
+        <div class="panel" style="border:2px dashed var(--ink); background:var(--paper);">
+          <div class="panel-body" style="padding:34px; text-align:center;">
+            <div style="font-family:var(--serif); font-size:21px; font-weight:700; color:var(--ink); margin-bottom:6px;">Sin docentes vinculados</div>
+            <div style="font-size:13px; color:var(--ink-soft); margin-bottom:16px;">Comienza vinculando al primer profesor de la planta institucional.</div>
+            <button type="button" class="btn btn-primary btn-sm" onclick="window.openTeacherRegisterModal && window.openTeacherRegisterModal();">＋ Vincular Docente</button>
+          </div>
+        </div>
+      `;
+      return;
+    }
 
     container.innerHTML = `
-      <div class="dept-block panel" data-dept-id="tenant-live">
-        <div class="panel-header" style="background:var(--cream); display:flex; justify-content:space-between; align-items:center; padding:12px 20px;">
+      <div class="dept-block panel" style="border:2px solid var(--ink); box-shadow:4px 4px 0 var(--ink);">
+        <div class="panel-header" style="background:var(--cream); display:flex; justify-content:space-between; align-items:center; padding:12px 20px; border-bottom:2px solid var(--ink);">
           <div style="display:flex; align-items:center; gap:10px;">
-            <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-weight:800; font-size:10.5px; padding:2px 7px;">TENANT</span>
-            <h2 style="font-family:var(--serif); font-size:16.5px; margin:0; font-weight:700; color:var(--ink);">Planta Docente Registrada</h2>
+            <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-weight:900; font-size:10px;">
+              EXPEDIENTES
+            </span>
+            <h2 style="font-family:var(--serif); font-size:16.5px; margin:0; font-weight:700; color:var(--ink);">
+              Planta Docente Institucional
+            </h2>
           </div>
-          <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);"><strong>${total} docentes</strong> · ${active} activos</div>
+          <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">
+            Mostrando <strong>${total} docentes</strong> (${active} activos, ${invited} pendientes)
+          </div>
         </div>
-        <div class="panel-body">
-          <table class="data-table">
-            <thead><tr><th>Docente</th><th>Correo / Contacto</th><th>Cargo</th><th>Estado</th><th style="text-align:right;">Acciones</th></tr></thead>
+
+        <div class="panel-body" style="overflow-x:auto;">
+          <table class="data-table" style="margin:0; width:100%;">
+            <thead>
+              <tr style="background:var(--paper); border-bottom:1.5px solid var(--ink);">
+                <th>DOCENTE & ESPECIALIDAD</th>
+                <th>IDENTIFICACIÓN & CONTACTO</th>
+                <th>CARGO / DIRECCIÓN</th>
+                <th>CARGA HORARIA</th>
+                <th>ESTADO</th>
+                <th style="text-align:right;">ACCIONES</th>
+              </tr>
+            </thead>
             <tbody>
-              ${teachers.map((teacher) => {
-                const initials = schoolAdminTenantService.initials(teacher.name);
-                const search = `${teacher.name} ${teacher.email} ${teacher.specialty || ''} ${teacher.jobTitle || ''}`.toLowerCase();
+              ${teachers.map((teacher, idx) => {
+                const search = `${teacher.name} ${teacher.email} ${teacher.specialty || ''} ${teacher.jobTitle || ''} ${teacher.documentId || ''} ${teacher.phone || ''}`.toLowerCase();
+                const isDirector = (teacher.jobTitle || '').startsWith('Director de Grupo');
+                const isInvited = teacher.status === 'invited' || teacher.status === 'pending_activation';
+                const isActive = teacher.status === 'active';
+                const isSuspended = teacher.status === 'suspended';
+
+                const assignedHours = cachedHoursMap[teacher.id] || 0;
+
+                const avatarMarkup = `
+                  <div style="width:38px; height:38px; border:1.5px solid var(--ink); background:#FFFFFF; display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden;">
+                    <img src="${escapeHtml(teacher.avatarUrl || '/avatars/women/fila-2-columna-1.png')}" alt="" style="width:100%; height:100%; object-fit:contain;" />
+                  </div>
+                `;
+
                 return `
-                  <tr class="teacher-table-row" data-search-text="${escapeHtml(search)}" data-has-free="false" data-is-director="false" data-has-leave="false">
-                    <td class="cell-name"><div style="display:flex; align-items:center; gap:12px;"><div style="width:34px; height:34px; background:var(--ink); color:#FFFFFF; font-family:var(--mono); font-size:12.5px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; border-radius:2px;">${escapeHtml(initials)}</div><div><div style="font-weight:700; font-size:14px;">${escapeHtml(teacher.name)}</div><div style="font-size:11.5px; color:var(--ink-soft); margin-top:1px;">${escapeHtml(teacher.specialty || 'Docente de área')}</div></div></div></td>
-                    <td class="cell-muted"><div style="font-family:var(--mono); font-size:11.5px; color:var(--rust); font-weight:700;">${escapeHtml(teacher.email)}</div><div style="font-size:11px; color:var(--ink-soft);">${escapeHtml(teacher.phone || 'Sin teléfono registrado')}</div></td>
-                    <td><span class="plan-tag">${escapeHtml(teacher.jobTitle || 'Docente')}</span></td>
-                    <td><span class="badge badge-${teacher.status === 'active' ? 'active' : 'suspended'}">${teacher.status === 'active' ? 'Activo' : escapeHtml(teacher.status)}</span></td>
-                    <td class="cell-actions"><button type="button" class="btn btn-secondary btn-sm" style="font-size:11px;">Ficha</button></td>
+                  <tr
+                    class="teacher-table-row"
+                    data-search-text="${escapeHtml(search)}"
+                    data-status="${isActive ? 'active' : isInvited ? 'invited' : 'suspended'}"
+                    data-is-director="${isDirector ? 'true' : 'false'}"
+                  >
+                    <td class="cell-name">
+                      <div style="display:flex; align-items:center; gap:12px;">
+                        ${avatarMarkup}
+                        <div>
+                          <div style="font-weight:800; font-size:14px; color:var(--ink);">
+                            ${escapeHtml(teacher.name)}
+                          </div>
+                          <div style="font-size:11.5px; color:var(--ink-soft); margin-top:1px;">
+                            ${escapeHtml(teacher.specialty || 'Docente de Área')}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td class="cell-muted">
+                      <div style="font-family:var(--mono); font-size:11.5px; color:var(--rust); font-weight:700;">
+                        ${escapeHtml(teacher.email)}
+                      </div>
+                      <div style="font-size:11px; color:var(--ink-soft); margin-top:2px;">
+                        ${teacher.phone ? escapeHtml(teacher.phone) : 'Sin teléfono'} · <strong>${escapeHtml(teacher.documentId || 'DOC')}</strong>
+                      </div>
+                    </td>
+
+                    <td>
+                      ${isDirector
+                        ? `<span class="plan-tag" style="background:var(--rust); color:#FFFFFF; border-color:var(--rust); font-weight:800; font-size:10px;">
+                            ${escapeHtml(teacher.jobTitle.toUpperCase())}
+                           </span>`
+                        : `<span class="plan-tag" style="background:var(--cream); font-weight:700; font-size:10.5px;">
+                            ${escapeHtml(teacher.jobTitle || 'Docente Titular')}
+                           </span>`
+                      }
+                    </td>
+
+                    <td>
+                      <div>
+                        <button
+                          type="button"
+                          class="btn btn-secondary btn-sm"
+                          onclick="window._viewTeacherSchedule(${idx})"
+                          style="display:inline-flex; align-items:center; gap:8px; font-family:var(--mono); font-size:12px; font-weight:800; padding:6px 12px; background:var(--cream); border:1.5px solid var(--ink); box-shadow:2px 2px 0 var(--ink); cursor:pointer;"
+                          title="Abrir horario semanal en pop-up"
+                        >
+                          <span style="background:var(--rust); color:#FFFFFF; padding:2px 6px; font-size:11px; font-weight:900;">
+                            ${assignedHours}h / sem
+                          </span>
+                          <span style="color:var(--ink); font-weight:800; text-decoration:underline;">Ver Horario ↗</span>
+                        </button>
+                      </div>
+                    </td>
+
+                    <td>
+                      <span class="badge badge-${isActive ? 'active' : isInvited ? 'trial' : 'suspended'}">
+                        ${isActive ? 'Activo' : isInvited ? 'Invitación Pendiente' : 'Suspendido'}
+                      </span>
+                    </td>
+
+                    <td class="cell-actions" style="text-align:right;">
+                      <div style="display:flex; justify-content:flex-end; align-items:center; gap:6px; flex-wrap:nowrap;">
+                        ${isInvited
+                          ? `<button
+                              type="button"
+                              id="btnResend-${teacher.id}"
+                              class="btn btn-secondary btn-sm"
+                              onclick="window._resendInvitation('${teacher.id}', '${escapeHtml(teacher.email)}')"
+                              style="font-size:10.5px; padding:4px 8px; font-weight:800;"
+                              title="Reenviar correo con enlace de activación JWT"
+                            >
+                              Reenviar Invitación
+                            </button>`
+                          : ''
+                        }
+
+                        <button
+                          type="button"
+                          class="btn btn-primary btn-sm"
+                          onclick="window._editTeacher(${idx})"
+                          style="font-size:10.5px; padding:4px 8px; font-weight:800;"
+                        >
+                          Editar
+                        </button>
+
+                        <button
+                          type="button"
+                          class="btn btn-secondary btn-sm"
+                          onclick="window._openDeactivateModal(${idx})"
+                          style="font-size:10.5px; padding:4px 8px; font-weight:800; color:var(--rust);"
+                          title="Gestionar novedad, suspender o dar de baja"
+                        >
+                          Novedad / Baja
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 `;
               }).join('')}
@@ -138,32 +330,98 @@ const lang = 'es';
     `;
   }
 
+  // ── REENVÍO DE INVITACIÓN EN 1 CLIC ──────────────────────────
+  (window as any)._resendInvitation = async function(teacherId: string, email: string) {
+    const btn = document.getElementById(`btnResend-${teacherId}`) as HTMLButtonElement;
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Enviando…';
+    }
+
+    try {
+      await teacherService.resendInvitation(email, currentSchoolId, 'Docente');
+
+      alert(`Invitación de activación despachada exitosamente a ${email}.`);
+      if (btn) {
+        btn.textContent = 'Reenviada ✓';
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.textContent = 'Reenviar Invitación';
+        }, 4000);
+      }
+    } catch (err: any) {
+      console.error('Error reenviando invitación:', err);
+      alert(`Error al reenviar invitación: ${err?.message || 'Error de conexión.'}`);
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Reintentar';
+      }
+    }
+  };
+
+  (window as any)._editTeacher = function(idx: number) {
+    const teacher = cachedTeachers[idx];
+    if (teacher && (window as any).openTeacherModal) {
+      (window as any).openTeacherModal(teacher);
+    }
+  };
+
+  (window as any)._openDeactivateModal = function(idx: number) {
+    const teacher = cachedTeachers[idx];
+    if (teacher && (window as any).openTeacherDeactivateModal) {
+      (window as any).openTeacherDeactivateModal(teacher);
+    }
+  };
+
+  (window as any)._viewTeacherSchedule = function(idx: number) {
+    const teacher = cachedTeachers[idx];
+    if (teacher && (window as any).openTeacherScheduleModal) {
+      (window as any).openTeacherScheduleModal(teacher, currentSchoolId);
+    }
+  };
+
+  // ── FILTROS PERFECCIONADOS ────────────────────────────────────
   function wireLiveTeacherFilters() {
-    const searchInput = document.getElementById('teacherSearchInput');
-    const filterCap = document.getElementById('filterCapacity');
+    const searchInput = document.getElementById('teacherSearchInput') as HTMLInputElement;
+    const filterCap = document.getElementById('filterCapacity') as HTMLSelectElement;
+
     function applyFilters() {
       const query = (searchInput?.value || '').trim().toLowerCase();
       const selectedCap = filterCap?.value || 'all';
+
+      let visibleCount = 0;
+
       document.querySelectorAll('.teacher-table-row').forEach((row) => {
         const text = row.getAttribute('data-search-text') || '';
-        const hasFree = row.getAttribute('data-has-free') === 'true';
+        const status = row.getAttribute('data-status') || '';
         const isDirector = row.getAttribute('data-is-director') === 'true';
-        const hasLeave = row.getAttribute('data-has-leave') === 'true';
-        let matchCap = true;
-        if (selectedCap === 'free') matchCap = hasFree;
-        if (selectedCap === 'directors') matchCap = isDirector;
-        if (selectedCap === 'leave') matchCap = hasLeave;
-        row.style.display = (!query || text.includes(query)) && matchCap ? '' : 'none';
+
+        let matchFilter = true;
+        if (selectedCap === 'active') matchFilter = status === 'active';
+        if (selectedCap === 'invited') matchFilter = status === 'invited';
+        if (selectedCap === 'suspended') matchFilter = status === 'suspended';
+        if (selectedCap === 'directors') matchFilter = isDirector;
+
+        const matchSearch = !query || text.includes(query);
+        const show = matchSearch && matchFilter;
+
+        (row as HTMLElement).style.display = show ? '' : 'none';
+        if (show) visibleCount++;
       });
     }
+
     searchInput?.addEventListener('input', applyFilters);
     filterCap?.addEventListener('change', applyFilters);
   }
 
+  // ── HIDRATACIÓN PRINCIPAL ──────────────────────────────────────
   async function hydrateTeachers() {
     try {
       const context = await schoolAdminTenantService.getTenantContext();
-      if (!context) return;
+      currentSchoolId = context?.school?.id || context?.school?.slug || '';
+      if (!currentSchoolId) return;
+
+      await loadTeacherHours();
       const teachers = await schoolAdminTenantService.getTenantUsers('teacher');
       renderLiveTeachers(teachers);
       wireLiveTeacherFilters();
@@ -171,6 +429,10 @@ const lang = 'es';
       console.warn('No se pudo hidratar docentes del tenant:', error);
     }
   }
+
+  window.addEventListener('teacher:created', () => {
+    hydrateTeachers();
+  });
 
   const teachersLoad = hydrateTeachers();
   (window as any).SchoolOSApp?.registerPageLoad(teachersLoad);

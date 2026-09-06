@@ -1,18 +1,8 @@
 import { createAdminSupabase } from '../lib/supabase-admin';
-import { supabase as browserSupabase } from '../lib/supabase';
 import type { School, SchoolStatus, AuditStatus } from '../types/school';
 
 function getSupabaseClient() {
-  // Si estamos en el navegador (window definido), usamos el cliente de sesión del navegador
-  if (typeof window !== 'undefined') {
-    return browserSupabase;
-  }
-  // Si estamos en el servidor, usamos el cliente administrativo
-  try {
-    return createAdminSupabase();
-  } catch (_) {
-    return browserSupabase;
-  }
+  return createAdminSupabase();
 }
 
 // Tipo de fila cruda como viene de la base de datos PostgreSQL
@@ -104,25 +94,75 @@ export const schoolService = {
   },
 
   /**
-   * Obtiene todos los colegios registrados
+   * Sube un avatar de rector/usuario a Supabase Storage en el bucket 'school-assets'
    */
-  async getSchools(): Promise<School[]> {
+  async uploadRectorAvatar(file: File, userIdOrSlug: string): Promise<string> {
     const supabase = getSupabaseClient();
-    const { data, error } = await supabase
-      .from('schools')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const fileExt = file.name.split('.').pop() || 'png';
+    const filePath = `avatars/${userIdOrSlug}-${Date.now()}.${fileExt}`;
 
-    if (error) {
-      console.error('Error al obtener colegios:', error);
-      throw error;
+    const { error: uploadError } = await supabase.storage
+      .from('school-assets')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: true,
+      });
+
+    if (uploadError) {
+      console.warn('Error subiendo avatar a Storage, usando DataURL de respaldo:', uploadError);
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(file);
+      });
     }
 
-    return (data as SchoolRow[]).map(mapRowToSchool);
+    const { data } = supabase.storage
+      .from('school-assets')
+      .getPublicUrl(filePath);
+
+    return data.publicUrl;
   },
 
   /**
-   * Obtiene un colegio por su slug (ej: 'cafelitos')
+   * Obtiene todos los colegios registrados con sus métricas vivas de usuarios
+   */
+  async getSchools(): Promise<School[]> {
+    const supabase = getSupabaseClient();
+    const [{ data: schools, error: schoolErr }, { data: students }, { data: teachers }] = await Promise.all([
+      supabase.from('schools').select('*').order('created_at', { ascending: false }),
+      supabase.from('users').select('school_id').eq('role', 'student'),
+      supabase.from('users').select('school_id').eq('role', 'teacher'),
+    ]);
+
+    if (schoolErr) {
+      console.error('Error al obtener colegios:', schoolErr);
+      throw schoolErr;
+    }
+
+    const studentCounts: Record<string, number> = {};
+    (students || []).forEach((u: any) => {
+      if (u.school_id) studentCounts[u.school_id] = (studentCounts[u.school_id] || 0) + 1;
+    });
+
+    const teacherCounts: Record<string, number> = {};
+    (teachers || []).forEach((u: any) => {
+      if (u.school_id) teacherCounts[u.school_id] = (teacherCounts[u.school_id] || 0) + 1;
+    });
+
+    return (schools as SchoolRow[]).map((row) => {
+      const school = mapRowToSchool(row);
+      // Las plazas ocupadas reales provienen del conteo de usuarios del tenant
+      const realStudents = (studentCounts[row.id] || 0) + (studentCounts[row.slug] || 0);
+      const realTeachers = (teacherCounts[row.id] || 0) + (teacherCounts[row.slug] || 0);
+      school.studentCount = realStudents;
+      school.teacherCount = realTeachers > 0 ? realTeachers : school.teacherCount;
+      return school;
+    });
+  },
+
+  /**
+   * Obtiene un colegio por su slug (ej: 'cafelitos') con conteos en vivo
    */
   async getSchoolBySlug(slug: string): Promise<School | null> {
     const supabase = getSupabaseClient();
@@ -137,11 +177,21 @@ export const schoolService = {
       throw error;
     }
 
-    return data ? mapRowToSchool(data as SchoolRow) : null;
+    if (!data) return null;
+
+    const [{ count: studentCount }, { count: teacherCount }] = await Promise.all([
+      supabase.from('users').select('id', { count: 'exact', head: true }).eq('school_id', data.id).eq('role', 'student'),
+      supabase.from('users').select('id', { count: 'exact', head: true }).eq('school_id', data.id).eq('role', 'teacher'),
+    ]);
+
+    const school = mapRowToSchool(data as SchoolRow);
+    if (typeof studentCount === 'number') school.studentCount = studentCount;
+    if (typeof teacherCount === 'number' && teacherCount > 0) school.teacherCount = teacherCount;
+    return school;
   },
 
   /**
-   * Obtiene un colegio por su ID UUID
+   * Obtiene un colegio por su ID UUID con conteos en vivo
    */
   async getSchoolById(id: string): Promise<School | null> {
     const supabase = getSupabaseClient();
@@ -156,11 +206,22 @@ export const schoolService = {
       throw error;
     }
 
-    return data ? mapRowToSchool(data as SchoolRow) : null;
+    if (!data) return null;
+
+    const [{ count: studentCount }, { count: teacherCount }] = await Promise.all([
+      supabase.from('users').select('id', { count: 'exact', head: true }).eq('school_id', data.id).eq('role', 'student'),
+      supabase.from('users').select('id', { count: 'exact', head: true }).eq('school_id', data.id).eq('role', 'teacher'),
+    ]);
+
+    const school = mapRowToSchool(data as SchoolRow);
+    if (typeof studentCount === 'number') school.studentCount = studentCount;
+    if (typeof teacherCount === 'number' && teacherCount > 0) school.teacherCount = teacherCount;
+    return school;
   },
 
   /**
-   * Registra un nuevo colegio
+   * Registra un nuevo colegio (nace con 0 alumnos matriculados)
+   * ⚠️  Solo servidor — usar /api/admin/school desde el cliente.
    */
   async createSchool(school: {
     name: string;
@@ -182,6 +243,9 @@ export const schoolService = {
     studentCount?: number;
     teacherCount?: number;
   }): Promise<School> {
+    if (typeof window !== 'undefined') {
+      throw new Error('[schoolService.createSchool] Esta función solo puede ejecutarse en el servidor. Usa /api/admin/school desde el cliente.');
+    }
     const supabase = getSupabaseClient();
 
     const payload: any = {
@@ -195,8 +259,8 @@ export const schoolService = {
       contact_email: school.contactEmail,
       status: school.status || 'active',
       audit_status: 'none',
-      student_count: school.studentCount || 0,
-      teacher_count: school.teacherCount || 0,
+      student_count: 0, // Toda nueva escuela inicia estrictamente con 0 alumnos
+      teacher_count: 0,
       active_classes_count: 0,
     };
 
@@ -224,6 +288,7 @@ export const schoolService = {
 
   /**
    * Actualiza los datos de un colegio existente por su ID
+   * ⚠️  Solo servidor — usar /api/admin/school desde el cliente.
    */
   async updateSchool(id: string, updates: {
     name?: string;
@@ -235,7 +300,11 @@ export const schoolService = {
     planName?: 'Starter' | 'Professional' | 'Enterprise';
     contactEmail?: string;
     status?: SchoolStatus;
+    studentCount?: number;
+    teacherCount?: number;
+    activeClassesCount?: number;
     logoUrl?: string;
+    bannerUrl?: string;
     slogan?: string;
     address?: string;
     phone?: string;
@@ -243,25 +312,32 @@ export const schoolService = {
     rectorName?: string;
     rectorEmail?: string;
   }): Promise<School> {
+    if (typeof window !== 'undefined') {
+      throw new Error('[schoolService.updateSchool] Esta función solo puede ejecutarse en el servidor. Usa /api/admin/school desde el cliente.');
+    }
     const supabase = getSupabaseClient();
 
     const payload: any = {};
-    if (updates.name !== undefined)         payload.name          = updates.name;
-    if (updates.slug !== undefined)         payload.slug          = updates.slug;
-    if (updates.domain !== undefined)       payload.domain        = updates.domain;
-    if (updates.location !== undefined)     payload.location      = updates.location;
-    if (updates.country !== undefined)      payload.country       = updates.country;
-    if (updates.timezone !== undefined)     payload.timezone      = updates.timezone;
-    if (updates.planName !== undefined)     payload.plan_name     = updates.planName;
-    if (updates.contactEmail !== undefined) payload.contact_email = updates.contactEmail;
-    if (updates.status !== undefined)       payload.status        = updates.status;
-    if (updates.logoUrl !== undefined)      payload.logo_url      = updates.logoUrl;
-    if (updates.slogan !== undefined)       payload.slogan        = updates.slogan;
-    if (updates.address !== undefined)      payload.address       = updates.address;
-    if (updates.phone !== undefined)        payload.phone         = updates.phone;
-    if (updates.brandColor !== undefined)   payload.brand_color   = updates.brandColor;
-    if (updates.rectorName !== undefined)   payload.rector_name   = updates.rectorName;
-    if (updates.rectorEmail !== undefined)  payload.rector_email  = updates.rectorEmail;
+    if (updates.name !== undefined)               payload.name                 = updates.name;
+    if (updates.slug !== undefined)               payload.slug                 = updates.slug;
+    if (updates.domain !== undefined)             payload.domain               = updates.domain;
+    if (updates.location !== undefined)           payload.location             = updates.location;
+    if (updates.country !== undefined)            payload.country              = updates.country;
+    if (updates.timezone !== undefined)           payload.timezone             = updates.timezone;
+    if (updates.planName !== undefined)           payload.plan_name            = updates.planName;
+    if (updates.contactEmail !== undefined)       payload.contact_email        = updates.contactEmail;
+    if (updates.status !== undefined)             payload.status               = updates.status;
+    if (updates.studentCount !== undefined)       payload.student_count        = updates.studentCount;
+    if (updates.teacherCount !== undefined)       payload.teacher_count        = updates.teacherCount;
+    if (updates.activeClassesCount !== undefined) payload.active_classes_count = updates.activeClassesCount;
+    if (updates.logoUrl !== undefined)            payload.logo_url             = updates.logoUrl;
+    if (updates.bannerUrl !== undefined)          payload.banner_url           = updates.bannerUrl;
+    if (updates.slogan !== undefined)             payload.slogan               = updates.slogan;
+    if (updates.address !== undefined)            payload.address              = updates.address;
+    if (updates.phone !== undefined)              payload.phone                = updates.phone;
+    if (updates.brandColor !== undefined)         payload.brand_color          = updates.brandColor;
+    if (updates.rectorName !== undefined)         payload.rector_name          = updates.rectorName;
+    if (updates.rectorEmail !== undefined)        payload.rector_email         = updates.rectorEmail;
 
     const { data, error } = await supabase
       .from('schools')

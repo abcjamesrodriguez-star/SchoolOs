@@ -13,11 +13,24 @@ let users: any[] = [];
 let recentLogs: any[] = [];
 
 try {
-  schools = await schoolService.getSchools();
-  users = await userService.getUsers();
-  recentLogs = await auditService.getRecentLogs(4);
+  schools = (await schoolService.getSchools()) || [];
 } catch (e) {
-  console.error('Error cargando datos en vivo de Supabase:', e);
+  console.error('Error cargando escuelas de Supabase:', e);
+  schools = [];
+}
+
+try {
+  users = (await userService.getUsers()) || [];
+} catch (e) {
+  console.error('Error cargando usuarios de Supabase:', e);
+  users = [];
+}
+
+try {
+  recentLogs = (await auditService.getRecentLogs(4)) || [];
+} catch (e) {
+  console.error('Error cargando logs de Supabase:', e);
+  recentLogs = [];
 }
 
 const activeSchools = schools.filter((s) => s.status === 'active').length;
@@ -34,6 +47,13 @@ function getStatusLabel(status: string) {
     case 'cancelled': return 'Cancelada';
     default: return status;
   }
+}
+
+function formatSchoolDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  return d.toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 ---
 
@@ -206,7 +226,7 @@ function getStatusLabel(status: string) {
                   <td><span class="plan-tag">{s.planName}</span></td>
                   <td><span class={`badge badge-${s.status}`}>{getStatusLabel(s.status)}</span></td>
                   <td style="font-family:var(--mono); font-weight:600;">{s.studentCount.toLocaleString()}</td>
-                  <td class="cell-muted">{s.createdAt}</td>
+                  <td class="cell-muted">{formatSchoolDate(s.createdAt)}</td>
                   <td class="cell-actions">
                     <a class="btn btn-secondary btn-sm" href={`/${lang}/app/super-admin/schools/${s.id}`}>
                       Detalle →
@@ -343,7 +363,7 @@ function getStatusLabel(status: string) {
         <div class="intel-agenda-list">
           <a class="intel-agenda-item" href={`/${lang}/app/super-admin/judicial-access`}>
             <div class="intel-agenda-left">
-              <span class="intel-agenda-icon">⚖️</span>
+              <span class="intel-agenda-icon"></span>
               <div>
                 <div class="intel-agenda-title">Revisar Orden Fiscalía</div>
                 <div class="intel-agenda-sub">Expira en 2 días</div>
@@ -354,7 +374,7 @@ function getStatusLabel(status: string) {
 
           <a class="intel-agenda-item" href={`/${lang}/app/super-admin/schools`}>
             <div class="intel-agenda-left">
-              <span class="intel-agenda-icon">🏢</span>
+              <span class="intel-agenda-icon"></span>
               <div>
                 <div class="intel-agenda-title">Trial Liceo Andino</div>
                 <div class="intel-agenda-sub">Vence en 4 días</div>
@@ -365,7 +385,7 @@ function getStatusLabel(status: string) {
 
           <a class="intel-agenda-item" href={`/${lang}/app/super-admin/settings`}>
             <div class="intel-agenda-left">
-              <span class="intel-agenda-icon">🔐</span>
+              <span class="intel-agenda-icon"></span>
               <div>
                 <div class="intel-agenda-title">Rotación de Claves API</div>
                 <div class="intel-agenda-sub">Programado en 6 días</div>

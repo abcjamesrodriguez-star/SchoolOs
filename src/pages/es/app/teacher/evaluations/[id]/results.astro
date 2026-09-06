@@ -6,13 +6,6 @@
 import AppLayout from '../../../../../../layouts/AppLayout.astro';
 import { getEvaluationById, getResultsByEvaluation } from '../../../../../../data/app/mock-content';
 
-export async function getStaticPaths() {
-  return [
-    { params: { id: 'eval-1' } },
-    { params: { id: 'eval-2' } },
-  ];
-}
-
 const lang = 'es';
 const { id } = Astro.params;
 const evaluation = getEvaluationById(id!);
@@ -33,11 +26,11 @@ const passRate = gradedResults.length > 0 ? Math.round((passedCount / gradedResu
     pageTitle={`Resultados: ${evaluation.title}`}
     activeSection="courses"
     role="teacher"
-    schoolName="Colegio Norte"
+    schoolName="Raptor Crew"
     lang={lang}
     activeRoute={`/app/teacher/evaluations/${id}/results`}
     breadcrumbs={[
-      { label: 'Colegio Norte' },
+      { label: 'Raptor Crew' },
       { label: 'Panel Docente', href: `/${lang}/app/teacher` },
       { label: evaluation.guideTitle, href: `/${lang}/app/teacher/guides/${evaluation.guideId}` },
       { label: 'Resultados' },
@@ -181,7 +174,7 @@ const passRate = gradedResults.length > 0 ? Math.round((passedCount / gradedResu
 
   </AppLayout>
 ) : (
-  <AppLayout title="Evaluación no encontrada" pageTitle="Error" activeSection="courses" role="teacher" schoolName="Colegio Norte" lang={lang} activeRoute="/app/teacher" breadcrumbs={[{ label: 'Error' }]}>
+  <AppLayout title="Evaluación no encontrada" pageTitle="Error" activeSection="courses" role="teacher" schoolName="Raptor Crew" lang={lang} activeRoute="/app/teacher" breadcrumbs={[{ label: 'Error' }]}>
     <div style="padding:40px; text-align:center;">
       <h2>Evaluación no encontrada</h2>
       <a href={`/${lang}/app/teacher/courses`} class="btn btn-primary">Volver a Mis Cursos</a>

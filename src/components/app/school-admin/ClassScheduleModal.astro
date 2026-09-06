@@ -1,0 +1,300 @@
+﻿---
+// ============================================================
+// SchoolOS — Modal de Programación de Clase & Horario por Curso
+// Cero emojis, estilo sobrio institucional
+// ============================================================
+interface Props {
+  id?: string;
+}
+
+const { id = 'classScheduleModal' } = Astro.props;
+---
+
+<div
+  id={id}
+  class="custom-modal-backdrop"
+  style="display:none; position:fixed; inset:0; background:rgba(18, 17, 14, 0.75); z-index:9999; align-items:center; justify-content:center; padding:20px; overflow-y:auto;"
+  role="dialog"
+  aria-modal="true"
+>
+  <div class="panel" style="width:100%; max-width:580px; background:var(--paper); border:2px solid var(--ink); box-shadow:8px 8px 0 var(--ink); max-height:90vh; display:flex; flex-direction:column; overflow:hidden;">
+    
+    <!-- HEADER -->
+    <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center; padding:14px 20px; background:var(--cream); border-bottom:2px solid var(--ink);">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="plan-tag" style="background:var(--rust); color:#FFFFFF; font-size:10px; font-weight:900;">
+          HORARIO LECTIVO
+        </span>
+        <h2 id={`${id}Title`} style="font-family:var(--serif); font-size:16.5px; margin:0; font-weight:700; color:var(--ink);">
+          Programar Horario de Clase
+        </h2>
+      </div>
+      <button type="button" onclick={`document.getElementById('${id}').style.display='none';`} style="background:none; border:none; font-family:var(--mono); font-size:18px; font-weight:700; cursor:pointer; color:var(--ink);">✕</button>
+    </div>
+
+    <!-- FEEDBACK ALERT -->
+    <div id={`${id}Feedback`} style="display:none; padding:10px 18px; font-family:var(--mono); font-size:12px; font-weight:700;"></div>
+
+    <!-- BODY -->
+    <div class="panel-body padded" style="background:#FFFDF9; padding:20px; overflow-y:auto; flex:1;">
+      
+      <form id={`${id}Form`} style="display:flex; flex-direction:column; gap:14px;">
+        <input type="hidden" id={`${id}SchoolId`} value="" />
+        <input type="hidden" id={`${id}SubjectId`} value="" />
+        <input type="hidden" id={`${id}TeacherId`} value="" />
+
+        <!-- CONTEXT CARD (MATERIA + DOCENTE) -->
+        <div style="background:var(--cream); border:1.5px solid var(--ink); padding:12px 14px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div>
+            <div style="font-family:var(--mono); font-size:10px; font-weight:800; color:var(--rust); text-transform:uppercase;">
+              Materia:
+            </div>
+            <strong id={`${id}SubjectLabel`} style="font-size:14px; color:var(--ink);">
+              Ciencias Naturales
+            </strong>
+          </div>
+          <div>
+            <div style="font-family:var(--mono); font-size:10px; font-weight:800; color:var(--rust); text-transform:uppercase;">
+              Docente a Cargo:
+            </div>
+            <strong id={`${id}TeacherLabel`} style="font-size:14px; color:var(--ink);">
+              Prof. Jessica Rodriguez
+            </strong>
+          </div>
+        </div>
+
+        <!-- 1. SELECCIÓN DE SALÓN / CURSO -->
+        <div style="background:#FFFFFF; border:1.5px solid var(--ink); padding:14px; box-shadow:2px 2px 0 var(--ink);">
+          <label style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:4px; color:var(--ink);">
+            1. Salón / Grupo Académico *
+          </label>
+          <select
+            id={`${id}ClassroomSelect`}
+            required
+            style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:8px 10px; font-size:13px; font-family:var(--mono); font-weight:700; box-sizing:border-box;"
+          >
+            <option value="">Cargando salones activos de la institución...</option>
+          </select>
+          <div style="font-size:11px; color:var(--ink-soft); margin-top:4px;">
+            Salones habilitados en la distribución de aforos de la institución.
+          </div>
+        </div>
+
+        <!-- 2. DÍA Y FRANJA HORARIA -->
+        <div style="display:grid; grid-template-columns:1fr 1.3fr; gap:12px;">
+          <div style="background:#FFFFFF; border:1.5px solid var(--ink); padding:14px; box-shadow:2px 2px 0 var(--ink);">
+            <label style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:4px; color:var(--ink);">
+              2. Día de la Semana *
+            </label>
+            <select
+              id={`${id}DaySelect`}
+              required
+              style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:8px 10px; font-size:12.5px; font-family:var(--mono); font-weight:700; box-sizing:border-box;"
+            >
+              <option value="LUNES" data-index="0" selected>Lunes</option>
+              <option value="MARTES" data-index="1">Martes</option>
+              <option value="MIÉRCOLES" data-index="2">Miércoles</option>
+              <option value="JUEVES" data-index="3">Jueves</option>
+              <option value="VIERNES" data-index="4">Viernes</option>
+            </select>
+          </div>
+
+          <div style="background:#FFFFFF; border:1.5px solid var(--ink); padding:14px; box-shadow:2px 2px 0 var(--ink);">
+            <label style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:4px; color:var(--ink);">
+              3. Franja / Bloque Horario *
+            </label>
+            <select
+              id={`${id}SlotSelect`}
+              required
+              style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:8px 10px; font-size:12.5px; font-family:var(--mono); font-weight:700; box-sizing:border-box;"
+            >
+              <option value="">Cargando bloques...</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 3. UBICACIÓN FÍSICA -->
+        <div style="background:#FFFFFF; border:1.5px solid var(--ink); padding:14px; box-shadow:2px 2px 0 var(--ink);">
+          <label style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:4px; color:var(--ink);">
+            4. Espacio / Aula Física (Opcional)
+          </label>
+          <input
+            type="text"
+            id={`${id}RoomLocation`}
+            placeholder="Ej: Laboratorio de Ciencias, Aula 204, Cancha"
+            style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:8px 10px; font-size:12.5px; box-sizing:border-box;"
+          />
+        </div>
+
+        <!-- FOOTER ACTIONS -->
+        <div style="display:flex; justify-content:flex-end; gap:10px; border-top:1.5px solid var(--line); padding-top:14px; margin-top:4px;">
+          <button type="button" class="btn btn-secondary" onclick={`document.getElementById('${id}').style.display='none';`}>
+            Cancelar
+          </button>
+          <button type="submit" id={`${id}SubmitBtn`} class="btn btn-primary" style="font-weight:800;">
+            ✓ Programar Bloque de Clase
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+</div>
+
+
+<script>
+  import { scheduleService } from '../../../services/scheduleService';
+
+  function getActiveTenantSchoolId(): string {
+    try {
+      const user = JSON.parse(localStorage.getItem('schoolos-user') || '{}');
+      if (user.schoolId) return user.schoolId;
+    } catch (_) {}
+    return (window as any).SchoolOSApp?.currentSchoolId || (window as any)._currentTenantSchoolId || localStorage.getItem('schoolos_tenant_id') || localStorage.getItem('schoolos_tenant_slug') || '';
+  }
+
+  function getModalId(): string {
+    const modal = document.querySelector('[data-class-schedule-modal]') as HTMLElement || document.getElementById('ClassScheduleModal');
+    return modal ? modal.id : 'ClassScheduleModal';
+  }
+
+  let currentSchoolId = '';
+  let currentSubject: any = null;
+  let currentTeacher: any = null;
+
+  (window as any).openClassScheduleModal = function(subject: any, teacher: any, gradeCapacities: any[] = [], timeSlots: any[] = [], schoolId?: string) {
+    currentSubject = subject;
+    currentTeacher = teacher;
+    currentSchoolId = schoolId || getActiveTenantSchoolId();
+
+    const modalId = getModalId();
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+
+    const schoolInput = document.getElementById(modalId + 'SchoolId') as HTMLInputElement;
+    const subjectInput = document.getElementById(modalId + 'SubjectId') as HTMLInputElement;
+    const teacherInput = document.getElementById(modalId + 'TeacherId') as HTMLInputElement;
+    const subjectLabel = document.getElementById(modalId + 'SubjectLabel');
+    const teacherLabel = document.getElementById(modalId + 'TeacherLabel');
+    const roomLocInput = document.getElementById(modalId + 'RoomLocation') as HTMLInputElement;
+
+    const classSelect = document.getElementById(modalId + 'ClassroomSelect') as HTMLSelectElement;
+    const slotSelect = document.getElementById(modalId + 'SlotSelect') as HTMLSelectElement;
+
+    if (schoolInput) schoolInput.value = currentSchoolId;
+    if (subjectInput) subjectInput.value = subject.id;
+    if (teacherInput) teacherInput.value = teacher.teacherId || teacher.id;
+    if (subjectLabel) subjectLabel.textContent = `${subject.name} (${subject.code})`;
+    if (teacherLabel) teacherLabel.textContent = teacher.teacherName || teacher.name;
+    if (roomLocInput) roomLocInput.value = '';
+
+    if (classSelect) {
+      const roomOptions: string[] = [];
+      (gradeCapacities || []).forEach(function(g: any) {
+        const isOff = g.isOffered !== false && g.is_offered !== false;
+        const count = g.sectionsCount || g.sections_count || 1;
+        const gLevel = g.gradeLevel || g.grade_level || '';
+        if (isOff && count > 0) {
+          for (let i = 1; i <= count; i++) {
+            const roomName = `${gLevel}-${i}`;
+            roomOptions.push(`<option value="${roomName}">${gLevel} (Salón ${gLevel}-${i})</option>`);
+          }
+        }
+      });
+      classSelect.innerHTML = roomOptions.length ? roomOptions.join('') : '<option value="10°-1">10°-1</option>';
+    }
+
+    if (slotSelect) {
+      let activeSlots = (timeSlots || []).filter(function(s: any) { return !s.isBreak && !s.is_break; });
+      if (!activeSlots.length) {
+        activeSlots = [
+          { id: 'slot-1', name: 'Bloque 1', startTime: '07:00', endTime: '07:55' },
+          { id: 'slot-2', name: 'Bloque 2', startTime: '07:55', endTime: '08:50' },
+          { id: 'slot-3', name: 'Bloque 3', startTime: '09:15', endTime: '10:10' },
+          { id: 'slot-4', name: 'Bloque 4', startTime: '10:10', endTime: '11:05' },
+          { id: 'slot-5', name: 'Bloque 5', startTime: '11:20', endTime: '12:15' },
+          { id: 'slot-6', name: 'Bloque 6', startTime: '12:15', endTime: '13:10' }
+        ];
+      }
+      slotSelect.innerHTML = activeSlots.map(function(s: any) {
+        const st = s.startTime || s.start_time;
+        const et = s.endTime || s.end_time;
+        return `<option value="${s.id || s.slot_id}" data-label="${st} - ${et}">${s.name} (${st} - ${et})</option>`;
+      }).join('');
+    }
+
+    modal.style.display = 'flex';
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const modalId = getModalId();
+    const form = document.getElementById(modalId + 'Form');
+    const modal = document.getElementById(modalId);
+    if (!form || !modal) return;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const submitBtn = document.getElementById(modalId + 'SubmitBtn') as HTMLButtonElement;
+      const feedback = document.getElementById(modalId + 'Feedback');
+
+      const classroom = (document.getElementById(modalId + 'ClassroomSelect') as HTMLSelectElement)?.value;
+      const daySelect = document.getElementById(modalId + 'DaySelect') as HTMLSelectElement;
+      const slotSelect = document.getElementById(modalId + 'SlotSelect') as HTMLSelectElement;
+      const roomLocation = (document.getElementById(modalId + 'RoomLocation') as HTMLInputElement)?.value;
+
+      const day = daySelect?.value;
+      const dayIndex = Number(daySelect?.selectedOptions[0]?.getAttribute('data-index')) || 0;
+      const slotId = slotSelect?.value;
+      const timeLabel = slotSelect?.selectedOptions[0]?.getAttribute('data-label') || '07:00 - 07:55';
+
+      if (!classroom || !day || !slotId) return;
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Programando…';
+      }
+
+      try {
+        const normalizedDay = day.toUpperCase();
+        let startTime = '07:00';
+        let endTime = '07:55';
+        if (timeLabel && timeLabel.includes('-')) {
+          const parts = timeLabel.split('-').map(function(p: string) { return p.trim(); });
+          startTime = parts[0] || '07:00';
+          endTime = parts[1] || '07:55';
+        }
+
+        await scheduleService.createClassSlot({
+          schoolId: currentSchoolId,
+          subjectId: currentSubject.id,
+          teacherId: currentTeacher?.teacherId || currentTeacher?.id || null,
+          classroom: classroom.trim(),
+          dayOfWeek: normalizedDay,
+          dayIndex,
+          slotId,
+          startTime,
+          endTime,
+          roomLocation: roomLocation ? roomLocation.trim() : ('Salón ' + classroom)
+        });
+
+        modal.style.display = 'none';
+        window.dispatchEvent(new CustomEvent('curriculum:updated'));
+        window.location.reload();
+
+      } catch (err: any) {
+        console.error('Error programando clase:', err);
+        if (feedback) {
+          feedback.style.cssText = 'display:block; background:#FEE2E2; border:1px solid var(--rust); color:var(--rust);';
+          feedback.textContent = err?.message || 'Error al programar clase';
+        }
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = '✓ Programar Bloque de Clase';
+        }
+      }
+    });
+  });
+</script>

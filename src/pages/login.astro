@@ -213,6 +213,40 @@ const i18nData = {
         background: #fff;
       }
 
+      .password-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+      .password-wrapper input {
+        flex: 1;
+        padding-right: 42px;
+      }
+      .password-toggle {
+        position: absolute;
+        right: 6px;
+        background: none;
+        border: 1px solid transparent;
+        cursor: pointer;
+        padding: 6px;
+        color: var(--ink-soft);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 2px;
+        transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+      }
+      .password-toggle:hover {
+        color: var(--ink);
+        border-color: var(--line-strong);
+        background: var(--paper);
+      }
+      .password-toggle:focus-visible {
+        outline: none;
+        border-color: var(--ink);
+        color: var(--rust);
+      }
+
       .error-alert {
         display: none;
         background: #F0D2CB;
@@ -292,7 +326,7 @@ const i18nData = {
         <p class="intro" id="cardIntro">Selecciona tu perfil de acceso rápido o ingresa credenciales:</p>
 
         <!-- Fast Role Selection Pills -->
-        <span class="roles-selector-title">⚡ Perfiles Demo de Acceso Rápido:</span>
+        <span class="roles-selector-title"> Perfiles Demo de Acceso Rápido:</span>
         <div class="role-pills-grid">
           <!-- RECTOR -->
           <div class="role-pill active" id="pillRector" title="Iniciar como Rectora del Colegio Norte">
@@ -331,7 +365,15 @@ const i18nData = {
 
           <div class="form-group">
             <label for="password" id="labelPass">Contraseña de Acceso</label>
-            <input type="password" id="password" name="password" value="123" required />
+            <div class="password-wrapper">
+              <input type="password" id="password" name="password" value="123" required />
+              <button type="button" id="togglePassword" class="password-toggle" aria-label="Mostrar contraseña" title="Mostrar contraseña" tabindex="0">
+                <!-- eye open -->
+                <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <!-- eye closed -->
+                <svg class="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"></path><path d="M9.53 9.53a3 3 0 1 0 4.24 4.24"></path><path d="M14.12 14.12L9.88 9.88"></path><path d="M1 1l22 22"></path><path d="M10.58 10.58A3 3 0 0 0 12 12a3 3 0 0 0 1.42-.36"></path></svg>
+              </button>
+            </div>
           </div>
 
           <button type="submit" class="btn-submit" id="btnSubmit">Entrar al Sistema →</button>
@@ -408,6 +450,22 @@ const i18nData = {
       const passInput = document.getElementById('password') as HTMLInputElement;
       const errorMsg = document.getElementById('errorMsg') as HTMLElement;
       const btnSubmit = document.getElementById('btnSubmit') as HTMLButtonElement;
+      const togglePassword = document.getElementById('togglePassword') as HTMLButtonElement;
+
+      // Ojito para ver/ocultar contraseña — sin tocar diseño
+      togglePassword?.addEventListener('click', () => {
+        const isHidden = passInput.type === 'password';
+        passInput.type = isHidden ? 'text' : 'password';
+        const eyeOpen = togglePassword.querySelector('.eye-open') as HTMLElement;
+        const eyeClosed = togglePassword.querySelector('.eye-closed') as HTMLElement;
+        if (eyeOpen && eyeClosed) {
+          eyeOpen.style.display = isHidden ? 'none' : 'block';
+          eyeClosed.style.display = isHidden ? 'block' : 'none';
+        }
+        togglePassword.setAttribute('aria-label', isHidden ? 'Ocultar contraseña' : 'Mostrar contraseña');
+        togglePassword.setAttribute('title', isHidden ? 'Ocultar contraseña' : 'Mostrar contraseña');
+        passInput.focus();
+      });
 
       function setActivePill(pillId: string, user: string, pass: string) {
         document.querySelectorAll('.role-pill').forEach(p => p.classList.remove('active'));
@@ -416,10 +474,7 @@ const i18nData = {
         if (passInput) passInput.value = pass;
       }
 
-      document.getElementById('pillRector')?.addEventListener('click', () => setActivePill('pillRector', 'rector', '123'));
       document.getElementById('pillSuperAdmin')?.addEventListener('click', () => setActivePill('pillSuperAdmin', 'kumikasato45@gmail.com', 'SuperAdmin2026!*'));
-      document.getElementById('pillTeacher')?.addEventListener('click', () => setActivePill('pillTeacher', 'profesor', '123'));
-      document.getElementById('pillStudent')?.addEventListener('click', () => setActivePill('pillStudent', 'estudiante', '123'));
 
       // Submit con Supabase Auth Real
       document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
@@ -434,80 +489,36 @@ const i18nData = {
         }
 
         try {
-          // 1. Caso Real: Si es un email o el atajo de admin, login con Supabase Auth
-          if (inputVal.includes('@') || inputVal === 'admin') {
-            const emailToUse = inputVal === 'admin' ? 'kumikasato45@gmail.com' : inputVal;
-            const user = await authService.signIn(emailToUse, password);
-
-            let targetUrl = '/' + currentLang + '/app/super-admin';
-            if (user.role === 'school_admin') targetUrl = '/' + currentLang + '/app/school-admin';
-            if (user.role === 'teacher') targetUrl = '/' + currentLang + '/app/teacher';
-            if (user.role === 'student') targetUrl = '/' + currentLang + '/app/student';
-
-            localStorage.setItem('schoolos-auth', 'true');
-            localStorage.setItem('schoolos-user', JSON.stringify(user));
-
-            const params = new URLSearchParams(window.location.search);
-            const redirectTo = params.get('redirect') || targetUrl;
-            window.location.href = redirectTo;
-            return;
+          if (!inputVal || !password) {
+            throw new Error('Ingresa tu correo institucional y contraseña.');
           }
 
-          // 2. Fallback Demo Mock para otros roles ('rector', 'profesor', 'estudiante')
-          if (password === '123') {
-            let role = 'school_admin';
-            let targetUrl = '/' + currentLang + '/app/school-admin';
-            let userData = {
-              name: 'Diana Restrepo',
-              email: 'diana.restrepo@colegionorte.edu.co',
-              role: 'school_admin',
-              schoolId: '20e98b23-c8d8-4ed3-92ff-376d85106988',
-              schoolName: 'Cafelitos Baseball Academy',
-            };
-
-            if (inputVal === 'superadmin') {
-              role = 'super_admin';
-              targetUrl = '/' + currentLang + '/app/super-admin';
-              userData = {
-                name: 'Kumika Sato',
-                email: 'kumikasato45@gmail.com',
-                role: 'super_admin',
-                schoolId: null,
-                schoolName: 'SchoolOS Global',
-              };
-            } else if (inputVal === 'profesor' || inputVal === 'teacher') {
-              role = 'teacher';
-              targetUrl = '/' + currentLang + '/app/teacher';
-              userData = {
-                name: 'Prof. Diana Restrepo',
-                email: 'diana.restrepo@colegio-norte.edu.co',
-                role: 'teacher',
-                schoolId: '20e98b23-c8d8-4ed3-92ff-376d85106988',
-                schoolName: 'Cafelitos Baseball Academy',
-              };
-            } else if (inputVal === 'estudiante' || inputVal === 'student') {
-              role = 'student';
-              targetUrl = '/' + currentLang + '/app/student';
-              userData = {
-                name: 'Mateo Gómez',
-                email: 'mateo.g@colegio-norte.edu.co',
-                role: 'student',
-                schoolId: '20e98b23-c8d8-4ed3-92ff-376d85106988',
-                schoolName: 'Cafelitos Baseball Academy',
-              };
-            }
-
-            localStorage.setItem('schoolos-auth', 'true');
-            localStorage.setItem('schoolos-user', JSON.stringify(userData));
-
-            const params = new URLSearchParams(window.location.search);
-            const redirectTo = params.get('redirect') || targetUrl;
-            window.location.href = redirectTo;
-            return;
+          const emailToUse = (inputVal === 'admin' || inputVal === 'superadmin') ? 'kumikasato45@gmail.com' : inputVal;
+          if (!emailToUse.includes('@')) {
+            throw new Error('Por favor ingresa un correo electrónico institucional válido.');
           }
 
-          throw new Error('Credenciales inválidas. Verifica tu correo y contraseña.');
-        } catch (err: any) {
+          const user = await authService.signIn(emailToUse, password);
+
+          let targetUrl = '/' + currentLang + '/app/super-admin';
+          if (user.passwordResetRequired) {
+            targetUrl = '/cambiar-password';
+          } else if (user.role === 'school_admin') {
+            targetUrl = '/' + currentLang + '/app/school-admin';
+          } else if (user.role === 'teacher') {
+            targetUrl = '/' + currentLang + '/app/teacher';
+          } else if (user.role === 'student') {
+            targetUrl = '/' + currentLang + '/app/student';
+          }
+
+          localStorage.setItem('schoolos-auth', 'true');
+          localStorage.setItem('schoolos-user', JSON.stringify(user));
+
+          const params = new URLSearchParams(window.location.search);
+          const redirectTo = params.get('redirect') || targetUrl;
+          window.location.href = redirectTo;
+          return;
+        } catch (err) {
           if (errorMsg) {
             errorMsg.textContent = err?.message || 'Error al iniciar sesión en Supabase.';
             errorMsg.style.display = 'block';

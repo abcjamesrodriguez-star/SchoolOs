@@ -2,32 +2,47 @@
 // ============================================================
 // SchoolOS — Detalle de Escuela (/es/app/super-admin/schools/[id])
 // ============================================================
+export const prerender = false;
+
 import AppLayout from '../../../../../layouts/AppLayout.astro';
 import { schoolService } from '../../../../../services/schoolService';
-import { getMockSchools, getMockSchoolAdmins, getMockJudicialGrants } from '../../../../../data/app/mock-data';
-
-export async function getStaticPaths() {
-  let schools = [];
-  try {
-    schools = await schoolService.getSchools();
-    if (!schools || schools.length === 0) {
-      schools = getMockSchools('es');
-    }
-  } catch (_) {
-    schools = getMockSchools('es');
-  }
-
-  return schools.map((school) => ({
-    params: { id: school.slug || school.id },
-    props: { school },
-  }));
-}
+import { userService } from '../../../../../services/userService';
 
 const lang = 'es';
-const { school } = Astro.props;
-const admins = getMockSchoolAdmins(school.id, lang);
-const grants = getMockJudicialGrants(lang).filter((g) => g.schoolId === school.id);
-const hasActiveOrPendingGrant = grants.some((g) => g.status === 'active' || g.status === 'pending_verification');
+const { id } = Astro.params;
+let school = Astro.props.school;
+
+if (!school && id) {
+  try {
+    school = (await schoolService.getSchoolById(id)) || (await schoolService.getSchoolBySlug(id));
+  } catch {}
+}
+
+if (!school) {
+  return Astro.redirect('/es/app/super-admin/schools');
+}
+
+let admins: any[] = [];
+try {
+  const users = (await userService.getUsers()) || [];
+  admins = users.filter((u) => (u.schoolId === school.id || u.schoolId === school.slug) && u.role === 'school_admin');
+} catch (_) {
+  admins = [];
+}
+
+if (admins.length === 0 && school.rectorName && school.rectorEmail) {
+  admins = [{
+    id: 'rector-' + (school.slug || school.id),
+    name: school.rectorName,
+    email: school.rectorEmail,
+    role: 'school_admin',
+    status: 'active',
+    lastLoginAt: 'Reciente',
+  }];
+}
+
+const grants: any[] = [];
+const hasActiveOrPendingGrant = false;
 
 function getAuditBadge(auditStatus: string) {
   if (auditStatus === 'under_investigation') {
@@ -120,8 +135,17 @@ const audit = getAuditBadge(school.auditStatus);
   <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:24px;">
     <div style="background:var(--paper); border:1px solid var(--ink); padding:16px 20px; border-bottom:3px solid var(--sage-accent);">
       <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft);">01 · Estudiantes</div>
-      <div style="font-family:var(--serif); font-size:26px; font-weight:700; color:var(--ink); margin-top:4px;">{school.studentCount}</div>
-      <div style="font-family:var(--mono); font-size:10.5px; color:var(--sage-dark); font-weight:600; margin-top:2px;">Matriculados activos</div>
+      <div style="font-family:var(--serif); font-size:24px; font-weight:700; color:var(--ink); margin-top:4px;">
+        {school.studentCount}
+        <span style="font-family:var(--mono); font-size:13px; color:var(--ink-soft); font-weight:400;">
+          / {school.planName === 'Starter' ? '200' : school.planName === 'Enterprise' ? '5,000' : '1,500'}
+        </span>
+      </div>
+      <div style="font-family:var(--mono); font-size:10.5px; color:var(--sage-dark); font-weight:600; margin-top:2px;">
+        {school.planName === 'Enterprise'
+          ? 'Plazas consumidas'
+          : `${Math.round(((school.studentCount || 0) / (school.planName === 'Starter' ? 200 : 1500)) * 100)}% cupos ocupados`}
+      </div>
     </div>
     <div style="background:var(--paper); border:1px solid var(--ink); padding:16px 20px; border-bottom:3px solid var(--stone-accent);">
       <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft);">02 · Docentes</div>
@@ -200,7 +224,7 @@ const audit = getAuditBadge(school.auditStatus);
     </summary>
     <div class="panel-body padded" style="padding:20px;">
       <div class="notice restricted" style="border:1px solid var(--danger); background:var(--danger-dim); color:#5C2015; border-radius:0; margin-bottom:20px;">
-        <span class="notice-icon" style="font-size:18px;">⚖️</span>
+        <span class="notice-icon" style="font-size:18px;"></span>
         <div>
           <strong style="color:#3B120B;">Protocolo Judicial Estricto.</strong><br />
           Los registros individuales de estudiantes, calificaciones y comunicaciones están sellados. Sólo se revelan consultas específicas con número de expediente verificado por dos Super Administradores.

@@ -204,11 +204,11 @@ export const AssessmentRunner: React.FC<Props> = ({
           {/* Instrucciones Pedagógicas */}
           <div style={{ marginBottom: 24 }}>
             <div style={{ fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', color: 'var(--ink)', marginBottom: 8 }}>
-              📋 Instrucciones Didácticas:
+               Instrucciones Didácticas:
             </div>
             <ul style={{ margin: 0, paddingLeft: 20, fontFamily: 'var(--sans)', fontSize: 13, color: '#3A362D', lineHeight: 1.6 }}>
               <li>Lee atentamente cada enunciado antes de seleccionar tu respuesta.</li>
-              <li>Puedes marcar preguntas con 🚩 para revisarlas antes de finalizar.</li>
+              <li>Puedes marcar preguntas con  para revisarlas antes de finalizar.</li>
               <li>En cualquier momento puedes consultar la <strong>sección teórica (§)</strong> de la guía haciendo clic en "Ver Teoría".</li>
               <li>Al finalizar, recibirás tu calificación inmediata y la retroalimentación pedagógica de cada punto.</li>
             </ul>
@@ -239,7 +239,7 @@ export const AssessmentRunner: React.FC<Props> = ({
               gap: 8,
             }}
           >
-            <span>🚀 Comenzar Resolución Online</span>
+            <span> Comenzar Resolución Online</span>
           </button>
 
           {totalQuestions === 0 && (

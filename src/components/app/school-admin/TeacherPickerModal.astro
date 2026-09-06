@@ -1,0 +1,182 @@
+---
+// ============================================================
+// SchoolOS — Modal / Popup de Búsqueda y Selección Rápida de Docentes
+// Con buscador en tiempo real, badges de carga horaria y orden
+// Cero emojis, estilo sobrio editorial institucional
+// ============================================================
+interface Props {
+  id?: string;
+}
+
+const { id = 'teacherPickerModal' } = Astro.props;
+---
+
+<div
+  id={id}
+  class="custom-modal-backdrop"
+  style="display:none; position:fixed; inset:0; background:rgba(18, 17, 14, 0.75); z-index:9999; align-items:center; justify-content:center; padding:20px; overflow-y:auto;"
+  role="dialog"
+  aria-modal="true"
+>
+  <div class="panel" style="width:100%; max-width:680px; background:var(--paper); border:2px solid var(--ink); box-shadow:8px 8px 0 var(--ink); max-height:85vh; display:flex; flex-direction:column; overflow:hidden;">
+    
+    <!-- HEADER -->
+    <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center; padding:14px 20px; background:var(--cream); border-bottom:2px solid var(--ink); flex-shrink:0;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; font-size:10px; font-weight:900;">
+          PLANTA DOCENTE
+        </span>
+        <h2 style="font-family:var(--serif); font-size:16.5px; margin:0; font-weight:700; color:var(--ink);">
+          Seleccionar Docente para Asignar Horario
+        </h2>
+      </div>
+      <button type="button" onclick={`document.getElementById('${id}').style.display='none';`} style="background:none; border:none; font-family:var(--mono); font-size:18px; font-weight:700; cursor:pointer; color:var(--ink);">✕</button>
+    </div>
+
+    <!-- BUSCADOR EN VIVO -->
+    <div style="padding:14px 20px; background:#FFFFFF; border-bottom:1.5px solid var(--ink); flex-shrink:0;">
+      <input
+        type="text"
+        id={`${id}SearchInput`}
+        placeholder="Buscar por nombre, documento o especialidad (ej: Jessica, Matemáticas, 777)..."
+        style="width:100%; padding:10px 12px; border:1.5px solid var(--ink); background:var(--cream); font-family:var(--sans); font-size:13px; font-weight:600; box-sizing:border-box;"
+        autofocus
+      />
+    </div>
+
+    <!-- CUADRÍCULA DE DOCENTES CON SCROLL -->
+    <div class="panel-body padded" style="background:#FFFDF9; padding:16px 20px; overflow-y:auto; flex:1;">
+      <div id={`${id}Grid`} style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:10px;">
+        <!-- Se llena dinámicamente -->
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 20px; border-top:1.5px solid var(--line); background:var(--paper); flex-shrink:0;">
+      <div id={`${id}CountLabel`} style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">
+        Cargando docentes...
+      </div>
+      <button type="button" class="btn btn-secondary btn-sm" onclick={`document.getElementById('${id}').style.display='none';`}>
+        Cerrar
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script is:inline define:vars={{ modalId: id }}>
+  (function() {
+    var modal = document.getElementById(modalId);
+    if (!modal) return;
+
+    var allFaculty = [];
+    var hoursMap = {};
+    var onSelectCallback = null;
+
+    window.openTeacherPickerModal = function(facultyList, assignedHoursMap, currentSelectedId, callback) {
+      allFaculty = facultyList || [];
+      hoursMap = assignedHoursMap || {};
+      onSelectCallback = callback;
+
+      var searchInput = document.getElementById(modalId + 'SearchInput');
+      if (searchInput) {
+        searchInput.value = '';
+      }
+
+      renderGrid(allFaculty, currentSelectedId);
+      modal.style.display = 'flex';
+
+      setTimeout(function() {
+        if (searchInput) searchInput.focus();
+      }, 100);
+    };
+
+    function renderGrid(list, currentSelectedId) {
+      var grid = document.getElementById(modalId + 'Grid');
+      var countLabel = document.getElementById(modalId + 'CountLabel');
+      if (!grid) return;
+
+      if (countLabel) {
+        countLabel.textContent = `${list.length} docentes encontrados en la planta`;
+      }
+
+      if (!list.length) {
+        grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:24px; font-size:12.5px; color:var(--ink-soft);">No se encontraron docentes con ese criterio de búsqueda.</div>';
+        return;
+      }
+
+      grid.innerHTML = list.map(function(t) {
+        var isSelected = t.id === currentSelectedId;
+        var hours = hoursMap[t.id] || 0;
+        var bg = isSelected ? 'var(--cream)' : '#FFFFFF';
+        var border = isSelected ? '2px solid var(--rust)' : '1.5px solid var(--ink)';
+
+        return `
+          <div
+            class="teacher-picker-card"
+            onclick="window._selectTeacherFromPicker('${t.id}')"
+            style="background:${bg}; border:${border}; padding:10px 12px; box-shadow:2px 2px 0 var(--ink); cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:10px; transition:transform 0.1s ease;"
+          >
+            <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
+              <div style="width:36px; height:36px; border:1.5px solid var(--ink); background:#FFFFFF; flex-shrink:0; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+                <img src="${escapeHtmlAttr(t.avatar_url || '/avatars/women/fila-2-columna-1.png')}" alt="" style="width:100%; height:100%; object-fit:contain;" />
+              </div>
+              <div style="overflow:hidden;">
+                <div style="font-weight:800; font-size:13px; color:var(--ink); white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">
+                  ${escapeHtmlText(t.name)}
+                </div>
+                <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">
+                  ${escapeHtmlText(t.specialty || 'Docente')} · ${escapeHtmlText(t.document_id || 'DOC')}
+                </div>
+              </div>
+            </div>
+
+            <div style="flex-shrink:0; text-align:right;">
+              <span style="font-family:var(--mono); font-size:10px; font-weight:800; color:var(--rust); background:#FFFFFF; border:1px solid var(--ink); padding:2px 6px; display:inline-block;">
+                ${hours}h / sem
+              </span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function escapeHtmlText(str) {
+      return String(str || '').replace(/[&<>"']/g, function(char) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[char];
+      });
+    }
+
+    function escapeHtmlAttr(str) {
+      return String(str || '').replace(/"/g, '&quot;');
+    }
+
+    window._selectTeacherFromPicker = function(teacherId) {
+      modal.style.display = 'none';
+      if (typeof onSelectCallback === 'function') {
+        onSelectCallback(teacherId);
+      } else if (typeof window._selectTeacher === 'function') {
+        window._selectTeacher(teacherId);
+      }
+    };
+
+    var searchInput = document.getElementById(modalId + 'SearchInput');
+    if (searchInput) {
+      searchInput.addEventListener('input', function() {
+        var q = searchInput.value.trim().toLowerCase();
+        if (!q) {
+          renderGrid(allFaculty, '');
+          return;
+        }
+        var filtered = allFaculty.filter(function(t) {
+          var name = (t.name || '').toLowerCase();
+          var doc = (t.document_id || '').toLowerCase();
+          var spec = (t.specialty || '').toLowerCase();
+          return name.includes(q) || doc.includes(q) || spec.includes(q);
+        });
+        renderGrid(filtered, '');
+      });
+    }
+
+  })();
+</script>

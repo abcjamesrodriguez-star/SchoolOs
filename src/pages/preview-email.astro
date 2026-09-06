@@ -1,0 +1,78 @@
+---
+// Página provisional para previsualizar el diseño del correo en vivo
+---
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>Previsualización de Correo</title>
+  </head>
+  <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #F7F5F0; padding: 40px 20px; margin: 0; color: #12110E;">
+    <div style="max-width: 600px; margin: 0 auto; background: #FFFFFF; border: 3px solid #12110E; box-shadow: 8px 8px 0 #12110E; overflow: hidden;">
+      
+      <!-- HEADER OFICIAL -->
+      <div style="background: #12110E; padding: 24px 32px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #12110E;">
+        <div style="color: #FFFFFF; font-family: monospace; font-size: 16px; font-weight: 900; letter-spacing: 0.1em;">
+          SCHOOL<span style="color: #8B3A22;">OS</span>
+        </div>
+        <div style="color: #FFFFFF; font-family: monospace; font-size: 10px; font-weight: 700; opacity: 0.7; letter-spacing: 0.1em;">
+          SISTEMA DE GESTIÓN ACADÉMICA
+        </div>
+      </div>
+
+      <!-- CUERPO DEL CORREO -->
+      <div style="padding: 48px 40px;">
+        
+        <!-- ETIQUETAS DE REFERENCIA ESTILO MEMO -->
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 32px; border-top: 2px solid #12110E; border-bottom: 2px solid #12110E;">
+          <tr>
+            <td style="padding: 10px 0; border-right: 2px solid #12110E; width: 50%;">
+              <div style="font-family: monospace; font-size: 9px; color: #8A8477; text-transform: uppercase; letter-spacing: 0.05em;">Referencia</div>
+              <div style="font-family: monospace; font-size: 12px; font-weight: 800; color: #8B3A22;">ALTA DE USUARIO DOCENTE</div>
+            </td>
+            <td style="padding: 10px 0 10px 16px; width: 50%;">
+              <div style="font-family: monospace; font-size: 9px; color: #8A8477; text-transform: uppercase; letter-spacing: 0.05em;">Estado</div>
+              <div style="font-family: monospace; font-size: 12px; font-weight: 800; color: #12110E;">PRE-APROBADO POR RECTORÍA</div>
+            </td>
+          </tr>
+        </table>
+        
+        <h1 style="font-size: 28px; font-weight: 900; color: #12110E; margin: 0 0 20px; letter-spacing: -0.02em; line-height: 1.1;">
+          Bienvenido/a al Cuerpo Docente
+        </h1>
+        
+        <!-- TEXTO PRINCIPAL CON ESTILO DE CITA/MEMO -->
+        <div style="border-left: 4px solid #8B3A22; padding-left: 16px; margin-bottom: 40px;">
+          <p style="font-size: 15px; color: #2A2824; line-height: 1.6; margin: 0 0 12px 0;">
+            Se le notifica oficialmente que ha sido registrado como miembro activo del cuerpo docente en la plataforma central de <strong>SchoolOS</strong>.
+          </p>
+          <p style="font-size: 15px; color: #2A2824; line-height: 1.6; margin: 0;">
+            Para completar su alta en el sistema y acceder a sus horarios, es estrictamente necesario que establezca sus credenciales de seguridad a través del siguiente portal seguro.
+          </p>
+        </div>
+        
+        <!-- BOTÓN PRINCIPAL -->
+        <div style="text-align: center; margin-bottom: 24px;">
+          <a href="{{ .ConfirmationURL }}" style="display: inline-block; background: #8B3A22; color: #FFFFFF; font-family: monospace; font-size: 14px; font-weight: 800; padding: 18px 36px; text-decoration: none; border: 3px solid #12110E; box-shadow: 5px 5px 0 #12110E;">
+            ACTIVAR CUENTA DOCENTE →
+          </a>
+        </div>
+
+        <!-- TEXTO GRIS SENCILLO -->
+        <p style="font-size: 11px; color: #8A8477; line-height: 1.5; font-style: italic; text-align: center; margin: 0;">
+          Este enlace expirará en 24 horas por políticas de seguridad.
+        </p>
+
+      </div>
+
+      <!-- FOOTER -->
+      <div style="background: #F7F5F0; padding: 24px 40px; border-top: 3px solid #12110E;">
+        <p style="font-size: 11px; color: #434038; line-height: 1.5; margin: 0; font-family: monospace;">
+          <strong>AVISO DE CONFIDENCIALIDAD:</strong><br>
+          Este correo es personal e intransferible. La información aquí contenida está clasificada para uso exclusivo del personal de la institución. Si recibió este mensaje por error, repórtelo a la administración inmediatamente.
+        </p>
+      </div>
+
+    </div>
+  </body>
+</html>

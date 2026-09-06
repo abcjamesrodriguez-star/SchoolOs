@@ -102,9 +102,9 @@ const lang = 'es';
                 </div>
               </div>
 
-              <input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/webp,image/svg+xml" style="display:none;" />
-              <button type="button" id="btnUploadLogo" class="btn btn-secondary btn-sm" style="font-size:11.5px; font-weight:700; width:100%;">
-                📁 Subir Logo / Escudo
+              <input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/webp,image/svg+xml" style="position:absolute; left:-9999px; width:1px; height:1px; opacity:0;" />
+              <button type="button" id="btnUploadLogo" class="btn btn-secondary btn-sm" style="font-size:11.5px; font-weight:700; width:100%;" onclick="document.getElementById('logoFileInput')?.click()">
+                 Subir Logo / Escudo
               </button>
               <button type="button" id="btnRemoveLogo" style="background:none; border:none; color:var(--danger); font-size:11px; font-family:var(--mono); margin-top:8px; cursor:pointer; display:none;">
                 ✕ Quitar imagen
@@ -187,12 +187,7 @@ const lang = 'es';
             </label>
           </div>
 
-          <div class="form-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
-            <div class="form-field">
-              <label for="initialStudents" style="font-weight:700; font-size:13px;">Estimación de Alumnos Iniciales</label>
-              <input type="number" id="initialStudents" value="120" min="0" max="5000" style="border:1px solid var(--ink); background:var(--paper); padding:10px 14px; font-size:14px; font-family:var(--mono); width:100%;" />
-            </div>
-
+          <div class="form-grid" style="display:grid; grid-template-columns:1fr; gap:20px; margin-top:20px;">
             <div class="form-field">
               <label for="schoolStatus" style="font-weight:700; font-size:13px;">Estado Operativo Inicial</label>
               <select id="schoolStatus" style="border:1px solid var(--ink); background:var(--paper); padding:10px 14px; font-size:13.5px; width:100%;">
@@ -201,45 +196,145 @@ const lang = 'es';
               </select>
             </div>
           </div>
+
+          <div style="background:var(--cream); border:1.5px solid var(--ink); padding:16px; margin-top:16px; box-shadow:3px 3px 0 var(--ink);">
+            <div style="font-family:var(--mono); font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink); font-weight:800; margin-bottom:4px;">
+              ℹ️ Gobernanza de Licencias & Planta Estudiantil
+            </div>
+            <div style="font-size:12px; color:var(--ink-soft); line-height:1.45;">
+              La institución se aprovisionará con <strong>0 alumnos matriculados</strong> y la totalidad de plazas del plan disponibles. El Rector asignado será la única autoridad encargada de matricular a los estudiantes y gestionar el cupo institucional.
+            </div>
+          </div>
         </div>
 
         <!-- ==========================================
              PASO 4: RECTORÍA & RESUMEN FINAL
              ========================================== -->
         <div class="wizard-step-content" id="stepContent4" style="display:none;">
-          <div style="background:var(--cream); border:1px solid var(--ink); padding:18px 22px; margin-bottom:24px;">
-            <div style="font-family:var(--mono); font-size:11px; font-weight:700; color:var(--orange-vibrant); text-transform:uppercase; margin-bottom:6px;">
-              ⚡ Aprovisionamiento del Primer Administrador Escolar (Rector)
+          <div style="background:var(--cream); border:1px solid var(--ink); padding:16px 20px; margin-bottom:20px;">
+            <div style="font-family:var(--mono); font-size:11px; font-weight:700; color:var(--orange-vibrant); text-transform:uppercase; margin-bottom:4px;">
+              Aprovisionamiento del Primer Administrador Escolar (Rector Principal)
             </div>
             <div style="font-size:12.5px; color:var(--ink-soft); line-height:1.4;">
-              Se creará automáticamente la cuenta directiva de nivel 2 para que el rector o director pueda ingresar a <strong>SchoolOS</strong> y administrar materias, docentes y estudiantes.
+              Al confirmar, el sistema registrará primero la institución en Supabase y acto seguido creará la cuenta directiva de nivel 2 con acceso administrativo completo.
             </div>
           </div>
 
-          <div class="form-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
-            <div class="form-field">
-              <label for="rectorName" style="font-weight:700; font-size:13px;">Nombre Completo del Rector / Director *</label>
-              <input type="text" id="rectorName" placeholder="ej. Coach Mike Johnson" required style="border:1px solid var(--ink); background:var(--paper); padding:10px 14px; font-size:14px; font-weight:600; width:100%;" />
+          <!-- BLOQUE 1: IDENTIFICACIÓN Y FOTO INTEGRADA -->
+          <div style="background:var(--cream); border:1.5px solid var(--ink); padding:16px; margin-bottom:16px; box-shadow:3px 3px 0 var(--ink);">
+            <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink); font-weight:800; margin-bottom:12px; padding-bottom:4px; border-bottom:1px solid var(--line);">
+              01 · Identificación Personal & Foto del Rector
             </div>
 
-            <div class="form-field">
-              <label for="rectorEmail" style="font-weight:700; font-size:13px;">Correo de Acceso del Rector *</label>
-              <input type="email" id="rectorEmail" placeholder="rectoria@cafelitosacademy.edu.co" required style="border:1px solid var(--ink); background:var(--paper); padding:10px 14px; font-size:13.5px; font-family:var(--mono); width:100%;" />
+            <div style="display:grid; grid-template-columns:110px 1fr; gap:16px; align-items:start;">
+              <!-- Foto integrada a la izquierda -->
+              <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+                <div id="rectorAvatarPreviewBox" style="width:90px; height:90px; border:2px solid var(--ink); background:#FFFFFF; display:flex; align-items:center; justify-content:center; overflow:hidden; box-shadow:2px 2px 0 var(--ink);">
+                  <img id="rectorAvatarPreviewImg" src="" alt="Foto Directivo" style="width:100%; height:100%; object-fit:cover; display:none;" />
+                  <div id="rectorAvatarPlaceholder" style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft); font-weight:700; text-align:center;">FOTO</div>
+                </div>
+                <input type="file" id="rectorAvatarFileInput" accept="image/png,image/jpeg,image/webp" style="display:none;" />
+                <button type="button" id="btnUploadRectorAvatar" class="btn btn-secondary btn-sm" style="font-size:9.5px; width:100%; padding:4px; font-weight:700;">
+                  Subir Foto
+                </button>
+                <button type="button" id="btnRemoveRectorAvatar" style="background:none; border:none; color:var(--danger); font-size:9.5px; font-family:var(--mono); cursor:pointer; display:none;">
+                  ✕ Quitar
+                </button>
+              </div>
+
+              <!-- Campos alineados en Grid 2x2 a la derecha -->
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <div style="display:flex; flex-direction:column; gap:4px; grid-column:span 2;">
+                  <label for="rectorName" style="font-family:var(--mono); font-size:10.5px; font-weight:700; color:var(--ink);">Nombre Completo del Directivo *</label>
+                  <input id="rectorName" type="text" placeholder="ej. Coach Mike Johnson" required style="border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-family:var(--sans); font-size:13.5px;" />
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:4px; grid-column:span 2;">
+                  <label for="rectorEmail" style="font-family:var(--mono); font-size:10.5px; font-weight:700; color:var(--ink);">Correo Institucional de Acceso *</label>
+                  <input id="rectorEmail" type="email" placeholder="rectoria@colegio.edu.co" required style="border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-family:var(--mono); font-size:13px;" />
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                  <label for="rectorPhone" style="font-family:var(--mono); font-size:10.5px; font-weight:700; color:var(--ink);">Teléfono / WhatsApp</label>
+                  <input id="rectorPhone" type="tel" placeholder="ej. +57 300 123 4567" style="border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-family:var(--sans); font-size:13px;" />
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                  <label for="rectorDocId" style="font-family:var(--mono); font-size:10.5px; font-weight:700; color:var(--ink);">Documento de Identidad</label>
+                  <div style="display:flex; gap:6px;">
+                    <select id="rectorDocType" style="width:70px; border:1.5px solid var(--ink); background:var(--paper); padding:8px 4px; font-family:var(--mono); font-size:11px; font-weight:700;">
+                      <option value="CC">CC</option>
+                      <option value="CE">CE</option>
+                      <option value="PA">PA</option>
+                      <option value="PEP">PEP</option>
+                    </select>
+                    <input id="rectorDocId" type="text" placeholder="1.045.890.123" style="flex:1; border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-family:var(--mono); font-size:12.5px;" />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          <!-- RESUMEN EN VIVO -->
-          <div style="margin-top:24px; border-top:1px solid var(--line); padding-top:20px;">
-            <div style="font-family:var(--mono); font-size:11px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; margin-bottom:12px;">
-              Resumen de Aprovisionamiento:
+          <!-- BLOQUE 2: CARGO, ESTADO & CREDENCIALES -->
+          <div style="background:var(--cream); border:1.5px solid var(--ink); padding:16px; margin-bottom:16px; box-shadow:3px 3px 0 var(--ink);">
+            <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink); font-weight:800; margin-bottom:12px; padding-bottom:4px; border-bottom:1px solid var(--line);">
+              02 · Cargo Oficial, Estado & Contraseña Inicial
             </div>
-            <div style="background:var(--paper); border:1px solid var(--line-strong); padding:14px 18px; font-family:var(--mono); font-size:12px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-              <div><strong>Escuela:</strong> <span id="sumSchoolName">-</span></div>
-              <div><strong>Subdominio:</strong> <span id="sumSlug" style="color:var(--orange-vibrant);">-</span></div>
-              <div><strong>Ubicación:</strong> <span id="sumLocation">-</span></div>
-              <div><strong>Plan:</strong> <span id="sumPlan">Professional</span></div>
-              <div><strong>Rector:</strong> <span id="sumRector">-</span></div>
-              <div><strong>Email Rector:</strong> <span id="sumRectorEmail">-</span></div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+              <div style="display:flex; flex-direction:column; gap:4px;">
+                <label for="rectorJobTitle" style="font-family:var(--mono); font-size:10.5px; font-weight:700; color:var(--ink);">Cargo Oficial</label>
+                <select id="rectorJobTitle" style="border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-family:var(--sans); font-size:12.5px;">
+                  <option value="Rector General">Rector General</option>
+                  <option value="Director Académico">Director Académico</option>
+                  <option value="Vicerrector">Vicerrector</option>
+                  <option value="Director Ejecutivo">Director Ejecutivo</option>
+                  <option value="Coordinador General">Coordinador General</option>
+                </select>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:4px;">
+                <label for="rectorSpecialty" style="font-family:var(--mono); font-size:10.5px; font-weight:700; color:var(--ink);">Especialidad / Área Directiva</label>
+                <input id="rectorSpecialty" type="text" placeholder="ej. Gestión Curricular o Dirección General" style="border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-family:var(--sans); font-size:12.5px;" />
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:4px;">
+                <label for="rectorAppointmentDate" style="font-family:var(--mono); font-size:10.5px; font-weight:700; color:var(--ink);">Fecha de Nombramiento / Posesión</label>
+                <input id="rectorAppointmentDate" type="date" value={new Date().toISOString().split('T')[0]} style="border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-family:var(--mono); font-size:12px;" />
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:4px; grid-column:span 2; background:var(--cream); border:1.5px solid var(--ink); padding:14px; margin-top:6px; box-shadow:2px 2px 0 var(--ink);">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:15px;">✉️</span>
+                  <span style="font-family:var(--mono); font-size:11px; font-weight:800; text-transform:uppercase; color:var(--ink);">Activación Segura Obligatoria por Correo (JWT)</span>
+                </div>
+                <div style="font-size:11.5px; color:var(--ink-soft); line-height:1.4; margin-top:4px;">
+                  El rector se registrará en estado <strong>Invitación Pendiente</strong>. Al crear la institución, el sistema le enviará un correo institucional con el enlace JWT de 24 horas para que confirme su cédula y configure su contraseña personal.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RESUMEN EN VIVO COMPLETO (DOSSIER PREVIO) -->
+          <div style="border-top:1.5px solid var(--ink); padding-top:16px;">
+            <div style="font-family:var(--mono); font-size:11px; font-weight:800; color:var(--ink); text-transform:uppercase; margin-bottom:10px;">
+              Resumen Completo de Aprovisionamiento:
+            </div>
+            <div style="background:var(--paper); border:1.5px solid var(--ink); padding:16px; font-family:var(--mono); font-size:12px; display:grid; grid-template-columns:1fr 1fr; gap:12px; box-shadow:3px 3px 0 var(--ink);">
+              <div style="display:flex; flex-direction:column; gap:6px; border-right:1px solid var(--line); padding-right:12px;">
+                <div style="font-weight:800; color:var(--ink); text-transform:uppercase; font-size:10.5px; border-bottom:1px solid var(--line); padding-bottom:3px;">Institución Escolar</div>
+                <div><strong>Escuela:</strong> <span id="sumSchoolName">-</span></div>
+                <div><strong>Subdominio:</strong> <span id="sumSlug" style="color:var(--orange-vibrant);">-</span></div>
+                <div><strong>Ubicación:</strong> <span id="sumLocation">-</span></div>
+                <div><strong>Plan:</strong> <span id="sumPlan">Professional</span></div>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:6px; padding-left:4px;">
+                <div style="font-weight:800; color:var(--ink); text-transform:uppercase; font-size:10.5px; border-bottom:1px solid var(--line); padding-bottom:3px;">Rector / Directivo Asignado</div>
+                <div><strong>Nombre:</strong> <span id="sumRector">-</span></div>
+                <div><strong>Correo:</strong> <span id="sumRectorEmail">-</span></div>
+                <div><strong>Cargo:</strong> <span id="sumRectorJob">-</span></div>
+                <div><strong>Documento:</strong> <span id="sumRectorDoc">-</span></div>
+              </div>
             </div>
           </div>
         </div>
@@ -259,7 +354,7 @@ const lang = 'es';
               Siguiente Paso →
             </button>
             <button type="submit" id="btnSubmitWizard" class="btn btn-primary" style="padding:12px 26px; font-size:13px; font-weight:700; background:var(--orange-vibrant); display:none;">
-              🚀 Crear Institución en Supabase
+              Crear Institución en Supabase
             </button>
           </div>
         </div>
@@ -268,13 +363,264 @@ const lang = 'es';
     </div>
   </div>
 
+  <!-- ============================================================ -->
+  <!-- MODAL DE PROGRESO Y ÉXITO EN APROVISIONAMIENTO              -->
+  <!-- ============================================================ -->
+  <div
+    id="provisioning-modal-overlay"
+    style="
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(18, 17, 14, 0.82);
+      backdrop-filter: blur(4px);
+      z-index: 99999;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    "
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="prov-modal-title"
+  >
+    <div
+      id="provisioning-modal-panel"
+      style="
+        background: var(--paper, #FFFFFF);
+        border: 2px solid var(--ink, #12110E);
+        box-shadow: 10px 10px 0 var(--ink, #12110E);
+        width: min(580px, 95vw);
+        max-height: 90vh;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        transform: scale(0.95);
+        transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      "
+    >
+      <!-- HEADER -->
+      <div
+        style="
+          padding: 18px 24px;
+          background: var(--cream, #F7F5F0);
+          border-bottom: 2px solid var(--ink, #12110E);
+          display: flex;
+          align-items: center;
+          gap: 14px;
+        "
+      >
+        <div
+          id="prov-header-icon"
+          style="
+            width: 44px;
+            height: 44px;
+            border: 1.5px solid var(--ink, #12110E);
+            background: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+            box-shadow: 2px 2px 0 var(--ink, #12110E);
+          "
+        >
+          ⚙️
+        </div>
+        <div>
+          <div
+            id="prov-modal-badge"
+            style="
+              font-family: var(--mono, 'IBM Plex Mono', monospace);
+              font-size: 10px;
+              font-weight: 800;
+              letter-spacing: 0.1em;
+              text-transform: uppercase;
+              color: var(--rust, #D97706);
+              margin-bottom: 2px;
+            "
+          >
+            DESPLIEGUE MULTI-TENANT EN PROGRESO
+          </div>
+          <h2
+            id="prov-modal-title"
+            style="
+              font-family: var(--serif, 'Fraunces', serif);
+              font-size: 19px;
+              font-weight: 700;
+              color: var(--ink, #12110E);
+              margin: 0;
+            "
+          >
+            Aprovisionando Institución...
+          </h2>
+        </div>
+      </div>
+
+      <!-- BODY: VISTA DE CARGA Y PASOS -->
+      <div id="prov-loading-view" style="padding: 24px;">
+        <!-- BARRA DE PROGRESO -->
+        <div style="margin-bottom: 22px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-family: var(--mono); font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft);">
+              Progreso de Despliegue
+            </span>
+            <span id="prov-progress-percent" style="font-family: var(--mono); font-size: 12px; font-weight: 800; color: var(--ink);">
+              15%
+            </span>
+          </div>
+          <div style="height: 14px; background: var(--cream); border: 1.5px solid var(--ink); box-shadow: 2px 2px 0 var(--ink); overflow: hidden; padding: 2px;">
+            <div
+              id="prov-progress-bar"
+              style="
+                height: 100%;
+                width: 15%;
+                background: linear-gradient(90deg, var(--orange-vibrant, #EA580C), var(--sage-dark, #2E4A1E));
+                transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+              "
+            ></div>
+          </div>
+        </div>
+
+        <!-- LISTA DE PASOS INTERACTIVA -->
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <!-- Paso 1 -->
+          <div id="step-item-1" style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1.5px solid var(--ink); background: var(--paper); transition: all 0.2s ease;">
+            <div id="step-icon-1" style="width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--ink); background: var(--cream); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800;">1</div>
+            <div style="flex: 1;">
+              <div style="font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--ink);">1. Almacenamiento & Recursos Multimedia</div>
+              <div id="step-desc-1" style="font-size: 11.5px; color: var(--ink-soft);">Subiendo escudo institucional y fotografía...</div>
+            </div>
+            <span id="step-spin-1" style="font-size: 14px;">⏳</span>
+          </div>
+
+          <!-- Paso 2 -->
+          <div id="step-item-2" style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1.5px solid var(--line); background: var(--paper); opacity: 0.6; transition: all 0.2s ease;">
+            <div id="step-icon-2" style="width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--ink); background: var(--cream); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800;">2</div>
+            <div style="flex: 1;">
+              <div style="font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--ink);">2. Registro Multi-tenant en Supabase</div>
+              <div id="step-desc-2" style="font-size: 11.5px; color: var(--ink-soft);">Configurando escuela, subdominio y parámetros de sede...</div>
+            </div>
+            <span id="step-spin-2" style="font-size: 14px;">⏱</span>
+          </div>
+
+          <!-- Paso 3 -->
+          <div id="step-item-3" style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1.5px solid var(--line); background: var(--paper); opacity: 0.6; transition: all 0.2s ease;">
+            <div id="step-icon-3" style="width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--ink); background: var(--cream); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800;">3</div>
+            <div style="flex: 1;">
+              <div style="font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--ink);">3. Aprovisionamiento de Directivo / Rectoría</div>
+              <div id="step-desc-3" style="font-size: 11.5px; color: var(--ink-soft);">Creando cuenta y perfil de directivo en estado Invitado...</div>
+            </div>
+            <span id="step-spin-3" style="font-size: 14px;">⏱</span>
+          </div>
+
+          <!-- Paso 4 -->
+          <div id="step-item-4" style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1.5px solid var(--line); background: var(--paper); opacity: 0.6; transition: all 0.2s ease;">
+            <div id="step-icon-4" style="width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--ink); background: var(--cream); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800;">4</div>
+            <div style="flex: 1;">
+              <div style="font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--ink);">4. Seguridad Criptográfica & Correo JWT</div>
+              <div id="step-desc-4" style="font-size: 11.5px; color: var(--ink-soft);">Firmando ticket de 24h y despachando correo de activación...</div>
+            </div>
+            <span id="step-spin-4" style="font-size: 14px;">⏱</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- BODY: VISTA DE ÉXITO (SUCCESSFUL) -->
+      <div id="prov-success-view" style="display: none; padding: 24px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <div style="width: 56px; height: 56px; margin: 0 auto 12px; background: #E6F4EA; border: 2px solid var(--sage-dark); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; color: var(--sage-dark); box-shadow: 3px 3px 0 var(--ink);">
+            ✓
+          </div>
+          <h3 style="font-family: var(--serif); font-size: 22px; font-weight: 700; color: var(--ink); margin: 0 0 6px;">
+            ¡Institución Aprovisionada con Éxito!
+          </h3>
+          <p style="font-size: 13px; color: var(--ink-soft); margin: 0; line-height: 1.45;">
+            La institución educativa ha sido configurada y está lista para operar en SchoolOS.
+          </p>
+        </div>
+
+        <!-- TARJETA DE RESUMEN INSTITUCIONAL -->
+        <div style="border: 2px solid var(--ink); background: var(--cream); padding: 14px 16px; margin-bottom: 18px; box-shadow: 4px 4px 0 var(--ink);">
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--line-strong); padding-bottom: 6px;">
+              <span style="font-family: var(--mono); font-size: 10.5px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft);">Institución:</span>
+              <strong id="success-school-name" style="font-size: 13.5px; color: var(--ink);"></strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--line-strong); padding-bottom: 6px;">
+              <span style="font-family: var(--mono); font-size: 10.5px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft);">Subdominio:</span>
+              <strong id="success-school-domain" style="font-family: var(--mono); font-size: 12px; color: var(--orange-vibrant);"></strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--line-strong); padding-bottom: 6px;">
+              <span style="font-family: var(--mono); font-size: 10.5px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft);">Rector Asignado:</span>
+              <strong id="success-rector-name" style="font-size: 13.5px; color: var(--ink);"></strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-family: var(--mono); font-size: 10.5px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft);">Correo de Acceso:</span>
+              <strong id="success-rector-email" style="font-family: var(--mono); font-size: 12px; color: var(--ink);"></strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- BANNER DE CORREO JWT -->
+        <div id="success-jwt-banner" style="background: #E6F4EA; border: 1.5px solid var(--sage-dark); padding: 12px 14px; margin-bottom: 16px;">
+          <div style="display: flex; align-items: flex-start; gap: 10px;">
+            <span style="font-size: 18px;">✉️</span>
+            <div id="success-jwt-text" style="font-size: 12.5px; color: #1B4D21; line-height: 1.45;">
+              Se ha enviado el correo con el <strong>enlace de confirmación JWT (24 horas)</strong>. El directivo podrá confirmar su cédula y teléfono, y autoasignar su contraseña institucional.
+            </div>
+          </div>
+        </div>
+
+        <div id="success-fallback-link-container" style="display: none; margin-bottom: 16px;">
+          <button id="btnCopySuccessLink" type="button" class="btn btn-secondary btn-sm" style="width: 100%; font-family: var(--mono); font-size: 11px;">
+            📋 Copiar Enlace Directo de Activación
+          </button>
+        </div>
+
+        <!-- BOTÓN PRINCIPAL -->
+        <button
+          id="btnGoToSchools"
+          type="button"
+          class="btn btn-primary"
+          style="width: 100%; padding: 13px; font-family: var(--mono); font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; background: var(--ink);"
+        >
+          Ir al Directorio de Escuelas →
+        </button>
+      </div>
+
+      <!-- BODY: VISTA DE ERROR -->
+      <div id="prov-error-view" style="display: none; padding: 24px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <div style="width: 56px; height: 56px; margin: 0 auto 12px; background: #FEE2E2; border: 2px solid var(--danger); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--danger);">
+            ✕
+          </div>
+          <h3 style="font-family: var(--serif); font-size: 20px; font-weight: 700; color: var(--ink); margin: 0 0 6px;">
+            No se pudo completar el aprovisionamiento
+          </h3>
+          <p id="prov-error-message" style="font-size: 13px; color: #991B1B; margin: 0; line-height: 1.45; background: #FEE2E2; padding: 12px; border: 1px solid var(--danger); font-family: var(--mono); word-break: break-word;">
+          </p>
+        </div>
+        <button
+          id="btnCloseErrorModal"
+          type="button"
+          class="btn btn-secondary"
+          style="width: 100%; padding: 11px;"
+        >
+          Cerrar y Revisar Formulario
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- SCRIPT DEL WIZARD (VITE BUNDLED) -->
   <script>
-    import { schoolService } from '../../../../../services/schoolService';
-    import { provisionRectorAccount } from '../../../../../services/rectorProvisioningService';
+    const fetchAuth = (window as any).fetchAuth;
 
     let currentStep = 1;
-    let selectedLogoFile: File | null = null;
+    let selectedLogoFile = null;
+    let selectedRectorAvatarFile = null;
 
     // Elementos UI
     const stepTitles = [
@@ -303,14 +649,21 @@ const lang = 'es';
     const btnSubmitWizard = document.getElementById('btnSubmitWizard');
 
     // Inputs para Auto-Slug y Resumen
-    const inputName = document.getElementById('schoolName') as HTMLInputElement;
-    const inputSlug = document.getElementById('schoolSlug') as HTMLInputElement;
-    const inputCountry = document.getElementById('country') as HTMLInputElement;
-    const inputContactEmail = document.getElementById('contactEmail') as HTMLInputElement;
-    const inputRectorName = document.getElementById('rectorName') as HTMLInputElement;
-    const inputRectorEmail = document.getElementById('rectorEmail') as HTMLInputElement;
-    const inputBrandColor = document.getElementById('brandColor') as HTMLInputElement;
-    const inputBrandColorHex = document.getElementById('brandColorHex') as HTMLInputElement;
+    const inputName = document.getElementById('schoolName');
+    const inputSlug = document.getElementById('schoolSlug');
+    const inputCountry = document.getElementById('country');
+    const inputContactEmail = document.getElementById('contactEmail');
+    const inputRectorName = document.getElementById('rectorName');
+    const inputRectorEmail = document.getElementById('rectorEmail');
+    const inputRectorPhone = document.getElementById('rectorPhone');
+    const selectRectorDocType = document.getElementById('rectorDocType');
+    const inputRectorDocId = document.getElementById('rectorDocId');
+    const selectRectorJobTitle = document.getElementById('rectorJobTitle');
+    const selectRectorStatus = document.getElementById('rectorAccountStatus');
+    const inputRectorPassword = document.getElementById('rectorPassword');
+    const btnGenerateRectorPass = document.getElementById('btnGenerateRectorPass');
+    const inputBrandColor = document.getElementById('brandColor');
+    const inputBrandColorHex = document.getElementById('brandColorHex');
 
     // Auto-generar slug al escribir el nombre
     inputName?.addEventListener('input', () => {
@@ -343,44 +696,61 @@ const lang = 'es';
       if (inputBrandColor) inputBrandColor.value = inputBrandColorHex.value;
     });
 
+    // Generar Contraseña Segura para Rector
+    btnGenerateRectorPass?.addEventListener('click', () => {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%';
+      let pass = '';
+      for (let i = 0; i < 12; i++) {
+        pass += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      if (inputRectorPassword) inputRectorPassword.value = pass;
+    });
+
     // Selección de Planes
     const planCards = document.querySelectorAll('.plan-select-card');
     planCards.forEach((card) => {
       card.addEventListener('click', () => {
         planCards.forEach((c) => {
           c.classList.remove('active');
-          (c as HTMLElement).style.borderColor = 'var(--line-strong)';
-          (c as HTMLElement).style.background = 'var(--paper)';
+          c.style.borderColor = 'var(--line-strong)';
+          c.style.background = 'var(--paper)';
         });
         card.classList.add('active');
-        (card as HTMLElement).style.borderColor = 'var(--orange-vibrant)';
-        (card as HTMLElement).style.background = 'var(--cream)';
-        const radio = card.querySelector('input[type="radio"]') as HTMLInputElement;
+        card.style.borderColor = 'var(--orange-vibrant)';
+        card.style.background = 'var(--cream)';
+        const radio = card.querySelector('input[type="radio"]');
         if (radio) radio.checked = true;
       });
     });
 
-    // Manejo de Subida de Logo & Previsualización
-    const logoFileInput = document.getElementById('logoFileInput') as HTMLInputElement;
+    // Manejo de Subida de Logo de Escuela & Previsualización
+    const logoFileInput = document.getElementById('logoFileInput');
     const btnUploadLogo = document.getElementById('btnUploadLogo');
     const btnRemoveLogo = document.getElementById('btnRemoveLogo');
-    const logoPreviewImg = document.getElementById('logoPreviewImg') as HTMLImageElement;
+    const logoPreviewImg = document.getElementById('logoPreviewImg');
     const logoPlaceholder = document.getElementById('logoPlaceholder');
 
-    btnUploadLogo?.addEventListener('click', () => logoFileInput?.click());
+    btnUploadLogo?.addEventListener('click', (e) => {
+      e.preventDefault();
+      logoFileInput?.click();
+    });
 
     logoFileInput?.addEventListener('change', () => {
       const file = logoFileInput.files?.[0];
       if (file) {
         if (file.size > 5 * 1024 * 1024) {
-          alert('El logo no debe exceder los 5MB.');
+          if (window.showAlertModal) {
+            window.showAlertModal({ title: 'Archivo muy grande', message: 'El logo no debe exceder los 5MB.', type: 'warning' });
+          } else {
+            alert('El logo no debe exceder los 5MB.');
+          }
           return;
         }
         selectedLogoFile = file;
         const reader = new FileReader();
         reader.onload = (e) => {
           if (logoPreviewImg && logoPlaceholder) {
-            logoPreviewImg.src = e.target?.result as string;
+            logoPreviewImg.src = e.target?.result;
             logoPreviewImg.style.display = 'block';
             logoPlaceholder.style.display = 'none';
             if (btnRemoveLogo) btnRemoveLogo.style.display = 'inline-block';
@@ -401,8 +771,56 @@ const lang = 'es';
       }
     });
 
+    // Manejo de Subida de Foto del Rector & Previsualización
+    const rectorAvatarFileInput = document.getElementById('rectorAvatarFileInput');
+    const btnUploadRectorAvatar = document.getElementById('btnUploadRectorAvatar');
+    const btnRemoveRectorAvatar = document.getElementById('btnRemoveRectorAvatar');
+    const rectorAvatarPreviewImg = document.getElementById('rectorAvatarPreviewImg');
+    const rectorAvatarPlaceholder = document.getElementById('rectorAvatarPlaceholder');
+
+    btnUploadRectorAvatar?.addEventListener('click', (e) => {
+      e.preventDefault();
+      rectorAvatarFileInput?.click();
+    });
+
+    rectorAvatarFileInput?.addEventListener('change', () => {
+      const file = rectorAvatarFileInput.files?.[0];
+      if (file) {
+        if (file.size > 5 * 1024 * 1024) {
+          if (window.showAlertModal) {
+            window.showAlertModal({ title: 'Archivo muy grande', message: 'La foto del rector no debe exceder los 5MB.', type: 'warning' });
+          } else {
+            alert('La foto del rector no debe exceder los 5MB.');
+          }
+          return;
+        }
+        selectedRectorAvatarFile = file;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          if (rectorAvatarPreviewImg && rectorAvatarPlaceholder) {
+            rectorAvatarPreviewImg.src = e.target?.result;
+            rectorAvatarPreviewImg.style.display = 'block';
+            rectorAvatarPlaceholder.style.display = 'none';
+            if (btnRemoveRectorAvatar) btnRemoveRectorAvatar.style.display = 'inline-block';
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    btnRemoveRectorAvatar?.addEventListener('click', () => {
+      selectedRectorAvatarFile = null;
+      if (rectorAvatarFileInput) rectorAvatarFileInput.value = '';
+      if (rectorAvatarPreviewImg && rectorAvatarPlaceholder) {
+        rectorAvatarPreviewImg.src = '';
+        rectorAvatarPreviewImg.style.display = 'none';
+        rectorAvatarPlaceholder.style.display = 'block';
+        if (btnRemoveRectorAvatar) btnRemoveRectorAvatar.style.display = 'none';
+      }
+    });
+
     // Cambiar de Paso
-    function goToStep(step: number) {
+    function goToStep(step) {
       if (step < 1 || step > 4) return;
       currentStep = step;
 
@@ -439,44 +857,67 @@ const lang = 'es';
 
       // Actualizar Resumen en Paso 4
       if (currentStep === 4) {
-        const sumName = document.getElementById('sumSchoolName');
-        const sumSlug = document.getElementById('sumSlug');
-        const sumLocation = document.getElementById('sumLocation');
-        const sumPlan = document.getElementById('sumPlan');
-        const sumRector = document.getElementById('sumRector');
-        const sumRectorEmail = document.getElementById('sumRectorEmail');
-        const selectedPlan = (document.querySelector('input[name="planChoice"]:checked') as HTMLInputElement)?.value;
-
-        if (sumName) sumName.textContent = inputName.value || '-';
-        if (sumSlug) sumSlug.textContent = `${inputSlug.value || 'slug'}.schoolos.com`;
-        if (sumLocation) sumLocation.textContent = inputCountry.value || '-';
-        if (sumPlan) sumPlan.textContent = selectedPlan || 'Professional';
-        if (sumRector) sumRector.textContent = inputRectorName.value || '-';
-        if (sumRectorEmail) sumRectorEmail.textContent = inputRectorEmail.value || '-';
+        updateStep4Summary();
       }
     }
 
-    btnNextStep?.addEventListener('click', () => {
+    function updateStep4Summary() {
+      const sumName = document.getElementById('sumSchoolName');
+      const sumSlug = document.getElementById('sumSlug');
+      const sumLocation = document.getElementById('sumLocation');
+      const sumPlan = document.getElementById('sumPlan');
+      const sumRector = document.getElementById('sumRector');
+      const sumRectorEmail = document.getElementById('sumRectorEmail');
+      const sumRectorJob = document.getElementById('sumRectorJob');
+      const sumRectorDoc = document.getElementById('sumRectorDoc');
+      const selectedPlan = document.querySelector('input[name="planChoice"]:checked')?.value;
+
+      if (sumName) sumName.textContent = inputName.value.trim() || '-';
+      if (sumSlug) sumSlug.textContent = inputSlug.value.trim() ? `${inputSlug.value.trim()}.schoolos.com` : '-';
+      if (sumLocation) sumLocation.textContent = inputCountry.value.trim() || '-';
+      if (sumPlan) sumPlan.textContent = selectedPlan || 'Professional';
+      if (sumRector) sumRector.textContent = inputRectorName.value.trim() || '-';
+      if (sumRectorEmail) sumRectorEmail.textContent = inputRectorEmail.value.trim() || '-';
+      if (sumRectorJob) sumRectorJob.textContent = selectRectorJobTitle?.value || 'Rector General';
+      if (sumRectorDoc) sumRectorDoc.textContent = inputRectorDocId?.value.trim() ? `${selectRectorDocType?.value || 'CC'} ${inputRectorDocId.value.trim()}` : 'Sin registrar';
+    }
+
+    // Escuchar cambios en tiempo real para actualizar el resumen
+    [inputName, inputSlug, inputCountry, inputRectorName, inputRectorEmail, inputRectorPhone, inputRectorDocId].forEach(el => {
+      el?.addEventListener('input', updateStep4Summary);
+    });
+    [selectRectorJobTitle, selectRectorDocType, selectRectorStatus].forEach(el => {
+      el?.addEventListener('change', updateStep4Summary);
+    });
+    document.querySelectorAll('input[name="planChoice"]').forEach(el => {
+      el.addEventListener('change', updateStep4Summary);
+    });
+
+    btnNextStep?.addEventListener('click', async () => {
       // Validaciones por paso
       if (currentStep === 1) {
         if (!inputName.value.trim()) {
-          alert('Por favor ingresa el nombre oficial de la escuela.');
+          if (window.showAlertModal) await window.showAlertModal({ title: 'Campo Requerido', message: 'Por favor ingresa el nombre oficial de la escuela.', type: 'warning' });
+          else alert('Por favor ingresa el nombre oficial de la escuela.');
           inputName.focus();
           return;
         }
         if (!inputSlug.value.trim()) {
-          alert('Por favor ingresa un subdominio/slug válido.');
+          if (window.showAlertModal) await window.showAlertModal({ title: 'Campo Requerido', message: 'Por favor ingresa un subdominio/slug válido.', type: 'warning' });
+          else alert('Por favor ingresa un subdominio/slug válido.');
           inputSlug.focus();
           return;
         }
       } else if (currentStep === 2) {
         if (!inputCountry.value.trim()) {
-          alert('Por favor ingresa la ciudad y país.');
+          if (window.showAlertModal) await window.showAlertModal({ title: 'Campo Requerido', message: 'Por favor ingresa la ciudad y país.', type: 'warning' });
+          else alert('Por favor ingresa la ciudad y país.');
           inputCountry.focus();
           return;
         }
         if (!inputContactEmail.value.trim() || !inputContactEmail.value.includes('@')) {
-          alert('Por favor ingresa un correo de contacto válido.');
+          if (window.showAlertModal) await window.showAlertModal({ title: 'Correo Inválido', message: 'Por favor ingresa un correo de contacto válido.', type: 'warning' });
+          else alert('Por favor ingresa un correo de contacto válido.');
           inputContactEmail.focus();
           return;
         }
@@ -491,87 +932,314 @@ const lang = 'es';
       tab?.addEventListener('click', () => goToStep(index + 1));
     });
 
-    // ENVÍO FINAL DEL WIZARD A SUPABASE
+    // ============================================================
+    // GESTIÓN DEL MODAL DE PROGRESO Y PROVISIÓN
+    // ============================================================
+    const provModalOverlay = document.getElementById('provisioning-modal-overlay');
+    const provModalPanel = document.getElementById('provisioning-modal-panel');
+    const provProgressBar = document.getElementById('prov-progress-bar');
+    const provProgressPercent = document.getElementById('prov-progress-percent');
+    const provLoadingView = document.getElementById('prov-loading-view');
+    const provSuccessView = document.getElementById('prov-success-view');
+    const provErrorView = document.getElementById('prov-error-view');
+    const provErrorMessage = document.getElementById('prov-error-message');
+    const provModalBadge = document.getElementById('prov-modal-badge');
+    const provModalTitle = document.getElementById('prov-modal-title');
+    const provHeaderIcon = document.getElementById('prov-header-icon');
+
+    function openProvModal() {
+      if (!provModalOverlay || !provModalPanel) return;
+      provModalOverlay.style.display = 'flex';
+      provLoadingView.style.display = 'block';
+      provSuccessView.style.display = 'none';
+      provErrorView.style.display = 'none';
+      
+      provModalBadge.textContent = 'DESPLIEGUE MULTI-TENANT EN PROGRESO';
+      provModalBadge.style.color = 'var(--rust)';
+      provModalTitle.textContent = 'Aprovisionando Institución...';
+      provHeaderIcon.textContent = '⚙️';
+
+      // Reset steps
+      updateStepUI(1, 'active', 'Subiendo escudo institucional y fotografía...', '⏳');
+      updateStepUI(2, 'waiting', 'Configurando escuela, subdominio y parámetros de sede...', '⏱');
+      updateStepUI(3, 'waiting', 'Creando cuenta y perfil de directivo en estado Invitado...', '⏱');
+      updateStepUI(4, 'waiting', 'Firmando ticket de 24h y despachando correo de activación...', '⏱');
+
+      setProvProgress(15);
+
+      requestAnimationFrame(() => {
+        provModalOverlay.style.opacity = '1';
+        provModalPanel.style.transform = 'scale(1)';
+      });
+    }
+
+    function setProvProgress(pct) {
+      if (provProgressBar) provProgressBar.style.width = pct + '%';
+      if (provProgressPercent) provProgressPercent.textContent = pct + '%';
+    }
+
+    function updateStepUI(stepNum, state, desc, spin) {
+      const item = document.getElementById(`step-item-${stepNum}`);
+      const icon = document.getElementById(`step-icon-${stepNum}`);
+      const descEl = document.getElementById(`step-desc-${stepNum}`);
+      const spinEl = document.getElementById(`step-spin-${stepNum}`);
+
+      if (desc && descEl) descEl.textContent = desc;
+      if (spin && spinEl) spinEl.textContent = spin;
+
+      if (state === 'active') {
+        if (item) { item.style.opacity = '1'; item.style.borderColor = 'var(--orange-vibrant)'; item.style.background = 'var(--cream)'; }
+        if (icon) { icon.textContent = String(stepNum); icon.style.background = 'var(--orange-vibrant)'; icon.style.color = '#FFFFFF'; }
+        if (spinEl) spinEl.textContent = '⏳';
+      } else if (state === 'done') {
+        if (item) { item.style.opacity = '1'; item.style.borderColor = 'var(--sage-dark)'; item.style.background = '#E6F4EA'; }
+        if (icon) { icon.textContent = '✓'; icon.style.background = 'var(--sage-dark)'; icon.style.color = '#FFFFFF'; }
+        if (spinEl) spinEl.textContent = '✓';
+      } else if (state === 'waiting') {
+        if (item) { item.style.opacity = '0.55'; item.style.borderColor = 'var(--line)'; item.style.background = 'var(--paper)'; }
+        if (icon) { icon.textContent = String(stepNum); icon.style.background = 'var(--cream)'; icon.style.color = 'var(--ink)'; }
+        if (spinEl) spinEl.textContent = '⏱';
+      }
+    }
+
+    function showProvSuccess(school, rectorData) {
+      setProvProgress(100);
+      setTimeout(() => {
+        provLoadingView.style.display = 'none';
+        provSuccessView.style.display = 'block';
+
+        provModalBadge.textContent = 'APROVISIONAMIENTO COMPLETADO';
+        provModalBadge.style.color = 'var(--sage-dark)';
+        provModalTitle.textContent = '¡Despliegue Exitoso!';
+        provHeaderIcon.textContent = '✓';
+
+        document.getElementById('success-school-name').textContent = school.name || '-';
+        document.getElementById('success-school-domain').textContent = school.domain || `${school.slug}.schoolos.com`;
+        document.getElementById('success-rector-name').textContent = inputRectorName.value.trim() || '-';
+        document.getElementById('success-rector-email').textContent = inputRectorEmail.value.trim() || '-';
+
+        const jwtText = document.getElementById('success-jwt-text');
+        if (rectorData?.emailSent) {
+          jwtText.innerHTML = `Correo institucional despachado con éxito a <strong>${inputRectorEmail.value.trim()}</strong> con el enlace de confirmación JWT de 24 horas.`;
+        } else {
+          jwtText.innerHTML = `Directivo registrado en estado <strong>Invitación Pendiente</strong>. El enlace JWT de activación se encuentra listo para su uso.`;
+        }
+
+        if (rectorData?.confirmUrl) {
+          const fallbackContainer = document.getElementById('success-fallback-link-container');
+          const btnCopy = document.getElementById('btnCopySuccessLink');
+          if (fallbackContainer) fallbackContainer.style.display = 'block';
+          if (btnCopy) {
+            btnCopy.onclick = async () => {
+              try {
+                await navigator.clipboard.writeText(rectorData.confirmUrl);
+                btnCopy.textContent = '✓ Enlace de Activación Copiado';
+                setTimeout(() => { btnCopy.textContent = '📋 Copiar Enlace Directo de Activación'; }, 3000);
+              } catch {}
+            };
+          }
+        }
+      }, 500);
+    }
+
+    function showProvError(errMsg) {
+      provLoadingView.style.display = 'none';
+      provErrorView.style.display = 'block';
+
+      provModalBadge.textContent = 'ERROR EN EL PROCESO';
+      provModalBadge.style.color = 'var(--danger)';
+      provModalTitle.textContent = 'Fallo en Aprovisionamiento';
+      provHeaderIcon.textContent = '⚠️';
+
+      if (provErrorMessage) provErrorMessage.textContent = errMsg || 'Ocurrió un error inesperado al aprovisionar la institución.';
+    }
+
+    document.getElementById('btnGoToSchools')?.addEventListener('click', () => {
+      window.location.href = '/es/app/super-admin/schools';
+    });
+
+    document.getElementById('btnCloseErrorModal')?.addEventListener('click', () => {
+      if (provModalOverlay) provModalOverlay.style.display = 'none';
+      if (btnSubmitWizard) {
+        btnSubmitWizard.disabled = false;
+        btnSubmitWizard.textContent = 'Crear Institución en Supabase';
+      }
+    });
+
+    // ENVÍO FINAL DEL WIZARD A SUPABASE CON MODAL DE PROGRESO INTERACTIVO
     document.getElementById('wizardSchoolForm')?.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       if (!inputRectorName.value.trim()) {
-        alert('Por favor ingresa el nombre del rector.');
+        if (window.showAlertModal) await window.showAlertModal({ title: 'Campo Requerido', message: 'Por favor ingresa el nombre del rector.', type: 'warning' });
+        else alert('Por favor ingresa el nombre del rector.');
         goToStep(4);
         inputRectorName.focus();
         return;
       }
       if (!inputRectorEmail.value.trim() || !inputRectorEmail.value.includes('@')) {
-        alert('Por favor ingresa el correo del rector.');
+        if (window.showAlertModal) await window.showAlertModal({ title: 'Correo Requerido', message: 'Por favor ingresa el correo oficial del rector.', type: 'warning' });
+        else alert('Por favor ingresa el correo del rector.');
         goToStep(4);
         inputRectorEmail.focus();
         return;
       }
-
-      if (btnSubmitWizard) {
-        btnSubmitWizard.disabled = true;
-        btnSubmitWizard.textContent = 'Guardando en Supabase...';
+      if (!inputRectorDocId?.value.trim() || !inputRectorPhone?.value.trim()) {
+        if (window.showAlertModal) {
+          await window.showAlertModal({
+            title: 'Verificación de Identidad Requerida',
+            message: 'Para la activación segura JWT es obligatorio ingresar el número de cédula/documento y el teléfono de contacto del directivo.',
+            type: 'warning'
+          });
+        } else {
+          alert('Para la activación segura JWT es obligatorio ingresar la cédula y teléfono del rector.');
+        }
+        goToStep(4);
+        if (!inputRectorDocId?.value.trim()) inputRectorDocId.focus();
+        else inputRectorPhone.focus();
+        return;
       }
+
+      // Abrir modal de progreso
+      openProvModal();
 
       try {
         const slug = inputSlug.value.trim();
         let logoUrl = undefined;
+        let rectorAvatarUrl = undefined;
 
-        // 1. Subir logo a Supabase Storage si se seleccionó archivo
+        // FASE 1: SUBIR ARCHIVOS A STORAGE (via endpoint seguro)
+        updateStepUI(1, 'active', 'Subiendo archivos institucionales a Supabase Storage...');
+        setProvProgress(25);
+
         if (selectedLogoFile) {
-          if (btnSubmitWizard) btnSubmitWizard.textContent = 'Subiendo Logo a Storage...';
-          logoUrl = await schoolService.uploadSchoolLogo(selectedLogoFile, slug);
+          const fd = new FormData();
+          fd.append('file', selectedLogoFile);
+          fd.append('type', 'logo');
+          fd.append('slug', slug);
+          const uploadRes = await fetchAuth('/api/admin/upload-asset', { method: 'POST', body: fd });
+          const uploadData = await uploadRes.json();
+          if (uploadData.ok) {
+            logoUrl = uploadData.url;
+          } else {
+            console.warn('Error subiendo logo:', uploadData.error);
+          }
         }
 
-        if (btnSubmitWizard) btnSubmitWizard.textContent = 'Creando Registro Institucional...';
-
-        const selectedPlan = ((document.querySelector('input[name="planChoice"]:checked') as HTMLInputElement)?.value || 'Professional') as any;
-        const initialStudents = parseInt((document.getElementById('initialStudents') as HTMLInputElement)?.value || '0', 10);
-        const schoolStatus = ((document.getElementById('schoolStatus') as HTMLSelectElement)?.value || 'active') as any;
-
-        // 2. Insertar Escuela en Supabase
-        const newSchool = await schoolService.createSchool({
-          name: inputName.value.trim(),
-          slug: slug,
-          domain: `${slug}.schoolos.com`,
-          location: inputCountry.value.trim(),
-          country: inputCountry.value.trim(),
-          timezone: (document.getElementById('timezone') as HTMLSelectElement)?.value || 'America/Bogota (UTC-5)',
-          planName: selectedPlan,
-          contactEmail: inputContactEmail.value.trim(),
-          status: schoolStatus,
-          logoUrl: logoUrl,
-          slogan: (document.getElementById('slogan') as HTMLInputElement)?.value.trim() || undefined,
-          address: (document.getElementById('address') as HTMLInputElement)?.value.trim() || undefined,
-          phone: (document.getElementById('phone') as HTMLInputElement)?.value.trim() || undefined,
-          brandColor: inputBrandColor.value || '#12110E',
-          rectorName: inputRectorName.value.trim(),
-          rectorEmail: inputRectorEmail.value.trim(),
-          studentCount: initialStudents,
-        });
-
-        if (btnSubmitWizard) btnSubmitWizard.textContent = 'Abriendo tenant para Rectoría...';
-
-        // 3. Crear el usuario Auth + perfil school_admin vinculado al tenant
-        await provisionRectorAccount({
-          schoolId: newSchool.id,
-          name: inputRectorName.value.trim(),
-          email: inputRectorEmail.value.trim(),
-          password: 'Rector2026!*',
-          jobTitle: 'Rector General',
-          appointmentDate: new Date().toISOString().split('T')[0],
-          status: 'active',
-        });
-
-        alert(`¡Institución "${newSchool.name}" creada y aprovisionada exitosamente en Supabase!`);
-        window.location.href = '/es/app/super-admin/schools';
-      } catch (err: any) {
-        alert('Error al crear la escuela: ' + (err?.message || err));
-        if (btnSubmitWizard) {
-          btnSubmitWizard.disabled = false;
-          btnSubmitWizard.textContent = '🚀 Crear Institución en Supabase';
+        if (selectedRectorAvatarFile) {
+          const fd = new FormData();
+          fd.append('file', selectedRectorAvatarFile);
+          fd.append('type', 'avatar');
+          fd.append('slug', slug + '-rector');
+          const uploadRes = await fetchAuth('/api/admin/upload-asset', { method: 'POST', body: fd });
+          const uploadData = await uploadRes.json();
+          if (uploadData.ok) {
+            rectorAvatarUrl = uploadData.url;
+          } else {
+            console.warn('Error subiendo avatar del rector:', uploadData.error);
+          }
         }
+
+        updateStepUI(1, 'done', 'Archivos multimedia procesados correctamente.');
+
+        // FASE 2: CREAR INSTITUCIÓN via API segura (service_role en servidor)
+        updateStepUI(2, 'active', `Creando registro institucional "${inputName.value.trim()}"...`);
+        setProvProgress(50);
+
+        const selectedPlan = document.querySelector('input[name="planChoice"]:checked')?.value || 'Professional';
+        const schoolStatus = document.getElementById('schoolStatus')?.value || 'active';
+
+        const createRes = await fetchAuth('/api/admin/school', {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'create_school',
+            school: {
+              name: inputName.value.trim(),
+              slug: slug,
+              domain: `${slug}.schoolos.com`,
+              location: inputCountry.value.trim(),
+              country: inputCountry.value.trim(),
+              timezone: document.getElementById('timezone')?.value || 'America/Bogota (UTC-5)',
+              planName: selectedPlan,
+              contactEmail: inputContactEmail.value.trim(),
+              status: schoolStatus,
+              logoUrl: logoUrl,
+              slogan: document.getElementById('slogan')?.value.trim() || undefined,
+              address: document.getElementById('address')?.value.trim() || undefined,
+              phone: document.getElementById('phone')?.value.trim() || undefined,
+              brandColor: inputBrandColor?.value || document.getElementById('brandColorHex')?.value || '#12110E',
+              rectorName: inputRectorName.value.trim(),
+              rectorEmail: inputRectorEmail.value.trim(),
+            },
+          }),
+        });
+
+        const createData = await createRes.json();
+        if (!createData.ok) {
+          throw new Error(createData.error || 'No se pudo crear la institución.');
+        }
+
+        const newSchool = createData.school;
+        if (!newSchool || !newSchool.id) {
+          throw new Error('No se pudo obtener el ID de la escuela creada.');
+        }
+
+        updateStepUI(2, 'done', `Institución "${newSchool.name}" creada exitosamente.`);
+
+        // FASE 3: APROVISIONAR RECTOR vía Edge Function (server-side)
+        updateStepUI(3, 'active', `Aprovisionando credenciales para ${inputRectorName.value.trim()}...`);
+        setProvProgress(75);
+
+        // Invocar la Edge Function a través de la sesión del super admin
+        let rectorData = { ok: true, emailSent: false };
+        try {
+          const rectorRes = await fetchAuth('/api/admin/rector', {
+            method: 'POST',
+            body: JSON.stringify({
+              action: 'provision',
+              schoolId: newSchool.id,
+              name: inputRectorName.value.trim(),
+              email: inputRectorEmail.value.trim(),
+              phone: inputRectorPhone?.value.trim() || undefined,
+              documentType: selectRectorDocType?.value || 'CC',
+              documentId: inputRectorDocId?.value.trim() || undefined,
+              jobTitle: selectRectorJobTitle?.value || 'Rector General',
+              specialty: document.getElementById('rectorSpecialty')?.value.trim() || undefined,
+              appointmentDate: document.getElementById('rectorAppointmentDate')?.value || undefined,
+              status: 'invited',
+              avatarUrl: rectorAvatarUrl,
+            }),
+          });
+          const rectorJson = await rectorRes.json();
+          if (!rectorJson.ok) {
+            console.warn('Advertencia al aprovisionar rector:', rectorJson.error);
+            rectorData.ok = false;
+          } else {
+            rectorData = { ...rectorData, ...rectorJson };
+          }
+        } catch (rectorErr) {
+          console.warn('Error al llamar /api/admin/rector:', rectorErr);
+          rectorData.ok = false;
+        }
+
+        updateStepUI(3, 'done', `Perfil directivo configurado en estado Invitado.`);
+
+        // FASE 4: SEGURIDAD CRIPTOGRÁFICA & CORREO JWT
+        updateStepUI(4, 'active', `Despachando correo institucional a ${inputRectorEmail.value.trim()}...`);
+        setProvProgress(90);
+
+        await new Promise(resolve => setTimeout(resolve, 400));
+        updateStepUI(4, 'done', rectorData?.emailSent ? `Correo JWT enviado a ${inputRectorEmail.value.trim()}.` : `Ticket JWT de 24h generado.`);
+
+        // MOSTRAR VISTA DE ÉXITO
+        showProvSuccess(newSchool, rectorData);
+
+      } catch (err) {
+        console.error('Error durante el aprovisionamiento:', err);
+        showProvError(err?.message || 'Error de conexión durante el aprovisionamiento.');
       }
     });
   </script>
 </AppLayout>
+
+

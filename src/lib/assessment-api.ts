@@ -149,34 +149,47 @@ export function gradeAssessmentAttempt(
 }
 
 /**
- * Simulación de llamada a API de entrega (POST /api/evaluations/submit)
- * Preparado para reemplazar con fetch() a endpoint REST o GraphQL real.
+ * Llamada real al endpoint seguro de entrega y calificación server-side
  */
 export async function submitAssessmentToApi(
   payload: AssessmentSubmissionPayload,
   assessmentData: AssessmentData
 ): Promise<AssessmentResultSummary> {
-  // Simular latencia de red de 400ms
-  await new Promise((resolve) => setTimeout(resolve, 400));
+  let token = '';
+  try {
+    const { supabase } = await import('./supabase');
+    const { data } = await supabase.auth.getSession();
+    token = data.session?.access_token || '';
+  } catch (_) {}
 
-  const answersMap: Record<string, StudentAnswerItem> = {};
-  payload.answers.forEach((a) => {
-    answersMap[a.questionId] = {
-      questionId: a.questionId,
-      selectedOptionIndex: a.selectedOptionIndex,
-      textAnswer: a.textAnswer,
-      timeSpentSeconds: a.timeSpentSeconds,
-    };
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const response = await fetch('/api/evaluations/submit', {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      assessmentId: payload.assessmentId,
+      guideId: payload.guideId,
+      answers: payload.answers,
+      totalTimeSpentSeconds: payload.totalTimeSpentSeconds,
+      assessmentData,
+    }),
   });
 
-  const result = gradeAssessmentAttempt(
-    assessmentData,
-    answersMap,
-    payload.attemptId,
-    payload.totalTimeSpentSeconds
-  );
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `Error ${response.status} calificando evaluación.`);
+  }
 
-  // Guardar en historial local como backup
+  const json = await response.json();
+  const result: AssessmentResultSummary = json.result;
+
+  // Guardar en historial local como backup para visualización offline
   try {
     const historyKey = `schoolos_eval_history_${payload.assessmentId}`;
     const previous = JSON.parse(localStorage.getItem(historyKey) || '[]');

@@ -78,7 +78,7 @@ export const QuestionCard: React.FC<Props> = ({
               }}
               title="Consultar la sección teórica donde se explica este concepto"
             >
-              <span>📖 {showTheory ? 'Cerrar Teoría' : `Ver Teoría § ${question.referencedBlock.order}`}</span>
+              <span> {showTheory ? 'Cerrar Teoría' : `Ver Teoría § ${question.referencedBlock.order}`}</span>
             </button>
           )}
 
@@ -101,7 +101,7 @@ export const QuestionCard: React.FC<Props> = ({
             }}
             title="Marcar esta pregunta para revisarla antes de entregar"
           >
-            <span>{isFlagged ? '🚩 Marcada' : '🏳 Marcar'}</span>
+            <span>{isFlagged ? ' Marcada' : ' Marcar'}</span>
           </button>
         </div>
       </div>
@@ -209,7 +209,7 @@ export const QuestionCard: React.FC<Props> = ({
                 boxShadow: selectedIndex === 0 ? '3px 3px 0 var(--rust)' : 'none',
               }}
             >
-              <span style={{ fontSize: 16 }}>{selectedIndex === 0 ? '🔘' : '⚪'}</span>
+              <span style={{ fontSize: 16 }}>{selectedIndex === 0 ? '' : ''}</span>
               <span>VERDADERO</span>
             </button>
 
@@ -232,7 +232,7 @@ export const QuestionCard: React.FC<Props> = ({
                 boxShadow: selectedIndex === 1 ? '3px 3px 0 var(--rust)' : 'none',
               }}
             >
-              <span style={{ fontSize: 16 }}>{selectedIndex === 1 ? '🔘' : '⚪'}</span>
+              <span style={{ fontSize: 16 }}>{selectedIndex === 1 ? '' : ''}</span>
               <span>FALSO</span>
             </button>
           </div>
@@ -308,7 +308,7 @@ export const QuestionCard: React.FC<Props> = ({
             }}
             title="Has llegado a la última pregunta. Haz clic para revisar y completar la evaluación"
           >
-            <span>🚀 Completar y Entregar Evaluación</span>
+            <span> Completar y Entregar Evaluación</span>
           </button>
         )}
       </div>

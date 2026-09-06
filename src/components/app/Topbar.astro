@@ -287,23 +287,35 @@ const userData = isStudent
       if (userRaw) {
         const user = JSON.parse(userRaw);
         if (user && user.name) {
-          // Iniciales
+          // Iniciales (fallback si no hay avatar)
           const names = user.name.trim().split(' ');
           const initials = names.length > 1 ? (names[0][0] + names[names.length - 1][0]).toUpperCase() : names[0].slice(0, 2).toUpperCase();
 
-          // Chip superior
+          // Chip superior — respeta diseño actual, solo inserta <img> si hay avatarUrl
           const chipAvatar = document.querySelector('#profileChipBtn .avatar');
           const chipName = document.querySelector('#profileChipBtn span');
-          if (chipAvatar) chipAvatar.textContent = initials;
+          if (chipAvatar) {
+            if (user.avatarUrl) {
+              chipAvatar.innerHTML = `<img src="${user.avatarUrl}" alt="${user.name}" loading="eager" onerror="this.style.display='none'; this.parentElement.textContent='${initials}'" />`;
+            } else {
+              chipAvatar.textContent = initials;
+            }
+          }
           if (chipName) chipName.textContent = user.name;
 
-          // Modal de perfil
+          // Modal de perfil — mismo patrón, sin tocar layout
           const modalAvatar = document.querySelector('.profile-avatar-xl');
           const modalName = document.querySelector('.profile-name');
           const modalRole = document.querySelector('.profile-role-badge');
           const modalStatus = document.querySelector('[data-profile-status]');
           const modalUserId = document.querySelector('[data-profile-user-id]');
-          if (modalAvatar) modalAvatar.textContent = initials;
+          if (modalAvatar) {
+            if (user.avatarUrl) {
+              modalAvatar.innerHTML = `<img src="${user.avatarUrl}" alt="${user.name}" loading="eager" onerror="this.style.display='none'; this.parentElement.textContent='${initials}'" />`;
+            } else {
+              modalAvatar.textContent = initials;
+            }
+          }
           if (modalName) modalName.textContent = user.name;
           if (modalRole) {
             const labels = {
@@ -486,20 +498,60 @@ const userData = isStudent
     gap: 16px;
     padding: 22px 22px 18px;
   }
-  .profile-avatar-xl {
+  :global(.profile-avatar-xl) {
     width: 64px;
     height: 64px;
+    min-width: 64px;
+    min-height: 64px;
+    max-width: 64px;
+    max-height: 64px;
     flex-shrink: 0;
     border: 2px solid var(--ink);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: block;
+    position: relative;
+    overflow: hidden;
+    border-radius: 4px;
+    background: var(--paper);
+    /* fallback para iniciales */
     font-family: var(--sans);
     font-weight: 800;
     font-size: 22px;
     color: #FFFFFF;
-    border-radius: 4px;
     letter-spacing: -0.02em;
+    line-height: 64px;
+    text-align: center;
+  }
+  :global(.profile-avatar-xl img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+    background: var(--paper);
+  }
+  :global(#profileChipBtn .avatar) {
+    overflow: hidden;
+    background: var(--paper);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  :global(#profileChipBtn .avatar img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
   }
   .profile-hero-info {
     display: flex;

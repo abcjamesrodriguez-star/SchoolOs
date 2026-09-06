@@ -75,7 +75,7 @@ const courses = getTeacherCourses();
                 {publishedGuides.length > 0 ? 'ACTIVE' : 'NO GUIDES'}
               </span>
               <span style="font-family:var(--mono); font-size:11px; font-weight:700; color:var(--ink-soft);">
-                📍 {course.room}
+                 {course.room}
               </span>
             </div>
 
@@ -84,7 +84,7 @@ const courses = getTeacherCourses();
             </h3>
 
             <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft); display:flex; align-items:center; gap:6px;">
-              <span>🕒 {course.schedule}</span>
+              <span> {course.schedule}</span>
             </div>
           </div>
 
@@ -117,7 +117,7 @@ const courses = getTeacherCourses();
             <div>
               {riskCount > 0 ? (
                 <span style="font-family:var(--mono); font-size:10.5px; font-weight:800; color:var(--rust); display:flex; align-items:center; gap:4px;">
-                  ⚠️ {riskCount} at risk
+                   {riskCount} at risk
                 </span>
               ) : (
                 <span style="font-family:var(--mono); font-size:10.5px; font-weight:800; color:#2E5E1E; display:flex; align-items:center; gap:4px;">

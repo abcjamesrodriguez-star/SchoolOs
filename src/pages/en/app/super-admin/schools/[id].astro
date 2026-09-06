@@ -3,18 +3,25 @@
 // SchoolOS — School Detail (/en/app/super-admin/schools/[id])
 // ============================================================
 import AppLayout from '../../../../../layouts/AppLayout.astro';
+import { schoolService } from '../../../../../services/schoolService';
 import { getMockSchools, getMockSchoolAdmins, getMockJudicialGrants } from '../../../../../data/app/mock-data';
 
-export function getStaticPaths() {
-  const schools = getMockSchools('en');
-  return schools.map((school) => ({
-    params: { id: school.id },
-    props: { school },
-  }));
-}
+export const prerender = false;
 
 const lang = 'en';
-const { school } = Astro.props;
+const { id } = Astro.params;
+let school: any = null;
+
+if (id) {
+  try {
+    school = (await schoolService.getSchoolById(id)) || (await schoolService.getSchoolBySlug(id));
+  } catch {}
+}
+
+if (!school) {
+  return Astro.redirect('/en/app/super-admin/schools');
+}
+
 const admins = getMockSchoolAdmins(school.id, lang);
 const grants = getMockJudicialGrants(lang).filter((g) => g.schoolId === school.id);
 const hasActiveOrPendingGrant = grants.some((g) => g.status === 'active' || g.status === 'pending_verification');
@@ -174,7 +181,7 @@ const audit = getAuditBadge(school.auditStatus);
     </summary>
     <div class="panel-body padded" style="padding:20px;">
       <div class="notice restricted" style="border:1px solid var(--danger); background:var(--danger-dim); color:#5C2015; border-radius:0; margin-bottom:20px;">
-        <span class="notice-icon" style="font-size:18px;">⚖️</span>
+        <span class="notice-icon" style="font-size:18px;"></span>
         <div>
           <strong style="color:#3B120B;">Strict Judicial Protocol.</strong><br />
           Individual student records, transcripts, and messages are sealed. They are exclusively accessible when a verified court reference order is authenticated by two independent Super Administrators.

@@ -1,0 +1,413 @@
+﻿---
+// ============================================================
+// SchoolOS — Modal de Expediente, Edición y Ficha del Estudiante
+// Con Poder de Traslado de Salón y Reenvío de Invitación Parental
+// Cero emojis, diseño institucional brutalista
+// ============================================================
+interface Props {
+  id?: string;
+}
+
+const { id = 'studentDetailsModal' } = Astro.props;
+---
+
+<div
+  id={id}
+  class="custom-modal-backdrop"
+  style="display:none; position:fixed; inset:0; background:rgba(18, 17, 14, 0.75); z-index:9999; align-items:center; justify-content:center; padding:20px; overflow-y:auto;"
+  role="dialog"
+  aria-modal="true"
+>
+  <div class="panel" style="width:100%; max-width:760px; background:var(--paper); border:2px solid var(--ink); box-shadow:10px 10px 0 var(--ink); max-height:90vh; display:flex; flex-direction:column; overflow:hidden;">
+    
+    <!-- HEADER -->
+    <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center; padding:14px 20px; background:var(--cream); border-bottom:2px solid var(--ink); flex-shrink:0;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-weight:900; font-size:10px;">
+          FICHA ESTUDIANTIL
+        </span>
+        <h2 id={`${id}Title`} style="font-family:var(--serif); font-size:17px; margin:0; font-weight:800; color:var(--ink);">
+          Expediente del Alumno
+        </h2>
+      </div>
+
+      <button
+        type="button"
+        onclick={`document.getElementById('${id}').style.display='none';`}
+        style="background:none; border:none; font-family:var(--mono); font-size:18px; font-weight:700; cursor:pointer; color:var(--ink);"
+      >
+        ✕
+      </button>
+    </div>
+
+    <!-- FEEDBACK ALERT -->
+    <div id={`${id}Feedback`} style="display:none; padding:12px 20px; font-family:var(--mono); font-size:12px; font-weight:700;"></div>
+
+    <!-- BODY WITH SCROLL -->
+    <div class="panel-body padded" style="background:#FFFDF9; padding:20px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:16px;">
+      
+      <!-- RESUMEN DE IDENTIDAD SUPERIOR -->
+      <div style="background:#FFFFFF; border:1.5px solid var(--ink); padding:14px 18px; box-shadow:2.5px 2.5px 0 var(--ink); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px;">
+        <div style="display:flex; align-items:center; gap:14px;">
+          <div id={`${id}AvatarBox`} style="width:52px; height:52px; border:2px solid var(--ink); background:#FFFFFF; display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0; box-shadow:2px 2px 0 var(--ink);">
+            <img id={`${id}AvatarImg`} src="/avatars/men/fila-1-columna-1.png" alt="" style="width:100%; height:100%; object-fit:contain;" />
+          </div>
+          <div>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <h3 id={`${id}StudentNameDisplay`} style="font-family:var(--serif); font-size:18px; margin:0; font-weight:800; color:var(--ink);">
+                Estudiante
+              </h3>
+              <span id={`${id}StatusBadge`} class="badge badge-active">Activo</span>
+            </div>
+            <div id={`${id}StudentMetaDisplay`} style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft); margin-top:2px;">
+              EST-2026-000 · Correo institucional
+            </div>
+          </div>
+        </div>
+
+        <div id={`${id}ResendBtnContainer`}>
+          <!-- Botón de reenvío si está pendiente -->
+        </div>
+      </div>
+
+      <!-- FORMULARIO DE EDICIÓN & TRASLADO -->
+      <form id={`${id}Form`} style="display:flex; flex-direction:column; gap:14px;">
+        <input type="hidden" id={`${id}StudentId`} />
+        <input type="hidden" id={`${id}SchoolId`} />
+
+        <!-- SECCIÓN 1: DATOS PERSONALES -->
+        <div style="background:var(--cream); border:1.5px solid var(--ink); padding:14px; box-shadow:2px 2px 0 var(--ink);">
+          <div style="font-family:var(--mono); font-size:10.5px; font-weight:900; text-transform:uppercase; color:var(--rust); margin-bottom:10px;">
+            01 · Información Personal del Alumno
+          </div>
+          <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:12px;">
+            <div>
+              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px;">
+                NOMBRE COMPLETO *
+              </label>
+              <input type="text" id={`${id}InputName`} required style="width:100%; border:1.5px solid var(--ink); background:#FFFFFF; padding:8px 10px; font-size:13px;" />
+            </div>
+            <div>
+              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px;">
+                CÓDIGO OFICIAL *
+              </label>
+              <input type="text" id={`${id}InputCode`} required style="width:100%; border:1.5px solid var(--ink); background:#FFFFFF; padding:8px 10px; font-size:12.5px; font-family:var(--mono); font-weight:700;" />
+            </div>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 2: UBICACIÓN ACADÉMICA & TRASLADO ("PODER DE RECTORÍA") -->
+        <div style="background:#FFFFFF; border:1.5px solid var(--ink); padding:14px; box-shadow:2px 2px 0 var(--ink);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div style="font-family:var(--mono); font-size:10.5px; font-weight:900; text-transform:uppercase; color:var(--rust);">
+              02 · Ubicación Académica & Traslado de Salón
+            </div>
+            <span class="plan-tag" style="background:var(--rust); color:#FFFFFF; border-color:var(--rust); font-size:9.5px; font-weight:900;">
+              PODER DE RECTORÍA
+            </span>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+            <div>
+              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px;">
+                SALÓN / GRUPO ACTUAL
+              </label>
+              <input type="text" id={`${id}CurrentGroup`} readonly style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:8px 10px; font-size:12.5px; font-family:var(--mono); font-weight:800;" />
+            </div>
+
+            <div>
+              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px;">
+                TRASLADAR A OTRO SALÓN O GRUPO
+              </label>
+              <div style="display:flex; gap:6px;">
+                <input type="text" id={`${id}TargetGroupInput`} placeholder="Ej: 9° (Sección 2)" style="flex:1; border:1.5px solid var(--ink); background:#FFFFFF; padding:8px 10px; font-size:12.5px; font-family:var(--mono);" />
+                <button
+                  type="button"
+                  id={`${id}BtnTransfer`}
+                  class="btn btn-secondary btn-sm"
+                  onclick={`window._executeStudentTransfer && window._executeStudentTransfer('${id}');`}
+                  style="font-family:var(--mono); font-size:11px; font-weight:900; padding:6px 10px; flex-shrink:0;"
+                >
+                  Trasladar ➔
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 3: ACUDIENTE & CONTACTO -->
+        <div style="background:var(--cream); border:1.5px solid var(--ink); padding:14px; box-shadow:2px 2px 0 var(--ink);">
+          <div style="font-family:var(--mono); font-size:10.5px; font-weight:900; text-transform:uppercase; color:var(--rust); margin-bottom:10px;">
+            03 · Acudiente & Contacto de Emergencia
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1.2fr 1fr 1.2fr; gap:12px;">
+            <div>
+              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px;">
+                NOMBRE ACUDIENTE
+              </label>
+              <input type="text" id={`${id}InputGuardian`} placeholder="Nombre de madre/padre" style="width:100%; border:1.5px solid var(--ink); background:#FFFFFF; padding:8px 10px; font-size:12.5px;" />
+            </div>
+
+            <div>
+              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px;">
+                TELÉFONO / WHATSAPP
+              </label>
+              <input type="text" id={`${id}InputPhone`} placeholder="3001234567" style="width:100%; border:1.5px solid var(--ink); background:#FFFFFF; padding:8px 10px; font-size:12px; font-family:var(--mono);" />
+            </div>
+
+            <div>
+              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px;">
+                CORREO ELECTRÓNICO
+              </label>
+              <input type="email" id={`${id}InputEmail`} placeholder="acudiente@gmail.com" style="width:100%; border:1.5px solid var(--ink); background:#FFFFFF; padding:8px 10px; font-size:12px; font-family:var(--mono);" />
+            </div>
+          </div>
+        </div>
+
+        <!-- BOTONES DE ACCIÓN -->
+        <div style="display:flex; justify-content:space-between; align-items:center; padding-top:6px; flex-wrap:wrap; gap:10px;">
+          <button
+            type="button"
+            class="btn btn-secondary btn-sm"
+            onclick={`window._deleteStudentPermanent && window._deleteStudentPermanent('${id}');`}
+            style="color:var(--rust); font-weight:800; font-size:11px;"
+          >
+            Retirar Alumno (Liberar Plaza)
+          </button>
+
+          <div style="display:flex; gap:8px;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick={`document.getElementById('${id}').style.display='none';`}>
+              Cerrar
+            </button>
+            <button type="submit" id={`${id}BtnSave`} class="btn btn-primary btn-sm" style="font-weight:900; font-size:11.5px;">
+              Guardar Cambios
+            </button>
+          </div>
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+</div>
+
+
+<script>
+  import { studentService } from '../../../services/studentService';
+
+  function getActiveTenantSchoolId(): string {
+    try {
+      const user = JSON.parse(localStorage.getItem('schoolos-user') || '{}');
+      if (user.schoolId) return user.schoolId;
+    } catch (_) {}
+    return (window as any).SchoolOSApp?.currentSchoolId || (window as any)._currentTenantSchoolId || localStorage.getItem('schoolos_tenant_id') || localStorage.getItem('schoolos_tenant_slug') || '';
+  }
+
+  function getModalId(): string {
+    const modal = document.querySelector('[data-student-details-modal]') as HTMLElement || document.getElementById('StudentDetailsModal');
+    return modal ? modal.id : 'StudentDetailsModal';
+  }
+
+  let currentStudent: any = null;
+
+  (window as any).openStudentDetailsModal = function(student: any, schoolId?: string) {
+    if (!student) return;
+    currentStudent = student;
+    const modalId = getModalId();
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+
+    const nameDisplay = document.getElementById(modalId + 'StudentNameDisplay');
+    const metaDisplay = document.getElementById(modalId + 'StudentMetaDisplay');
+    const statusBadge = document.getElementById(modalId + 'StatusBadge');
+    const avatarImg = document.getElementById(modalId + 'AvatarImg') as HTMLImageElement;
+    const resendContainer = document.getElementById(modalId + 'ResendBtnContainer');
+
+    const inputId = document.getElementById(modalId + 'StudentId') as HTMLInputElement;
+    const inputSchoolId = document.getElementById(modalId + 'SchoolId') as HTMLInputElement;
+    const inputName = document.getElementById(modalId + 'InputName') as HTMLInputElement;
+    const inputCode = document.getElementById(modalId + 'InputCode') as HTMLInputElement;
+    const currentGroup = document.getElementById(modalId + 'CurrentGroup') as HTMLInputElement;
+    const targetGroupInput = document.getElementById(modalId + 'TargetGroupInput') as HTMLInputElement;
+    const inputGuardian = document.getElementById(modalId + 'InputGuardian') as HTMLInputElement;
+    const inputPhone = document.getElementById(modalId + 'InputPhone') as HTMLInputElement;
+    const inputEmail = document.getElementById(modalId + 'InputEmail') as HTMLInputElement;
+
+    const isInvited = student.status === 'invited' || student.status === 'pending_activation';
+
+    if (nameDisplay) nameDisplay.textContent = student.name || 'Estudiante';
+    if (metaDisplay) metaDisplay.textContent = `${student.document_id || student.documentId || 'EST'} · ${student.email || ''}`;
+    if (statusBadge) {
+      statusBadge.className = isInvited ? 'badge badge-trial' : 'badge badge-active';
+      statusBadge.textContent = isInvited ? 'Invitación Pendiente' : 'Matrícula Activa';
+    }
+    if (avatarImg) {
+      avatarImg.src = student.avatar_url || student.avatarUrl || '/avatars/men/fila-1-columna-1.png';
+    }
+
+    if (resendContainer) {
+      resendContainer.innerHTML = isInvited ? `
+        <button
+          type="button"
+          id="${modalId}BtnResend"
+          class="btn btn-secondary btn-sm"
+          style="font-size:11.5px; font-weight:800; border:1.5px solid var(--ink);"
+          onclick="window._resendStudentInvitation('${student.id}', '${student.email}')"
+        >
+          Reenviar Invitación ↗
+        </button>
+      ` : '';
+    }
+
+    if (inputId) inputId.value = student.id || '';
+    if (inputSchoolId) inputSchoolId.value = schoolId || student.school_id || student.schoolId || getActiveTenantSchoolId();
+    if (inputName) inputName.value = student.name || '';
+    if (inputCode) inputCode.value = student.document_id || student.documentId || '';
+    if (currentGroup) currentGroup.value = student.group || student.classroom || student.currentGroup || '';
+    if (targetGroupInput) targetGroupInput.value = '';
+
+    const meta = student.metadata || {};
+    if (inputGuardian) inputGuardian.value = meta.guardian_name || student.guardian_name || '';
+    if (inputPhone) inputPhone.value = student.phone || meta.guardian_phone || '';
+    if (inputEmail) inputEmail.value = student.email || '';
+
+    modal.style.display = 'flex';
+  };
+
+  (window as any)._resendStudentInvitation = async function(studentId: string, email: string) {
+    const modalId = getModalId();
+    const btn = document.getElementById(modalId + 'BtnResend') as HTMLButtonElement;
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Enviando…';
+    }
+
+    try {
+      const sId = (document.getElementById(modalId + 'SchoolId') as HTMLInputElement)?.value || getActiveTenantSchoolId();
+      await studentService.resendInvitation(email, sId, currentStudent?.name || 'Estudiante');
+
+      alert('✓ Invitación de formalización despachada exitosamente a ' + email);
+      if (btn) {
+        btn.textContent = 'Reenviada ✓';
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.textContent = 'Reenviar Invitación ↗';
+        }, 4000);
+      }
+    } catch (err: any) {
+      console.error('Error reenviando invitación:', err);
+      alert('Error al reenviar: ' + (err.message || 'Error de conexión'));
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Reintentar';
+      }
+    }
+  };
+
+  (window as any)._executeStudentTransfer = async function(mId: string) {
+    const targetGroup = (document.getElementById(mId + 'TargetGroupInput') as HTMLInputElement)?.value.trim();
+    const studentId = (document.getElementById(mId + 'StudentId') as HTMLInputElement)?.value;
+
+    if (!targetGroup) {
+      alert('Ingresa el nombre del nuevo salón o grupo al que deseas trasladar al estudiante.');
+      return;
+    }
+
+    if (!confirm(`¿Confirmas el traslado del estudiante al nuevo grupo "${targetGroup}"? Se actualizarán automáticamente sus asignaturas.`)) {
+      return;
+    }
+
+    try {
+      await studentService.transferStudent(studentId, targetGroup);
+
+      alert('✓ Estudiante trasladado exitosamente al grupo ' + targetGroup);
+      const currentGroupInput = document.getElementById(mId + 'CurrentGroup') as HTMLInputElement;
+      if (currentGroupInput) currentGroupInput.value = targetGroup;
+      const targetInput = document.getElementById(mId + 'TargetGroupInput') as HTMLInputElement;
+      if (targetInput) targetInput.value = '';
+      window.location.reload();
+    } catch (err: any) {
+      console.error('Error al trasladar:', err);
+      alert('Error al trasladar estudiante: ' + (err.message || 'Error'));
+    }
+  };
+
+  (window as any)._deleteStudentPermanent = async function(mId: string) {
+    const studentId = (document.getElementById(mId + 'StudentId') as HTMLInputElement)?.value;
+    const modal = document.getElementById(mId);
+
+    if (!confirm('¿Estás seguro de dar de baja a este estudiante? Se liberará 1 plaza en el plan institucional y se eliminará completamente de la base de datos (incluso de autenticación).')) {
+      return;
+    }
+
+    try {
+      await studentService.deleteStudent(studentId);
+
+      alert('✓ Estudiante retirado y eliminado exitosamente del sistema central.');
+      if (modal) modal.style.display = 'none';
+      window.location.reload();
+    } catch (err: any) {
+      console.error('Error al retirar estudiante:', err);
+      alert('Error al retirar estudiante: ' + (err.message || 'Error'));
+    }
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const modalId = getModalId();
+    const form = document.getElementById(modalId + 'Form');
+    const modal = document.getElementById(modalId);
+    if (!form || !modal) return;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const saveBtn = document.getElementById(modalId + 'BtnSave') as HTMLButtonElement;
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Guardando…';
+      }
+
+      try {
+        const studentId = (document.getElementById(modalId + 'StudentId') as HTMLInputElement)?.value;
+        const name = (document.getElementById(modalId + 'InputName') as HTMLInputElement)?.value.trim();
+        const studentCode = (document.getElementById(modalId + 'InputCode') as HTMLInputElement)?.value.trim();
+        const email = (document.getElementById(modalId + 'InputEmail') as HTMLInputElement)?.value.trim().toLowerCase();
+
+        await studentService.updateStudent({
+          studentId,
+          name,
+          documentId: studentCode,
+          email,
+        });
+
+        if (currentStudent) {
+          currentStudent.name = name;
+          currentStudent.document_id = studentCode;
+          currentStudent.email = email;
+          const nameEl = document.getElementById(modalId + 'NameTitle');
+          if (nameEl) nameEl.textContent = name;
+        }
+
+        if (saveBtn) {
+          saveBtn.textContent = '¡Guardado! ✓';
+          setTimeout(() => {
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Guardar Cambios';
+          }, 3000);
+        }
+        alert('✓ Expediente actualizado exitosamente.');
+        modal.style.display = 'none';
+        window.location.reload();
+      } catch (err: any) {
+        console.error('Error guardando estudiante:', err);
+        alert('Error: ' + (err.message || 'No se pudo guardar'));
+      } finally {
+        if (saveBtn) {
+          saveBtn.disabled = false;
+          saveBtn.textContent = 'Guardar Cambios';
+        }
+      }
+    });
+  });
+</script>

@@ -6,13 +6,6 @@ import AppLayout from '../../../../../layouts/AppLayout.astro';
 import InviteUserModal from '../../../../../components/app/school-admin/InviteUserModal.astro';
 import { getCourses, getCourse, getStudents, getTeachers } from '../../../../../data/app/mock-academic';
 
-export function getStaticPaths() {
-  const courses = getCourses('en');
-  return courses.map((course) => ({
-    params: { id: course.id },
-  }));
-}
-
 const { id } = Astro.params;
 const lang = 'en';
 const course = getCourse(id!, lang);

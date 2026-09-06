@@ -342,7 +342,7 @@ const TODAY_SCHEDULE: StudentScheduleBlock[] = [
     teacherName: 'Prof. Diana Restrepo',
     teacherAvatarUrl: '/avatars/women/fila-1-columna-1.png',
     status: 'active',
-    statusLabel: 'EN VIVO AHORA 🔥',
+    statusLabel: 'EN VIVO AHORA ',
     guideId: 'gd-1',
     guideTitle: 'Estructura y Función de la Célula Eucariota',
   },
@@ -353,7 +353,7 @@ const TODAY_SCHEDULE: StudentScheduleBlock[] = [
     teacherName: 'Convivencia',
     teacherAvatarUrl: '/avatars/men/fila-2-columna-3.png',
     status: 'break',
-    statusLabel: 'Descanso 🥪',
+    statusLabel: 'Descanso ',
   },
   {
     time: '10:30 – 12:00',
@@ -404,7 +404,7 @@ const TEACHER_NOTES: TeacherClassroomNote[] = [
     postedAgo: 'Hoy · 08:25 AM',
     badgeLabel: 'CLASE DE HOY',
     message: 'Hola chicos. Hoy en el laboratorio estamos viendo el Bloque § 4 (Membrana Nuclear) y § 5 (Mitocondrias). Recuerden que el quiz virtual sobre Célula Eucariota vence este viernes a las 11:59 PM. ¡Revisen las preguntas de práctica!',
-    actionText: '📖 Abrir Guía en Bloque § 4',
+    actionText: ' Abrir Guía en Bloque § 4',
     actionHref: '/es/app/student/guides/gd-1#blk-4',
   },
   {
@@ -415,7 +415,7 @@ const TEACHER_NOTES: TeacherClassroomNote[] = [
     postedAgo: 'Ayer · 04:15 PM',
     badgeLabel: 'CALIFICACIONES',
     message: 'Ya publiqué las notas del Quiz de Ecuaciones Cuadráticas en sus boletines. En general tuvieron excelente desempeño. Mateo, obtuviste 9.2/10. ¡Gran trabajo!',
-    actionText: '🏆 Ver Nota en Boletín (9.2)',
+    actionText: ' Ver Nota en Boletín (9.2)',
     actionHref: '/es/app/student/grades',
   },
 ];

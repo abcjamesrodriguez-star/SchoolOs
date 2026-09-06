@@ -8,6 +8,15 @@ import { getMockJudicialGrants } from '../../../../data/app/mock-data';
 const lang = 'es';
 const grants = getMockJudicialGrants(lang);
 
+const activeGrants = grants.filter((g) => g.status === 'active');
+const pendingGrants = grants.filter((g) => g.status === 'pending_verification');
+const archivedGrants = grants.filter((g) => g.status === 'expired' || g.status === 'revoked');
+
+const activeCount = activeGrants.length;
+const pendingCount = pendingGrants.length;
+const archivedCount = archivedGrants.length;
+const topActiveExp = activeGrants[0] ? `${activeGrants[0].caseReference} · Vence ${activeGrants[0].expiresAt}` : 'Sin órdenes activas';
+
 function getGrantStatusLabel(status: string) {
   switch (status) {
     case 'active': return 'Activo';
@@ -31,23 +40,23 @@ function getGrantStatusLabel(status: string) {
   <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-bottom:24px;">
     <div style="background:var(--paper); border:1px solid var(--ink); padding:16px 20px; border-bottom:3px solid var(--orange-vibrant);">
       <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft);">Órdenes Activas</div>
-      <div style="font-family:var(--serif); font-size:26px; font-weight:700; color:var(--orange-vibrant); margin-top:4px;">1 En Vigor</div>
-      <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); margin-top:2px;">EXP-2026-0417 · Vence en 28d</div>
+      <div style="font-family:var(--serif); font-size:26px; font-weight:700; color:var(--orange-vibrant); margin-top:4px;">{activeCount} {activeCount === 1 ? 'En Vigor' : 'En Vigor'}</div>
+      <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); margin-top:2px;">{topActiveExp}</div>
     </div>
     <div style="background:var(--paper); border:1px solid var(--ink); padding:16px 20px; border-bottom:3px solid #8A5A00;">
       <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft);">Pendientes de Verificación</div>
-      <div style="font-family:var(--serif); font-size:26px; font-weight:700; color:#8A5A00; margin-top:4px;">1 Solicitud</div>
+      <div style="font-family:var(--serif); font-size:26px; font-weight:700; color:#8A5A00; margin-top:4px;">{pendingCount} {pendingCount === 1 ? 'Solicitud' : 'Solicitudes'}</div>
       <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); margin-top:2px;">Requiere 2do Super Admin</div>
     </div>
     <div style="background:var(--paper); border:1px solid var(--ink); padding:16px 20px; border-bottom:3px solid var(--line-strong);">
       <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft);">Histórico Archivado</div>
-      <div style="font-family:var(--serif); font-size:26px; font-weight:700; color:var(--ink); margin-top:4px;">1 Expirada</div>
+      <div style="font-family:var(--serif); font-size:26px; font-weight:700; color:var(--ink); margin-top:4px;">{archivedCount} {archivedCount === 1 ? 'Expirada' : 'Expiradas'}</div>
       <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); margin-top:2px;">Auditoría inmutable</div>
     </div>
   </div>
 
   <div class="notice restricted" style="border:1px solid var(--danger); background:var(--danger-dim); color:#5C2015; border-radius:0;">
-    <span class="notice-icon" style="font-size:18px;">⚖️</span>
+    <span class="notice-icon" style="font-size:18px;"></span>
     <div>
       <strong style="color:#3B120B;">Protocolo Estricto de Cumplimiento Judicial (Ley de Protección de Datos).</strong><br />
       Los registros individuales de estudiantes, comunicaciones y actividad académica están protegidos criptográficamente por diseño. El acceso únicamente se habilita mediante orden legal verificada bajo la <strong>regla de confirmación dual obligatoria de dos Super Administradores</strong>.

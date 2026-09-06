@@ -1,6 +1,7 @@
 ---
 import Sidebar from '../components/app/Sidebar.astro';
 import Topbar from '../components/app/Topbar.astro';
+import AlertModal from '../components/ui/AlertModal.astro';
 import type { Lang } from '../i18n';
 import '../styles/app.css';
 
@@ -97,9 +98,12 @@ const roleLabels = {
         </div>
       </main>
     </div>
+    <AlertModal />
     <script>
       import { authService } from '../services/authService';
-      import { schoolService } from '../services/schoolService';
+      import { fetchAuth } from '../lib/apiClient';
+
+      (window as any).fetchAuth = fetchAuth;
 
       const schoolOSApp = ((window as any).SchoolOSApp = (window as any).SchoolOSApp || {});
       schoolOSApp.pageLoads = schoolOSApp.pageLoads || [];
@@ -136,6 +140,12 @@ const roleLabels = {
             return null;
           }
 
+          // Forzar cambio de password si viene de confirmación con temporal
+          if (user.passwordResetRequired && !window.location.pathname.includes('/cambiar-password')) {
+            window.location.replace('/cambiar-password');
+            return null;
+          }
+
           localStorage.setItem('schoolos-user', JSON.stringify(user));
           localStorage.setItem('schoolos-auth', 'true');
           return user;
@@ -150,17 +160,29 @@ const roleLabels = {
         try {
           if (!user || user.role !== 'school_admin' || !user.schoolId) return;
 
-          const school = await schoolService.getSchoolById(user.schoolId);
-          if (!school) return;
+          const school = (user as any).school || {
+            id: user.schoolId,
+            name: (user as any).schoolName,
+            slug: (user as any).schoolSlug,
+            status: (user as any).schoolStatus,
+          };
+          if (!school.name && !school.slug) return;
 
           user.schoolName = school.name;
+          user.schoolSlug = school.slug;
           user.schoolStatus = school.status;
           localStorage.setItem('schoolos-user', JSON.stringify(user));
+          localStorage.setItem('schoolos_tenant_id', school.id);
+          localStorage.setItem('schoolos_tenant_slug', school.slug);
+
+          schoolOSApp.currentSchoolId = school.id;
+          schoolOSApp.currentSchoolSlug = school.slug;
+          (window as any)._currentTenantSchoolId = school.id;
 
           document.querySelectorAll('[data-tenant-name]').forEach((el) => {
             const text = el.textContent === el.textContent?.toUpperCase()
-              ? school.name.toUpperCase()
-              : school.name;
+              ? (school.name || '').toUpperCase()
+              : (school.name || '');
             el.textContent = text;
           });
 

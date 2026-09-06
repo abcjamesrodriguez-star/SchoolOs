@@ -6,10 +6,6 @@
 import AppLayout from '../../../../../layouts/AppLayout.astro';
 import { getTeacherCourses, getTeacherCourseById, getGuidesByCourse, getStudentsByCourse } from '../../../../../data/app/mock-content';
 
-export async function getStaticPaths() {
-  const courses = getTeacherCourses();
-  return courses.map((c) => ({ params: { id: c.id } }));
-}
 
 const lang = 'es';
 const { id } = Astro.params;
@@ -26,11 +22,11 @@ const riskStudents = students.filter(s => s.status === 'risk');
     pageTitle={course.name}
     activeSection="courses"
     role="teacher"
-    schoolName="Colegio Norte"
+    schoolName="Raptor Crew"
     lang={lang}
     activeRoute={`/app/teacher/courses/${id}`}
     breadcrumbs={[
-      { label: 'Colegio Norte' },
+      { label: 'Raptor Crew' },
       { label: 'Panel Docente', href: `/${lang}/app/teacher` },
       { label: 'Mis Cursos', href: `/${lang}/app/teacher/courses` },
       { label: course.name },
@@ -45,16 +41,14 @@ const riskStudents = students.filter(s => s.status === 'risk');
             {course.level}
           </span>
           <span style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">
-            📍 {course.room} · 🕒 {course.schedule}
+             {course.room} ·  {course.schedule}
           </span>
         </div>
 
-        <h1 style="font-family:var(--serif); font-size:24px; font-weight:700; color:var(--ink); margin:0;">
-          {course.name}
-        </h1>
+        <h1 id="courseTitleDOM" style="font-family:var(--serif); font-size:24px; font-weight:700; color:var(--ink); margin:0;">{course.name}</h1>
 
         <div style="font-family:var(--mono); font-size:12px; color:var(--ink-soft); margin-top:4px;">
-          <strong>{students.length} estudiantes matriculados</strong> · Promedio actual del grupo: <strong style="color:var(--rust); font-size:13px;">{course.averageScore.toFixed(1)} / 10</strong>
+          <strong><span class="studentsCount">0</span> estudiantes matriculados</strong> · Promedio actual del grupo: <strong style="color:var(--rust); font-size:13px;"><span id="courseAverage">--</span> / 10</strong>
         </div>
       </div>
 
@@ -77,7 +71,7 @@ const riskStudents = students.filter(s => s.status === 'risk');
         class="course-tab-btn active"
         style="padding:10px 20px; font-family:var(--mono); font-size:12px; font-weight:800; border:2px solid var(--ink); border-bottom:none; border-radius:6px 6px 0 0; background:var(--ink); color:#FFFFFF; cursor:pointer; transition:all 0.15s ease;"
       >
-        📚 Guías y Material ({guides.length})
+         Guías y Material (<span class="guidesCount">0</span>)
       </button>
 
       <button
@@ -87,7 +81,7 @@ const riskStudents = students.filter(s => s.status === 'risk');
         class="course-tab-btn"
         style="padding:10px 20px; font-family:var(--mono); font-size:12px; font-weight:800; border:2px solid var(--ink); border-bottom:none; border-radius:6px 6px 0 0; background:var(--cream); color:var(--ink); cursor:pointer; transition:all 0.15s ease;"
       >
-        👥 Estudiantes del Salón ({students.length})
+         Estudiantes del Salón (<span class="studentsCount">0</span>)
       </button>
 
       <button
@@ -97,7 +91,17 @@ const riskStudents = students.filter(s => s.status === 'risk');
         class="course-tab-btn"
         style="padding:10px 20px; font-family:var(--mono); font-size:12px; font-weight:800; border:2px solid var(--ink); border-bottom:none; border-radius:6px 6px 0 0; background:var(--cream); color:var(--ink); cursor:pointer; transition:all 0.15s ease;"
       >
-        📊 Evaluaciones & Calificaciones
+         Evaluaciones & Calificaciones
+      </button>
+
+      <button
+        type="button"
+        id="tabBtnLabs"
+        onclick="switchCourseTab('labs');"
+        class="course-tab-btn"
+        style="padding:10px 20px; font-family:var(--mono); font-size:12px; font-weight:800; border:2px solid var(--ink); border-bottom:none; border-radius:6px 6px 0 0; background:var(--rust); color:#FFF; cursor:pointer; transition:all 0.15s ease;"
+      >
+         Laboratorios Virtuales (Unity)
       </button>
     </div>
 
@@ -109,80 +113,21 @@ const riskStudents = students.filter(s => s.status === 'risk');
       <div class="panel" style="border:2px solid var(--ink); border-radius:8px; box-shadow:5px 5px 0 rgba(18,17,14,0.08); background:var(--paper); overflow:hidden;">
         <div class="panel-header" style="background:var(--cream); border-bottom:1.5px solid var(--ink); padding:12px 20px; display:flex; justify-content:space-between; align-items:center;">
           <h2 style="font-size:13px; font-weight:800; margin:0; letter-spacing:0.04em;">
-            GUÍAS DIDÁCTICAS ASIGNADAS A ESTE GRUPO ({guides.length})
+            GUÍAS DIDÁCTICAS ASIGNADAS A ESTE GRUPO (<span class="guidesCount">0</span>)
           </h2>
           <a href={`/${lang}/app/teacher/courses/${id}/guides/new`} class="btn btn-primary btn-sm" style="font-size:11px; font-weight:800; border-radius:3px;">
             + Crear Guía
           </a>
         </div>
 
-        {guides.length > 0 ? (
+        
           <div class="panel-body" style="padding:0;">
             <!-- Contenedor dinámico para guías creadas en el Estudio Pedagógico -->
             <div id="customGuidesList"></div>
 
-            {guides.map((guide) => (
-              <div style="padding:20px 24px; border-bottom:1.5px solid var(--line); transition:background 0.15s ease;">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
-                  <div style="display:flex; gap:8px; align-items:center;">
-                    <span class={guide.status === 'published' ? 'badge badge-active' : guide.status === 'draft' ? 'badge badge-warning' : 'badge badge-suspended'} style="font-size:9.5px; font-weight:800; padding:2px 8px; border-radius:3px;">
-                      {guide.status === 'published' ? 'PUBLICADA' : guide.status === 'draft' ? 'BORRADOR' : 'ARCHIVADA'}
-                    </span>
-                    <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">
-                      {guide.blocks.length} bloques interactivos · ~{guide.estimatedMinutes} min lectura
-                    </span>
-                  </div>
-                  <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">
-                    Creada: {new Date(guide.createdAt).toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' })}
-                  </span>
-                </div>
-
-                <h3 style="font-family:var(--serif); font-size:18px; font-weight:700; color:var(--ink); margin:0 0 6px 0;">
-                  {guide.title}
-                </h3>
-                <p style="font-size:13px; color:var(--ink-soft); margin:0 0 16px 0; line-height:1.5; max-width:820px;">
-                  {guide.description}
-                </p>
-
-                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; border-top:1px dashed var(--line); padding-top:12px;">
-                  <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                    <a href={`/${lang}/app/teacher/guides/${guide.id}`} class="btn btn-secondary btn-sm" style="font-size:11.5px; font-weight:700; border-radius:4px; text-decoration:none;">
-                      Ver Guía / Proyectar →
-                    </a>
-                    {guide.status === 'published' && guide.evaluationsCount > 0 && (
-                      <a href={`/${lang}/app/teacher/evaluations/eval-1/results`} class="btn btn-secondary btn-sm" style="font-size:11px; font-weight:700; border-radius:4px; text-decoration:none;">
-                        Ver Resultados de Alumnos →
-                      </a>
-                    )}
-                    {guide.status === 'draft' && (
-                      <button class="btn btn-primary btn-sm" onclick="alert('Guía publicada exitosamente. Los alumnos del grupo ya pueden acceder desde su portal.');" style="font-size:11px; font-weight:800; border-radius:4px;">
-                        Publicar Guía al Salón
-                      </button>
-                    )}
-                  </div>
-
-                  {guide.status === 'published' && (
-                    <div style="font-family:var(--mono); font-size:11px; color:#2E5E1E; font-weight:700; background:#E5EFE0; padding:3px 10px; border-radius:4px; border:1px solid #A8C99B;">
-                      ✓ 24/30 entregas registradas
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
+            
           </div>
-        ) : (
-          <div class="panel-body padded" style="text-align:center; padding:50px 20px;">
-            <div style="font-family:var(--serif); font-size:20px; font-weight:700; color:var(--ink); margin-bottom:8px;">
-              Sin guías didácticas publicadas aún
-            </div>
-            <p style="font-size:13px; color:var(--ink-soft); margin-bottom:20px; max-width:440px; margin-left:auto; margin-right:auto;">
-              Crea la primera guía didáctica para este curso utilizando el asistente de bloques de texto, fórmulas y actividades.
-            </p>
-            <a href={`/${lang}/app/teacher/courses/${id}/guides/new`} class="btn btn-primary" style="font-size:12px; font-weight:800;">
-              + Crear Primera Guía
-            </a>
-          </div>
-        )}
+        
       </div>
 
     </div>
@@ -211,7 +156,7 @@ const riskStudents = students.filter(s => s.status === 'risk');
               class="student-filter-pill active"
               style="padding:5px 10px; font-family:var(--mono); font-size:10.5px; font-weight:800; border:1px solid var(--ink); border-radius:3px; background:var(--ink); color:#FFFFFF; cursor:pointer;"
             >
-              Todos ({students.length})
+              Todos (<span class="studentsCount">0</span>)
             </button>
             <button
               type="button"
@@ -220,7 +165,7 @@ const riskStudents = students.filter(s => s.status === 'risk');
               class="student-filter-pill"
               style="padding:5px 10px; font-family:var(--mono); font-size:10.5px; font-weight:800; border:1px solid var(--ink); border-radius:3px; background:var(--cream); color:var(--ink); cursor:pointer;"
             >
-              ⭐ Honor ({honorStudents.length})
+               Honor ({honorStudents.length})
             </button>
             <button
               type="button"
@@ -229,13 +174,13 @@ const riskStudents = students.filter(s => s.status === 'risk');
               class="student-filter-pill"
               style="padding:5px 10px; font-family:var(--mono); font-size:10.5px; font-weight:800; border:1px solid var(--rust); border-radius:3px; background:#FFF0EE; color:var(--rust); cursor:pointer;"
             >
-              ⚠️ Refuerzo ({riskStudents.length})
+               Refuerzo ({riskStudents.length})
             </button>
           </div>
         </div>
 
         <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">
-          Mostrando <strong id="visibleStudentCount" style="color:var(--ink);">{students.length}</strong> de {students.length} estudiantes
+          Mostrando <strong id="visibleStudentCount" style="color:var(--ink);"><span class="studentsCount">0</span></strong> de <span class="studentsCount">0</span> estudiantes
         </div>
       </div>
 
@@ -253,66 +198,7 @@ const riskStudents = students.filter(s => s.status === 'risk');
               </tr>
             </thead>
             <tbody id="courseStudentsTableBody">
-              {students.map((std, idx) => {
-                const barWidth = Math.round(std.averageScore * 10);
-                return (
-                  <tr
-                    class="course-student-row"
-                    data-name={std.name.toLowerCase()}
-                    data-status={std.status}
-                    style={`border-bottom:1px solid var(--line); ${idx % 2 === 0 ? 'background:#FFFFFF;' : 'background:#FAF8F5;'}`}
-                  >
-                    <td style="text-align:center; font-family:var(--mono); font-size:11px; font-weight:800; color:var(--ink-soft); padding:8px 6px; border-right:1px solid var(--line);">
-                      {idx + 1 < 10 ? `0${idx + 1}` : idx + 1}
-                    </td>
-
-                    <td style="padding:10px 16px; border-right:1px solid var(--line);">
-                      <div style="display:flex; align-items:center; gap:10px;">
-                        <img
-                          src={std.avatarUrl || '/avatars/women/fila-1-columna-1.png'}
-                          alt={std.name}
-                          style="width:30px; height:30px; border-radius:50%; border:1.5px solid var(--ink); object-fit:cover; flex-shrink:0;"
-                        />
-                        <div>
-                          <div style="font-weight:700; color:var(--ink); font-size:13px;">{std.name}</div>
-                          <div style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft);">Grupo {std.groupCode} · Matrícula Regular</div>
-                        </div>
-                      </div>
-                    </td>
-
-                    <td style="padding:10px 16px; border-right:1px solid var(--line);">
-                      <div style="display:flex; align-items:center; gap:8px;">
-                        <span style={`font-family:var(--mono); font-size:14px; font-weight:900; min-width:32px; color:${std.averageScore >= 8.5 ? '#2E5E1E' : std.averageScore >= 6.0 ? 'var(--ink)' : 'var(--rust)'};`}>
-                          {std.averageScore.toFixed(1)}
-                        </span>
-                        <div style="flex:1; height:6px; background:var(--cream); border:1px solid var(--ink); border-radius:2px; max-width:110px; overflow:hidden;">
-                          <div style={`width:${barWidth}%; height:100%; background:${std.averageScore >= 8.5 ? '#5B8A4A' : std.averageScore >= 6.0 ? '#8B7355' : 'var(--rust)'};`}></div>
-                        </div>
-                        <span style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft);">/ 10</span>
-                      </div>
-                    </td>
-
-                    <td style="padding:10px 12px; text-align:center; border-right:1px solid var(--line);">
-                      {std.pendingCount === 0 ? (
-                        <span style="font-family:var(--mono); font-size:11px; color:#2E5E1E; font-weight:700;">✓ Al día</span>
-                      ) : (
-                        <span style="font-family:var(--mono); font-size:11px; font-weight:800; color:var(--rust); background:#FFF0EE; padding:2px 7px; border-radius:3px; border:1px solid #F5C6BC;">
-                          ⏳ {std.pendingCount} pendiente{std.pendingCount > 1 ? 's' : ''}
-                        </span>
-                      )}
-                    </td>
-
-                    <td style="padding:10px 12px; text-align:center;">
-                      <span
-                        class={std.status === 'honor' ? 'badge badge-active' : std.status === 'risk' ? 'badge badge-suspended' : 'badge'}
-                        style={`font-size:9px; font-weight:900; padding:2px 8px; border-radius:3px; ${std.status === 'normal' ? 'background:var(--cream); border:1px solid var(--ink); color:var(--ink);' : ''}`}
-                      >
-                        {std.status === 'honor' ? '⭐ SUPERIOR' : std.status === 'risk' ? '⚠️ REFUERZO' : 'BÁSICO'}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
+              
             </tbody>
           </table>
         </div>
@@ -323,108 +209,82 @@ const riskStudents = students.filter(s => s.status === 'risk');
     <!-- ══════════════════════════════════════════════════════════════════════════ -->
     <!-- ── PESTAÑA 3: EVALUACIONES & CALIFICACIONES ── -->
     <!-- ══════════════════════════════════════════════════════════════════════════ -->
+
     <div id="courseTabContent-grades" class="course-tab-panel" style="display:none;">
-      
-      <!-- 3 KPIs Resumen del Curso -->
-      <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:14px; margin-bottom:20px;">
-        <div style="background:var(--paper); border:2px solid var(--ink); border-radius:8px; padding:14px 18px; box-shadow:3px 3px 0 rgba(18,17,14,0.06);">
-          <div style="font-family:var(--mono); font-size:10px; font-weight:800; color:var(--ink-soft); text-transform:uppercase;">Promedio Grupo (P1)</div>
-          <div style="font-family:var(--mono); font-size:26px; font-weight:900; color:var(--rust); margin-top:2px;">
-            {course.averageScore.toFixed(1)} <span style="font-size:13px; font-weight:normal; color:var(--ink-soft);">/ 10</span>
-          </div>
+      <div class="panel-body padded" style="text-align:center; padding:50px 20px; border:2px solid var(--ink); border-radius:8px; background:var(--paper); box-shadow:5px 5px 0 rgba(18,17,14,0.08);">
+        <div style="font-family:var(--serif); font-size:20px; font-weight:700; color:var(--ink); margin-bottom:8px;">
+          Planilla de Evaluaciones Vacía
         </div>
-
-        <div style="background:var(--paper); border:2px solid var(--ink); border-radius:8px; padding:14px 18px; box-shadow:3px 3px 0 rgba(18,17,14,0.06);">
-          <div style="font-family:var(--mono); font-size:10px; font-weight:800; color:var(--ink-soft); text-transform:uppercase;">Tasa de Aprobación</div>
-          <div style="font-family:var(--mono); font-size:26px; font-weight:900; color:#2E5E1E; margin-top:2px;">
-            {(((students.length - riskStudents.length) / (students.length || 1)) * 100).toFixed(0)}%
-          </div>
-        </div>
-
-        <div style="background:var(--paper); border:2px solid var(--ink); border-radius:8px; padding:14px 18px; box-shadow:3px 3px 0 rgba(18,17,14,0.06);">
-          <div style="font-family:var(--mono); font-size:10px; font-weight:800; color:var(--ink-soft); text-transform:uppercase;">Requieren Refuerzo</div>
-          <div style="font-family:var(--mono); font-size:26px; font-weight:900; color:var(--rust); margin-top:2px;">
-            {riskStudents.length} <span style="font-size:13px; font-weight:normal; color:var(--ink-soft);">alumnos</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Plan Evaluativo del Curso -->
-      <div class="panel" style="border:2px solid var(--ink); border-radius:8px; box-shadow:5px 5px 0 rgba(18,17,14,0.08); background:var(--paper); margin-bottom:20px; overflow:hidden;">
-        <div class="panel-header" style="background:var(--cream); border-bottom:1.5px solid var(--ink); padding:12px 20px; display:flex; justify-content:space-between; align-items:center;">
-          <h2 style="font-size:13px; font-weight:800; margin:0;">
-            PLAN DE EVALUACIONES — PERIODO 1 (100% PONDERADO)
-          </h2>
-          <span style="font-family:var(--mono); font-size:11px; font-weight:700; color:#2E5E1E; background:#E5EFE0; padding:2px 8px; border-radius:3px;">
-            ✓ 4 / 5 Notas Registradas
-          </span>
-        </div>
-
-        <div class="panel-body" style="padding:0;">
-          <div style="padding:14px 20px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-            <div>
-              <div style="display:flex; align-items:center; gap:8px;">
-                <strong style="color:var(--ink); font-size:13.5px;">Taller: Célula Eucariota</strong>
-                <span class="plan-tag" style="font-size:9px; font-weight:900;">15%</span>
-              </div>
-              <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:2px;">Guía § 1 · Promedio del grupo: 7.9</div>
-            </div>
-            <span class="badge badge-active" style="font-size:9.5px;">✓ CALIFICADA</span>
-          </div>
-
-          <div style="padding:14px 20px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-            <div>
-              <div style="display:flex; align-items:center; gap:8px;">
-                <strong style="color:var(--ink); font-size:13.5px;">Taller: Núcleo Celular y ADN</strong>
-                <span class="plan-tag" style="font-size:9px; font-weight:900;">20%</span>
-              </div>
-              <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:2px;">Guía § 2 · Promedio del grupo: 8.0</div>
-            </div>
-            <span class="badge badge-active" style="font-size:9.5px;">✓ CALIFICADA</span>
-          </div>
-
-          <div style="padding:14px 20px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; background:#FFF8F5;">
-            <div>
-              <div style="display:flex; align-items:center; gap:8px;">
-                <strong style="color:var(--rust); font-size:13.5px;">Evaluación Presencial: Leyes de Mendel</strong>
-                <span class="plan-tag" style="font-size:9px; font-weight:900; background:var(--rust); color:#FFFFFF; border-color:var(--rust);">30% ★</span>
-              </div>
-              <div style="font-family:var(--mono); font-size:11px; color:var(--rust); font-weight:700; margin-top:2px;">Examen escrito · 25 alumnos sin nota registrada</div>
-            </div>
-            <a href={`/${lang}/app/teacher/evaluations/eval-2/grade`} class="btn btn-primary btn-sm" style="font-size:11px; font-weight:800; border-radius:4px;">
-              Cargar Notas de Examen →
-            </a>
-          </div>
-
-          <div style="padding:14px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-            <div>
-              <div style="display:flex; align-items:center; gap:8px;">
-                <strong style="color:var(--ink); font-size:13.5px;">Seguimiento Actitudinal y Laboratorio</strong>
-                <span class="plan-tag" style="font-size:9px; font-weight:900;">15%</span>
-              </div>
-              <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:2px;">Convivencia y uso de microscopios · Promedio: 8.4</div>
-            </div>
-            <span class="badge badge-active" style="font-size:9.5px;">✓ AL DÍA</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Banner de Acceso a Planilla Completa -->
-      <div style="background:var(--cream); border:2px solid var(--ink); border-radius:8px; padding:18px 22px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
-        <div>
-          <h3 style="font-family:var(--serif); font-size:16px; font-weight:700; color:var(--ink); margin:0 0 2px 0;">
-            ¿Deseas editar notas en la hoja de cálculo interactiva?
-          </h3>
-          <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">
-            Accede a la planilla completa con desplazamiento rápido y cálculo instantáneo de definitivas.
-          </div>
-        </div>
-
-        <a href={`/${lang}/app/teacher/grades`} class="btn btn-primary" style="font-size:12.5px; font-weight:800; padding:10px 22px; border-radius:5px; text-decoration:none;">
-          Abrir Planilla de Calificaciones →
+        <p style="font-size:13px; color:var(--ink-soft); margin-bottom:20px; max-width:440px; margin-left:auto; margin-right:auto;">
+          Aún no se han configurado rúbricas ni notas para este grupo. Utiliza el módulo de Calificaciones para empezar.
+        </p>
+        <a href="/es/app/teacher/grades" class="btn btn-primary" style="font-size:12px; font-weight:800;">
+          Ir a Calificaciones →
         </a>
       </div>
+    </div>
+  
 
+    <!-- ══════════════════════════════════════════════════════════════════════════ -->
+    <!-- ── PESTAÑA 4: LABORATORIOS VIRTUALES (UNITY) ── -->
+    <!-- ══════════════════════════════════════════════════════════════════════════ -->
+    <div id="courseTabContent-labs" class="course-tab-panel" style="display:none;">
+      
+      <div class="panel" style="border:2px solid var(--ink); border-radius:8px; box-shadow:5px 5px 0 rgba(18,17,14,0.08); background:var(--paper); overflow:hidden;">
+        <div class="panel-header" style="background:var(--rust); border-bottom:1.5px solid var(--ink); padding:16px 20px; display:flex; justify-content:space-between; align-items:center; color:#FFF;">
+          <div>
+            <h2 style="font-size:15px; font-weight:800; margin:0; letter-spacing:0.04em; color:#FFF;">
+              PANEL DE LABORATORIOS VIRTUALES
+            </h2>
+            <div style="font-family:var(--mono); font-size:11px; margin-top:4px;">Asigna simuladores a tus estudiantes. Los resultados llegarán en tiempo real.</div>
+          </div>
+          <button id="btnFetchLabs" class="btn btn-sm" style="background:#FFF; color:var(--rust); border:2px solid var(--ink); font-weight:900; box-shadow:2px 2px 0 var(--ink);">
+            ↻ Actualizar Datos
+          </button>
+        </div>
+
+        <div class="panel-body" style="padding:24px;">
+          
+          <!-- Controles de Asignación -->
+          <div style="background:var(--cream); border:1.5px dashed var(--ink); padding:20px; margin-bottom:24px; display:flex; gap:16px; align-items:flex-end; flex-wrap:wrap;">
+            <div style="flex:1; min-width:250px;">
+              <label style="display:block; font-family:var(--mono); font-size:11px; font-weight:800; color:var(--ink); margin-bottom:6px;">SELECCIONA EL LABORATORIO:</label>
+              <select id="selectVirtualLab" style="width:100%; padding:10px; font-size:13px; border:2px solid var(--ink); border-radius:4px; font-family:var(--serif);">
+                <option value="">Cargando laboratorios del catálogo...</option>
+              </select>
+            </div>
+            
+            <button id="btnAssignLabBatch" class="btn btn-primary" style="padding:10px 24px; font-size:13px; font-weight:800; white-space:nowrap;">
+              ⚡ Generar Tokens a Toda la Clase
+            </button>
+          </div>
+
+          <!-- Tabla de Resultados en Vivo -->
+          <div style="overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; text-align:left; font-size:12px;">
+              <thead>
+                <tr style="background:var(--ink); color:#FFF; font-family:var(--mono); font-size:10px;">
+                  <th style="padding:10px 12px; border:1px solid var(--ink);">ESTUDIANTE</th>
+                  <th style="padding:10px 12px; border:1px solid var(--ink);">ESTADO</th>
+                  <th style="padding:10px 12px; border:1px solid var(--ink);">BUENAS</th>
+                  <th style="padding:10px 12px; border:1px solid var(--ink);">MALAS</th>
+                  <th style="padding:10px 12px; border:1px solid var(--ink);">TIEMPO</th>
+                  <th style="padding:10px 12px; border:1px solid var(--ink);">MODO</th>
+                  <th style="padding:10px 12px; border:1px solid var(--ink);">FEEDBACK EN VIVO (ENTER PARA GUARDAR)</th>
+                </tr>
+              </thead>
+              <tbody id="labTokensTableBody">
+                <tr>
+                  <td colspan="7" style="padding:20px; text-align:center; font-family:var(--mono); color:var(--ink-soft);">
+                    Cargando tokens de la base de datos...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
     </div>
 
     <!-- SCRIPT DE PESTAÑAS Y BÚSQUEDA -->
@@ -532,7 +392,7 @@ const riskStudents = students.filter(s => s.status === 'risk');
                       ${badgeText}
                     </span>
                     <span style="font-family:var(--mono); font-size:11px; color:var(--rust); font-weight:700;">
-                      ✨ Creada en Estudio Pedagógico · ${g.blocks?.length || 0} bloques · ~${g.estimatedMinutes || 25} min lectura
+                       Creada en Estudio Pedagógico · ${g.blocks?.length || 0} bloques · ~${g.estimatedMinutes || 25} min lectura
                     </span>
                   </div>
                   <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">
@@ -550,7 +410,7 @@ const riskStudents = students.filter(s => s.status === 'risk');
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; border-top:1px dashed var(--line); padding-top:12px;">
                   <div style="display:flex; gap:10px; flex-wrap:wrap;">
                     <a href="/es/app/teacher/courses/${currentCourseId}/guides/new" class="btn btn-secondary btn-sm" style="font-size:11.5px; font-weight:700; border-radius:4px; text-decoration:none;">
-                      Abrir en Estudio Pedagógico ✏️
+                      Abrir en Estudio Pedagógico 
                     </a>
                   </div>
                   ${isPub ? '<div style="font-family:var(--mono); font-size:11px; color:#2E5E1E; font-weight:700; background:#E5EFE0; padding:3px 10px; border-radius:4px; border:1px solid #A8C99B;">✓ Visible en Portal de Estudiantes</div>' : ''}
@@ -570,10 +430,157 @@ const riskStudents = students.filter(s => s.status === 'risk');
 
   </AppLayout>
 ) : (
-  <AppLayout title="Curso no encontrado" pageTitle="Error" activeSection="courses" role="teacher" schoolName="Colegio Norte" lang={lang} activeRoute="/app/teacher/courses" breadcrumbs={[{ label: 'Colegio Norte' }, { label: 'Cursos' }]}>
+  <AppLayout title="Curso no encontrado" pageTitle="Error" activeSection="courses" role="teacher" schoolName="Raptor Crew" lang={lang} activeRoute="/app/teacher/courses" breadcrumbs={[{ label: 'Raptor Crew' }, { label: 'Cursos' }]}>
     <div style="padding:40px; text-align:center;">
       <h2>Curso no encontrado</h2>
       <a href={`/${lang}/app/teacher/courses`} class="btn btn-primary">Volver a Mis Cursos</a>
     </div>
   </AppLayout>
 )}
+
+
+<script type="module">
+  import { teacherService } from "../../../../../services/teacherService";
+
+  let currentTokens = [];
+  const courseId = window.location.pathname.split("/").pop();
+
+  async function hydrateCourseDetails() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const classroom = urlParams.get('classroom');
+    if (!courseId || !classroom) return;
+
+    try {
+      const res = await teacherService.getVirtualClassroomDetails(courseId, classroom);
+      const result = res.data;
+      if (!result) return;
+
+      const { course, students, student_count } = result;
+      if (course) {
+        const titleEl = document.getElementById('courseTitleDOM');
+        if (titleEl) titleEl.textContent = course.name + ' (' + classroom + ')';
+      }
+      document.querySelectorAll('.studentsCount').forEach(el => el.textContent = student_count);
+      const visibleCount = document.getElementById('visibleStudentCount');
+      if (visibleCount) visibleCount.textContent = student_count;
+      const tableBody = document.getElementById('courseStudentsTableBody');
+      if (tableBody) {
+        if (student_count === 0) {
+          tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; font-family:var(--mono); color:var(--ink-soft);">No hay estudiantes matriculados en este salon.</td></tr>';
+        } else {
+          tableBody.innerHTML = students.map((std, idx) => `
+            <tr style="border-bottom:1px solid var(--line);">
+              <td style="text-align:center; font-family:var(--mono); font-size:11px; font-weight:800; color:var(--ink-soft); padding:8px 6px; border-right:1px solid var(--line);">${idx + 1}</td>
+              <td style="padding:10px 16px; border-right:1px solid var(--line);">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <img src="${std.avatar_url || '/avatars/men/fila-1-columna-1.png'}" style="width:30px; height:30px; border-radius:50%; border:1px solid var(--ink);" />
+                  <div style="font-weight:700;">${std.name}</div>
+                </div>
+              </td>
+              <td style="padding:10px 16px; font-family:var(--mono); font-size:14px; font-weight:900; color:var(--ink); border-right:1px solid var(--line);">-</td>
+              <td style="text-align:center; padding:10px 16px; font-family:var(--mono); font-size:14px; font-weight:900; color:var(--ink); border-right:1px solid var(--line);">-</td>
+              <td style="text-align:center; padding:10px 16px; font-family:var(--mono); font-size:10px; font-weight:800; color:var(--ink-soft);">ACTIVO</td>
+            </tr>
+          `).join('');
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching classroom details:', error);
+    }
+  }
+
+  async function loadLabsCatalog() {
+    try {
+      const json = await teacherService.getLabCatalog();
+      if (json.ok && json.labs) {
+        const select = document.getElementById("selectVirtualLab");
+        if (select) {
+          select.innerHTML = '<option value="">-- Elige un simulador del catalogo --</option>' +
+            json.labs.map(lab => `<option value="${lab.id}">${lab.name}</option>`).join('');
+        }
+      }
+    } catch (err) {
+      console.error('Error cargando catalogo de labs:', err);
+    }
+  }
+
+  async function loadLabTokens() {
+    if (!courseId || courseId.length < 5) return;
+    try {
+      const json = await teacherService.getLabTokens(courseId);
+      if (json.ok && json.tokens) {
+        currentTokens = json.tokens;
+        renderTokensTable();
+      }
+    } catch (err) {
+      console.error('Error cargando tokens de labs:', err);
+    }
+  }
+
+  function renderTokensTable() {
+    const tbody = document.getElementById("labTokensTableBody");
+    if (!tbody) return;
+    if (currentTokens.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="padding:20px; text-align:center; color:var(--ink-soft);">No hay laboratorios asignados en este curso todavia.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = currentTokens.map(token => {
+      let statusBadge = '';
+      if (token.status === 'pending') statusBadge = '<span style="background:var(--cream); border:1px solid var(--ink); padding:2px 6px; font-size:10px; border-radius:4px;">Pendiente</span>';
+      else if (token.status === 'in_progress') statusBadge = '<span style="background:#FFC107; color:#000; padding:2px 6px; font-size:10px; border-radius:4px; font-weight:bold;">Jugando</span>';
+      else if (token.status === 'completed') statusBadge = '<span style="background:var(--rust); color:#FFF; padding:2px 6px; font-size:10px; border-radius:4px;">Terminado</span>';
+      return `
+        <tr style="border-bottom:1px solid var(--line-strong);">
+          <td style="padding:8px 12px; display:flex; align-items:center; gap:8px;">
+            <img src="${token.student?.avatar_url || '/default-avatar.png'}" style="width:24px; height:24px; border-radius:50%; border:1px solid var(--ink);" />
+            <span style="font-weight:700;">${token.student?.name || 'Alumno Desconocido'}</span>
+          </td>
+          <td style="padding:8px 12px;">${statusBadge}</td>
+          <td style="padding:8px 12px; font-weight:bold; color:var(--rust);">${token.tasks_completed || '-'}</td>
+          <td style="padding:8px 12px;">${token.tasks_missing || '-'}</td>
+          <td style="padding:8px 12px;">${token.time_spent_seconds ? token.time_spent_seconds + 's' : '-'}</td>
+          <td style="padding:8px 12px; font-weight:bold;">${token.play_mode || '-'}</td>
+          <td style="padding:8px 12px;">
+            <input type="text" class="feedback-input" data-token-id="${token.id}" value="${token.feedback_text || ''}" placeholder="Escribe un comentario..." style="width:100%; padding:4px 8px; border:1px solid var(--ink); border-radius:3px; font-family:var(--serif); font-size:11px;" />
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    document.querySelectorAll('.feedback-input').forEach(input => {
+      input.addEventListener('keypress', async (e) => {
+        if (e.key === 'Enter') {
+          input.disabled = true;
+          try {
+            await teacherService.updateLabFeedback(input.getAttribute('data-token-id'), input.value);
+            input.style.borderColor = 'var(--rust)';
+          } catch (err) {
+            console.error('Error actualizando feedback:', err);
+          } finally {
+            input.disabled = false;
+          }
+        }
+      });
+    });
+  }
+
+  document.getElementById("btnAssignLabBatch")?.addEventListener("click", async () => {
+    const labId = document.getElementById("selectVirtualLab").value;
+    if (!labId) return alert("Por favor selecciona un simulador primero.");
+    try {
+      const json = await teacherService.assignLabBatch(labId, courseId);
+      if (!json.ok) throw new Error(json.error || 'Error asignando laboratorio.');
+      alert('Simulador asignado a ' + json.assignedCount + ' alumnos exitosamente!');
+      loadLabTokens();
+    } catch (err) {
+      console.error(err);
+      alert(err.message || 'Error asignando laboratorio.');
+    }
+  });
+
+  document.addEventListener("DOMContentLoaded", () => {
+    hydrateCourseDetails();
+    loadLabsCatalog();
+    loadLabTokens();
+  });
+</script>

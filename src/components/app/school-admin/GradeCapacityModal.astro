@@ -1,0 +1,541 @@
+﻿---
+// ============================================================
+// SchoolOS — Modal Elegante de Salones & Aforo por Grado (Rectoría)
+// Con Stepper Infinito de Salones, Eliminación Escolar y Cero Emojis
+// ============================================================
+interface Props {
+  id?: string;
+}
+
+const { id = 'gradeCapacityModal' } = Astro.props;
+---
+
+<!-- MODAL PRINCIPAL DE CONFIGURACIÓN DE GRADO -->
+<div
+  id={id}
+  class="custom-modal-backdrop"
+  style="display:none; position:fixed; inset:0; background:rgba(18, 17, 14, 0.75); z-index:9999; align-items:center; justify-content:center; padding:20px; overflow-y:auto;"
+  role="dialog"
+  aria-modal="true"
+>
+  <div class="panel" style="width:100%; max-width:540px; background:#FFFFFF; border:2px solid var(--ink); box-shadow:8px 8px 0 var(--ink); overflow:hidden;">
+    
+    <!-- HEADER ELEGANTE -->
+    <div class="panel-header" style="display:flex; justify-content:space-between; align-items:flex-start; padding:16px 20px; background:var(--cream); border-bottom:2px solid var(--ink);">
+      <div>
+        <div style="font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--rust); letter-spacing:0.08em; margin-bottom:2px;">
+          INFRAESTRUCTURA & AULAS · 2026
+        </div>
+        <h2 id={`${id}Title`} style="font-family:var(--serif); font-size:18px; margin:0; font-weight:800; color:var(--ink);">
+          Aforo & Salones — 6° Grado
+        </h2>
+        <div style="font-size:12px; color:var(--ink-soft); margin-top:2px;">
+          Define cuántas aulas físicas tiene este grado y el cupo máximo por salón.
+        </div>
+      </div>
+
+      <button type="button" class="close-modal-btn" onclick={`document.getElementById('${id}').style.display='none';`} style="background:none; border:none; font-family:var(--mono); font-size:20px; font-weight:800; cursor:pointer; color:var(--ink); padding:2px 6px;">✕</button>
+    </div>
+
+    <!-- FEEDBACK ALERT -->
+    <div id={`${id}Feedback`} style="display:none; padding:10px 20px; font-family:var(--mono); font-size:12px; font-weight:700;"></div>
+
+    <!-- BODY -->
+    <div class="panel-body padded" style="padding:20px; background:#FFFDF9;">
+      
+      <form id={`${id}Form`}>
+        <input type="hidden" id={`${id}GradeLevel`} value="6°" />
+        <input type="hidden" id={`${id}SchoolId`} value="" />
+        <input type="hidden" id={`${id}IsOffered`} value="true" />
+
+        <!-- 1. SELECTOR SEGMENTADO DE DISPONIBILIDAD -->
+        <div style="margin-bottom:16px;">
+          <label style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:6px; color:var(--ink-soft);">
+            Estado del Grado en la Institución
+          </label>
+          <div style="display:grid; grid-template-columns:1fr 1fr; border:1.5px solid var(--ink); background:var(--cream); padding:3px; gap:3px;">
+            <button
+              type="button"
+              id={`${id}BtnActive`}
+              onclick={`window.toggleGradeStatus && window.toggleGradeStatus('${id}', true)`}
+              style="padding:8px 12px; font-family:var(--mono); font-size:12px; font-weight:800; border:none; background:var(--ink); color:#FFFFFF; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; transition:all 0.15s ease;"
+            >
+              <span>✓</span> Grado Habilitado
+            </button>
+            <button
+              type="button"
+              id={`${id}BtnDisabled`}
+              onclick={`window.toggleGradeStatus && window.toggleGradeStatus('${id}', false)`}
+              style="padding:8px 12px; font-family:var(--mono); font-size:12px; font-weight:800; border:none; background:transparent; color:var(--ink); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; transition:all 0.15s ease;"
+            >
+              <span>✕</span> No Ofertado (0 cupos)
+            </button>
+          </div>
+        </div>
+
+        <div id={`${id}FieldsBlock`}>
+          <!-- 2. CANTIDAD DE SALONES (STEPPER ILIMITADO) -->
+          <div style="background:#FFFFFF; border:1.5px solid var(--ink); padding:14px; margin-bottom:14px; box-shadow:2px 2px 0 var(--ink);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <label style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; color:var(--ink);">
+                Salones / Aulas Habilitadas
+              </label>
+              <span style="font-size:11px; color:var(--ink-soft);">Sin límite de grupos</span>
+            </div>
+
+            <!-- Stepper Numérico Directo de Salones -->
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+              <button
+                type="button"
+                onclick={`window.adjustRoomsCount && window.adjustRoomsCount('${id}', -1)`}
+                style="width:38px; height:38px; border:1.5px solid var(--ink); background:var(--cream); font-family:var(--mono); font-size:18px; font-weight:900; cursor:pointer; display:flex; align-items:center; justify-content:center;"
+                title="Quitar un salón"
+              >
+                −
+              </button>
+
+              <div style="flex:1; display:flex; align-items:center; border:1.5px solid var(--ink); background:#FFFFFF; padding:0 12px;">
+                <input
+                  type="number"
+                  id={`${id}SectionsCount`}
+                  value="2"
+                  min="1"
+                  max="50"
+                  required
+                  style="width:100%; border:none; background:transparent; padding:8px 0; font-size:16px; font-family:var(--mono); font-weight:900; text-align:center; outline:none;"
+                  oninput={`window.recalcRectorSleek && window.recalcRectorSleek('${id}')`}
+                />
+                <span style="font-family:var(--mono); font-size:12px; font-weight:800; color:var(--ink-soft); white-space:nowrap; margin-left:6px;" id={`${id}RoomsCountLabel`}>
+                  salones
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onclick={`window.adjustRoomsCount && window.adjustRoomsCount('${id}', 1)`}
+                style="width:38px; height:38px; border:1.5px solid var(--ink); background:var(--cream); font-family:var(--mono); font-size:18px; font-weight:900; cursor:pointer; display:flex; align-items:center; justify-content:center;"
+                title="Agregar un salón"
+              >
+                +
+              </button>
+            </div>
+
+            <!-- Chips de las Aulas Físicas -->
+            <div style="font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink-soft); margin-bottom:6px;">
+              Aulas generadas automáticamente:
+            </div>
+            <div id={`${id}RoomsBadges`} style="display:flex; flex-wrap:wrap; gap:6px; background:var(--cream); border:1px dashed var(--ink); padding:8px 10px; max-height:90px; overflow-y:auto;">
+              <!-- Se llena dinámicamente -->
+            </div>
+          </div>
+
+          <!-- 3. CAPACIDAD POR AULA (STEPPER INTERACTIVO) -->
+          <div style="background:#FFFFFF; border:1.5px solid var(--ink); padding:14px; margin-bottom:14px; box-shadow:2px 2px 0 var(--ink);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <label style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; color:var(--ink);">
+                Cupos por Cada Salón
+              </label>
+              <span style="font-size:11px; color:var(--ink-soft);">Capacidad física por aula</span>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:8px;">
+              <button
+                type="button"
+                onclick={`window.adjustRoomCap && window.adjustRoomCap('${id}', -1)`}
+                style="width:38px; height:38px; border:1.5px solid var(--ink); background:var(--cream); font-family:var(--mono); font-size:18px; font-weight:900; cursor:pointer; display:flex; align-items:center; justify-content:center;"
+                title="Reducir cupo"
+              >
+                −
+              </button>
+
+              <div style="flex:1; display:flex; align-items:center; border:1.5px solid var(--ink); background:#FFFFFF; padding:0 12px;">
+                <input
+                  type="number"
+                  id={`${id}CapacityPerRoom`}
+                  value="35"
+                  min="5"
+                  max="100"
+                  required
+                  style="width:100%; border:none; background:transparent; padding:8px 0; font-size:16px; font-family:var(--mono); font-weight:900; text-align:center; outline:none;"
+                  oninput={`window.recalcRectorSleek && window.recalcRectorSleek('${id}')`}
+                />
+                <span style="font-family:var(--mono); font-size:12px; font-weight:800; color:var(--ink-soft); white-space:nowrap; margin-left:6px;">
+                  estudiantes / aula
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onclick={`window.adjustRoomCap && window.adjustRoomCap('${id}', 1)`}
+                style="width:38px; height:38px; border:1.5px solid var(--ink); background:var(--cream); font-family:var(--mono); font-size:18px; font-weight:900; cursor:pointer; display:flex; align-items:center; justify-content:center;"
+                title="Aumentar cupo"
+              >
+                +
+              </button>
+            </div>
+          </div>
+
+          <!-- 4. TARJETA RESUMEN SUTIL -->
+          <div style="background:var(--cream); border:1.5px solid var(--ink); padding:12px 16px; margin-bottom:18px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div style="font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink-soft);">
+                CAPACIDAD TOTAL DEL GRADO
+              </div>
+              <div style="font-size:12px; font-weight:700; color:var(--ink); margin-top:2px;" id={`${id}SummaryFormula`}>
+                2 salones × 35 estudiantes
+              </div>
+            </div>
+
+            <div id={`${id}TotalBadge`} style="background:var(--ink); color:#FFFFFF; font-family:var(--mono); font-size:15px; font-weight:900; padding:6px 12px; box-shadow:2px 2px 0 rgba(0,0,0,0.15);">
+              70 cupos
+            </div>
+          </div>
+        </div>
+
+        <!-- FOOTER ACTIONS CON BOTÓN DE ELIMINAR -->
+        <div style="display:flex; justify-content:space-between; align-items:center; border-top:1.5px solid var(--line); padding-top:14px; flex-wrap:wrap; gap:10px;">
+          <div>
+            <button
+              type="button"
+              id={`${id}BtnDeleteGrade`}
+              onclick={`window.promptDeleteGradeModal && window.promptDeleteGradeModal('${id}')`}
+              style="background:none; border:none; font-family:var(--mono); font-size:11px; font-weight:700; color:var(--rust); cursor:pointer; text-decoration:underline; padding:4px 0;"
+            >
+              ✕ Quitar este grado del catálogo
+            </button>
+          </div>
+
+          <div style="display:flex; gap:8px;">
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              onclick={`document.getElementById('${id}').style.display='none';`}
+              style="font-size:12px; font-weight:700;"
+            >
+              Cancelar
+            </button>
+            
+            <button
+              type="submit"
+              id={`${id}SubmitBtn`}
+              class="btn btn-primary btn-sm"
+              style="font-weight:800; font-size:13px; padding:8px 18px;"
+            >
+              Guardar Configuración
+            </button>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL ESCOLAR DE CONFIRMACIÓN DE ELIMINACIÓN (SIN EMOJIS) -->
+<div
+  id={`${id}ConfirmDeleteModal`}
+  class="custom-modal-backdrop"
+  style="display:none; position:fixed; inset:0; background:rgba(18, 17, 14, 0.82); z-index:10000; align-items:center; justify-content:center; padding:20px;"
+  role="dialog"
+  aria-modal="true"
+>
+  <div class="panel" style="width:100%; max-width:440px; background:#FFFFFF; border:2px solid var(--ink); box-shadow:8px 8px 0 var(--ink); overflow:hidden;">
+    
+    <!-- HEADER -->
+    <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center; padding:14px 18px; background:var(--cream); border-bottom:2px solid var(--ink);">
+      <div style="display:flex; align-items:center; gap:6px;">
+        <span class="plan-tag" style="background:var(--rust); color:#FFFFFF; border-color:var(--rust); font-size:9.5px; font-weight:800;">
+          CONFIRMACIÓN
+        </span>
+        <h3 style="font-family:var(--serif); font-size:16px; margin:0; font-weight:800; color:var(--ink);">
+          Retirar Grado del Catálogo
+        </h3>
+      </div>
+      <button
+        type="button"
+        onclick={`document.getElementById('${id}ConfirmDeleteModal').style.display='none';`}
+        style="background:none; border:none; font-family:var(--mono); font-size:18px; font-weight:800; cursor:pointer; color:var(--ink);"
+      >
+        ✕
+      </button>
+    </div>
+
+    <!-- BODY -->
+    <div class="panel-body padded" style="padding:20px; background:#FFFDF9;">
+      <div style="font-size:13px; color:var(--ink); line-height:1.5; margin-bottom:14px;">
+        ¿Deseas retirar el nivel <strong id={`${id}DeleteTargetName`} style="font-family:var(--mono); color:var(--rust);">6°</strong> de la oferta académica de la institución?
+      </div>
+
+      <div style="background:var(--cream); border:1px solid var(--ink); padding:12px; margin-bottom:18px; font-size:11.5px; color:var(--ink-soft); line-height:1.4;">
+        Los salones y cupos asignados a este nivel ya no se mostrarán en la matriz institucional ni en el formulario de matrícula. Podrás volver a habilitarlo o crearlo cuando lo requieras.
+      </div>
+
+      <!-- FOOTER -->
+      <div style="display:flex; justify-content:flex-end; gap:8px; border-top:1.5px solid var(--line); padding-top:14px;">
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          onclick={`document.getElementById('${id}ConfirmDeleteModal').style.display='none';`}
+          style="font-size:12px; font-weight:700;"
+        >
+          Cancelar
+        </button>
+
+        <button
+          type="button"
+          id={`${id}BtnExecuteDelete`}
+          onclick={`window.executeDeleteGrade && window.executeDeleteGrade('${id}')`}
+          class="btn btn-sm"
+          style="background:var(--rust); color:#FFFFFF; border:1.5px solid var(--ink); font-weight:800; font-size:12px; padding:7px 14px; box-shadow:2px 2px 0 var(--ink); cursor:pointer;"
+        >
+          Confirmar y Retirar Grado
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<script>
+  import { courseManagementService } from '../../../services/courseManagementService';
+
+  function getActiveTenantSchoolId(): string {
+    try {
+      const user = JSON.parse(localStorage.getItem('schoolos-user') || '{}');
+      if (user.schoolId) return user.schoolId;
+    } catch (_) {}
+    return (window as any).SchoolOSApp?.currentSchoolId || (window as any)._currentTenantSchoolId || localStorage.getItem('schoolos_tenant_id') || localStorage.getItem('schoolos_tenant_slug') || '';
+  }
+
+  function getModalId(): string {
+    const modal = document.querySelector('[data-grade-capacity-modal]') as HTMLElement || document.getElementById('GradeCapacityModal');
+    return modal ? modal.id : 'GradeCapacityModal';
+  }
+
+  (window as any).recalcRectorSleek = function(mId: string) {
+    const gradeLevelInput = document.getElementById(mId + 'GradeLevel') as HTMLInputElement;
+    const secInput = document.getElementById(mId + 'SectionsCount') as HTMLInputElement;
+    const capInput = document.getElementById(mId + 'CapacityPerRoom') as HTMLInputElement;
+    const totalBadge = document.getElementById(mId + 'TotalBadge');
+    const formulaText = document.getElementById(mId + 'SummaryFormula');
+    const badgesContainer = document.getElementById(mId + 'RoomsBadges');
+    const roomsCountLabel = document.getElementById(mId + 'RoomsCountLabel');
+
+    if (!secInput || !capInput || !totalBadge || !badgesContainer) return;
+
+    const grade = gradeLevelInput ? gradeLevelInput.value : '6°';
+    const secs = Math.max(1, Number(secInput.value) || 1);
+    const cap = Math.max(1, Number(capInput.value) || 35);
+    const total = secs * cap;
+
+    totalBadge.textContent = total + ' cupos';
+    if (roomsCountLabel) {
+      roomsCountLabel.textContent = secs === 1 ? 'salón' : 'salones';
+    }
+
+    if (formulaText) {
+      formulaText.textContent = secs + (secs === 1 ? ' salón' : ' salones') + ' × ' + cap + ' estudiantes';
+    }
+
+    let html = '';
+    for (let i = 1; i <= secs; i++) {
+      html += '<span style="background:#FFFFFF; border:1px solid var(--ink); padding:3px 8px; font-family:var(--mono); font-size:11px; font-weight:800; color:var(--ink); display:inline-flex; align-items:center; gap:4px;">' +
+        grade + '-' + i + ' <span style="color:var(--rust); font-weight:700;">(' + cap + ' cupos)</span>' +
+      '</span>';
+    }
+    badgesContainer.innerHTML = html;
+  };
+
+  (window as any).adjustRoomsCount = function(mId: string, delta: number) {
+    const input = document.getElementById(mId + 'SectionsCount') as HTMLInputElement;
+    if (!input) return;
+    const cur = Math.max(1, Number(input.value) || 1);
+    const next = Math.max(1, cur + delta);
+    input.value = String(next);
+    (window as any).recalcRectorSleek(mId);
+  };
+
+  (window as any).adjustRoomCap = function(mId: string, delta: number) {
+    const input = document.getElementById(mId + 'CapacityPerRoom') as HTMLInputElement;
+    if (!input) return;
+    const cur = Math.max(5, Number(input.value) || 35);
+    const next = Math.max(5, cur + delta);
+    input.value = String(next);
+    (window as any).recalcRectorSleek(mId);
+  };
+
+  (window as any).toggleGradeStatus = function(mId: string, isOffered: boolean) {
+    const statusInput = document.getElementById(mId + 'IsOffered') as HTMLInputElement;
+    const btnActive = document.getElementById(mId + 'BtnStatusActive');
+    const btnInactive = document.getElementById(mId + 'BtnStatusInactive');
+    const fieldsBlock = document.getElementById(mId + 'CapacityFieldsBlock');
+
+    if (statusInput) statusInput.value = isOffered ? 'true' : 'false';
+
+    if (btnActive && btnInactive) {
+      if (isOffered) {
+        btnActive.className = 'btn btn-primary btn-sm';
+        btnActive.style.background = 'var(--ink)';
+        btnActive.style.color = '#FFFFFF';
+        btnInactive.className = 'btn btn-secondary btn-sm';
+        btnInactive.style.background = '#FFFFFF';
+        btnInactive.style.color = 'var(--ink)';
+      } else {
+        btnInactive.className = 'btn btn-primary btn-sm';
+        btnInactive.style.background = 'var(--rust)';
+        btnInactive.style.color = '#FFFFFF';
+        btnActive.className = 'btn btn-secondary btn-sm';
+        btnActive.style.background = '#FFFFFF';
+        btnActive.style.color = 'var(--ink)';
+      }
+    }
+
+    if (fieldsBlock) {
+      fieldsBlock.style.display = isOffered ? 'block' : 'none';
+    }
+  };
+
+  (window as any).promptDeleteGrade = function(mId: string) {
+    const gradeLevel = (document.getElementById(mId + 'GradeLevel') as HTMLInputElement)?.value || 'este grado';
+    const targetLabel = document.getElementById(mId + 'DeleteTargetName');
+    const confirmModal = document.getElementById(mId + 'ConfirmDeleteModal');
+    if (targetLabel) targetLabel.textContent = gradeLevel;
+    if (confirmModal) confirmModal.style.display = 'flex';
+  };
+
+  (window as any).executeDeleteGrade = async function(mId: string) {
+    const gradeLevel = (document.getElementById(mId + 'GradeLevel') as HTMLInputElement)?.value;
+    const schoolId = (document.getElementById(mId + 'SchoolId') as HTMLInputElement)?.value || getActiveTenantSchoolId();
+    const deleteBtn = document.getElementById(mId + 'BtnExecuteDelete') as HTMLButtonElement;
+    const confirmModal = document.getElementById(mId + 'ConfirmDeleteModal');
+    const mainModal = document.getElementById(mId);
+
+    if (deleteBtn) {
+      deleteBtn.disabled = true;
+      deleteBtn.textContent = 'Retirando…';
+    }
+
+    try {
+      await courseManagementService.deleteGradeCapacity(schoolId, gradeLevel);
+
+      if (confirmModal) confirmModal.style.display = 'none';
+      if (mainModal) mainModal.style.display = 'none';
+      window.location.reload();
+    } catch (err: any) {
+      alert('Error: ' + (err.message || 'No se pudo retirar el grado'));
+      if (deleteBtn) {
+        deleteBtn.disabled = false;
+        deleteBtn.textContent = 'Confirmar y Retirar Grado';
+      }
+    }
+  };
+
+  (window as any).openGradeCapacityModal = function(gradeInfo: any, customSchoolId?: string) {
+    const modalId = getModalId();
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+
+    const titleEl = document.getElementById(modalId + 'Title');
+    const gradeLevelInput = document.getElementById(modalId + 'GradeLevel') as HTMLInputElement;
+    const secInput = document.getElementById(modalId + 'SectionsCount') as HTMLInputElement;
+    const capInput = document.getElementById(modalId + 'CapacityPerRoom') as HTMLInputElement;
+    const schoolInput = document.getElementById(modalId + 'SchoolId') as HTMLInputElement;
+
+    if (schoolInput) {
+      schoolInput.value = customSchoolId || getActiveTenantSchoolId();
+    }
+
+    if (gradeInfo) {
+      const gLevel = gradeInfo.gradeLevel || gradeInfo.grade_level || '6°';
+      if (titleEl) titleEl.textContent = 'Aforo & Salones — ' + gLevel + ' Grado';
+      if (gradeLevelInput) gradeLevelInput.value = gLevel;
+      if (secInput) secInput.value = String(gradeInfo.sectionsCount || gradeInfo.sections_count || (gradeInfo.sections ? gradeInfo.sections.length : 1));
+
+      let avgCap = 35;
+      if (gradeInfo.sections && gradeInfo.sections.length > 0 && gradeInfo.sections[0].capacity) {
+        avgCap = gradeInfo.sections[0].capacity;
+      } else if (gradeInfo.capacityPerRoom || gradeInfo.capacity_per_room) {
+        avgCap = gradeInfo.capacityPerRoom || gradeInfo.capacity_per_room;
+      } else if (gradeInfo.totalCapacity && gradeInfo.sectionsCount) {
+        avgCap = Math.round(gradeInfo.totalCapacity / gradeInfo.sectionsCount);
+      }
+      if (capInput) capInput.value = String(avgCap);
+
+      const isOffered = gradeInfo.isOffered !== false && gradeInfo.is_offered !== false;
+      (window as any).toggleGradeStatus(modalId, isOffered);
+      (window as any).recalcRectorSleek(modalId);
+    }
+
+    modal.style.display = 'flex';
+  };
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const modalId = getModalId();
+    const form = document.getElementById(modalId + 'Form');
+    const modal = document.getElementById(modalId);
+    const feedback = document.getElementById(modalId + 'Feedback');
+    const submitBtn = document.getElementById(modalId + 'SubmitBtn') as HTMLButtonElement;
+
+    if (!form || !modal) return;
+
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Guardando…';
+      }
+      if (feedback) {
+        feedback.style.display = 'none';
+      }
+
+      try {
+        const gradeLevel = (document.getElementById(modalId + 'GradeLevel') as HTMLInputElement).value;
+        const capPerRoom = Number((document.getElementById(modalId + 'CapacityPerRoom') as HTMLInputElement).value) || 35;
+        const sectionsCount = Number((document.getElementById(modalId + 'SectionsCount') as HTMLInputElement).value) || 1;
+        const isOffered = (document.getElementById(modalId + 'IsOffered') as HTMLInputElement).value === 'true';
+        const schoolId = (document.getElementById(modalId + 'SchoolId') as HTMLInputElement).value || getActiveTenantSchoolId();
+
+        await courseManagementService.upsertGradeCapacity({
+          schoolId,
+          gradeLevel,
+          capacityPerRoom: capPerRoom,
+          sectionsCount,
+          isOffered
+        });
+
+        if (feedback) {
+          feedback.style.cssText = 'display:block; background:#E6F4EA; border-bottom:1.5px solid var(--sage-dark); color:var(--sage-dark); padding:10px 18px; font-weight:700;';
+          feedback.textContent = 'Configuración de ' + gradeLevel + ' guardada: ' + (isOffered ? (sectionsCount + ' salones habilitados con ' + (sectionsCount * capPerRoom) + ' cupos.') : 'Grado desactivado.');
+        }
+
+        if (submitBtn) submitBtn.textContent = 'Guardado ✓';
+
+        window.dispatchEvent(new CustomEvent('gradeCapacity:updated'));
+
+        setTimeout(function() {
+          modal.style.display = 'none';
+          if (feedback) feedback.style.display = 'none';
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Guardar Configuración';
+          }
+          window.location.reload();
+        }, 500);
+
+      } catch (err: any) {
+        console.error('Error guardando salones:', err);
+        if (feedback) {
+          feedback.style.cssText = 'display:block; background:#FEE2E2; border-bottom:1.5px solid var(--danger); color:var(--danger); padding:10px 18px;';
+          feedback.textContent = err?.message || 'Error: No se pudo guardar';
+        }
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Reintentar';
+        }
+      }
+    });
+  });
+</script>

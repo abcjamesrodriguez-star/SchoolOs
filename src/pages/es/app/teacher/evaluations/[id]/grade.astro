@@ -6,13 +6,6 @@
 import AppLayout from '../../../../../../layouts/AppLayout.astro';
 import { getEvaluationById, getResultsByEvaluation } from '../../../../../../data/app/mock-content';
 
-export async function getStaticPaths() {
-  return [
-    { params: { id: 'eval-1' } },
-    { params: { id: 'eval-2' } },
-  ];
-}
-
 const lang = 'es';
 const { id } = Astro.params;
 const evaluation = getEvaluationById(id!);
@@ -25,11 +18,11 @@ const students = getResultsByEvaluation(id!);
     pageTitle="Calificación Manual"
     activeSection="courses"
     role="teacher"
-    schoolName="Colegio Norte"
+    schoolName="Raptor Crew"
     lang={lang}
     activeRoute={`/app/teacher/evaluations/${id}/grade`}
     breadcrumbs={[
-      { label: 'Colegio Norte' },
+      { label: 'Raptor Crew' },
       { label: 'Panel Docente', href: `/${lang}/app/teacher` },
       { label: evaluation.guideTitle, href: `/${lang}/app/teacher/guides/${evaluation.guideId}` },
       { label: 'Cargar Notas' },
@@ -137,7 +130,7 @@ const students = getResultsByEvaluation(id!);
     <div style="display:flex; gap:14px; flex-wrap:wrap; align-items:center;">
       <button
         class="btn btn-primary"
-        onclick="alert('✅ Todas las calificaciones han sido guardadas correctamente. Los alumnos pueden consultar sus notas desde su panel.')"
+        onclick="alert(' Todas las calificaciones han sido guardadas correctamente. Los alumnos pueden consultar sus notas desde su panel.')"
         style="font-size:13px; font-weight:800; padding:12px 24px;"
       >
         ✓ Guardar Todas las Notas
@@ -152,7 +145,7 @@ const students = getResultsByEvaluation(id!);
 
   </AppLayout>
 ) : (
-  <AppLayout title="Evaluación no encontrada" pageTitle="Error" activeSection="courses" role="teacher" schoolName="Colegio Norte" lang={lang} activeRoute="/app/teacher" breadcrumbs={[{ label: 'Error' }]}>
+  <AppLayout title="Evaluación no encontrada" pageTitle="Error" activeSection="courses" role="teacher" schoolName="Raptor Crew" lang={lang} activeRoute="/app/teacher" breadcrumbs={[{ label: 'Error' }]}>
     <div style="padding:40px; text-align:center;">
       <h2>Evaluación no encontrada</h2>
       <a href={`/${lang}/app/teacher/courses`} class="btn btn-primary">Volver</a>

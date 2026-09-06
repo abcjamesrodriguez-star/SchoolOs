@@ -1,0 +1,326 @@
+---
+// Componente de Diálogo / Alerta / Confirmación Institucional SchoolOS
+---
+
+<div
+  id="schoolos-dialog-overlay"
+  style="
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(18, 17, 14, 0.78);
+    backdrop-filter: blur(2px);
+    z-index: 999999;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  "
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="schoolos-dialog-title"
+>
+  <div
+    id="schoolos-dialog-panel"
+    style="
+      background: var(--paper, #FFFFFF);
+      border: 2px solid var(--ink, #12110E);
+      box-shadow: 8px 8px 0 var(--ink, #12110E);
+      width: min(480px, 94vw);
+      max-height: 90vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      transform: scale(0.95);
+      transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    "
+  >
+    <!-- HEADER -->
+    <div
+      style="
+        padding: 16px 20px;
+        background: var(--cream, #F7F5F0);
+        border-bottom: 2px solid var(--ink, #12110E);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      "
+    >
+      <div
+        id="schoolos-dialog-icon"
+        style="
+          width: 38px;
+          height: 38px;
+          border: 1.5px solid var(--ink, #12110E);
+          background: #FFFFFF;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 18px;
+          flex-shrink: 0;
+          box-shadow: 2px 2px 0 var(--ink, #12110E);
+        "
+      >
+        ⚠️
+      </div>
+      <div style="flex: 1; min-width: 0;">
+        <div
+          id="schoolos-dialog-badge"
+          style="
+            font-family: var(--mono, 'IBM Plex Mono', monospace);
+            font-size: 9.5px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--ink-soft, #5C584E);
+            margin-bottom: 2px;
+          "
+        >
+          CONFIRMACIÓN DEL SISTEMA
+        </div>
+        <h3
+          id="schoolos-dialog-title"
+          style="
+            font-family: var(--serif, 'Fraunces', serif);
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--ink, #12110E);
+            margin: 0;
+            line-height: 1.25;
+          "
+        >
+          ¿Confirmar Acción?
+        </h3>
+      </div>
+    </div>
+
+    <!-- BODY -->
+    <div style="padding: 20px; flex: 1;">
+      <div
+        id="schoolos-dialog-message"
+        style="
+          font-family: var(--sans, 'Inter', sans-serif);
+          font-size: 13.5px;
+          color: var(--ink, #12110E);
+          line-height: 1.55;
+          white-space: pre-line;
+          word-break: break-word;
+        "
+      >
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div
+      style="
+        padding: 14px 20px;
+        border-top: 1.5px solid var(--line, #E6E2D8);
+        background: var(--paper, #FFFFFF);
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        align-items: center;
+      "
+    >
+      <button
+        id="schoolos-dialog-cancel"
+        type="button"
+        class="btn btn-secondary btn-sm"
+        style="
+          font-family: var(--mono, 'IBM Plex Mono', monospace);
+          font-size: 11.5px;
+          font-weight: 700;
+          padding: 8px 16px;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          cursor: pointer;
+        "
+      >
+        Cancelar
+      </button>
+      <button
+        id="schoolos-dialog-confirm"
+        type="button"
+        class="btn btn-danger btn-sm"
+        style="
+          font-family: var(--mono, 'IBM Plex Mono', monospace);
+          font-size: 11.5px;
+          font-weight: 700;
+          padding: 8px 18px;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          cursor: pointer;
+        "
+      >
+        Confirmar
+      </button>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  (function () {
+    let currentResolver = null;
+
+    const overlay = document.getElementById('schoolos-dialog-overlay');
+    const panel = document.getElementById('schoolos-dialog-panel');
+    const titleEl = document.getElementById('schoolos-dialog-title');
+    const badgeEl = document.getElementById('schoolos-dialog-badge');
+    const msgEl = document.getElementById('schoolos-dialog-message');
+    const iconEl = document.getElementById('schoolos-dialog-icon');
+    const cancelBtn = document.getElementById('schoolos-dialog-cancel');
+    const confirmBtn = document.getElementById('schoolos-dialog-confirm');
+
+    function closeDialog(result) {
+      if (!overlay || !panel) return;
+      overlay.style.opacity = '0';
+      panel.style.transform = 'scale(0.95)';
+      setTimeout(() => {
+        overlay.style.display = 'none';
+        document.body.style.overflow = '';
+        if (currentResolver) {
+          currentResolver(result);
+          currentResolver = null;
+        }
+      }, 160);
+    }
+
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', () => closeDialog(false));
+    }
+
+    if (confirmBtn) {
+      confirmBtn.addEventListener('click', () => closeDialog(true));
+    }
+
+    if (overlay) {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeDialog(false);
+      });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (overlay && overlay.style.display === 'flex') {
+        if (e.key === 'Escape') closeDialog(false);
+        else if (e.key === 'Enter' && confirmBtn && document.activeElement !== cancelBtn) {
+          closeDialog(true);
+        }
+      }
+    });
+
+    /**
+     * Muestra un modal institucional de confirmación estilo SchoolOS
+     * @param {Object} options
+     * @returns {Promise<boolean>}
+     */
+    window.showConfirmModal = function (options) {
+      const config = typeof options === 'string' ? { message: options } : (options || {});
+      const {
+        title = '¿Confirmar Acción?',
+        badge = 'CONFIRMACIÓN INSTITUCIONAL',
+        message = '¿Estás seguro de realizar esta acción en la plataforma?',
+        confirmText = 'Confirmar',
+        cancelText = 'Cancelar',
+        type = 'danger'
+      } = config;
+
+      return new Promise((resolve) => {
+        currentResolver = resolve;
+
+        if (titleEl) titleEl.textContent = title;
+        if (badgeEl) badgeEl.textContent = badge;
+        if (msgEl) msgEl.textContent = message;
+
+        // Configuración visual según el tipo
+        if (type === 'danger') {
+          if (iconEl) {
+            iconEl.innerHTML = '🗑';
+            iconEl.style.background = '#FEE2E2';
+            iconEl.style.borderColor = 'var(--danger, #DC2626)';
+          }
+          if (confirmBtn) {
+            confirmBtn.className = 'btn btn-danger btn-sm';
+            confirmBtn.textContent = confirmText;
+            confirmBtn.style.background = 'var(--danger, #DC2626)';
+            confirmBtn.style.borderColor = 'var(--ink, #12110E)';
+            confirmBtn.style.color = '#FFFFFF';
+          }
+        } else if (type === 'warning') {
+          if (iconEl) {
+            iconEl.innerHTML = '⚠️';
+            iconEl.style.background = '#FEF3C7';
+            iconEl.style.borderColor = '#D97706';
+          }
+          if (confirmBtn) {
+            confirmBtn.className = 'btn btn-primary btn-sm';
+            confirmBtn.textContent = confirmText;
+            confirmBtn.style.background = 'var(--rust, #D97706)';
+            confirmBtn.style.borderColor = 'var(--ink, #12110E)';
+            confirmBtn.style.color = '#FFFFFF';
+          }
+        } else if (type === 'success') {
+          if (iconEl) {
+            iconEl.innerHTML = '✓';
+            iconEl.style.background = '#E6F4EA';
+            iconEl.style.borderColor = 'var(--sage-dark, #2E4A1E)';
+          }
+          if (confirmBtn) {
+            confirmBtn.className = 'btn btn-primary btn-sm';
+            confirmBtn.textContent = confirmText;
+            confirmBtn.style.background = 'var(--sage-dark, #2E4A1E)';
+            confirmBtn.style.borderColor = 'var(--ink, #12110E)';
+            confirmBtn.style.color = '#FFFFFF';
+          }
+        } else {
+          if (iconEl) {
+            iconEl.innerHTML = 'ℹ️';
+            iconEl.style.background = 'var(--cream, #F7F5F0)';
+            iconEl.style.borderColor = 'var(--ink, #12110E)';
+          }
+          if (confirmBtn) {
+            confirmBtn.className = 'btn btn-primary btn-sm';
+            confirmBtn.textContent = confirmText;
+            confirmBtn.style.background = 'var(--ink, #12110E)';
+            confirmBtn.style.borderColor = 'var(--ink, #12110E)';
+            confirmBtn.style.color = 'var(--cream, #F7F5F0)';
+          }
+        }
+
+        if (cancelBtn) {
+          cancelBtn.style.display = cancelText ? 'inline-block' : 'none';
+          cancelBtn.textContent = cancelText || 'Cancelar';
+        }
+
+        if (overlay && panel) {
+          overlay.style.display = 'flex';
+          panel.getBoundingClientRect();
+          overlay.style.opacity = '1';
+          panel.style.transform = 'scale(1)';
+          document.body.style.overflow = 'hidden';
+          if (confirmBtn) confirmBtn.focus();
+        }
+      });
+    };
+
+    /**
+     * Muestra un modal de alerta informativo estilo SchoolOS
+     * @param {Object|string} options
+     * @returns {Promise<void>}
+     */
+    window.showAlertModal = function (options) {
+      const config = typeof options === 'string' ? { message: options } : (options || {});
+      const isSuccess = (config.message || '').startsWith('✓') || config.type === 'success';
+      const isError = (config.message || '').startsWith('Error') || (config.message || '').startsWith('No') || config.type === 'danger';
+
+      return window.showConfirmModal({
+        title: config.title || (isSuccess ? 'Operación Exitosa' : isError ? 'Aviso del Sistema' : 'Notificación'),
+        badge: config.badge || 'NOTIFICACIÓN SCHOOLOS',
+        message: config.message || '',
+        confirmText: config.buttonText || 'Entendido',
+        cancelText: null, // Sin botón cancelar
+        type: config.type || (isSuccess ? 'success' : isError ? 'danger' : 'info')
+      });
+    };
+  })();
+</script>

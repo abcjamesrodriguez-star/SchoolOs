@@ -7,13 +7,6 @@ import TeacherScheduleModal from '../../../../../components/app/school-admin/Tea
 import TeacherSubstituteModal from '../../../../../components/app/school-admin/TeacherSubstituteModal.astro';
 import { getTeachers, getTeacher, getCourses } from '../../../../../data/app/mock-academic';
 
-export function getStaticPaths() {
-  const teachers = getTeachers('en');
-  return teachers.map((teacher) => ({
-    params: { id: teacher.id },
-  }));
-}
-
 const { id } = Astro.params;
 const lang = 'en';
 const teacher = getTeacher(id!, lang);

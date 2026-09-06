@@ -1,0 +1,418 @@
+{
+  "info": {
+    "name": "SchoolOS — API Collection (Supabase Native)",
+    "_postman_id": "schoolos-complete-api-suite",
+    "description": "Colección completa de pruebas para la API multi-tenant de SchoolOS con arquitectura 100% nativa en Supabase.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4321",
+      "type": "string"
+    },
+    {
+      "key": "schoolId",
+      "value": "dbd25551-5979-42ae-bd0e-26d6eb05d046",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Estudiantes & Matrícula",
+      "item": [
+        {
+          "name": "GET - Listar Estudiantes del Tenant",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/student?schoolId={{schoolId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "student"],
+              "query": [
+                {
+                  "key": "schoolId",
+                  "value": "{{schoolId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST - Matricular Nuevo Estudiante",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"schoolId\": \"{{schoolId}}\",\n  \"name\": \"Estudiante Prueba Postman\",\n  \"studentCode\": \"EST-2026-9901\",\n  \"gender\": \"Hombre\",\n  \"gradeLevel\": \"6°\",\n  \"shift\": \"Mañana\",\n  \"groupAssignment\": \"1\",\n  \"guardianName\": \"Padre Prueba\",\n  \"guardianRelation\": \"Padre\",\n  \"guardianPhone\": \"3112223344\",\n  \"guardianEmail\": \"codinglofitheme@gmail.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/student",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "student"]
+            }
+          }
+        },
+        {
+          "name": "POST - Reenviar Invitación al Acudiente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"resend_invitation\",\n  \"schoolId\": \"{{schoolId}}\",\n  \"email\": \"codinglofitheme@gmail.com\",\n  \"studentId\": \"PEGA_AQUI_EL_UUID_DEL_ESTUDIANTE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/student",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "student"]
+            }
+          }
+        },
+        {
+          "name": "POST - Traslado de Salón (Poder de Rectoría)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"transfer_student_group\",\n  \"schoolId\": \"{{schoolId}}\",\n  \"studentId\": \"PEGA_AQUI_EL_UUID_DEL_ESTUDIANTE\",\n  \"newGradeLevel\": \"6°\",\n  \"newGroupAssignment\": \"2\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/student",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "student"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Docentes & Vinculación",
+      "item": [
+        {
+          "name": "POST - Vincular Docente Oficial",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"schoolId\": \"{{schoolId}}\",\n  \"name\": \"Profesor Prueba Postman\",\n  \"teacherCode\": \"DOC-2026-909\",\n  \"email\": \"codinglofitheme@gmail.com\",\n  \"phone\": \"3005556677\",\n  \"gender\": \"Hombre\",\n  \"specialty\": \"Física Cuántica\",\n  \"homeroomGroup\": \"6°-1\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/teacher",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "teacher"]
+            }
+          }
+        },
+        {
+          "name": "POST - Reenviar Enlace JWT al Docente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"resend_invitation\",\n  \"schoolId\": \"{{schoolId}}\",\n  \"email\": \"codinglofitheme@gmail.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/teacher",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "teacher"]
+            }
+          }
+        },
+        {
+          "name": "POST - Suspender / Activar Docente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"toggle_status\",\n  \"schoolId\": \"{{schoolId}}\",\n  \"teacherId\": \"PEGA_AQUI_EL_UUID_DEL_DOCENTE\",\n  \"newStatus\": \"suspended\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/teacher",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "teacher"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Malla Curricular & Horarios (courses + classes)",
+      "item": [
+        {
+          "name": "GET - Obtener Malla Curricular Completa",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/curriculum?schoolId={{schoolId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "curriculum"],
+              "query": [
+                {
+                  "key": "schoolId",
+                  "value": "{{schoolId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST - Crear Nueva Asignatura (courses)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"schoolId\": \"{{schoolId}}\",\n  \"action\": \"create_subject\",\n  \"name\": \"Astronomía y Astrofísica\",\n  \"code\": \"AST-101\",\n  \"department\": \"Ciencias Naturales\",\n  \"weeklyHoursTarget\": 3\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/curriculum",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "curriculum"]
+            }
+          }
+        },
+        {
+          "name": "POST - Asignar Docente Titular a Materia",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"schoolId\": \"{{schoolId}}\",\n  \"action\": \"assign_teacher\",\n  \"subjectId\": \"PEGA_AQUI_EL_UUID_DEL_CURSO\",\n  \"teacherId\": \"PEGA_AQUI_EL_UUID_DEL_DOCENTE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/curriculum",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "curriculum"]
+            }
+          }
+        },
+        {
+          "name": "POST - Asignar Bloque Horario / Salón (classes)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"schoolId\": \"{{schoolId}}\",\n  \"action\": \"add_schedule_block\",\n  \"subjectId\": \"PEGA_AQUI_EL_UUID_DEL_CURSO\",\n  \"teacherId\": \"PEGA_AQUI_EL_UUID_DEL_DOCENTE\",\n  \"classroom\": \"Laboratorio 1\",\n  \"gradeLevel\": \"11°\",\n  \"day\": \"LUNES\",\n  \"dayIndex\": 0,\n  \"slotId\": \"slot-1\",\n  \"timeLabel\": \"07:00 - 07:55\",\n  \"roomLocation\": \"Edificio Central\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/curriculum",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "curriculum"]
+            }
+          }
+        },
+        {
+          "name": "POST - Eliminar Bloque Horario",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"schoolId\": \"{{schoolId}}\",\n  \"action\": \"delete_schedule_block\",\n  \"assignmentId\": \"PEGA_AQUI_EL_UUID_DE_LA_CLASE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/curriculum",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "curriculum"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Aforos por Grado (grade_capacities)",
+      "item": [
+        {
+          "name": "GET - Obtener Aforos del Colegio",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/grade-capacity?schoolId={{schoolId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "grade-capacity"],
+              "query": [
+                {
+                  "key": "schoolId",
+                  "value": "{{schoolId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST - Configurar Aforo de un Grado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"schoolId\": \"{{schoolId}}\",\n  \"gradeLevel\": \"6°\",\n  \"capacity\": 38,\n  \"sectionsCount\": 3,\n  \"isOffered\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/grade-capacity",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "grade-capacity"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Franjas Horarias (school_time_slots)",
+      "item": [
+        {
+          "name": "GET - Listar Franjas Horarias",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/time-slots?schoolId={{schoolId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "time-slots"],
+              "query": [
+                {
+                  "key": "schoolId",
+                  "value": "{{schoolId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST - Guardar Franjas Horarias en Bloque",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"schoolId\": \"{{schoolId}}\",\n  \"action\": \"save_all\",\n  \"slots\": [\n    {\n      \"id\": \"slot-1\",\n      \"name\": \"Bloque 1\",\n      \"startTime\": \"06:30\",\n      \"endTime\": \"07:25\",\n      \"isBreak\": false\n    },\n    {\n      \"id\": \"slot-2\",\n      \"name\": \"Bloque 2\",\n      \"startTime\": \"07:25\",\n      \"endTime\": \"08:20\",\n      \"isBreak\": false\n    },\n    {\n      \"id\": \"slot-break-1\",\n      \"name\": \"Desayuno / Lonchera\",\n      \"startTime\": \"08:20\",\n      \"endTime\": \"08:50\",\n      \"isBreak\": true\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/time-slots",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "time-slots"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Activaciones & Seguridad JWT",
+      "item": [
+        {
+          "name": "POST - Formalizar Activación de Docente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"PEGA_AQUI_EL_TOKEN_JWT_DEL_CORREO\",\n  \"teacherCode\": \"DOC-2026-909\",\n  \"phone\": \"3005556677\",\n  \"password\": \"MiClaveSegura2026*\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/activate-teacher",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "activate-teacher"]
+            }
+          }
+        },
+        {
+          "name": "POST - Formalizar Activación de Rector",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"PEGA_AQUI_EL_TOKEN_JWT_DEL_CORREO\",\n  \"documentId\": \"1098765432\",\n  \"phone\": \"3001234567\",\n  \"password\": \"MiClaveRector2026*\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/complete-activation",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "complete-activation"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

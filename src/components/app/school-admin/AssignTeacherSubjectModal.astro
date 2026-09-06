@@ -1,0 +1,184 @@
+﻿---
+// ============================================================
+// SchoolOS — Modal para Asignar Docente a una Materia Curricular
+// Cero emojis, estilo sobrio institucional
+// ============================================================
+interface Props {
+  id?: string;
+}
+
+const { id = 'assignTeacherSubjectModal' } = Astro.props;
+---
+
+<div
+  id={id}
+  class="custom-modal-backdrop"
+  style="display:none; position:fixed; inset:0; background:rgba(18, 17, 14, 0.75); z-index:9999; align-items:center; justify-content:center; padding:20px; overflow-y:auto;"
+  role="dialog"
+  aria-modal="true"
+>
+  <div class="panel" style="width:100%; max-width:540px; background:var(--paper); border:2px solid var(--ink); box-shadow:8px 8px 0 var(--ink); max-height:90vh; display:flex; flex-direction:column; overflow:hidden;">
+    
+    <!-- HEADER -->
+    <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center; padding:14px 20px; background:var(--cream); border-bottom:2px solid var(--ink);">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; font-size:10px; font-weight:900;">
+          ASIGNACIÓN DOCENTE
+        </span>
+        <h2 id={`${id}Title`} style="font-family:var(--serif); font-size:16.5px; margin:0; font-weight:700; color:var(--ink);">
+          Asignar Profesor a Materia
+        </h2>
+      </div>
+      <button type="button" onclick={`document.getElementById('${id}').style.display='none';`} style="background:none; border:none; font-family:var(--mono); font-size:18px; font-weight:700; cursor:pointer; color:var(--ink);">✕</button>
+    </div>
+
+    <!-- FEEDBACK ALERT -->
+    <div id={`${id}Feedback`} style="display:none; padding:10px 18px; font-family:var(--mono); font-size:12px; font-weight:700;"></div>
+
+    <!-- BODY -->
+    <div class="panel-body padded" style="background:#FFFDF9; padding:20px; overflow-y:auto; flex:1;">
+      
+      <form id={`${id}Form`} style="display:flex; flex-direction:column; gap:14px;">
+        <input type="hidden" id={`${id}SchoolId`} value="" />
+        <input type="hidden" id={`${id}SubjectId`} value="" />
+
+        <div style="background:var(--cream); border:1.5px solid var(--ink); padding:12px 14px;">
+          <div style="font-family:var(--mono); font-size:10.5px; font-weight:800; color:var(--rust); text-transform:uppercase;">
+            Materia Seleccionada:
+          </div>
+          <div id={`${id}SubjectNameLabel`} style="font-size:15px; font-weight:800; color:var(--ink); margin-top:2px;">
+            Matemáticas y Geometría
+          </div>
+        </div>
+
+        <div style="background:#FFFFFF; border:1.5px solid var(--ink); padding:14px; box-shadow:2px 2px 0 var(--ink);">
+          <label style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:6px; color:var(--ink);">
+            Selecciona el Docente de la Planta Institucional *
+          </label>
+          <select
+            id={`${id}TeacherSelect`}
+            required
+            style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:9px 10px; font-size:12.5px; font-family:var(--mono); font-weight:700; box-sizing:border-box;"
+          >
+            <option value="">Cargando docentes disponibles...</option>
+          </select>
+          <div style="font-size:11px; color:var(--ink-soft); margin-top:6px;">
+            Solo se listan los docentes registrados y vinculados en la institución.
+          </div>
+        </div>
+
+        <!-- FOOTER ACTIONS -->
+        <div style="display:flex; justify-content:flex-end; gap:10px; border-top:1.5px solid var(--line); padding-top:14px; margin-top:4px;">
+          <button type="button" class="btn btn-secondary" onclick={`document.getElementById('${id}').style.display='none';`}>
+            Cancelar
+          </button>
+          <button type="submit" id={`${id}SubmitBtn`} class="btn btn-primary" style="font-weight:800;">
+            ✓ Asignar Docente a esta Materia
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+</div>
+
+
+<script>
+  import { courseManagementService } from '../../../services/courseManagementService';
+
+  function getActiveTenantSchoolId(): string {
+    try {
+      const user = JSON.parse(localStorage.getItem('schoolos-user') || '{}');
+      if (user.schoolId) return user.schoolId;
+    } catch (_) {}
+    return (window as any).SchoolOSApp?.currentSchoolId || (window as any)._currentTenantSchoolId || localStorage.getItem('schoolos_tenant_id') || localStorage.getItem('schoolos_tenant_slug') || '';
+  }
+
+  function getModalId(): string {
+    const modal = document.querySelector('[data-assign-teacher-modal]') as HTMLElement || document.getElementById('AssignTeacherSubjectModal');
+    return modal ? modal.id : 'AssignTeacherSubjectModal';
+  }
+
+  let currentSchoolId = '';
+  let currentSubject: any = null;
+
+  (window as any).openAssignTeacherSubjectModal = function(subject: any, facultyList: any[] = [], schoolId?: string) {
+    currentSubject = subject;
+    currentSchoolId = schoolId || getActiveTenantSchoolId();
+
+    const modalId = getModalId();
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+
+    const schoolInput = document.getElementById(modalId + 'SchoolId') as HTMLInputElement;
+    const subjectInput = document.getElementById(modalId + 'SubjectId') as HTMLInputElement;
+    const subjectLabel = document.getElementById(modalId + 'SubjectNameLabel');
+    const select = document.getElementById(modalId + 'TeacherSelect') as HTMLSelectElement;
+
+    if (schoolInput) schoolInput.value = currentSchoolId;
+    if (subjectInput) subjectInput.value = subject.id;
+    if (subjectLabel) subjectLabel.textContent = `${subject.name} (${subject.code})`;
+
+    if (select) {
+      if (!facultyList || !facultyList.length) {
+        select.innerHTML = '<option value="">No hay docentes registrados en la planta docente</option>';
+      } else {
+        const assignedIds = (subject.teachers || []).map(function(t: any) { return t.teacherId; });
+        const available = facultyList.filter(function(t: any) { return !assignedIds.includes(t.id); });
+
+        if (!available.length) {
+          select.innerHTML = '<option value="">Todos los docentes de la planta ya están asignados a esta materia</option>';
+        } else {
+          select.innerHTML = available.map(function(t: any) {
+            return `<option value="${t.id}">${t.name} (${t.document_id || 'DOC'}) · ${t.specialty || 'Docente'}</option>`;
+          }).join('');
+        }
+      }
+    }
+
+    modal.style.display = 'flex';
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const modalId = getModalId();
+    const form = document.getElementById(modalId + 'Form');
+    const modal = document.getElementById(modalId);
+    if (!form || !modal) return;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const submitBtn = document.getElementById(modalId + 'SubmitBtn') as HTMLButtonElement;
+      const feedback = document.getElementById(modalId + 'Feedback');
+      const teacherId = (document.getElementById(modalId + 'TeacherSelect') as HTMLSelectElement)?.value;
+
+      if (!teacherId || !currentSubject) return;
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Asignando…';
+      }
+
+      try {
+        await courseManagementService.assignTeacher(currentSubject.id, teacherId);
+
+        modal.style.display = 'none';
+        window.dispatchEvent(new CustomEvent('curriculum:updated'));
+        window.location.reload();
+
+      } catch (err: any) {
+        console.error('Error asignando docente:', err);
+        if (feedback) {
+          feedback.style.cssText = 'display:block; background:#FEE2E2; border:1px solid var(--rust); color:var(--rust);';
+          feedback.textContent = err?.message || 'Error al asignar docente';
+        }
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = '✓ Asignar Docente a esta Materia';
+        }
+      }
+    });
+  });
+</script>

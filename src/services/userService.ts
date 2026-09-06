@@ -1,16 +1,8 @@
 import { createAdminSupabase } from '../lib/supabase-admin';
-import { supabase as browserSupabase } from '../lib/supabase';
 import type { User, Role, UserStatus } from '../types/system';
 
 function getSupabaseClient() {
-  if (typeof window !== 'undefined') {
-    return browserSupabase;
-  }
-  try {
-    return createAdminSupabase();
-  } catch (_) {
-    return browserSupabase;
-  }
+  return createAdminSupabase();
 }
 
 export interface UserWithSchool extends User {
@@ -21,6 +13,16 @@ export interface UserWithSchool extends User {
   jobTitle?: string;
   specialty?: string;
   appointmentDate?: string;
+  // Campos extendidos de expediente estudiantil
+  guardianName?: string;
+  guardianPhone?: string;
+  guardianEmail?: string;
+  guardianRelation?: string;
+  eps?: string;
+  bloodType?: string;
+  allergies?: string;
+  gradeLevel?: string;
+  enrollmentType?: string;
 }
 
 export const userService = {
@@ -68,7 +70,7 @@ export const userService = {
       phone: row.phone || undefined,
       documentType: row.document_type || 'CC',
       documentId: row.document_id || undefined,
-      jobTitle: row.job_title || (row.role === 'school_admin' ? 'Rector General' : undefined),
+      jobTitle: row.job_title || (row.role === 'super_admin' ? 'Super Administrador' : row.role === 'school_admin' ? 'Rector General' : row.role === 'teacher' ? 'Docente Titular' : 'Estudiante'),
       specialty: row.specialty || undefined,
       appointmentDate: row.appointment_date || undefined,
       createdAt: row.created_at,

@@ -60,7 +60,7 @@ const urgentEval = pending.length > 0 ? pending[0] : null;
           </span>
         </div>
         <h1 style="font-family:var(--serif); font-size:22px; font-weight:900; color:var(--ink); margin:0;">
-          Welcome back, {student.name.split(' ')[0]}! 👋
+          Welcome back, {student.name.split(' ')[0]}! 
         </h1>
       </div>
     </div>
@@ -73,7 +73,7 @@ const urgentEval = pending.length > 0 ? pending[0] : null;
           <span style="font-family:var(--serif); font-size:22px; font-weight:900; color:var(--ink); line-height:1;">{student.generalAverage}</span>
           <span style="font-family:var(--mono); font-size:11px; color:#4A7C59; font-weight:800;">/ 10.0</span>
         </div>
-        <div style="font-family:var(--mono); font-size:9.5px; color:#4A7C59; font-weight:800;">⭐ Rank #4 of 30</div>
+        <div style="font-family:var(--mono); font-size:9.5px; color:#4A7C59; font-weight:800;"> Rank #4 of 30</div>
       </div>
 
       <div style="background:#E8F5E9; border:1.5px solid #A5D6A7; border-radius:8px; padding:8px 14px; text-align:center;">
@@ -141,7 +141,7 @@ const urgentEval = pending.length > 0 ? pending[0] : null;
             </div>
             <div style="margin-top:6px;">
               <div style={`font-family:var(--mono); font-size:10px; font-weight:${isActive ? '700' : '500'}; color:${isActive ? 'var(--rust)' : 'var(--ink-soft)'};`}>
-                📍 {slot.room}
+                 {slot.room}
               </div>
               <div style="font-family:var(--mono); font-size:9px; color:var(--ink-soft);">
                 {slot.teacherName}
@@ -166,7 +166,7 @@ const urgentEval = pending.length > 0 ? pending[0] : null;
         <div style="background:#FFFDF9; border:2.5px solid var(--rust); border-radius:10px; box-shadow:6px 6px 0 rgba(195,83,44,0.15); overflow:hidden;">
           <div style="background:var(--rust); color:#FFFFFF; padding:10px 18px; display:flex; justify-content:space-between; align-items:center;">
             <div style="display:flex; align-items:center; gap:8px;">
-              <span style="font-size:14px;">🚨</span>
+              <span style="font-size:14px;"></span>
               <span style="font-family:var(--mono); font-size:10.5px; font-weight:900; letter-spacing:0.06em; text-transform:uppercase;">
                 URGENT MISSION · PENDING ASSESSMENT
               </span>
@@ -194,13 +194,13 @@ const urgentEval = pending.length > 0 ? pending[0] : null;
             <!-- Quiz chips -->
             <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px;">
               <div style="background:var(--cream); border:1px solid var(--line); border-radius:5px; padding:5px 10px; font-family:var(--mono); font-size:10.5px; color:var(--ink);">
-                ⏱ <strong>{urgentEval.timeLimitMinutes} min</strong> limit
+                 <strong>{urgentEval.timeLimitMinutes} min</strong> limit
               </div>
               <div style="background:var(--cream); border:1px solid var(--line); border-radius:5px; padding:5px 10px; font-family:var(--mono); font-size:10.5px; color:var(--ink);">
-                📝 <strong>4 questions</strong>
+                 <strong>4 questions</strong>
               </div>
               <div style="background:var(--cream); border:1px solid var(--line); border-radius:5px; padding:5px 10px; font-family:var(--mono); font-size:10.5px; color:var(--ink);">
-                🔄 Attempts: <strong>{urgentEval.attemptsUsed}/{urgentEval.maxAttempts}</strong>
+                 Attempts: <strong>{urgentEval.attemptsUsed}/{urgentEval.maxAttempts}</strong>
               </div>
             </div>
 
@@ -210,14 +210,14 @@ const urgentEval = pending.length > 0 ? pending[0] : null;
                 href={`/${lang}/app/student/evaluations/${urgentEval.evaluationId}/take`}
                 style="flex:1; min-width:200px; display:inline-flex; align-items:center; justify-content:center; gap:8px; background:var(--rust); color:#FFFFFF; border:2px solid var(--rust); border-radius:6px; padding:12px 18px; font-size:13.5px; font-weight:900; text-decoration:none; box-shadow:3px 3px 0 rgba(0,0,0,0.15); transition:all 0.15s;"
               >
-                <span>⚡ Take Assessment Now</span>
+                <span> Take Assessment Now</span>
                 <span>→</span>
               </a>
               <a
                 href={`/${lang}/app/student/guides/${urgentEval.guideId}`}
                 style="display:inline-flex; align-items:center; justify-content:center; gap:6px; background:var(--paper); color:var(--ink); border:2px solid var(--ink); border-radius:6px; padding:12px 16px; font-size:12.5px; font-weight:800; text-decoration:none;"
               >
-                <span>📖 Review Guide First</span>
+                <span> Review Guide First</span>
               </a>
             </div>
           </div>
@@ -228,7 +228,7 @@ const urgentEval = pending.length > 0 ? pending[0] : null;
       <div style="background:var(--paper); border:2px solid var(--ink); border-radius:10px; box-shadow:4px 4px 0 rgba(18,17,14,0.08); overflow:hidden;">
         <div style="background:var(--cream); border-bottom:1.5px solid var(--ink); padding:12px 20px; display:flex; justify-content:space-between; align-items:center;">
           <div style="display:flex; align-items:center; gap:8px;">
-            <span style="font-size:14px;">📖</span>
+            <span style="font-size:14px;"></span>
             <h3 style="font-family:var(--mono); font-size:11px; font-weight:900; margin:0; text-transform:uppercase; color:var(--ink); letter-spacing:0.04em;">
               Resume Reading · Material for Today's Class
             </h3>
@@ -328,7 +328,7 @@ const urgentEval = pending.length > 0 ? pending[0] : null;
       <div style="background:var(--paper); border:2px solid var(--ink); border-radius:10px; box-shadow:4px 4px 0 rgba(18,17,14,0.08); overflow:hidden;">
         <div style="background:var(--cream); border-bottom:1.5px solid var(--ink); padding:12px 18px; display:flex; justify-content:space-between; align-items:center;">
           <div style="display:flex; align-items:center; gap:6px;">
-            <span style="font-size:14px;">💬</span>
+            <span style="font-size:14px;"></span>
             <h3 style="font-family:var(--mono); font-size:11px; font-weight:900; margin:0; text-transform:uppercase; color:var(--ink);">
               Teacher Notices
             </h3>
@@ -379,7 +379,7 @@ const urgentEval = pending.length > 0 ? pending[0] : null;
       <div style="background:var(--paper); border:2px solid var(--ink); border-radius:10px; box-shadow:4px 4px 0 rgba(18,17,14,0.08); overflow:hidden;">
         <div style="background:var(--cream); border-bottom:1.5px solid var(--ink); padding:12px 18px; display:flex; justify-content:space-between; align-items:center;">
           <div style="display:flex; align-items:center; gap:6px;">
-            <span style="font-size:14px;">🏆</span>
+            <span style="font-size:14px;"></span>
             <h3 style="font-family:var(--mono); font-size:11px; font-weight:900; margin:0; text-transform:uppercase; color:var(--ink);">
               Latest Grades
             </h3>
@@ -410,7 +410,7 @@ const urgentEval = pending.length > 0 ? pending[0] : null;
       <!-- 3. UPCOMING KEY DATES -->
       <div style="background:var(--paper); border:2px solid var(--ink); border-radius:10px; padding:16px 18px; box-shadow:4px 4px 0 rgba(18,17,14,0.08);">
         <div style="font-family:var(--mono); font-size:10.5px; font-weight:900; text-transform:uppercase; color:var(--ink); margin-bottom:12px; border-bottom:1.5px solid var(--ink); padding-bottom:6px;">
-          📅 KEY UPCOMING DATES
+           KEY UPCOMING DATES
         </div>
         <div style="display:flex; flex-direction:column; gap:10px; font-size:12px;">
           <div style="border-left:3px solid var(--rust); padding-left:10px;">

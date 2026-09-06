@@ -8,9 +8,10 @@ import { auditService } from '../../../../services/auditService';
 const lang = 'es';
 let logs: any[] = [];
 try {
-  logs = await auditService.getRecentLogs(20);
+  logs = (await auditService.getRecentLogs(20)) || [];
 } catch (e) {
   console.error('Error fetching audit logs:', e);
+  logs = [];
 }
 ---
 

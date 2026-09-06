@@ -7,13 +7,6 @@
 import AppLayout from '../../../../../../layouts/AppLayout.astro';
 import { getActiveEvaluationForStudent, getGuideForStudent } from '../../../../../../data/app/mock-student';
 
-export function getStaticPaths() {
-  return [
-    { params: { id: 'eval-1' } },
-    { params: { id: 'eval-2' } },
-  ];
-}
-
 const { id } = Astro.params;
 const lang = 'en';
 const evaluation = getActiveEvaluationForStudent(id);
@@ -44,7 +37,7 @@ const guide = getGuideForStudent(evaluation.guideId);
   <div id="result-container">
     <!-- Initial Loading State -->
     <div id="loading-state" style="text-align:center; padding:60px 24px;">
-      <div style="font-size:48px; margin-bottom:16px;">⏳</div>
+      <div style="font-size:48px; margin-bottom:16px;"></div>
       <div style="font-family:var(--mono); font-size:13px; color:var(--ink-soft);">Loading your results…</div>
     </div>
 
@@ -75,7 +68,7 @@ const guide = getGuideForStudent(evaluation.guideId);
             class="btn btn-secondary"
             style="font-size:13px; font-weight:700; padding:12px 20px;"
           >
-            📖 Review Study Guide
+             Review Study Guide
           </a>
         )}
         <a
@@ -90,7 +83,7 @@ const guide = getGuideForStudent(evaluation.guideId);
 
     <!-- No Data / Expired Session State -->
     <div id="no-data-state" style="display:none; text-align:center; padding:60px 24px;">
-      <div style="font-size:48px; margin-bottom:16px;">🔒</div>
+      <div style="font-size:48px; margin-bottom:16px;"></div>
       <h2 style="font-family:var(--serif); font-size:20px; font-weight:800; margin-bottom:8px;">Result Not Available</h2>
       <p style="color:var(--ink-soft); font-size:13.5px; margin-bottom:24px;">
         No recent assessment attempt was found in this browser session. Please take the assessment first.
@@ -131,19 +124,19 @@ const guide = getGuideForStudent(evaluation.guideId);
       <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:20px;">
         <div>
           <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--rust); font-weight:800; text-transform:uppercase; margin-bottom:6px;">
-            ${timedOut ? '⏰ Time Expired · ' : ''}Assessment Completed
+            ${timedOut ? ' Time Expired · ' : ''}Assessment Completed
           </div>
           <h1 style="font-family:'Fraunces',Georgia,serif; font-size:22px; font-weight:900; margin:0 0 8px 0; color:var(--ink);">
             ${result.evaluationTitle || 'Assessment Result'}
           </h1>
           <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-soft);">
-            📅 ${submittedDate} · ⏱ ${timeSpentMin}m ${timeSpentSec}s elapsed
+             ${submittedDate} ·  ${timeSpentMin}m ${timeSpentSec}s elapsed
           </div>
         </div>
         <div style="text-align:center; background:${headerBg}; border:2px solid ${headerColor}; border-radius:10px; padding:16px 24px; min-width:140px;">
           <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:${headerColor}; font-weight:800; margin-bottom:6px; text-transform:uppercase;">Your Score</div>
           <div style="font-family:'Fraunces',Georgia,serif; font-size:48px; font-weight:900; color:${headerColor}; line-height:1;">${score}</div>
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:${headerColor}; font-weight:700;">/ 100 · ${passed ? '✓ PASSED' : '✗ FAILED'}</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:${headerColor}; font-weight:700;">/ 100 · ${passed ? '✓ PASSED' : ' FAILED'}</div>
         </div>
       </div>
 
@@ -174,14 +167,14 @@ const guide = getGuideForStudent(evaluation.guideId);
       const isCorrect = detail.isCorrect;
       const isUnanswered = detail.selectedOptionIndex === null || detail.selectedOptionIndex === undefined;
       const iconColor = isCorrect ? '#4A7C59' : isUnanswered ? '#C8860A' : '#C3532C';
-      const icon = isCorrect ? '✓' : isUnanswered ? '?' : '✗';
+      const icon = isCorrect ? '✓' : isUnanswered ? '?' : '';
       const borderColor = isCorrect ? '#4A7C59' : isUnanswered ? '#C8860A' : '#C3532C';
 
       const blockLinks = (!isCorrect && detail.referencedBlockIds?.length > 0)
         ? detail.referencedBlockIds.map((bid) => `
             <a href="/${lang}/app/student/guides/${guideId}#${bid}"
                style="display:inline-flex; align-items:center; gap:5px; padding:5px 10px; background:#FFF0EE; border:1.5px solid #C3532C; border-radius:4px; font-size:10.5px; font-weight:700; color:#C3532C; text-decoration:none;">
-              📖 Review Concept in Guide (${bid})
+               Review Concept in Guide (${bid})
             </a>
           `).join('')
         : '';
@@ -221,7 +214,7 @@ const guide = getGuideForStudent(evaluation.guideId);
 
             ${detail.explanation ? `
               <div style="background:#FFFCF4; border:1.5px solid #E8E3DA; border-left:3px solid #C3532C; border-radius:6px; padding:10px 12px; margin-bottom:10px;">
-                <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#C3532C; font-weight:800; margin-bottom:4px;">💡 EXPLANATION</div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#C3532C; font-weight:800; margin-bottom:4px;"> EXPLANATION</div>
                 <p style="font-size:13px; color:var(--ink); margin:0; line-height:1.6;">${detail.explanation}</p>
               </div>
             ` : ''}

@@ -8,10 +8,6 @@ import GuideWizard from '../../../../../../../components/app/teacher/GuideWizard
 import type { Lang } from '../../../../../../../i18n';
 import '../../../../../../../styles/app.css';
 
-export async function getStaticPaths() {
-  const courses = getTeacherCourses();
-  return courses.map((c) => ({ params: { id: c.id } }));
-}
 
 const lang: Lang = 'es';
 const { id } = Astro.params;

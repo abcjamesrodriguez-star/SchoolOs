@@ -1,15 +1,19 @@
----
+﻿---
 // ============================================================
-// SchoolOS — Modal de Matrícula Integral de Estudiante
+// SchoolOS — Modal de Matrícula Integral de Estudiante (MVP)
+// Con Selección de Avatar por Género, Catálogo Completo y Asignación de Salón
+// Diseño limpio sin emojis
 // ============================================================
 import type { Lang } from '../../../i18n';
+import AvatarPickerModal from './AvatarPickerModal.astro';
 
 interface Props {
   id?: string;
   lang?: Lang;
+  schoolId?: string;
 }
 
-const { id = 'studentRegisterModal', lang = 'es' } = Astro.props;
+const { id = 'studentRegisterModal', lang = 'es', schoolId } = Astro.props;
 ---
 
 <div
@@ -19,178 +23,227 @@ const { id = 'studentRegisterModal', lang = 'es' } = Astro.props;
   role="dialog"
   aria-modal="true"
 >
-  <div class="panel" style="width:100%; max-width:680px; background:var(--paper); border:2px solid var(--ink); box-shadow:8px 8px 0 rgba(18, 17, 14, 0.35); max-height:90vh; display:flex; flex-direction:column;">
+  <div class="panel" style="width:100%; max-width:720px; background:var(--paper); border:2px solid var(--ink); box-shadow:8px 8px 0 rgba(18, 17, 14, 0.35); max-height:90vh; display:flex; flex-direction:column; overflow:hidden;">
     
     <!-- HEADER -->
     <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center; padding:14px 20px; background:var(--cream); border-bottom:2px solid var(--ink); flex-shrink:0;">
       <div style="display:flex; align-items:center; gap:8px;">
         <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-size:10px; font-weight:900;">
-          {lang === 'es' ? 'MATRÍCULA ACADÉMICA' : 'STUDENT ENROLLMENT'}
+          MATRÍCULA ACADÉMICA
         </span>
-        <h2 style="font-family:var(--serif); font-size:16px; margin:0; font-weight:700; color:var(--ink);">
-          {lang === 'es' ? 'Ficha Oficial de Matrícula Integral' : 'Official Student Registration Record'}
+        <h2 style="font-family:var(--serif); font-size:16.5px; margin:0; font-weight:700; color:var(--ink);">
+          Expediente Oficial de Matrícula
         </h2>
       </div>
 
       <button type="button" class="close-modal-btn" onclick={`document.getElementById('${id}').style.display='none';`} style="background:none; border:none; font-family:var(--mono); font-size:18px; font-weight:700; cursor:pointer; color:var(--ink);">✕</button>
     </div>
 
+    <!-- FEEDBACK ALERT -->
+    <div id={`${id}Feedback`} style="display:none; padding:12px 20px; font-family:var(--mono); font-size:12px; font-weight:700;"></div>
+
     <!-- BODY WITH SCROLL -->
     <div class="panel-body padded" style="background:#FFFDF9; padding:20px; overflow-y:auto; flex:1;">
       
-      <form id={`${id}Form`} onsubmit={`event.preventDefault(); alert(document.documentElement.lang === 'en' ? '✓ Student successfully enrolled. Academic profile created, official DANE registry logged, and notification sent to guardian.' : '✓ Estudiante matriculado exitosamente. Se creó el expediente académico, se generó código DANE y se envió credencial de acceso al acudiente.'); document.getElementById('${id}').style.display='none';`}>
+      <form id={`${id}Form`}>
+        <input type="hidden" id={`${id}SchoolId`} value={schoolId || ''} />
+        <input type="hidden" id={`${id}AvatarUrl`} value="/avatars/men/fila-1-columna-1.png" />
         
-        <!-- SECCIÓN 1: DATOS PERSONALES Y ACADÉMICOS -->
-        <div style="border-bottom:1.5px solid var(--line); padding-bottom:14px; margin-bottom:16px;">
-          <div style="font-family:var(--mono); font-size:11px; font-weight:800; text-transform:uppercase; color:var(--rust); margin-bottom:10px; display:flex; align-items:center; gap:6px;">
-            <span>1.</span> {lang === 'es' ? 'Identificación & Asignación Académica' : 'Identity & Academic Placement'}
+        <!-- SECCIÓN 1: IDENTIDAD & AVATAR OFICIAL -->
+        <div style="background:var(--cream); border:1.5px solid var(--ink); padding:16px; margin-bottom:16px; box-shadow:2px 2px 0 var(--ink);">
+          <div style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; color:var(--rust); margin-bottom:12px; display:flex; align-items:center; gap:6px;">
+            <span>01 ·</span> Identidad Institucional & Avatar
           </div>
 
-          <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:12px; margin-bottom:10px;">
-            <div>
-              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
-                {lang === 'es' ? 'Nombre Completo del Alumno *' : 'Student Full Name *'}
-              </label>
-              <input type="text" required placeholder="Ej: Santiago Mendoza Vargas" style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:7px 10px; font-size:12.5px;" />
+          <div style="display:grid; grid-template-columns: 100px 1fr; gap:16px; align-items:start;">
+            <!-- Avatar Box -->
+            <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+              <div
+                id={`${id}AvatarPreview`}
+                style="width:84px; height:84px; border:2px solid var(--ink); background:#FFFFFF; display:flex; align-items:center; justify-content:center; overflow:hidden; box-shadow:2px 2px 0 var(--ink);"
+              >
+                <img id={`${id}AvatarImg`} src="/avatars/men/fila-1-columna-1.png" alt="Avatar" style="width:100%; height:100%; object-fit:contain;" />
+              </div>
+              <button
+                type="button"
+                id={`${id}BtnChangeAvatar`}
+                class="btn btn-secondary btn-sm"
+                onclick={`window.openAvatarPicker && window.openAvatarPicker('${id}AvatarPickerModal', document.getElementById('${id}Gender')?.value || 'Hombre', '${id}AvatarUrl', '${id}AvatarImg');`}
+                style="font-size:9.5px; font-weight:800; padding:4px 6px; width:100%; text-align:center;"
+              >
+                Elegir Avatar
+              </button>
             </div>
 
-            <div>
-              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
-                {lang === 'es' ? 'Documento (T.I. / R.C.) *' : 'ID Document (T.I. / R.C.) *'}
-              </label>
-              <input type="text" required placeholder="1029384910" style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:7px 10px; font-size:12.5px; font-family:var(--mono);" />
-            </div>
-          </div>
+            <!-- Datos Principales -->
+            <div style="display:grid; grid-template-columns: 1.4fr 1fr; gap:12px;">
+              <div style="grid-column: span 2;">
+                <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
+                  Nombre Completo del Estudiante *
+                </label>
+                <input type="text" id={`${id}Name`} required placeholder="Ej: Santiago Mendoza Vargas" style="width:100%; border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-size:13px;" />
+              </div>
 
-          <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px;">
-            <div>
-              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
-                {lang === 'es' ? 'Grado y Sección *' : 'Grade & Section *'}
-              </label>
-              <select style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:7px 10px; font-size:12px; font-family:var(--mono);">
-                <option>8° Grado A (8-1)</option>
-                <option>8° Grado B (8-2)</option>
-                <option>9° Grado A (9-1)</option>
-                <option>9° Grado B (9-2)</option>
-                <option>9° Grado C (9-3)</option>
-                <option selected>10° Grado A (10-1)</option>
-                <option>10° Grado B (10-2)</option>
-                <option>10° Grado C (10-3)</option>
-                <option>11° Grado A (11-1)</option>
-                <option>11° Grado B (11-2)</option>
-                <option>11° Grado C (11-3)</option>
-              </select>
-            </div>
+              <div>
+                <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
+                  Código de Matrícula *
+                </label>
+                <div style="display:flex; gap:6px;">
+                  <input type="text" id={`${id}StudentCode`} required placeholder="EST-2026-0412" style="flex:1; border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-size:12.5px; font-family:var(--mono); font-weight:700;" />
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-sm"
+                    onclick={`document.getElementById('${id}StudentCode').value = 'EST-2026-' + Math.floor(1000 + Math.random() * 9000);`}
+                    style="font-family:var(--mono); font-size:11px; font-weight:800; padding:6px 8px; flex-shrink:0;"
+                    title="Generar nuevo código único"
+                  >
+                    Generar ⟳
+                  </button>
+                </div>
+              </div>
 
-            <div>
-              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
-                {lang === 'es' ? 'Tipo de Matrícula' : 'Enrollment Type'}
-              </label>
-              <select style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:7px 10px; font-size:12px; font-family:var(--mono);">
-                <option value="regular">{lang === 'es' ? 'Regular' : 'Regular'}</option>
-                <option value="conditional">{lang === 'es' ? 'Condicional / Observación' : 'Conditional'}</option>
-                <option value="scholarship">{lang === 'es' ? 'Becado / Cobertura' : 'Scholarship'}</option>
-              </select>
-            </div>
-
-            <div>
-              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
-                {lang === 'es' ? 'Correo Institucional' : 'School Email'}
-              </label>
-              <input type="email" placeholder="alumno@colegionorte.edu.co" style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:7px 10px; font-size:12px; font-family:var(--mono);" />
+              <div>
+                <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
+                  Género *
+                </label>
+                <select
+                  id={`${id}Gender`}
+                  onchange={`
+                    var g = this.value;
+                    var defaultImg = g === 'Mujer' ? '/avatars/women/fila-1-columna-1.png' : '/avatars/men/fila-1-columna-1.png';
+                    document.getElementById('${id}AvatarUrl').value = defaultImg;
+                    document.getElementById('${id}AvatarImg').src = defaultImg;
+                  `}
+                  style="width:100%; border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-size:12.5px; font-family:var(--mono); font-weight:700;"
+                >
+                  <option value="Hombre" selected>Masculino</option>
+                  <option value="Mujer">Femenino</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- SECCIÓN 2: INFORMACIÓN DE CONTACTO & ACUDIENTES -->
-        <div style="border-bottom:1.5px solid var(--line); padding-bottom:14px; margin-bottom:16px;">
-          <div style="font-family:var(--mono); font-size:11px; font-weight:800; text-transform:uppercase; color:var(--rust); margin-bottom:10px; display:flex; align-items:center; gap:6px;">
-            <span>2.</span> {lang === 'es' ? 'Acudiente Principal & Contacto Inmediato' : 'Primary Guardian & Direct Contact'}
+        <!-- SECCIÓN 2: UBICACIÓN ACADÉMICA & SALONES -->
+        <div style="background:var(--cream); border:1.5px solid var(--ink); padding:16px; margin-bottom:16px; box-shadow:2px 2px 0 var(--ink);">
+          <div style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; color:var(--rust); margin-bottom:12px; display:flex; align-items:center; gap:6px;">
+            <span>02 ·</span> Nivel Académico, Jornada & Salón
           </div>
 
-          <div style="display:grid; grid-template-columns: 1.2fr 1fr 1fr; gap:12px; margin-bottom:10px;">
+          <div style="display:grid; grid-template-columns: 1.3fr 1fr 1.2fr; gap:12px;">
             <div>
               <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
-                {lang === 'es' ? 'Nombre Acudiente *' : 'Guardian Name *'}
+                Grado / Nivel Escolar *
               </label>
-              <input type="text" required placeholder="Ej: Patricia Vargas Gómez" style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:7px 10px; font-size:12.5px;" />
-            </div>
-
-            <div>
-              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
-                {lang === 'es' ? 'Parentesco' : 'Relationship'}
-              </label>
-              <select style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:7px 10px; font-size:12px;">
-                <option>{lang === 'es' ? 'Madre' : 'Mother'}</option>
-                <option>{lang === 'es' ? 'Padre' : 'Father'}</option>
-                <option>{lang === 'es' ? 'Tío(a) / Tutor' : 'Guardian / Uncle/Aunt'}</option>
-                <option>{lang === 'es' ? 'Abuelo(a)' : 'Grandparent'}</option>
+              <select id={`${id}Grade`} style="width:100%; border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-size:12px; font-family:var(--mono); font-weight:700;">
+                <optgroup label="Preescolar / Inicial">
+                  <option value="Párvulos">Párvulos</option>
+                  <option value="Pre-jardín">Pre-jardín</option>
+                  <option value="Jardín">Jardín</option>
+                  <option value="Transición">Transición</option>
+                </optgroup>
+                <optgroup label="Básica Primaria">
+                  <option value="1°">1° Primaria</option>
+                  <option value="2°">2° Primaria</option>
+                  <option value="3°">3° Primaria</option>
+                  <option value="4°">4° Primaria</option>
+                  <option value="5°">5° Primaria</option>
+                </optgroup>
+                <optgroup label="Básica Secundaria">
+                  <option value="6°">6° Secundaria</option>
+                  <option value="7°">7° Secundaria</option>
+                  <option value="8°">8° Secundaria</option>
+                  <option value="9°">9° Secundaria</option>
+                </optgroup>
+                <optgroup label="Educación Media">
+                  <option value="10°" selected>10° Media</option>
+                  <option value="11°">11° Media</option>
+                </optgroup>
               </select>
             </div>
 
             <div>
               <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
-                {lang === 'es' ? 'Celular / WhatsApp *' : 'Mobile / WhatsApp *'}
+                Jornada *
               </label>
-              <input type="tel" required placeholder="+57 312 456 7890" style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:7px 10px; font-size:12.5px; font-family:var(--mono);" />
+              <select id={`${id}Shift`} style="width:100%; border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-size:12px; font-family:var(--mono);">
+                <option value="Mañana" selected>Mañana</option>
+                <option value="Tarde">Tarde</option>
+                <option value="Única">Jornada Única</option>
+                <option value="Nocturna">Nocturna</option>
+              </select>
+            </div>
+
+            <div>
+              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
+                Asignación de Salón *
+              </label>
+              <select id={`${id}GroupAssignment`} style="width:100%; border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-size:11.5px; font-family:var(--mono); font-weight:700;">
+                <option value="auto" selected>Repartir Automáticamente (Equitativo)</option>
+                <option value="1">Manual: Salón 1 (A)</option>
+                <option value="2">Manual: Salón 2 (B)</option>
+                <option value="3">Manual: Salón 3 (C)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 3: ACUDIENTE PRINCIPAL & ACTIVACIÓN PARENTAL -->
+        <div style="background:var(--cream); border:1.5px solid var(--ink); padding:16px; margin-bottom:20px; box-shadow:2px 2px 0 var(--ink);">
+          <div style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; color:var(--rust); margin-bottom:12px; display:flex; align-items:center; gap:6px;">
+            <span>03 ·</span> Acudiente Principal & Contacto de Activación
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1.2fr 1fr 1fr; gap:12px; margin-bottom:12px;">
+            <div>
+              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
+                Nombre Acudiente (Opcional)
+              </label>
+              <input type="text" id={`${id}GuardianName`} placeholder="Ej: Patricia Vargas Gómez" style="width:100%; border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-size:12.5px;" />
+            </div>
+
+            <div>
+              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
+                Parentesco
+              </label>
+              <select id={`${id}GuardianRelation`} style="width:100%; border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-size:12px;">
+                <option value="Madre">Madre</option>
+                <option value="Padre">Padre</option>
+                <option value="Tutor">Tutor Legal</option>
+                <option value="Abuelo">Abuelo(a)</option>
+              </select>
+            </div>
+
+            <div>
+              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
+                Celular / WhatsApp (Opcional)
+              </label>
+              <input type="tel" id={`${id}GuardianPhone`} placeholder="+57 312 456 7890" style="width:100%; border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-size:12.5px; font-family:var(--mono);" />
             </div>
           </div>
 
           <div>
             <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
-              {lang === 'es' ? 'Correo Electrónico del Acudiente' : 'Guardian Email'}
+              Correo Electrónico (Opcional para MVP Piloto)
             </label>
-            <input type="email" placeholder="acudiente@gmail.com" style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:7px 10px; font-size:12px; font-family:var(--mono);" />
-          </div>
-        </div>
-
-        <!-- SECCIÓN 3: FICHA MÉDICA & EMERGENCIAS -->
-        <div style="margin-bottom:20px;">
-          <div style="font-family:var(--mono); font-size:11px; font-weight:800; text-transform:uppercase; color:var(--rust); margin-bottom:10px; display:flex; align-items:center; gap:6px;">
-            <span>3.</span> {lang === 'es' ? 'Ficha de Salud, EPS & Urgencias' : 'Health Record, EPS & Emergency'}
-          </div>
-
-          <div style="display:grid; grid-template-columns: 1fr 100px 1.5fr; gap:12px; margin-bottom:10px;">
-            <div>
-              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
-                {lang === 'es' ? 'Entidad de Salud (EPS) *' : 'Health Insurance (EPS) *'}
-              </label>
-              <input type="text" required placeholder="Ej: Sura / Sanitas / Compensar" style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:7px 10px; font-size:12.5px;" />
-            </div>
-
-            <div>
-              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
-                {lang === 'es' ? 'RH' : 'Blood'}
-              </label>
-              <select style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:7px 10px; font-size:12px; font-family:var(--mono);">
-                <option>O+</option>
-                <option>O-</option>
-                <option>A+</option>
-                <option>A-</option>
-                <option>B+</option>
-                <option>B-</option>
-                <option>AB+</option>
-                <option>AB-</option>
-              </select>
-            </div>
-
-            <div>
-              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
-                {lang === 'es' ? 'Alergias o Condiciones Especiales' : 'Allergies / Medical Conditions'}
-              </label>
-              <input type="text" placeholder="Ej: Ninguna / Penicilina / Asma" style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:7px 10px; font-size:12.5px;" />
-            </div>
+            <input type="email" id={`${id}GuardianEmail`} placeholder="acudiente@gmail.com" style="width:100%; border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-size:12px; font-family:var(--mono);" />
           </div>
         </div>
 
         <!-- FOOTER ACTIONS -->
-        <div style="display:flex; justify-content:flex-end; gap:10px; border-top:1.5px solid var(--line); padding-top:16px;">
-          <button type="button" class="btn btn-secondary" onclick={`document.getElementById('${id}').style.display='none';`}>
-            {lang === 'es' ? 'Cancelar' : 'Cancel'}
-          </button>
-          <button type="submit" class="btn btn-primary" style="font-weight:700;">
-            {lang === 'es' ? '✓ Completar Matrícula Oficial' : '✓ Complete Official Enrollment'}
-          </button>
+        <div style="display:flex; justify-content:space-between; align-items:center; border-top:1.5px solid var(--line); padding-top:16px;">
+          <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">
+            Se descontará 1 plaza del plan institucional y se enviará invitación al acudiente.
+          </div>
+
+          <div style="display:flex; gap:10px;">
+            <button type="button" class="btn btn-secondary" onclick={`document.getElementById('${id}').style.display='none';`}>
+              Cancelar
+            </button>
+            <button type="submit" id={`${id}SubmitBtn`} class="btn btn-primary" style="font-weight:800;">
+              Matricular y Enviar Invitación
+            </button>
+          </div>
         </div>
 
       </form>
@@ -198,3 +251,188 @@ const { id = 'studentRegisterModal', lang = 'es' } = Astro.props;
 
   </div>
 </div>
+
+<AvatarPickerModal id={`${id}AvatarPickerModal`} />
+
+
+<script>
+  import { studentService } from '../../../services/studentService';
+  import { courseManagementService } from '../../../services/courseManagementService';
+
+  function getActiveTenantSchoolId(): string {
+    try {
+      const user = JSON.parse(localStorage.getItem('schoolos-user') || '{}');
+      if (user.schoolId) return user.schoolId;
+    } catch (_) {}
+    return (window as any).SchoolOSApp?.currentSchoolId || (window as any)._currentTenantSchoolId || localStorage.getItem('schoolos_tenant_id') || localStorage.getItem('schoolos_tenant_slug') || '';
+  }
+
+  function getModalId(): string {
+    const modal = document.querySelector('[data-student-register-modal]') as HTMLElement || document.getElementById('StudentRegisterModal');
+    return modal ? modal.id : 'StudentRegisterModal';
+  }
+
+  async function hydrateGradeCapacities(targetSchoolId?: string) {
+    try {
+      const modalId = getModalId();
+      const schoolInput = document.getElementById(modalId + 'SchoolId') as HTMLInputElement;
+      const sId = targetSchoolId || schoolInput?.value || getActiveTenantSchoolId();
+      if (!sId) return;
+
+      const res = await courseManagementService.getGradeCapacities(sId);
+      const gradeCapacities = res.data || [];
+
+      const gradeSelect = document.getElementById(modalId + 'Grade') as HTMLSelectElement;
+      const groupSelect = document.getElementById(modalId + 'GroupAssignment') as HTMLSelectElement;
+      if (!gradeSelect) return;
+
+      const offeredGrades = gradeCapacities.filter(function(g: any) {
+        return g.is_offered !== false && (g.sections_count || g.sectionsCount) > 0;
+      });
+
+      if (offeredGrades.length > 0) {
+        gradeSelect.innerHTML = offeredGrades.map(function(g: any) {
+          const enrolled = 0;
+          const maxCap = g.capacity_per_room || g.capacityPerRoom || 40;
+          const sections = g.sections_count || g.sectionsCount || 1;
+          const totalCap = maxCap * sections;
+          const available = Math.max(0, totalCap - enrolled);
+          return `<option value="${g.grade_level || g.gradeLevel}">${g.grade_level || g.gradeLevel} (Disponibles: ${available} cupos en ${sections} salones)</option>`;
+        }).join('');
+
+        const updateGroups = function() {
+          const selectedGrade = gradeSelect.value;
+          const found = offeredGrades.find(function(g: any) { return (g.grade_level || g.gradeLevel) === selectedGrade; });
+          if (found && groupSelect) {
+            const secs = found.sections_count || found.sectionsCount || 1;
+            let grpHtml = '<option value="auto">Asignación Inteligente (Salón con más cupos libres)</option>';
+            for (let i = 1; i <= secs; i++) {
+              const groupName = `${selectedGrade}-${i}`;
+              grpHtml += `<option value="${groupName}">Salón ${groupName}</option>`;
+            }
+            groupSelect.innerHTML = grpHtml;
+          }
+        };
+
+        gradeSelect.onchange = updateGroups;
+        updateGroups();
+      } else {
+        gradeSelect.innerHTML = `
+          <option value="6°">6° Grado</option>
+          <option value="7°">7° Grado</option>
+          <option value="8°">8° Grado</option>
+          <option value="9°">9° Grado</option>
+          <option value="10°">10° Grado</option>
+          <option value="11°">11° Grado</option>
+        `;
+      }
+    } catch (err) {
+      console.warn('Error al hidratar capacidades de grado en modal de estudiante:', err);
+    }
+  }
+
+  (window as any).openStudentRegisterModal = function(customSchoolId?: string) {
+    const modalId = getModalId();
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+
+    const schoolInput = document.getElementById(modalId + 'SchoolId') as HTMLInputElement;
+    const codeInput = document.getElementById(modalId + 'StudentCode') as HTMLInputElement;
+
+    const sId = customSchoolId || getActiveTenantSchoolId();
+    if (schoolInput) {
+      schoolInput.value = sId;
+    }
+
+    if (codeInput) {
+      const year = new Date().getFullYear();
+      const rand = Math.floor(1000 + Math.random() * 9000);
+      codeInput.value = `EST-${year}-${rand}`;
+    }
+
+    hydrateGradeCapacities(sId);
+    modal.style.display = 'flex';
+  };
+
+  function generateBeautifulEmail(fullName: string, code: string) {
+    const clean = fullName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9\s]/g, "").trim().split(/\s+/);
+    const base = clean.slice(0, 2).join('.');
+    let shortCode = code.replace(/[^0-9]/g, '').slice(-3);
+    if (!shortCode) shortCode = String(Math.floor(100 + Math.random() * 900));
+    return base + '.' + shortCode + '@schoolos.edu.co';
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const modalId = getModalId();
+    const form = document.getElementById(modalId + 'Form');
+    const modal = document.getElementById(modalId);
+    if (!form || !modal) return;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const submitBtn = document.getElementById(modalId + 'SubmitBtn') as HTMLButtonElement;
+      const feedback = document.getElementById(modalId + 'Feedback');
+
+      const sId = (document.getElementById(modalId + 'SchoolId') as HTMLInputElement)?.value || getActiveTenantSchoolId();
+      const name = (document.getElementById(modalId + 'StudentName') as HTMLInputElement)?.value.trim();
+      const studentCode = (document.getElementById(modalId + 'StudentCode') as HTMLInputElement)?.value.trim();
+      const avatarUrl = (document.getElementById(modalId + 'AvatarUrl') as HTMLInputElement)?.value;
+      const gradeLevel = (document.getElementById(modalId + 'Grade') as HTMLSelectElement)?.value;
+      const groupAssignment = (document.getElementById(modalId + 'GroupAssignment') as HTMLSelectElement)?.value;
+      const guardianEmail = (document.getElementById(modalId + 'GuardianEmail') as HTMLInputElement)?.value.trim().toLowerCase();
+
+      if (!name || !studentCode) throw new Error('Nombre y código de matrícula son obligatorios.');
+
+      const studentEmail = guardianEmail || generateBeautifulEmail(name, studentCode);
+      const group = (groupAssignment && groupAssignment !== 'auto') ? groupAssignment : (gradeLevel + '-1');
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Creando cuenta del estudiante…';
+      }
+
+      try {
+        const defaultPassword = studentCode;
+        const res = await studentService.createStudent({
+          email: studentEmail,
+          password: defaultPassword,
+          name,
+          role: 'student',
+          school_id: sId,
+          document_id: studentCode,
+          specialty: gradeLevel,
+          job_title: group,
+          avatar_url: avatarUrl
+        });
+
+        if (feedback) {
+          feedback.style.cssText = 'display:block; background:#E6F4EA; border-bottom:2px solid var(--sage-dark); color:var(--sage-dark); padding:12px 20px; font-family:var(--mono); font-size:12px; font-weight:700;';
+          feedback.innerHTML = '✓ Estudiante matriculado exitosamente.<br/>La contraseña para ingresar es: <strong>' + defaultPassword + '</strong> (Se le pedirá cambiarla).';
+        }
+
+        if (submitBtn) {
+          submitBtn.textContent = 'Matriculado ✓';
+        }
+
+        window.dispatchEvent(new CustomEvent('student:enrolled', { detail: { ok: true, id: (res as any)?.userId, name } }));
+
+        setTimeout(function() {
+          modal.style.display = 'none';
+          (form as HTMLFormElement).reset();
+          window.location.reload();
+        }, 1200);
+
+      } catch (err: any) {
+        console.error('Error matriculando estudiante:', err);
+        if (feedback) {
+          feedback.style.cssText = 'display:block; background:#FEE2E2; border-bottom:2px solid var(--rust); color:var(--rust); padding:12px 20px; font-family:var(--mono); font-size:12px; font-weight:700;';
+          feedback.textContent = err?.message || 'Error al matricular estudiante';
+        }
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Reintentar Matrícula';
+        }
+      }
+    });
+  });
+</script>

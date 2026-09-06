@@ -1,16 +1,8 @@
 import { createAdminSupabase } from '../lib/supabase-admin';
-import { supabase as browserSupabase } from '../lib/supabase';
 import type { AuditLogEntry } from '../types/system';
 
 function getSupabaseClient() {
-  if (typeof window !== 'undefined') {
-    return browserSupabase;
-  }
-  try {
-    return createAdminSupabase();
-  } catch (_) {
-    return browserSupabase;
-  }
+  return createAdminSupabase();
 }
 
 export const auditService = {

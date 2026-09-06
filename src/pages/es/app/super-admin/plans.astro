@@ -8,9 +8,10 @@ import { schoolService } from '../../../../services/schoolService';
 const lang = 'es';
 let schools: any[] = [];
 try {
-  schools = await schoolService.getSchools();
+  schools = (await schoolService.getSchools()) || [];
 } catch (e) {
   console.error('Error fetching schools:', e);
+  schools = [];
 }
 
 const totalSchools = schools.length || 1;

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Confirma tu correo — LUDO</title>
+</head>
+<body style="margin:0; padding:0; background:#F4EFE6;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F4EFE6; padding:28px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:600px; background:#FDFCF9; border:2px solid #12110E; box-shadow:8px 8px 0 rgba(18,17,14,0.10); border-collapse:separate;">
+          <tr><td style="background:#12110E; padding:8px 22px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="font-family:monospace; font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:#FDFCF9; font-weight:700;">LUDO — Learn · Unite · Do · Organize</td><td align="right" style="font-family:monospace; font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:#8B876F;">ID: {{school_id_short}} · {{date}}</td></tr></table></td></tr>
+          <tr><td style="padding:20px 26px; border-bottom:2px solid #12110E;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="width:64px; vertical-align:middle;"><div style="width:64px; height:64px; border:2px solid #12110E; background:#FFFFFF; text-align:center; line-height:60px; font-family:Georgia, serif; font-weight:900; font-size:18px; color:#12110E; letter-spacing:-0.04em;">LU<div style="width:22px; height:3px; background:#F25C2B; margin:2px auto 0; border-radius:2px; transform:rotate(-2deg);"></div><div style="font-family:monospace; font-size:7px; letter-spacing:0.12em; text-transform:uppercase; color:#F25C2B; margin-top:1px; line-height:1;">lúdico</div></div></td><td style="padding-left:14px; vertical-align:middle;"><div style="font-family:Georgia, serif; font-weight:800; font-size:18px; letter-spacing:-0.03em; text-transform:uppercase; color:#12110E; line-height:1;">{{school_name}}</div><div style="font-family:monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:#12110E; font-weight:700; margin-top:3px;">Taller <span style="color:#F25C2B;">LUDO</span> · Aprender haciendo</div><div style="font-family:monospace; font-size:10px; color:#4A473E; margin-top:2px;">{{school_slogan}}</div></td><td style="width:92px; text-align:right; vertical-align:middle;"><div style="display:inline-block; border:1.5px solid #12110E; background:#FDFCF9; color:#12110E; font-family:monospace; font-size:9px; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; padding:6px 10px;">Aprender jugando</div><div style="font-family:monospace; font-size:9px; color:#4A473E; margin-top:6px; letter-spacing:0.06em;">24H · 1 USO</div></td></tr></table></td></tr>
+          <!-- CUERPO FUNCIONAL -->
+          <tr><td style="padding:30px 30px 16px;">
+            <div style="font-family:monospace; font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:#C1571A; font-weight:700; margin-bottom:12px;">Hola, {{rector_name}} —</div>
+            <div style="font-family:Georgia, serif; font-size:30px; font-weight:700; color:#12110E; line-height:0.95; letter-spacing:-0.04em;">Confirma tu<br>correo <span style="font-style:italic; font-weight:450; color:#C1571A;">institucional</span></div>
+            <p style="font-family:Inter, Helvetica, Arial, sans-serif; font-size:14px; line-height:1.65; color:#4A473E; margin:14px 0 0;">Te creamos el acceso para <strong style="color:#12110E;">{{email}}</strong> en <strong style="color:#12110E;">{{school_name}}</strong>. Haz click, confirma 2 datos y tu cuenta queda activa.</p>
+          </td></tr>
+          <tr><td style="padding:0 30px 14px;">
+            <a href="{{confirm_url}}" style="display:block; background:#12110E; border:1px solid #12110E; padding:16px 20px; font-family:monospace; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; font-weight:800; color:#FDFCF9; text-decoration:none; text-align:center;">Confirmar mi correo →</a>
+            <div style="font-family:monospace; font-size:10px; color:#4A473E; text-align:center; margin-top:10px;">Te pediremos tu <strong style="color:#12110E;">cédula</strong> y <strong style="color:#12110E;">teléfono</strong> registrados · 3 intentos máximo · enlace de 1 solo uso</div>
+          </td></tr>
+          <tr><td style="padding:8px 30px 24px;">
+            <div style="text-align:center; border-top:1px solid #D8D2C2; padding-top:12px;">
+              <div style="font-family:monospace; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:#4A473E; margin-bottom:4px;">Si el botón no abre</div>
+              <a href="{{confirm_url}}" style="font-family:monospace; font-size:10.5px; color:#C1571A; word-break:break-all; text-decoration:underline;">{{confirm_url}}</a>
+            </div>
+          </td></tr>
+          <tr><td style="background:#12110E; padding:14px 22px; text-align:center;"><div style="font-family:monospace; font-size:9px; letter-spacing:0.12em; text-transform:uppercase; color:#FDFCF9; font-weight:700;">LUDO — Learn · Unite · Do · Organize</div><div style="font-family:monospace; font-size:9px; color:#8B876F; margin-top:4px;">Correo automático — no respondas. Si no lo solicitaste, ignóralo.</div></td></tr>
+        </table>
+        <div style="max-width:600px; margin-top:12px; font-family:monospace; font-size:9px; color:#4A473E; text-align:center; letter-spacing:0.04em;">Recibiste esto porque tu institución te registró en LUDO.</div>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

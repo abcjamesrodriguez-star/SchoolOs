@@ -1,0 +1,271 @@
+﻿---
+// ============================================================
+// SchoolOS — Modal de Creación de Asignatura / Materia Curricular
+// Cero emojis, estilo sobrio institucional
+// ============================================================
+interface Props {
+  id?: string;
+}
+
+const { id = 'subjectModal' } = Astro.props;
+---
+
+<div
+  id={id}
+  class="custom-modal-backdrop"
+  style="display:none; position:fixed; inset:0; background:rgba(18, 17, 14, 0.75); z-index:9999; align-items:center; justify-content:center; padding:20px; overflow-y:auto;"
+  role="dialog"
+  aria-modal="true"
+>
+  <div class="panel" style="width:100%; max-width:560px; background:var(--paper); border:2px solid var(--ink); box-shadow:8px 8px 0 var(--ink); max-height:90vh; display:flex; flex-direction:column; overflow:hidden;">
+    
+    <!-- HEADER -->
+    <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center; padding:14px 20px; background:var(--cream); border-bottom:2px solid var(--ink);">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; font-size:10px; font-weight:900;">
+          MALLA CURRICULAR
+        </span>
+        <h2 id={`${id}Title`} style="font-family:var(--serif); font-size:16.5px; margin:0; font-weight:700; color:var(--ink);">
+          Añadir Nueva Materia / Asignatura
+        </h2>
+      </div>
+      <button type="button" onclick={`document.getElementById('${id}').style.display='none';`} style="background:none; border:none; font-family:var(--mono); font-size:18px; font-weight:700; cursor:pointer; color:var(--ink);">✕</button>
+    </div>
+
+    <!-- FEEDBACK ALERT -->
+    <div id={`${id}Feedback`} style="display:none; padding:10px 18px; font-family:var(--mono); font-size:12px; font-weight:700;"></div>
+
+    <!-- BODY -->
+    <div class="panel-body padded" style="background:#FFFDF9; padding:20px; overflow-y:auto; flex:1;">
+      
+      <form id={`${id}Form`} style="display:flex; flex-direction:column; gap:14px;">
+        <input type="hidden" id={`${id}SchoolId`} value="" />
+
+        <div style="background:#FFFFFF; border:1.5px solid var(--ink); padding:14px; box-shadow:2px 2px 0 var(--ink);">
+          <label style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:4px; color:var(--ink);">
+            Nombre de la Asignatura / Materia *
+          </label>
+          <input
+            type="text"
+            id={`${id}Name`}
+            required
+            placeholder="Ej: Física, Robótica, Francés, Taller de Arte"
+            style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:8px 10px; font-size:13.5px; font-weight:700; box-sizing:border-box;"
+          />
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div style="background:#FFFFFF; border:1.5px solid var(--ink); padding:14px; box-shadow:2px 2px 0 var(--ink);">
+            <label style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:4px; color:var(--ink);">
+              Código de Materia *
+            </label>
+            <input
+              type="text"
+              id={`${id}Code`}
+              required
+              placeholder="Ej: FIS, ROB, FR1"
+              style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:8px 10px; font-size:13px; font-family:var(--mono); font-weight:800; text-transform:uppercase; box-sizing:border-box;"
+            />
+          </div>
+
+          <div style="background:#FFFFFF; border:1.5px solid var(--ink); padding:14px; box-shadow:2px 2px 0 var(--ink);">
+            <label style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:4px; color:var(--ink);">
+              Intensidad Horaria / Sem
+            </label>
+            <input
+              type="number"
+              id={`${id}WeeklyHours`}
+              min="1"
+              max="20"
+              value="4"
+              style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:8px 10px; font-size:13px; font-family:var(--mono); font-weight:800; box-sizing:border-box;"
+            />
+          </div>
+        </div>
+
+        <div style="background:#FFFFFF; border:1.5px solid var(--ink); padding:14px; box-shadow:2px 2px 0 var(--ink);">
+          <label style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:4px; color:var(--ink);">
+            Departamento / Área Curricular *
+          </label>
+          <select
+            id={`${id}Department`}
+            style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:8px 10px; font-size:12.5px; font-family:var(--mono); font-weight:700; box-sizing:border-box;"
+          >
+            <option value="Ciencias Exactas">Ciencias Exactas & Matemáticas</option>
+            <option value="Ciencias Naturales">Ciencias Naturales & Biología</option>
+            <option value="Ciencias Sociales">Ciencias Sociales, Historia & Geografía</option>
+            <option value="Humanidades">Humanidades, Lengua & Literatura</option>
+            <option value="Lenguas Extranjeras">Lenguas Extranjeras (Inglés, etc.)</option>
+            <option value="Tecnología">Tecnología, Informática & Robótica</option>
+            <option value="Educación Física">Educación Física, Recreación & Deportes</option>
+            <option value="Artes">Educación Artística, Música & Cultura</option>
+            <option value="Filosofía & Ética">Filosofía, Ética & Valores</option>
+            <option value="Otra Especialidad">Otra Especialidad Institucional</option>
+          </select>
+        </div>
+
+        <div style="background:#FFFFFF; border:1.5px solid var(--ink); padding:14px; box-shadow:2px 2px 0 var(--ink);">
+          <label style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:6px; color:var(--ink);">
+            Docentes Habilitados (Especialistas)
+          </label>
+          <div id={`${id}TeachersList`} style="display:flex; flex-direction:column; gap:6px; max-height:130px; overflow-y:auto; border:1px solid var(--line); padding:10px; background:var(--paper);">
+             <div style="font-size:12px; color:var(--ink-soft); font-family:var(--mono);">Cargando docentes...</div>
+          </div>
+          <div style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft); margin-top:6px;">
+            Solo estos docentes aparecerán en el buscador al programar horarios para esta materia.
+          </div>
+        </div>
+
+    <div class="panel-footer" style="padding:14px 20px; background:#FFFFFF; border-top:2px solid var(--ink); display:flex; justify-content:center; gap:12px; align-items:center;">
+      <button type="button" class="btn btn-secondary" onclick={`document.getElementById('${id}').style.display='none';`} style="font-family:var(--mono); font-size:12px; font-weight:800;">
+        CANCELAR
+      </button>
+      <button type="submit" form={`${id}Form`} id={`${id}SubmitBtn`} class="btn btn-primary" style="font-family:var(--mono); font-size:12px; font-weight:800;">
+        ＋ CREAR MATERIA CURRICULAR
+      </button>
+    </div>
+
+      </form>
+
+    </div>
+
+  </div>
+</div>
+
+
+<script>
+  import { courseManagementService } from '../../../services/courseManagementService';
+
+  function getActiveTenantSchoolId(): string {
+    try {
+      const user = JSON.parse(localStorage.getItem('schoolos-user') || '{}');
+      if (user.schoolId) return user.schoolId;
+    } catch (_) {}
+    return (window as any).SchoolOSApp?.currentSchoolId || (window as any)._currentTenantSchoolId || localStorage.getItem('schoolos_tenant_id') || localStorage.getItem('schoolos_tenant_slug') || '';
+  }
+
+  function getModalId(): string {
+    const modal = document.querySelector('[data-subject-modal]') as HTMLElement || document.getElementById('SubjectModal');
+    return modal ? modal.id : 'SubjectModal';
+  }
+
+  let currentSchoolId = '';
+  let currentSubject: any = null;
+
+  (window as any).openSubjectModal = function(subjectOrSchoolId: any, optionalSchoolId?: string, faculty: any[] = []) {
+    const modalId = getModalId();
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+
+    if (typeof subjectOrSchoolId === 'object' && subjectOrSchoolId !== null) {
+      currentSubject = subjectOrSchoolId;
+      currentSchoolId = optionalSchoolId || currentSubject.school_id || getActiveTenantSchoolId();
+    } else {
+      currentSubject = null;
+      currentSchoolId = subjectOrSchoolId || getActiveTenantSchoolId();
+    }
+
+    const schoolInput = document.getElementById(modalId + 'SchoolId') as HTMLInputElement;
+    if (schoolInput) schoolInput.value = currentSchoolId;
+
+    const title = document.getElementById(modalId + 'Title');
+    const submitBtn = document.getElementById(modalId + 'SubmitBtn');
+    if (title) title.textContent = currentSubject ? 'Editar Materia Curricular' : 'Añadir Nueva Materia / Asignatura';
+    if (submitBtn) submitBtn.textContent = currentSubject ? 'Guardar Cambios' : '＋ Crear Materia Curricular';
+
+    const nameInput = document.getElementById(modalId + 'Name') as HTMLInputElement;
+    const codeInput = document.getElementById(modalId + 'Code') as HTMLInputElement;
+    const deptInput = document.getElementById(modalId + 'Department') as HTMLSelectElement;
+    const hoursInput = document.getElementById(modalId + 'WeeklyHours') as HTMLInputElement;
+
+    if (nameInput) nameInput.value = currentSubject ? (currentSubject.name || '') : '';
+    if (codeInput) codeInput.value = currentSubject ? (currentSubject.code || '') : '';
+    if (deptInput) deptInput.value = currentSubject ? (currentSubject.department || currentSubject.grade_level || currentSubject.gradeLevel || 'Ciencias Exactas & Matemáticas') : 'Ciencias Exactas & Matemáticas';
+    if (hoursInput) hoursInput.value = currentSubject ? (currentSubject.hours_per_week || currentSubject.weeklyHoursTarget || 4) : '4';
+
+    const teachersList = document.getElementById(modalId + 'TeachersList');
+    if (teachersList) {
+      const qualifiedIds = currentSubject ? (currentSubject.qualified_teacher_ids || []) : [];
+      if (faculty && faculty.length > 0) {
+        teachersList.innerHTML = faculty.map((f: any) => `
+          <label style="display:flex; align-items:center; gap:8px; font-size:12px; font-family:var(--mono); cursor:pointer;">
+            <input type="checkbox" name="subjectTeacher" value="${f.id}" ${qualifiedIds.includes(f.id) ? 'checked' : ''} style="width:14px; height:14px;" />
+            <span>${f.name} <span style="color:var(--ink-soft); font-size:10px;">(${f.specialty || 'Docente'})</span></span>
+          </label>
+        `).join('');
+      } else {
+        teachersList.innerHTML = '<div style="font-size:12px; color:var(--ink-soft); font-family:var(--mono);">No hay docentes registrados en la institución.</div>';
+      }
+    }
+
+    const feedback = document.getElementById(modalId + 'Feedback');
+    if (feedback) {
+      feedback.style.display = 'none';
+      feedback.textContent = '';
+    }
+
+    modal.style.display = 'flex';
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const modalId = getModalId();
+    const form = document.getElementById(modalId + 'Form');
+    const modal = document.getElementById(modalId);
+    if (!form || !modal) return;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const submitBtn = document.getElementById(modalId + 'SubmitBtn') as HTMLButtonElement;
+      const feedback = document.getElementById(modalId + 'Feedback');
+
+      const name = (document.getElementById(modalId + 'Name') as HTMLInputElement)?.value.trim();
+      const code = (document.getElementById(modalId + 'Code') as HTMLInputElement)?.value.trim();
+      const department = (document.getElementById(modalId + 'Department') as HTMLSelectElement)?.value;
+      const weeklyHoursTarget = (document.getElementById(modalId + 'WeeklyHours') as HTMLInputElement)?.value;
+      const finalCode = (code || name.slice(0, 3)).toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+      const selectedTeachers = Array.from(document.querySelectorAll(`input[name="subjectTeacher"]:checked`)).map((cb: any) => cb.value);
+
+      if (!name) return;
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Guardando...';
+      }
+
+      try {
+        const payload = {
+          name,
+          code: finalCode || 'MAT',
+          grade_level: department || 'Área General',
+          hours_per_week: Number(weeklyHoursTarget) || 4,
+          color: '#1B2A4A',
+          qualified_teacher_ids: selectedTeachers,
+        };
+
+        if (currentSubject && currentSubject.id) {
+          await courseManagementService.updateSubject(currentSubject.id, payload);
+        } else {
+          await courseManagementService.createSubject(currentSchoolId, payload);
+        }
+
+        modal.style.display = 'none';
+        (form as HTMLFormElement).reset();
+        window.dispatchEvent(new CustomEvent('curriculum:updated'));
+        window.location.reload();
+
+      } catch (err: any) {
+        console.error('Error guardando materia:', err);
+        if (feedback) {
+          feedback.style.cssText = 'display:block; background:#FEE2E2; border:1px solid var(--rust); color:var(--rust);';
+          feedback.textContent = err?.message || 'Error al guardar materia';
+        }
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Guardar Cambios';
+        }
+      }
+    });
+  });
+</script>

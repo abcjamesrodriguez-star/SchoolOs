@@ -3,10 +3,16 @@
 // SchoolOS — User Directory (/en/app/super-admin/users)
 // ============================================================
 import AppLayout from '../../../../layouts/AppLayout.astro';
-import { getMockUsers } from '../../../../data/app/mock-data';
+import { userService } from '../../../../services/userService';
 
 const lang = 'en';
-const users = getMockUsers(lang);
+let users: any[] = [];
+try {
+  users = (await userService.getUsers()) || [];
+} catch (e) {
+  console.error('Error fetching users from Supabase:', e);
+  users = [];
+}
 ---
 
 <AppLayout

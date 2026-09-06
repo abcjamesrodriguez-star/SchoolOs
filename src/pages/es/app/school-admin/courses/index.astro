@@ -1,71 +1,433 @@
----
+﻿---
 // ============================================================
-// SchoolOS — Cursos & Asignaturas (Rectoría)
-// Diseño: Navegación por Capas (Cards > Modal 80% > Horario & Highlight)
+// SchoolOS — Asignación de Horarios, Malla Curricular & Aforos (Rectoría)
+// Flujo Ordenado: Docente -> Salón/Materia -> Horario con Prevención de Cruces
+// Popup de Selección Rápida de Docentes y Salones con Buscador en Vivo
+// Cero Emojis, Diseño Editorial Brutalista Institucional
 // ============================================================
 import AppLayout from '../../../../../layouts/AppLayout.astro';
+import GradeCapacityModal from '../../../../../components/app/school-admin/GradeCapacityModal.astro';
+import NewGradeModal from '../../../../../components/app/school-admin/NewGradeModal.astro';
+import SubjectModal from '../../../../../components/app/school-admin/SubjectModal.astro';
+import AssignTeacherSubjectModal from '../../../../../components/app/school-admin/AssignTeacherSubjectModal.astro';
+import ClassScheduleModal from '../../../../../components/app/school-admin/ClassScheduleModal.astro';
+import TimeSlotsModal from '../../../../../components/app/school-admin/TimeSlotsModal.astro';
+import ScheduleSlotAssignmentModal from '../../../../../components/app/school-admin/ScheduleSlotAssignmentModal.astro';
+import TeacherPickerModal from '../../../../../components/app/school-admin/TeacherPickerModal.astro';
+import ClassroomPickerModal from '../../../../../components/app/school-admin/ClassroomPickerModal.astro';
 
 const lang = 'es';
 ---
 
 <AppLayout
-  title="Cursos & Materias"
-  pageTitle="Catálogo de Asignaturas & Horarios"
+  title="Horarios & Carga Docente"
+  pageTitle="Asignación de Horarios & Carga Académica"
   activeSection="courses"
   role="school_admin"
   schoolName="Institución"
   lang={lang}
   activeRoute="/app/school-admin/courses"
-  breadcrumbs={[{ label: 'Institución', href: `/${lang}/app/school-admin` }, { label: 'Cursos & Materias' }]}
+  breadcrumbs={[{ label: 'Institución', href: `/${lang}/app/school-admin` }, { label: 'Horarios & Carga Docente' }]}
 >
-  <!-- STATS GENERALES DEL COLEGIO -->
-  <div class="stat-grid" style="margin-bottom:24px;">
-    <div class="stat-card">
-      <div class="stat-label">Áreas & Asignaturas</div>
-      <div class="stat-num" id="courses-stat-departments">0</div>
-      <div class="stat-sub" id="courses-stat-departments-sub">Sin información cargada</div>
+  <!-- SELECTOR DE VISTAS PRINCIPALES (TABS) -->
+  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:20px;">
+    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+      <button
+        type="button"
+        id="tabBtnSchedule"
+        class="btn btn-primary btn-sm academic-tab-btn active"
+        onclick="window._switchMainTab('schedule')"
+        style="font-family:var(--mono); font-weight:800; font-size:11.5px; padding:8px 14px;"
+      >
+        1. ASIGNACIÓN DE HORARIOS & CARGA DOCENTE
+      </button>
+      <button
+        type="button"
+        id="tabBtnSubjects"
+        class="btn btn-secondary btn-sm academic-tab-btn"
+        onclick="window._switchMainTab('subjects')"
+        style="font-family:var(--mono); font-weight:800; font-size:11.5px; padding:8px 14px;"
+      >
+        2. CATÁLOGO DE MATERIAS & AFORO DE SALONES
+      </button>
+      <button
+        type="button"
+        id="tabBtnTimeSlots"
+        class="btn btn-secondary btn-sm academic-tab-btn"
+        onclick="window._switchMainTab('timeslots')"
+        style="font-family:var(--mono); font-weight:800; font-size:11.5px; padding:8px 14px;"
+      >
+        3. FRANJAS HORARIAS BASE
+      </button>
     </div>
-    <div class="stat-card">
-      <div class="stat-label">Planta Docente</div>
-      <div class="stat-num" id="courses-stat-teachers">0</div>
-      <div class="stat-sub">Docentes vinculados al tenant</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Grupos y Secciones</div>
-      <div class="stat-num" id="courses-stat-groups">0</div>
-      <div class="stat-sub" id="courses-stat-groups-sub">Sin cursos creados todavía</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Alumnos Matriculados</div>
-      <div class="stat-num accent" id="courses-stat-students" style="color:var(--rust);">0</div>
-      <div class="stat-sub">Usuarios estudiante en este tenant</div>
+
+    <div style="display:flex; gap:8px;">
+      <button
+        type="button"
+        class="btn btn-secondary btn-sm"
+        onclick="window.openTimeSlotsModal && window.openTimeSlotsModal()"
+        style="font-family:var(--mono); font-size:11px; font-weight:800;"
+      >
+        Configurar Franjas
+      </button>
+        <button
+          type="button"
+          class="btn btn-primary btn-sm"
+          onclick="window.openSubjectModal && window.openSubjectModal(null, currentLoadedSchoolId, cachedFaculty)"
+          style="font-family:var(--mono); font-size:11px; font-weight:800;"
+        >
+          ＋ Nueva Materia
+        </button>
     </div>
   </div>
 
-  <!-- CATÁLOGO DE MATERIAS (CAPA 0: CARDS + MODAL 80% INTERACTIVO) -->
-  <div class="panel">
-    <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
-      <h2>MATERIAS Y ÁREAS DE CONOCIMIENTO (SELECCIONA PARA VER PROFESORES Y HORARIOS)</h2>
-      <a href={`/${lang}/app/school-admin/courses/new`} class="btn btn-primary btn-sm">＋ Nuevo Curso / Grupo</a>
-    </div>
-    <div class="panel-body padded">
-      <div id="liveCoursesRoot">
-        <div style="border:2px dashed var(--ink); background:var(--paper); padding:38px; text-align:center;">
-          <div style="font-family:var(--serif); font-size:22px; font-weight:700; color:var(--ink); margin-bottom:6px;">Sin información académica cargada</div>
-          <div style="font-size:13px; color:var(--ink-soft); max-width:620px; margin:0 auto 18px;">
-            Cuando existan cursos reales en Supabase para este tenant, aparecerán aquí.
+  <!-- ============================================================ -->
+  <!-- TAB 1: ASIGNACIÓN DE HORARIOS DOCENTE A DOCENTE (FLUJO ORDENADO) -->
+  <!-- ============================================================ -->
+  <div id="tabSectionSchedule" class="academic-tab-content" style="display:block;">
+    
+    <!-- CONMUTADOR DE VISTA: POR DOCENTE VS POR SALÓN -->
+    <div class="panel" style="margin-bottom:18px; background:var(--cream); padding:14px 18px; box-shadow:2px 2px 0 var(--ink);">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+        
+        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+          <div style="font-family:var(--mono); font-size:11px; font-weight:800; color:var(--rust); text-transform:uppercase;">
+            Modo de Asignación:
           </div>
-          <a href="/es/app/school-admin/courses/new" class="btn btn-primary btn-sm">＋ Nuevo Curso / Grupo</a>
+
+          <div style="display:flex; gap:4px;">
+            <button
+              type="button"
+              id="modeTeacherBtn"
+              class="btn btn-primary btn-sm"
+              onclick="window._setScheduleMode('teacher')"
+              style="font-size:11px; font-weight:800; padding:6px 12px;"
+            >
+              🧑‍🏫 Asignación por Docente (Individual)
+            </button>
+            <button
+              type="button"
+              id="modeClassroomBtn"
+              class="btn btn-secondary btn-sm"
+              onclick="window._setScheduleMode('classroom')"
+              style="font-size:11px; font-weight:800; padding:6px 12px;"
+            >
+              🏫 Vista de Revisión por Salón / Grupo
+            </button>
+          </div>
+        </div>
+
+        <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">
+          Validación en tiempo real: <strong>Cero Cruces de Profesores y Salones</strong>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SECCIÓN A: ASIGNACIÓN POR DOCENTE (CON POPUP DE BÚSQUEDA) -->
+    <div id="scheduleSectionTeacher" style="display:block;">
+      
+      <!-- BARRA DE DOCENTE ACTIVO + BOTÓN POPUP DE BÚSQUEDA -->
+      <div class="panel" style="margin-bottom:18px; background:#FFFFFF; padding:14px 18px; border:2px solid var(--ink); box-shadow:4px 4px 0 var(--ink);">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          
+          <!-- Info del Docente Activo -->
+          <div id="activeTeacherCardSummary" style="display:flex; align-items:center; gap:12px;">
+            <!-- Cargado dinámicamente -->
+          </div>
+
+          <!-- Botón Popup de Búsqueda Rápida de Docente -->
+          <div>
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="window._openTeacherPicker()"
+              style="font-family:var(--mono); font-size:12px; font-weight:800; padding:9px 16px; display:flex; align-items:center; gap:8px;"
+            >
+              <span>🔍 Buscar / Cambiar Docente</span>
+              <span id="facultyCountBadge" style="background:#FFFFFF; color:var(--ink); font-size:10.5px; padding:1px 6px; border:1px solid var(--ink);">
+                0 docentes
+              </span>
+              <span>▾</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- MATRIZ HORARIA SEMANAL DEL DOCENTE SELECCIONADO -->
+      <div class="panel" style="border:2px solid var(--ink); box-shadow:6px 6px 0 var(--ink); overflow:hidden; margin-bottom:30px;">
+        
+        <!-- CABECERA DE LA MATRIZ -->
+        <div id="selectedTeacherHeader" class="panel-header" style="background:var(--cream); padding:12px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; border-bottom:2px solid var(--ink);">
+          <!-- Cargado dinámicamente -->
+        </div>
+
+        <!-- CUADRÍCULA SEMANAL DEL DOCENTE (LUNES A VIERNES) -->
+        <div style="overflow-x:auto; background:var(--paper);">
+          <table class="data-table" style="margin:0; width:100%; border-collapse:collapse; min-width:850px;">
+            <thead>
+              <tr style="background:var(--cream); border-bottom:2px solid var(--ink);">
+                <th style="width:13%; border-right:2px solid var(--ink); text-align:center; font-family:var(--mono); font-size:11px; font-weight:900; padding:12px 8px;">
+                  BLOQUE / HORA
+                </th>
+                <th style="width:17.4%; border-right:1.5px solid var(--ink); text-align:center; font-family:var(--mono); font-size:12px; font-weight:900; padding:12px 8px;">
+                  LUNES
+                </th>
+                <th style="width:17.4%; border-right:1.5px solid var(--ink); text-align:center; font-family:var(--mono); font-size:12px; font-weight:900; padding:12px 8px;">
+                  MARTES
+                </th>
+                <th style="width:17.4%; border-right:1.5px solid var(--ink); text-align:center; font-family:var(--mono); font-size:12px; font-weight:900; padding:12px 8px;">
+                  MIÉRCOLES
+                </th>
+                <th style="width:17.4%; border-right:1.5px solid var(--ink); text-align:center; font-family:var(--mono); font-size:12px; font-weight:900; padding:12px 8px;">
+                  JUEVES
+                </th>
+                <th style="width:17.4%; text-align:center; font-family:var(--mono); font-size:12px; font-weight:900; padding:12px 8px;">
+                  VIERNES
+                </th>
+              </tr>
+            </thead>
+            <tbody id="teacherScheduleTbody">
+              <!-- Renderizado dinámicamente -->
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- SECCIÓN B: REVISIÓN POR SALÓN / CURSO (CON POPUP DE BÚSQUEDA) -->
+    <div id="scheduleSectionClassroom" style="display:none;">
+      
+      <!-- BARRA DE SALÓN ACTIVO + BOTÓN POPUP DE BÚSQUEDA -->
+      <div class="panel" style="margin-bottom:18px; background:#FFFFFF; padding:14px 18px; border:2px solid var(--ink); box-shadow:4px 4px 0 var(--ink);">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          
+          <div id="activeClassroomCardSummary" style="display:flex; align-items:center; gap:12px;">
+            <!-- Cargado dinámicamente -->
+          </div>
+
+          <div>
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="window._openClassroomPicker()"
+              style="font-family:var(--mono); font-size:12px; font-weight:800; padding:9px 16px; display:flex; align-items:center; gap:8px;"
+            >
+              <span>🏫 Cambiar Salón / Curso</span>
+              <span id="classroomCountBadge" style="background:#FFFFFF; color:var(--ink); font-size:10.5px; padding:1px 6px; border:1px solid var(--ink);">
+                0 salones
+              </span>
+              <span>▾</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- MATRIZ HORARIA CONSOLIDADA DEL SALÓN -->
+      <div class="panel" style="border:2px solid var(--ink); box-shadow:6px 6px 0 var(--ink); overflow:hidden; margin-bottom:30px;">
+        
+        <div id="selectedClassroomHeader" class="panel-header" style="background:var(--cream); padding:12px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; border-bottom:2px solid var(--ink);">
+          <!-- Cargado dinámicamente -->
+        </div>
+
+        <div style="overflow-x:auto; background:var(--paper);">
+          <table class="data-table" style="margin:0; width:100%; border-collapse:collapse; min-width:850px;">
+            <thead>
+              <tr style="background:var(--cream); border-bottom:2px solid var(--ink);">
+                <th style="width:13%; border-right:2px solid var(--ink); text-align:center; font-family:var(--mono); font-size:11px; font-weight:900; padding:12px 8px;">
+                  BLOQUE / HORA
+                </th>
+                <th style="width:17.4%; border-right:1.5px solid var(--ink); text-align:center; font-family:var(--mono); font-size:12px; font-weight:900; padding:12px 8px;">
+                  LUNES
+                </th>
+                <th style="width:17.4%; border-right:1.5px solid var(--ink); text-align:center; font-family:var(--mono); font-size:12px; font-weight:900; padding:12px 8px;">
+                  MARTES
+                </th>
+                <th style="width:17.4%; border-right:1.5px solid var(--ink); text-align:center; font-family:var(--mono); font-size:12px; font-weight:900; padding:12px 8px;">
+                  MIÉRCOLES
+                </th>
+                <th style="width:17.4%; border-right:1.5px solid var(--ink); text-align:center; font-family:var(--mono); font-size:12px; font-weight:900; padding:12px 8px;">
+                  JUEVES
+                </th>
+                <th style="width:17.4%; text-align:center; font-family:var(--mono); font-size:12px; font-weight:900; padding:12px 8px;">
+                  VIERNES
+                </th>
+              </tr>
+            </thead>
+            <tbody id="classroomScheduleTbody">
+              <!-- Renderizado dinámicamente -->
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- TAB 2: CATÁLOGO DE MATERIAS & AFORO DE SALONES -->
+  <!-- ============================================================ -->
+  <div id="tabSectionSubjects" class="academic-tab-content" style="display:none;">
+    
+    <!-- CATÁLOGO DE MATERIAS -->
+    <div class="panel" style="margin-bottom:24px;">
+      <div class="panel-header" style="background:var(--cream); padding:12px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div>
+          <span class="plan-tag" style="background:var(--ink); color:#FFF; font-size:10px; font-weight:800;">CATÁLOGO INSTITUCIONAL</span>
+          <h2 style="font-family:var(--serif); font-size:16px; margin:2px 0 0; font-weight:700; color:var(--ink);">
+            Materias & Asignaturas Curriculares
+          </h2>
+        </div>
+        <button
+          type="button"
+          class="btn btn-primary btn-sm"
+          onclick="window.openSubjectModal && window.openSubjectModal(null, currentLoadedSchoolId, cachedFaculty)"
+          style="font-size:11px; font-weight:800;"
+        >
+          ＋ Agregar Materia
+        </button>
+      </div>
+
+      <div class="panel-body padded" style="background:#FFFDF9;">
+        <div id="subjectsCatalogGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:14px;">
+          <!-- Cargado dinámicamente -->
         </div>
       </div>
     </div>
+
+    <!-- MATRIZ DE AFOROS Y PRECONTEO DE CUPOS -->
+    <div class="panel" style="margin-bottom:24px;">
+      <div class="panel-header" style="background:var(--cream); padding:12px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div>
+          <span class="plan-tag" style="background:var(--ink); color:#FFF; font-size:10px; font-weight:800;">AFORO DE SALONES</span>
+          <h2 style="font-family:var(--serif); font-size:16px; margin:2px 0 0; font-weight:700; color:var(--ink);">
+            Preconteo de Cupos por Grado / Nivel
+          </h2>
+        </div>
+        <button
+          type="button"
+          class="btn btn-primary btn-sm"
+          onclick="window.openNewGradeModal && window.openNewGradeModal()"
+          style="font-size:11px; font-weight:800;"
+        >
+          ＋ Agregar Grado
+        </button>
+      </div>
+
+      <div class="panel-body padded" style="background:#FFFDF9;">
+        <div id="gradeCapacityGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); gap:14px;">
+          <!-- Cargado dinámicamente -->
+        </div>
+      </div>
+    </div>
+
   </div>
+
+  <!-- ============================================================ -->
+  <!-- TAB 3: FRANJAS HORARIAS BASE -->
+  <!-- ============================================================ -->
+  <div id="tabSectionTimeSlots" class="academic-tab-content" style="display:none;">
+    
+    <div class="panel" style="margin-bottom:24px;">
+      <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center; background:var(--cream); flex-wrap:wrap; gap:10px;">
+        <div>
+          <span class="plan-tag" style="background:var(--ink); color:#FFF; font-size:10px; font-weight:800;">CRONOGRAMA BASE</span>
+          <h2 style="font-family:var(--serif); font-size:16px; margin:2px 0 0; font-weight:700; color:var(--ink);">
+            Franjas Horarias & Bloques de Tiempo Oficiales
+          </h2>
+        </div>
+        <button
+          type="button"
+          class="btn btn-primary btn-sm"
+          onclick="window.openTimeSlotsModal && window.openTimeSlotsModal()"
+          style="font-size:11px; font-weight:800;"
+        >
+          ＋ Modificar Franjas Horarias
+        </button>
+      </div>
+
+      <div class="panel-body padded" style="background:#FFFDF9;">
+        <div style="font-size:13px; color:var(--ink-soft); line-height:1.45; margin-bottom:18px;">
+          Las franjas horarias configuran la cuadrícula sobre la cual se estructuran las clases semanales de los docentes y cursos del plantel.
+        </div>
+
+        <div style="border:2px solid var(--ink); background:#FFFFFF; margin-bottom:20px; box-shadow:4px 4px 0 var(--ink); overflow-x:auto;">
+          <table class="data-table" style="margin:0; width:100%;">
+            <thead>
+              <tr style="background:var(--cream); border-bottom:2px solid var(--ink);">
+                <th style="font-family:var(--mono); font-size:11px; padding:10px;">ORDEN / BLOQUE</th>
+                <th style="font-family:var(--mono); font-size:11px; padding:10px;">HORARIO</th>
+                <th style="font-family:var(--mono); font-size:11px; padding:10px;">TIPO DE FRANJA</th>
+                <th style="text-align:right; font-family:var(--mono); font-size:11px; padding:10px;">ACCIONES</th>
+              </tr>
+            </thead>
+            <tbody id="timeSlotsTableBody">
+              <!-- Cargado dinámicamente -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODALES DEL SISTEMA ACADÉMICO -->
+  <ScheduleSlotAssignmentModal id="scheduleSlotAssignmentModal" />
+  <TeacherPickerModal id="teacherPickerModal" />
+  <ClassroomPickerModal id="classroomPickerModal" />
+  <SubjectModal id="subjectModal" />
+  <AssignTeacherSubjectModal id="assignTeacherSubjectModal" />
+  <ClassScheduleModal id="classScheduleModal" />
+  <TimeSlotsModal id="timeSlotsModal" />
+  <GradeCapacityModal id="gradeCapacityModal" />
+  <NewGradeModal id="newGradeModal" />
+
 </AppLayout>
+
+<style is:global>
+  .calendar-occupied-card {
+    background: #FFFFFF;
+    border: 1.5px solid var(--ink);
+    padding: 8px 10px;
+    box-shadow: 2px 2px 0 var(--ink);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .calendar-free-cell {
+    border: 1px dashed #D0CBC0;
+    height: 76px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    background: #FAF8F5;
+  }
+  .calendar-free-cell:hover {
+    background: #F0EDE6;
+    border-color: var(--ink);
+  }
+  .calendar-free-cell:hover .btn-assign-slot {
+    opacity: 1 !important;
+  }
+</style>
 
 <script>
   import { schoolAdminTenantService } from '../../../../../services/schoolAdminTenantService';
+  import { courseManagementService } from '../../../../../services/courseManagementService';
+  import { scheduleService } from '../../../../../services/scheduleService';
+  import { teacherService } from '../../../../../services/teacherService';
 
-  function escapeHtml(value) {
+// APIs modularizadas vía courseManagementService
+
+  function escapeHtml(value: any) {
     return String(value || '').replace(/[&<>"']/g, (char) => ({
       '&': '&amp;',
       '<': '&lt;',
@@ -75,101 +437,764 @@ const lang = 'es';
     }[char]));
   }
 
-  function renderLiveCourses(courses, stats) {
-    const root = document.getElementById('liveCoursesRoot');
-    if (!root) return;
+  let currentLoadedSchoolId = '';
+  let cachedCurriculum: any[] = [];
+  let cachedFaculty: any[] = [];
+  let cachedCapacities: any[] = [];
+  let cachedTimeSlots: any[] = [];
 
-    const teacherEl = document.getElementById('courses-stat-teachers');
-    const studentEl = document.getElementById('courses-stat-students');
-    const groupsEl = document.getElementById('courses-stat-groups');
-    const groupsSub = document.getElementById('courses-stat-groups-sub');
-    const departmentsEl = document.getElementById('courses-stat-departments');
-    const departmentsSub = document.getElementById('courses-stat-departments-sub');
+  let selectedTeacherId = '';
+  let selectedClassroomId = '';
+  let activeScheduleMode = 'teacher'; // 'teacher' | 'classroom'
 
-    const departments = new Set(courses.map((course) => course.departmentName || 'Sin área'));
-    if (teacherEl) teacherEl.textContent = String(stats?.totalTeachers || 0);
-    if (studentEl) studentEl.textContent = String(stats?.totalStudents || 0);
-    if (groupsEl) groupsEl.textContent = String(courses.length);
-    if (groupsSub) groupsSub.textContent = courses.length ? 'Cursos vivos desde Supabase' : 'Sin cursos creados todavía';
-    if (departmentsEl) departmentsEl.textContent = String(courses.length ? departments.size : 0);
-    if (departmentsSub) departmentsSub.textContent = courses.length ? 'Áreas detectadas por cursos' : 'Pendiente crear áreas académicas';
+  // ── MANEJO DE PESTAÑAS PRINCIPALES ────────────────────────────
+  (window as any)._switchMainTab = function(tabName: string) {
+    const tabs: Record<string, { btn: string; section: string }> = {
+      'schedule': { btn: 'tabBtnSchedule', section: 'tabSectionSchedule' },
+      'subjects': { btn: 'tabBtnSubjects', section: 'tabSectionSubjects' },
+      'timeslots': { btn: 'tabBtnTimeSlots', section: 'tabSectionTimeSlots' },
+    };
 
-    if (!courses.length) {
-      root.innerHTML = `
-        <div style="border:2px dashed var(--ink); background:var(--paper); padding:38px; text-align:center;">
-          <div style="font-family:var(--serif); font-size:22px; font-weight:700; color:var(--ink); margin-bottom:6px;">Este tenant aún no tiene cursos vivos</div>
-          <div style="font-size:13px; color:var(--ink-soft); max-width:620px; margin:0 auto 18px;">
-            El acceso del rector ya funciona. El siguiente paso de datos es crear áreas, cursos, asignaciones docentes y matrículas en Supabase para este <strong>school_id</strong>.
-          </div>
-          <a href="/es/app/school-admin/courses/new" class="btn btn-primary btn-sm">＋ Nuevo Curso / Grupo</a>
-        </div>
-      `;
+    Object.keys(tabs).forEach((key) => {
+      const item = tabs[key];
+      const btnEl = document.getElementById(item.btn);
+      const secEl = document.getElementById(item.section);
+
+      if (key === tabName) {
+        if (btnEl) btnEl.className = 'btn btn-primary btn-sm academic-tab-btn active';
+        if (secEl) secEl.style.display = 'block';
+      } else {
+        if (btnEl) btnEl.className = 'btn btn-secondary btn-sm academic-tab-btn';
+        if (secEl) secEl.style.display = 'none';
+      }
+    });
+  };
+
+  // ── CONMUTADOR DE MODO: POR DOCENTE VS POR SALÓN ──────────────
+  (window as any)._setScheduleMode = function(mode: string) {
+    activeScheduleMode = mode;
+    const btnT = document.getElementById('modeTeacherBtn');
+    const btnC = document.getElementById('modeClassroomBtn');
+    const secT = document.getElementById('scheduleSectionTeacher');
+    const secC = document.getElementById('scheduleSectionClassroom');
+
+    if (mode === 'teacher') {
+      if (btnT) btnT.className = 'btn btn-primary btn-sm';
+      if (btnC) btnC.className = 'btn btn-secondary btn-sm';
+      if (secT) secT.style.display = 'block';
+      if (secC) secC.style.display = 'none';
+      renderTeacherSchedule();
+    } else {
+      if (btnT) btnT.className = 'btn btn-secondary btn-sm';
+      if (btnC) btnC.className = 'btn btn-primary btn-sm';
+      if (secT) secT.style.display = 'none';
+      if (secC) secC.style.display = 'block';
+      renderClassroomSchedule();
+    }
+  };
+
+  // ── 1. ASIGNACIÓN POR DOCENTE (POPUP & MATRIZ) ─────────────────
+  (window as any)._openTeacherPicker = function() {
+    const hoursMap: Record<string, number> = {};
+    cachedCurriculum.forEach((s) => {
+      (s.teachers || []).forEach((t: any) => {
+        hoursMap[t.teacherId] = (hoursMap[t.teacherId] || 0) + (t.assignments ? t.assignments.length : 0);
+      });
+    });
+
+    if ((window as any).openTeacherPickerModal) {
+      (window as any).openTeacherPickerModal(cachedFaculty, hoursMap, selectedTeacherId, (chosenId: string) => {
+        selectedTeacherId = chosenId;
+        renderTeacherSchedule();
+      });
+    }
+  };
+
+  (window as any)._selectTeacher = function(teacherId: string) {
+    selectedTeacherId = teacherId;
+    renderTeacherSchedule();
+  };
+
+  function renderTeacherSchedule() {
+    const summaryCard = document.getElementById('activeTeacherCardSummary');
+    const header = document.getElementById('selectedTeacherHeader');
+    const tbody = document.getElementById('teacherScheduleTbody');
+    const badge = document.getElementById('facultyCountBadge');
+
+    if (badge) {
+      badge.textContent = `${cachedFaculty.length} docentes`;
+    }
+
+    if (!selectedTeacherId && cachedFaculty.length > 0) {
+      selectedTeacherId = cachedFaculty[0].id;
+    }
+
+    const teacher = cachedFaculty.find((t) => t.id === selectedTeacherId);
+    if (!teacher || !summaryCard || !header || !tbody) {
+      if (summaryCard) summaryCard.innerHTML = '<div style="font-size:13px; color:var(--ink-soft);">No hay docentes registrados en la institución.</div>';
       return;
     }
 
-    root.innerHTML = `
-      <div style="margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
-        <div style="position:relative; flex:1; min-width:280px;">
-          <input id="liveCourseSearch" type="text" placeholder="Buscar curso, código, docente o grupo..." style="width:100%; padding:10px 14px; border:1px solid var(--ink); background:var(--cream); font-family:var(--sans); font-size:13px; border-radius:2px;" />
-        </div>
-        <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">${courses.length} CURSOS VIVOS · ${departments.size} ÁREAS</div>
-      </div>
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Curso / Grupo</th>
-            <th>Área</th>
-            <th>Docentes</th>
-            <th>Estudiantes</th>
-            <th>Periodo</th>
-            <th>Estado</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${courses.map((course) => {
-            const search = `${course.code} ${course.name} ${course.gradeLevel} ${course.groupLetter} ${course.departmentName || ''} ${course.teacherNames.join(' ')}`.toLowerCase();
-            return `
-              <tr class="live-course-row" data-search-text="${escapeHtml(search)}">
-                <td class="cell-name">
-                  <div style="font-weight:700; color:var(--ink);">${escapeHtml(course.name)}</div>
-                  <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">${escapeHtml(course.code)} · ${escapeHtml(course.gradeLevel)} ${escapeHtml(course.groupLetter)}</div>
-                </td>
-                <td><span class="plan-tag">${escapeHtml(course.departmentName || 'Sin área')}</span></td>
-                <td class="cell-muted">${escapeHtml(course.teacherNames.join(', ') || 'Sin docente asignado')}</td>
-                <td style="font-family:var(--mono); font-weight:700;">${course.studentCount} / ${course.maxCapacity}</td>
-                <td class="cell-muted">${escapeHtml(course.academicTerm)}</td>
-                <td><span class="badge badge-${course.status === 'active' ? 'active' : 'suspended'}">${escapeHtml(course.status)}</span></td>
-              </tr>
-            `;
-          }).join('')}
-        </tbody>
-      </table>
-    `;
-
-    const search = document.getElementById('liveCourseSearch');
-    search?.addEventListener('input', () => {
-      const query = search.value.trim().toLowerCase();
-      document.querySelectorAll('.live-course-row').forEach((row) => {
-        const text = row.getAttribute('data-search-text') || '';
-        row.style.display = !query || text.includes(query) ? '' : 'none';
+    // Obtener asignaciones de este docente en todas las materias
+    const teacherAssignments: any[] = [];
+    cachedCurriculum.forEach((subj) => {
+      (subj.teachers || []).forEach((tch: any) => {
+        if (tch.teacherId === teacher.id) {
+          (tch.assignments || []).forEach((asg: any) => {
+            teacherAssignments.push({
+              ...asg,
+              subjectId: subj.id,
+              subjectName: subj.name,
+              subjectCode: subj.code,
+            });
+          });
+        }
       });
     });
+
+    const totalHours = teacherAssignments.length;
+
+    // Resumen en la barra superior
+    summaryCard.innerHTML = `
+      <div style="width:44px; height:44px; border:2px solid var(--ink); background:#FFFFFF; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+        <img src="${escapeHtml(teacher.avatar_url || '/avatars/women/fila-2-columna-1.png')}" alt="" style="width:100%; height:100%; object-fit:contain;" />
+      </div>
+      <div>
+        <div style="font-family:var(--serif); font-size:17px; font-weight:800; color:var(--ink);">
+          ${escapeHtml(teacher.name)}
+        </div>
+        <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:1px;">
+          Código: <strong>${escapeHtml(teacher.document_id || 'DOC')}</strong> · Especialidad: <strong>${escapeHtml(teacher.specialty || 'Docente')}</strong>
+        </div>
+      </div>
+    `;
+
+    // Cabecera de la tabla
+    header.innerHTML = `
+      <div>
+        <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; font-size:10px; font-weight:800;">HORARIO SEMANAL</span>
+        <h3 style="font-family:var(--serif); font-size:16.5px; font-weight:800; color:var(--ink); margin:2px 0 0;">
+          Semana Laboral de ${escapeHtml(teacher.name)}
+        </h3>
+      </div>
+      <div>
+        <span class="plan-tag" style="background:#FFFFFF; border-color:var(--ink); font-size:11px; font-weight:800;">
+          CARGA ACTUAL: <strong>${totalHours} HORAS / SEMANA</strong>
+        </span>
+      </div>
+    `;
+
+    if (!cachedTimeSlots.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px; font-family:var(--mono); font-size:12px; color:var(--ink-soft);">No hay franjas horarias configuradas.</td></tr>';
+      return;
+    }
+
+    const days = ['LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES'];
+
+    tbody.innerHTML = cachedTimeSlots.map((slot) => {
+      const isBreak = slot.isBreak === true;
+
+      if (isBreak) {
+        return `
+          <tr style="background:#FAF5ED; border-top:1.5px solid var(--ink); border-bottom:1.5px solid var(--ink);">
+            <td style="text-align:center; padding:10px 8px; border-right:2px solid var(--ink); font-family:var(--mono); font-size:11px; font-weight:800; color:var(--rust);">
+              ${slot.startTime} - ${slot.endTime}
+            </td>
+            <td colspan="5" style="text-align:center; padding:10px; font-family:var(--mono); font-size:11px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--rust);">
+              — ${escapeHtml(slot.name)} (${slot.startTime} - ${slot.endTime}) —
+            </td>
+          </tr>
+        `;
+      }
+
+      const dayCells = days.map((dayName) => {
+        const found = teacherAssignments.find((a) => a.day === dayName && a.slotId === slot.id);
+
+        if (found) {
+          return `
+            <td style="border-right:1.5px solid var(--ink); border-bottom:1px solid var(--ink); padding:6px; vertical-align:top; background:#FFFFFF;">
+              <div class="calendar-occupied-card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span style="font-family:var(--mono); font-size:9.5px; font-weight:900; background:var(--ink); color:#FFFFFF; padding:1px 5px;">
+                    ${escapeHtml(found.subjectCode)}
+                  </span>
+                  <span style="font-family:var(--mono); font-size:11.5px; font-weight:900; color:var(--rust);">
+                    ${escapeHtml(found.classroom)}
+                  </span>
+                </div>
+                <div style="font-size:12px; font-weight:800; color:var(--ink); line-height:1.2;">
+                  ${escapeHtml(found.subjectName)}
+                </div>
+                <div style="font-size:10.5px; color:var(--ink-soft); display:flex; justify-content:space-between; align-items:center; border-top:1px dashed var(--line); padding-top:3px; margin-top:2px;">
+                  <span>${escapeHtml(found.roomLocation || `Salón ${found.classroom}`)}</span>
+                  <button
+                    type="button"
+                    onclick="window._deleteTeacherClass('${found.subjectId}', '${teacher.id}', '${found.id}')"
+                    style="background:none; border:none; color:var(--rust); font-weight:800; cursor:pointer; font-size:10px;"
+                    title="Quitar clase"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            </td>
+          `;
+        }
+
+        return `
+          <td style="border-right:1.5px solid var(--ink); border-bottom:1px solid var(--ink); padding:6px; vertical-align:top; background:#FAF8F5;">
+            <div class="calendar-free-cell" onclick="window._openAssignSlotModal('${teacher.id}', '${dayName}', '${slot.id}')">
+              <span class="btn-assign-slot" style="opacity:0; font-family:var(--mono); font-size:10.5px; font-weight:800; color:var(--ink); background:#FFFFFF; border:1px solid var(--ink); padding:3px 7px; box-shadow:1px 1px 0 var(--ink);">
+                ＋ Asignar
+              </span>
+            </div>
+          </td>
+        `;
+      }).join('');
+
+      return `
+        <tr style="border-bottom:1.5px solid var(--ink);">
+          <td style="text-align:center; padding:10px 8px; border-right:2px solid var(--ink); background:var(--cream); vertical-align:middle;">
+            <div style="font-family:var(--mono); font-size:11px; font-weight:800; color:var(--ink);">
+              ${escapeHtml(slot.name)}
+            </div>
+            <div style="font-family:var(--mono); font-size:10.5px; font-weight:700; color:var(--ink-soft); margin-top:2px;">
+              ${slot.startTime} - ${slot.endTime}
+            </div>
+          </td>
+          ${dayCells}
+        </tr>
+      `;
+    }).join('');
   }
 
-  async function hydrateCourses() {
+  (window as any)._openAssignSlotModal = function(teacherId: string, day: string, slotId: string) {
+    const teacher = cachedFaculty.find((t) => t.id === teacherId);
+    const slot = cachedTimeSlots.find((s) => s.id === slotId);
+
+    if (teacher && slot && (window as any).openScheduleSlotAssignmentModal) {
+      (window as any).openScheduleSlotAssignmentModal({
+        teacher,
+        day,
+        slot,
+        curriculum: cachedCurriculum,
+        gradeCapacities: cachedCapacities,
+        timeSlots: cachedTimeSlots,
+        schoolId: currentLoadedSchoolId,
+      });
+    }
+  };
+
+  (window as any)._deleteTeacherClass = async function(subjectId: string, teacherId: string, assignmentId: string) {
+    if (!confirm('¿Deseas desprogramar esta clase del horario del docente?')) return;
     try {
-      const context = await schoolAdminTenantService.getTenantContext();
-      if (!context) return;
-      const [courses, stats] = await Promise.all([
-        schoolAdminTenantService.getTenantCourses(),
-        schoolAdminTenantService.getTenantStats(),
-      ]);
-      renderLiveCourses(courses, stats);
-    } catch (error) {
-      console.warn('No se pudo hidratar cursos del tenant:', error);
+      await scheduleService.deleteClassSlot(assignmentId);
+      await loadCurriculum();
+    } catch (err) {
+      console.error('Error eliminando clase:', err);
+    }
+  };
+
+  // ── 2. REVISIÓN POR SALÓN / CURSO (POPUP & MATRIZ) ────────────
+  function getAllClassroomsList(): string[] {
+    const allRooms: string[] = [];
+    cachedCapacities.forEach((g) => {
+      if (g.isOffered !== false && g.sectionsCount > 0) {
+        for (let i = 1; i <= g.sectionsCount; i++) {
+          allRooms.push(`${g.gradeLevel}-${i}`);
+        }
+      }
+    });
+    return allRooms;
+  }
+
+  (window as any)._openClassroomPicker = function() {
+    const rooms = getAllClassroomsList();
+    if ((window as any).openClassroomPickerModal) {
+      (window as any).openClassroomPickerModal(rooms, selectedClassroomId, (chosenRoom: string) => {
+        selectedClassroomId = chosenRoom;
+        renderClassroomSchedule();
+      });
+    }
+  };
+
+  (window as any)._selectClassroom = function(classroom: string) {
+    selectedClassroomId = classroom;
+    renderClassroomSchedule();
+  };
+
+  function renderClassroomSchedule() {
+    const summaryCard = document.getElementById('activeClassroomCardSummary');
+    const header = document.getElementById('selectedClassroomHeader');
+    const tbody = document.getElementById('classroomScheduleTbody');
+    const badge = document.getElementById('classroomCountBadge');
+
+    const rooms = getAllClassroomsList();
+    if (badge) {
+      badge.textContent = `${rooms.length} salones`;
+    }
+
+    if (!selectedClassroomId && rooms.length > 0) {
+      selectedClassroomId = rooms[0];
+    }
+
+    if (!selectedClassroomId || !summaryCard || !header || !tbody) {
+      if (summaryCard) summaryCard.innerHTML = '<div style="font-size:13px; color:var(--ink-soft);">No hay salones habilitados en la institución.</div>';
+      return;
+    }
+
+    // Obtener todas las clases asignadas a este salón
+    const classroomAssignments: any[] = [];
+    cachedCurriculum.forEach((subj) => {
+      (subj.teachers || []).forEach((tch: any) => {
+        (tch.assignments || []).forEach((asg: any) => {
+          if (asg.classroom === selectedClassroomId) {
+            classroomAssignments.push({
+              ...asg,
+              subjectId: subj.id,
+              subjectName: subj.name,
+              subjectCode: subj.code,
+              teacherId: tch.teacherId,
+              teacherName: tch.teacherName,
+            });
+          }
+        });
+      });
+    });
+
+    const totalHours = classroomAssignments.length;
+
+    summaryCard.innerHTML = `
+      <div style="font-family:var(--mono); font-size:14px; font-weight:900; background:var(--ink); color:#FFFFFF; padding:6px 12px; border:1.5px solid var(--ink);">
+        SALÓN ${escapeHtml(selectedClassroomId)}
+      </div>
+      <div>
+        <div style="font-size:14px; font-weight:800; color:var(--ink);">
+          Grupo Activo — ${escapeHtml(selectedClassroomId)}
+        </div>
+        <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">
+          Total: <strong>${totalHours} horas lectivas asignadas</strong>
+        </div>
+      </div>
+    `;
+
+    header.innerHTML = `
+      <div>
+        <span class="plan-tag" style="background:var(--rust); color:#FFFFFF; font-size:10px; font-weight:800;">HORARIO DEL CURSO</span>
+        <h3 style="font-family:var(--serif); font-size:16.5px; font-weight:800; color:var(--ink); margin:2px 0 0;">
+          Horario Semanal Consolidado — Salón ${escapeHtml(selectedClassroomId)}
+        </h3>
+      </div>
+      <div>
+        <span class="plan-tag" style="background:#FFFFFF; border-color:var(--ink); font-size:11px; font-weight:800;">
+          ${totalHours} HORAS / SEMANA
+        </span>
+      </div>
+    `;
+
+    if (!cachedTimeSlots.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px; font-family:var(--mono); font-size:12px; color:var(--ink-soft);">No hay franjas horarias configuradas.</td></tr>';
+      return;
+    }
+
+    const days = ['LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES'];
+
+    tbody.innerHTML = cachedTimeSlots.map((slot) => {
+      const isBreak = slot.isBreak === true;
+
+      if (isBreak) {
+        return `
+          <tr style="background:#FAF5ED; border-top:1.5px solid var(--ink); border-bottom:1.5px solid var(--ink);">
+            <td style="text-align:center; padding:10px 8px; border-right:2px solid var(--ink); font-family:var(--mono); font-size:11px; font-weight:800; color:var(--rust);">
+              ${slot.startTime} - ${slot.endTime}
+            </td>
+            <td colspan="5" style="text-align:center; padding:10px; font-family:var(--mono); font-size:11px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--rust);">
+              — ${escapeHtml(slot.name)} (${slot.startTime} - ${slot.endTime}) —
+            </td>
+          </tr>
+        `;
+      }
+
+      const dayCells = days.map((dayName) => {
+        const found = classroomAssignments.find((a) => a.day === dayName && a.slotId === slot.id);
+
+        if (found) {
+          return `
+            <td style="border-right:1.5px solid var(--ink); border-bottom:1px solid var(--ink); padding:6px; vertical-align:top; background:#FFFFFF;">
+              <div class="calendar-occupied-card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span style="font-family:var(--mono); font-size:9.5px; font-weight:900; background:var(--ink); color:#FFFFFF; padding:1px 5px;">
+                    ${escapeHtml(found.subjectCode)}
+                  </span>
+                  <span style="font-family:var(--mono); font-size:10.5px; font-weight:800; color:var(--rust);">
+                    ${escapeHtml(found.roomLocation || `Aula ${found.classroom}`)}
+                  </span>
+                </div>
+                <div style="font-size:12px; font-weight:800; color:var(--ink); line-height:1.2;">
+                  ${escapeHtml(found.subjectName)}
+                </div>
+                <div style="font-size:11px; font-weight:700; color:var(--ink-soft); border-top:1px dashed var(--line); padding-top:3px; margin-top:2px;">
+                  Prof. ${escapeHtml(found.teacherName)}
+                </div>
+              </div>
+            </td>
+          `;
+        }
+
+        return `
+          <td style="border-right:1.5px solid var(--ink); border-bottom:1px solid var(--ink); padding:6px; vertical-align:middle; text-align:center; background:#FAF8F5;">
+            <span style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); font-style:italic;">
+              Espacio Libre
+            </span>
+          </td>
+        `;
+      }).join('');
+
+      return `
+        <tr style="border-bottom:1.5px solid var(--ink);">
+          <td style="text-align:center; padding:10px 8px; border-right:2px solid var(--ink); background:var(--cream); vertical-align:middle;">
+            <div style="font-family:var(--mono); font-size:11px; font-weight:800; color:var(--ink);">
+              ${escapeHtml(slot.name)}
+            </div>
+            <div style="font-family:var(--mono); font-size:10.5px; font-weight:700; color:var(--ink-soft); margin-top:2px;">
+              ${slot.startTime} - ${slot.endTime}
+            </div>
+          </td>
+          ${dayCells}
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // ── 3. CATÁLOGO DE MATERIAS & AFOROS ───────────────────────────
+  function renderSubjectsCatalog() {
+    const grid = document.getElementById('subjectsCatalogGrid');
+    if (!grid) return;
+
+    if (!cachedCurriculum.length) {
+      grid.innerHTML = '<div style="font-size:12px; color:var(--ink-soft);">Sin materias registradas.</div>';
+      return;
+    }
+
+    grid.innerHTML = cachedCurriculum.map((s) => {
+      const teachers = s.teachers || [];
+      return `
+        <div style="border:1.5px solid var(--ink); background:#FFFFFF; padding:14px; box-shadow:2px 2px 0 var(--ink);">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px;">
+            <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; font-size:10px; font-weight:900;">
+              ${escapeHtml(s.code)}
+            </span>
+            <span style="font-family:var(--mono); font-size:11px; font-weight:700; color:var(--rust);">
+              ${s.weeklyHoursTarget || 4}h / sem
+            </span>
+          </div>
+          <div style="font-weight:800; font-size:14.5px; color:var(--ink); margin-bottom:2px;">
+            ${escapeHtml(s.name)}
+          </div>
+          <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-bottom:10px;">
+            Área: ${escapeHtml(s.department)}
+          </div>
+          <div style="font-size:11.5px; color:var(--ink); border-top:1px solid var(--line); padding-top:8px;">
+            Docentes vinculados: <strong>${teachers.length}</strong> (${teachers.map((t: any) => t.teacherName).join(', ') || 'Ninguno'})
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:8px; border-top:1px solid var(--line); padding-top:12px; margin-top:8px;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="window._editSubject('${s.id}')" style="font-size:10px; padding:4px 10px;">Editar</button>
+            <button type="button" class="btn btn-primary btn-sm" style="background:var(--rust); border-color:var(--rust); font-size:10px; padding:4px 10px;" onclick="window._deleteSubject('${s.id}')">Eliminar</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ── 4. FRANJAS HORARIAS BASE ──────────────────────────────────
+  // ── 4. FRANJAS HORARIAS BASE ──────────────────────────────────
+  async function loadTimeSlots() {
+    try {
+      const res = await scheduleService.getTimeSlots(currentLoadedSchoolId);
+      const dbSlots = res.data || [];
+
+      if (Array.isArray(dbSlots) && dbSlots.length > 0) {
+        cachedTimeSlots = dbSlots.map((s: any) => ({
+          id: s.slot_id || s.id,
+          name: s.name,
+          startTime: s.start_time,
+          endTime: s.end_time,
+          isBreak: s.is_break === true,
+        }));
+      } else {
+        cachedTimeSlots = [
+          { id: 'slot-1', name: 'Bloque 1', startTime: '07:00', endTime: '07:55', isBreak: false },
+          { id: 'slot-2', name: 'Bloque 2', startTime: '07:55', endTime: '08:50', isBreak: false },
+          { id: 'slot-break-1', name: 'Primer Receso', startTime: '08:50', endTime: '09:15', isBreak: true },
+          { id: 'slot-3', name: 'Bloque 3', startTime: '09:15', endTime: '10:10', isBreak: false },
+          { id: 'slot-4', name: 'Bloque 4', startTime: '10:10', endTime: '11:05', isBreak: false },
+          { id: 'slot-break-2', name: 'Segundo Receso', startTime: '11:05', endTime: '11:20', isBreak: true },
+          { id: 'slot-5', name: 'Bloque 5', startTime: '11:20', endTime: '12:15', isBreak: false },
+          { id: 'slot-6', name: 'Bloque 6', startTime: '12:15', endTime: '13:10', isBreak: false }
+        ];
+      }
+      renderTimeSlotsTable();
+    } catch (err) {
+      console.error('Error cargando slots:', err);
     }
   }
 
-  const coursesLoad = hydrateCourses();
-  (window as any).SchoolOSApp?.registerPageLoad(coursesLoad);
+  function renderTimeSlotsTable() {
+    const tbody = document.getElementById('timeSlotsTableBody');
+    if (!tbody) return;
+
+    if (!cachedTimeSlots.length) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:14px; font-size:12px; color:var(--ink-soft);">Sin franjas configuradas.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = cachedTimeSlots.map((s) => {
+      const isBreak = s.isBreak === true;
+      const typeBadge = isBreak
+        ? '<span style="background:var(--rust); color:#FFFFFF; font-family:var(--mono); font-size:9.5px; font-weight:800; padding:2px 6px;">RECESO / DESCANSO</span>'
+        : '<span style="background:var(--ink); color:#FFFFFF; font-family:var(--mono); font-size:9.5px; font-weight:800; padding:2px 6px;">BLOQUE DE CLASE</span>';
+
+      return `
+        <tr>
+          <td><strong>${escapeHtml(s.name)}</strong></td>
+          <td><strong style="font-family:var(--mono); font-size:13px; color:var(--ink);">${s.startTime} - ${s.endTime}</strong></td>
+          <td>${typeBadge}</td>
+          <td style="text-align:right;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="window.openTimeSlotsModal && window.openTimeSlotsModal('${currentLoadedSchoolId}')" style="font-size:10px; padding:3px 8px;">
+              Editar
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // ── 5. AFOROS Y CAPACIDADES ────────────────────────────────────
+    (window as any)._editSubject = function(subjectId: string) {
+      const found = cachedCurriculum.find((c) => c.id === subjectId);
+      if (found && (window as any).openSubjectModal) {
+        (window as any).openSubjectModal(found, currentLoadedSchoolId, cachedFaculty);
+      }
+    };
+
+    (window as any)._deleteSubject = async function(subjectId: string) {
+      if (!confirm('ATENCIÓN: Al eliminar una materia se borrarán permanentemente sus clases, estudiantes matriculados y calificaciones asociadas. ¿Estás absolutamente seguro de proceder?')) return;
+      try {
+        await courseManagementService.deleteCourse(subjectId);
+        window.dispatchEvent(new CustomEvent('curriculum:updated'));
+        window.location.reload();
+      } catch(err: any) {
+        alert('Error al eliminar materia: ' + err.message);
+      }
+    };
+
+    (window as any)._editGradeByLevel = function(gradeLevel: string) {
+    const found = cachedCapacities.find((g) => g.gradeLevel === gradeLevel);
+    if (found && (window as any).openGradeCapacityModal) {
+      (window as any).openGradeCapacityModal(found, currentLoadedSchoolId);
+    }
+  };
+
+  async function renderGradeCapacities() {
+    const grid = document.getElementById('gradeCapacityGrid');
+    if (!grid) return;
+
+    try {
+      const res = await courseManagementService.getGradeCapacities(currentLoadedSchoolId);
+      let gradeCapacities = res.data;
+
+      if (!gradeCapacities || gradeCapacities.length === 0) {
+        // Inicializar grados por defecto si no existen
+        const defaultGrades = ['6°', '7°', '8°', '9°', '10°', '11°'].map((g) => ({
+          school_id: currentLoadedSchoolId,
+          grade_level: g,
+          sections_count: 2,
+          capacity_per_room: 35,
+          is_offered: true
+        }));
+        
+        const initRes = await courseManagementService.initDefaultGrades(defaultGrades);
+        const refreshed = initRes.data;
+        cachedCapacities = (refreshed || []).map((g: any) => ({
+          id: g.id,
+          schoolId: g.school_id,
+          gradeLevel: g.grade_level,
+          sectionsCount: g.sections_count || 1,
+          capacityPerRoom: g.capacity_per_room || 35,
+          totalCapacity: (g.sections_count || 1) * (g.capacity_per_room || 35),
+          isOffered: g.is_offered !== false,
+          enrolledCount: 0,
+        }));
+      } else {
+        cachedCapacities = gradeCapacities.map((g: any) => ({
+          id: g.id,
+          schoolId: g.school_id,
+          gradeLevel: g.grade_level,
+          sectionsCount: g.sections_count || 1,
+          capacityPerRoom: g.capacity_per_room || 35,
+          totalCapacity: (g.sections_count || 1) * (g.capacity_per_room || 35),
+          isOffered: g.is_offered !== false,
+          enrolledCount: 0,
+        }));
+      }
+
+      grid.innerHTML = cachedCapacities.map((g: any) => {
+        const sectionsCount = g.sectionsCount || 0;
+        const isOffered = g.isOffered !== false;
+
+        return `
+          <div
+            class="grade-capacity-card"
+            onclick="window._editGradeByLevel('${escapeHtml(g.gradeLevel)}')"
+            style="border:2px solid var(--ink); background:#FFFFFF; padding:14px; box-shadow:2px 2px 0 var(--ink); cursor:pointer;"
+          >
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px;">
+              <h3 style="font-family:var(--serif); font-size:16px; font-weight:800; color:var(--ink); margin:0;">
+                ${escapeHtml(g.gradeLevel)}
+              </h3>
+              <span style="font-family:var(--mono); font-size:10px; font-weight:800; color:var(--rust);">
+                ${isOffered ? `${sectionsCount} SALONES` : '0 SALONES'}
+              </span>
+            </div>
+            <div style="font-size:11.5px; color:var(--ink-soft); margin-top:4px;">
+              Ocupación: <strong>${g.enrolledCount} / ${g.totalCapacity} cupos</strong>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+    } catch (err) {
+      console.warn('Error renderizando aforos:', err);
+    }
+  }
+
+  // ── INICIALIZACIÓN GLOBAL ──────────────────────────────────────
+  async function loadCurriculum() {
+    try {
+      // 1. Cargar planta docente vía teacherService
+      const facRes = await teacherService.getTeachers(currentLoadedSchoolId);
+      const faculty = facRes.data || [];
+
+      cachedFaculty = faculty;
+      const teacherMap = new Map(faculty.map((t: any) => [t.id, t]));
+
+      // 2. Cargar materias vía courseManagementService
+      const subRes = await courseManagementService.getSubjects(currentLoadedSchoolId);
+      let dbCourses = subRes.data || [];
+
+      if (!dbCourses || dbCourses.length === 0) {
+        const defaultInitialSubjects = [
+          { name: 'Matemáticas y Geometría', code: 'MAT-101', grade_level: 'Ciencias Exactas', hours_per_week: 5, color: '#1B2A4A' },
+          { name: 'Lengua Castellana y Literatura', code: 'ESP-101', grade_level: 'Humanidades', hours_per_week: 5, color: '#8C2D19' },
+          { name: 'Ciencias Naturales y Biología', code: 'BIO-101', grade_level: 'Ciencias Naturales', hours_per_week: 4, color: '#1B2A4A' },
+          { name: 'Ciencias Sociales e Historia', code: 'SOC-101', grade_level: 'Ciencias Sociales', hours_per_week: 4, color: '#8C2D19' },
+          { name: 'Inglés Comunicativo', code: 'ING-101', grade_level: 'Idiomas Extranjeros', hours_per_week: 5, color: '#1B2A4A' },
+          { name: 'Educación Física y Deportes', code: 'EFI-101', grade_level: 'Bienestar y Salud', hours_per_week: 2, color: '#1B2A4A' },
+          { name: 'Tecnología e Informática', code: 'INF-101', grade_level: 'Tecnología', hours_per_week: 2, color: '#1B2A4A' },
+          { name: 'Educación Artística', code: 'ART-101', grade_level: 'Artes', hours_per_week: 2, color: '#8C2D19' },
+          { name: 'Ética y Valores', code: 'ETI-101', grade_level: 'Formación Humana', hours_per_week: 1, color: '#1B2A4A' },
+        ];
+        const initRes = await courseManagementService.initSubjects(currentLoadedSchoolId, defaultInitialSubjects);
+        dbCourses = initRes.data || [];
+      }
+
+      // 3. Cargar clases / horarios asignados vía scheduleService
+      const clsRes = await scheduleService.getSchoolClasses(currentLoadedSchoolId);
+      const classes = clsRes.classes || [];
+
+      // 4. Mapear currículo para las vistas
+      cachedCurriculum = (dbCourses || []).map((course: any) => {
+        const courseClasses = classes.filter((c: any) => c.course_id === course.id);
+        const courseTeacherIds = new Set<string>();
+        if (course.teacher_id) courseTeacherIds.add(course.teacher_id);
+        courseClasses.forEach((c: any) => {
+          if (c.teacher_id) courseTeacherIds.add(c.teacher_id);
+        });
+
+        const teachers = Array.from(courseTeacherIds).map((tId) => {
+          const live: any = teacherMap.get(tId);
+          const teacherClasses = courseClasses.filter((c: any) => c.teacher_id === tId);
+
+          const assignments = teacherClasses.map((cls: any) => ({
+            id: cls.id,
+            classroom: cls.classroom,
+            gradeLevel: cls.classroom.split('-')[0],
+            day: cls.day_of_week,
+            dayIndex: cls.day_index,
+            slotId: cls.slot_id,
+            timeLabel: `${cls.start_time} - ${cls.end_time}`,
+            roomLocation: cls.room_location || `Salón ${cls.classroom}`,
+          }));
+
+          return {
+            teacherId: tId,
+            teacherName: live?.name || 'Docente Titular',
+            teacherCode: live?.document_id || 'DOC',
+            teacherEmail: live?.email || '',
+            specialty: live?.specialty || '',
+            avatarUrl: live?.avatar_url || '/avatars/women/fila-2-columna-1.png',
+            status: live?.status || 'active',
+            assignments,
+          };
+        });
+
+        const totalClassrooms = new Set();
+        let totalAssignedHours = 0;
+        teachers.forEach((t: any) => {
+          (t.assignments || []).forEach((asg: any) => {
+            if (asg.classroom) totalClassrooms.add(asg.classroom);
+            totalAssignedHours += 1;
+          });
+        });
+
+        return {
+          id: course.id,
+          name: course.name,
+          code: course.code,
+          department: course.grade_level || 'Área General',
+          weeklyHoursTarget: course.hours_per_week || 4,
+          color: course.color || '#1B2A4A',
+          qualified_teacher_ids: course.qualified_teacher_ids || [],
+          teachers,
+          teachersCount: teachers.length,
+          classroomsCount: totalClassrooms.size,
+          totalAssignedHours,
+        };
+      });
+
+      renderTeacherSchedule();
+      renderClassroomSchedule();
+      renderSubjectsCatalog();
+    } catch (err) {
+      console.error('Error cargando currículo:', err);
+    }
+  }
+
+  async function hydrateAcademicCenter() {
+    try {
+      const context = await schoolAdminTenantService.getTenantContext();
+      currentLoadedSchoolId = context?.school?.id || context?.school?.slug || '';
+      if (!currentLoadedSchoolId) return;
+
+      await Promise.all([
+        loadTimeSlots(),
+        renderGradeCapacities(),
+        loadCurriculum(),
+      ]);
+    } catch (err) {
+      console.warn('Error hidratando centro académico:', err);
+    }
+  }
+
+  window.addEventListener('curriculum:updated', () => {
+    loadCurriculum();
+    renderGradeCapacities();
+  });
+  window.addEventListener('time-slots:updated', () => {
+    loadTimeSlots();
+    loadCurriculum();
+  });
+
+  const academicLoad = hydrateAcademicCenter();
+  (window as any).SchoolOSApp?.registerPageLoad(academicLoad);
 </script>

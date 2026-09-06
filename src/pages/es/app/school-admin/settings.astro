@@ -170,16 +170,16 @@ const lang = 'es';
 
 <script>
   import { schoolAdminTenantService } from '../../../../services/schoolAdminTenantService';
-  import { passwordResetTicketService } from '../../../../services/passwordResetTicketService';
+  import { apiClient } from '../../../../lib/apiClient';
 
-  function badgeClass(status) {
+  function badgeClass(status: string) {
     if (status === 'completed') return 'badge-active';
     if (status === 'rejected' || status === 'failed') return 'badge-revoked';
     if (status === 'expired' || status === 'cancelled') return 'badge-expired';
     return 'badge-pending';
   }
 
-  function escapeHtml(value) {
+  function escapeHtml(value: any) {
     return String(value || '')
       .replaceAll('&', '&amp;')
       .replaceAll('<', '&lt;')
@@ -188,7 +188,7 @@ const lang = 'es';
       .replaceAll("'", '&#039;');
   }
 
-  function renderTickets(tickets) {
+  function renderTickets(tickets: any[]) {
     const list = document.getElementById('own-password-ticket-list');
     if (!list) return;
 
@@ -209,10 +209,15 @@ const lang = 'es';
     `).join('');
   }
 
+  // ─── Cargar tickets propios via API (no directo a Supabase) ───────────────
   async function loadOwnPasswordTickets() {
     try {
-      const tickets = await passwordResetTicketService.getMyTickets();
-      renderTickets(tickets);
+      const json = await apiClient.get('/api/school-admin/password-tickets');
+      if (json.ok) {
+        renderTickets(json.tickets || []);
+      } else {
+        throw new Error(json.error || 'Error desconocido');
+      }
     } catch (err) {
       console.error('Error cargando tickets propios:', err);
       const list = document.getElementById('own-password-ticket-list');
@@ -229,11 +234,11 @@ const lang = 'es';
 
       if (context?.school) {
         const school = context.school;
-        const name = document.getElementById('settings-school-name');
-        const email = document.getElementById('settings-school-email');
-        const city = document.getElementById('settings-school-city');
-        const dane = document.getElementById('settings-school-dane');
-        const address = document.getElementById('settings-school-address');
+        const name = document.getElementById('settings-school-name') as HTMLInputElement;
+        const email = document.getElementById('settings-school-email') as HTMLInputElement;
+        const city = document.getElementById('settings-school-city') as HTMLInputElement;
+        const dane = document.getElementById('settings-school-dane') as HTMLInputElement;
+        const address = document.getElementById('settings-school-address') as HTMLInputElement;
         const plan = document.getElementById('settings-plan-name');
         const status = document.getElementById('settings-plan-status');
         const subdomain = document.getElementById('settings-subdomain');
@@ -255,7 +260,7 @@ const lang = 'es';
 
       if (stats) {
         const label = document.getElementById('settings-capacity-label');
-        const bar = document.getElementById('settings-capacity-bar');
+        const bar = document.getElementById('settings-capacity-bar') as HTMLElement;
         const free = document.getElementById('settings-capacity-free');
         if (label) label.textContent = `${stats.totalStudents} / ${stats.maxStudentsPlan} alumnos (${stats.planUsagePercent}%)`;
         if (bar) bar.style.width = `${Math.min(stats.planUsagePercent, 100)}%`;
@@ -275,10 +280,10 @@ const lang = 'es';
   const form = document.getElementById('own-password-ticket-form');
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const reasonInput = document.getElementById('own-password-ticket-reason');
-    const methodInput = document.getElementById('own-password-ticket-method');
-    const feedback = document.getElementById('own-password-ticket-feedback');
-    const submit = document.getElementById('own-password-ticket-submit');
+    const reasonInput = document.getElementById('own-password-ticket-reason') as HTMLTextAreaElement;
+    const methodInput = document.getElementById('own-password-ticket-method') as HTMLSelectElement;
+    const feedback = document.getElementById('own-password-ticket-feedback') as HTMLElement;
+    const submit = document.getElementById('own-password-ticket-submit') as HTMLButtonElement;
     const reason = reasonInput?.value.trim() || '';
 
     if (!reason) {
@@ -292,16 +297,18 @@ const lang = 'es';
       submit.textContent = 'Enviando solicitud...';
       feedback.style.display = 'none';
 
-      await passwordResetTicketService.createOwnSchoolAdminTicket({
+      // ✅ Via API segura — no directo a Supabase
+      const json = await apiClient.post('/api/school-admin/password-tickets', {
         reason,
-        resetMethod: methodInput?.value || 'manual_support',
+        resetMethod: methodInput?.value || 'manual_support'
       });
+      if (!json.ok) throw new Error(json.error || 'Error desconocido');
 
       feedback.style.cssText = 'display:block; padding:10px 14px; background:#E6F4EA; border:1px solid var(--sage-dark); color:var(--sage-dark); font-family:var(--mono); font-size:12px; font-weight:600; margin-bottom:12px;';
       feedback.textContent = 'Solicitud enviada al Super Admin.';
       reasonInput.value = '';
       await loadOwnPasswordTickets();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error creando solicitud propia:', err);
       feedback.style.cssText = 'display:block; padding:10px 14px; background:#FEE2E2; border:1px solid var(--danger); color:var(--danger); font-family:var(--mono); font-size:12px; font-weight:600; margin-bottom:12px;';
       feedback.textContent = 'No fue posible enviar la solicitud. Verifica tu sesión de rector.';

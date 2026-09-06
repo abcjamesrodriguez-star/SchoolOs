@@ -8,13 +8,6 @@ import { getActiveEvaluationForStudent } from '../../../../../../data/app/mock-s
 import EvaluationRunner from '../../../../../../components/app/student/EvaluationRunner';
 import '../../../../../../styles/app.css';
 
-export function getStaticPaths() {
-  return [
-    { params: { id: 'eval-1' } },
-    { params: { id: 'eval-2' } },
-  ];
-}
-
 const { id } = Astro.params;
 const lang = 'en';
 const evaluation = getActiveEvaluationForStudent(id);

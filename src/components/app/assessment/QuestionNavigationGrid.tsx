@@ -29,7 +29,7 @@ export const QuestionNavigationGrid: React.FC<Props> = ({
       }}
     >
       <div style={{ fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', color: 'var(--ink)', borderBottom: '1.5px solid var(--line-strong)', paddingBottom: 6 }}>
-        🗺️ Navegación de Preguntas
+         Navegación de Preguntas
       </div>
 
       {/* Matriz de Burbujas */}
@@ -87,7 +87,7 @@ export const QuestionNavigationGrid: React.FC<Props> = ({
               {q.order}
               {isFlagged && (
                 <span style={{ position: 'absolute', top: -4, right: -4, fontSize: 10 }}>
-                  🚩
+                  
                 </span>
               )}
             </button>
@@ -107,7 +107,7 @@ export const QuestionNavigationGrid: React.FC<Props> = ({
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <span style={{ width: 10, height: 10, background: '#FEE2E2', border: '1px solid #EF4444', display: 'inline-block' }} />
-          <span>Marcada 🚩</span>
+          <span>Marcada </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <span style={{ width: 10, height: 10, background: '#FFF8F5', border: '2px solid var(--rust)', display: 'inline-block' }} />

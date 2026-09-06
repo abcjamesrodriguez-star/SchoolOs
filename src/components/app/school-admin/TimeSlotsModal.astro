@@ -1,0 +1,350 @@
+﻿---
+// ============================================================
+// SchoolOS — Modal de Edición Rápida de Franjas Horarias
+// Edición en vivo, Plantillas con 1 clic y Reordenamiento
+// Cero emojis, estilo sobrio institucional
+// ============================================================
+interface Props {
+  id?: string;
+}
+
+const { id = 'timeSlotsModal' } = Astro.props;
+---
+
+<div
+  id={id}
+  class="custom-modal-backdrop"
+  style="display:none; position:fixed; inset:0; background:rgba(18, 17, 14, 0.75); z-index:9999; align-items:center; justify-content:center; padding:20px; overflow-y:auto;"
+  role="dialog"
+  aria-modal="true"
+>
+  <div class="panel" style="width:100%; max-width:760px; background:var(--paper); border:2px solid var(--ink); box-shadow:8px 8px 0 var(--ink); max-height:90vh; display:flex; flex-direction:column; overflow:hidden;">
+    
+    <!-- HEADER -->
+    <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center; padding:14px 20px; background:var(--cream); border-bottom:2px solid var(--ink); flex-shrink:0;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; font-size:10px; font-weight:900;">
+          CRONOGRAMA BASE
+        </span>
+        <h2 style="font-family:var(--serif); font-size:16.5px; margin:0; font-weight:700; color:var(--ink);">
+          Configuración Directa de Franjas Horarias
+        </h2>
+      </div>
+      <button type="button" onclick={`document.getElementById('${id}').style.display='none';`} style="background:none; border:none; font-family:var(--mono); font-size:18px; font-weight:700; cursor:pointer; color:var(--ink);">✕</button>
+    </div>
+
+    <!-- FEEDBACK ALERT -->
+    <div id={`${id}Feedback`} style="display:none; padding:10px 18px; font-family:var(--mono); font-size:12px; font-weight:700;"></div>
+
+    <!-- BODY CON SCROLL -->
+    <div class="panel-body padded" style="background:#FFFDF9; padding:20px; overflow-y:auto; flex:1;">
+      
+      <!-- PLANTILLAS RÁPIDAS (PRESETS CON 1 CLIC) -->
+      <div style="background:var(--cream); border:1.5px solid var(--ink); padding:12px 14px; margin-bottom:18px; box-shadow:2px 2px 0 var(--ink);">
+        <div style="font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--rust); margin-bottom:6px;">
+          Plantillas Rápidas de Horarios:
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button
+            type="button"
+            class="btn btn-secondary btn-sm"
+            onclick="window._applySlotPreset('morning_standard')"
+            style="font-size:10.5px; font-weight:700; background:#FFFFFF;"
+          >
+            Jornada Mañana (6 Bloques + 2 Recesos)
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary btn-sm"
+            onclick="window._applySlotPreset('afternoon_standard')"
+            style="font-size:10.5px; font-weight:700; background:#FFFFFF;"
+          >
+            Jornada Tarde (12:30 a 18:30)
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary btn-sm"
+            onclick="window._applySlotPreset('full_day_45m')"
+            style="font-size:10.5px; font-weight:700; background:#FFFFFF;"
+          >
+            Bloques de 45 min
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary btn-sm"
+            onclick="window._applySlotPreset('hourly_60m')"
+            style="font-size:10.5px; font-weight:700; background:#FFFFFF;"
+          >
+            Bloques de 60 min
+          </button>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <div style="font-family:var(--mono); font-size:11px; font-weight:800; text-transform:uppercase; color:var(--ink);">
+          Franjas Horarias Activas (Edita directamente en cada campo):
+        </div>
+        <button
+          type="button"
+          class="btn btn-primary btn-sm"
+          onclick="window._addNewSlotRow()"
+          style="font-size:11px; font-weight:800; padding:5px 10px;"
+        >
+          ＋ Agregar Franja al Final
+        </button>
+      </div>
+
+      <!-- LISTA EDITABLE EN VIVO (TABLA DE CAMPOS DIRECTOS) -->
+      <div id={`${id}RowsContainer`} style="display:flex; flex-direction:column; gap:8px; margin-bottom:20px;">
+        <!-- Se llena con inputs editables directos -->
+      </div>
+
+    </div>
+
+    <!-- FOOTER ACTIONS -->
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 20px; border-top:1.5px solid var(--line); background:var(--paper); flex-shrink:0;">
+      <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">
+        Los cambios aplicados actualizarán inmediatamente la cuadrícula de horarios.
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button type="button" class="btn btn-secondary" onclick={`document.getElementById('${id}').style.display='none';`}>
+          Cancelar
+        </button>
+        <button type="button" id={`${id}BtnSaveAll`} class="btn btn-primary" onclick="window._saveAllSlots()" style="font-weight:800; padding:8px 16px;">
+          Guardar Todas las Franjas
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<script>
+  import { scheduleService } from '../../../services/scheduleService';
+
+  function getActiveTenantSchoolId(): string {
+    try {
+      const user = JSON.parse(localStorage.getItem('schoolos-user') || '{}');
+      if (user.schoolId) return user.schoolId;
+    } catch (_) {}
+    return (window as any).SchoolOSApp?.currentSchoolId || (window as any)._currentTenantSchoolId || localStorage.getItem('schoolos_tenant_id') || localStorage.getItem('schoolos_tenant_slug') || '';
+  }
+
+  function getModalId(): string {
+    const modal = document.querySelector('[data-time-slots-modal]') as HTMLElement || document.getElementById('TimeSlotsModal');
+    return modal ? modal.id : 'TimeSlotsModal';
+  }
+
+  let currentSchoolId = '';
+  let activeSlots: any[] = [];
+
+  const presets: Record<string, any[]> = {
+    morning_standard: [
+      { id: 'slot-1', name: 'Bloque 1', startTime: '07:00', endTime: '07:55', isBreak: false },
+      { id: 'slot-2', name: 'Bloque 2', startTime: '07:55', endTime: '08:50', isBreak: false },
+      { id: 'slot-break-1', name: 'Primer Receso', startTime: '08:50', endTime: '09:15', isBreak: true },
+      { id: 'slot-3', name: 'Bloque 3', startTime: '09:15', endTime: '10:10', isBreak: false },
+      { id: 'slot-4', name: 'Bloque 4', startTime: '10:10', endTime: '11:05', isBreak: false },
+      { id: 'slot-break-2', name: 'Segundo Receso', startTime: '11:05', endTime: '11:20', isBreak: true },
+      { id: 'slot-5', name: 'Bloque 5', startTime: '11:20', endTime: '12:15', isBreak: false },
+      { id: 'slot-6', name: 'Bloque 6', startTime: '12:15', endTime: '13:10', isBreak: false }
+    ],
+    afternoon_standard: [
+      { id: 'slot-1', name: 'Bloque 1', startTime: '12:30', endTime: '13:25', isBreak: false },
+      { id: 'slot-2', name: 'Bloque 2', startTime: '13:25', endTime: '14:20', isBreak: false },
+      { id: 'slot-break-1', name: 'Descanso de la Tarde', startTime: '14:20', endTime: '14:45', isBreak: true },
+      { id: 'slot-3', name: 'Bloque 3', startTime: '14:45', endTime: '15:40', isBreak: false },
+      { id: 'slot-4', name: 'Bloque 4', startTime: '15:40', endTime: '16:35', isBreak: false },
+      { id: 'slot-5', name: 'Bloque 5', startTime: '16:35', endTime: '17:30', isBreak: false },
+      { id: 'slot-6', name: 'Bloque 6', startTime: '17:30', endTime: '18:25', isBreak: false }
+    ],
+    full_day_45m: [
+      { id: 'slot-1', name: 'Periodo 1', startTime: '07:30', endTime: '08:15', isBreak: false },
+      { id: 'slot-2', name: 'Periodo 2', startTime: '08:15', endTime: '09:00', isBreak: false },
+      { id: 'slot-break-1', name: 'Lonchera / Snack', startTime: '09:00', endTime: '09:30', isBreak: true },
+      { id: 'slot-3', name: 'Periodo 3', startTime: '09:30', endTime: '10:15', isBreak: false },
+      { id: 'slot-4', name: 'Periodo 4', startTime: '10:15', endTime: '11:00', isBreak: false },
+      { id: 'slot-5', name: 'Periodo 5', startTime: '11:00', endTime: '11:45', isBreak: false },
+      { id: 'slot-break-2', name: 'Almuerzo Institucional', startTime: '11:45', endTime: '12:45', isBreak: true },
+      { id: 'slot-6', name: 'Periodo 6', startTime: '12:45', endTime: '13:30', isBreak: false },
+      { id: 'slot-7', name: 'Periodo 7', startTime: '13:30', endTime: '14:15', isBreak: false },
+      { id: 'slot-8', name: 'Periodo 8', startTime: '14:15', endTime: '15:00', isBreak: false }
+    ],
+    hourly_60m: [
+      { id: 'slot-1', name: 'Bloque 1', startTime: '07:00', endTime: '08:00', isBreak: false },
+      { id: 'slot-2', name: 'Bloque 2', startTime: '08:00', endTime: '09:00', isBreak: false },
+      { id: 'slot-break-1', name: 'Descanso', startTime: '09:00', endTime: '09:30', isBreak: true },
+      { id: 'slot-3', name: 'Bloque 3', startTime: '09:30', endTime: '10:30', isBreak: false },
+      { id: 'slot-4', name: 'Bloque 4', startTime: '10:30', endTime: '11:30', isBreak: false },
+      { id: 'slot-5', name: 'Bloque 5', startTime: '11:30', endTime: '12:30', isBreak: false }
+    ]
+  };
+
+  function escapeHtmlAttr(str: any): string {
+    return String(str || '').replace(/"/g, '&quot;');
+  }
+
+  function renderEditableRows() {
+    const modalId = getModalId();
+    const container = document.getElementById(modalId + 'SlotsContainer');
+    const countBadge = document.getElementById(modalId + 'SlotsCount');
+    if (!container) return;
+
+    if (countBadge) countBadge.textContent = `${activeSlots.length} franjas`;
+
+    if (!activeSlots.length) {
+      container.innerHTML = '<div style="padding:24px; text-align:center; color:var(--ink-soft); font-family:var(--mono); font-size:12px;">No hay franjas configuradas. Agrega una o usa una plantilla.</div>';
+      return;
+    }
+
+    container.innerHTML = activeSlots.map((s, idx) => {
+      const isBreak = s.isBreak === true;
+      return `
+        <div style="display:grid; grid-template-columns:40px 1.5fr 110px 110px 100px 90px; gap:8px; align-items:center; background:#FFFFFF; border:1px solid var(--line); padding:8px 12px; margin-bottom:6px; border-left:4px solid ${isBreak ? 'var(--sand)' : 'var(--ink)'};">
+          <span style="font-family:var(--mono); font-weight:800; font-size:11px; color:var(--ink-soft); text-align:center;">#${idx + 1}</span>
+          <input type="text" value="${escapeHtmlAttr(s.name)}" onchange="window._updateSlotField(${idx}, 'name', this.value)" style="padding:6px 10px; font-size:12px; border:1px solid var(--line); font-weight:700; width:100%;" />
+          <input type="time" value="${s.startTime}" onchange="window._updateSlotField(${idx}, 'startTime', this.value)" style="padding:6px; font-family:var(--mono); font-size:12px; border:1px solid var(--line); width:100%; text-align:center;" />
+          <input type="time" value="${s.endTime}" onchange="window._updateSlotField(${idx}, 'endTime', this.value)" style="padding:6px; font-family:var(--mono); font-size:12px; border:1px solid var(--line); width:100%; text-align:center;" />
+          <label style="display:flex; align-items:center; gap:6px; font-family:var(--mono); font-size:11px; cursor:pointer;">
+            <input type="checkbox" ${isBreak ? 'checked' : ''} onchange="window._updateSlotField(${idx}, 'isBreak', this.checked)" />
+            <span>Receso</span>
+          </label>
+          <div style="display:flex; gap:4px; justify-content:flex-end;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="window._moveSlot(${idx}, -1)" ${idx === 0 ? 'disabled style="opacity:0.3;"' : ''} style="font-size:10px; padding:3px 6px; font-family:var(--mono);" title="Mover arriba">↑</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="window._moveSlot(${idx}, 1)" ${idx === activeSlots.length - 1 ? 'disabled style="opacity:0.3;"' : ''} style="font-size:10px; padding:3px 6px; font-family:var(--mono);" title="Mover abajo">↓</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="window._removeSlotRow(${idx})" style="font-size:10px; padding:3px 7px; color:var(--rust); border-color:var(--rust);" title="Eliminar franja">✕</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  async function loadSlots() {
+    try {
+      if (!currentSchoolId) return;
+      const res = await scheduleService.getTimeSlots(currentSchoolId);
+      const dbSlots = res.data || [];
+
+      if (Array.isArray(dbSlots) && dbSlots.length > 0) {
+        activeSlots = dbSlots.map(function(s: any) {
+          return {
+            id: s.slot_id || s.id,
+            name: s.name,
+            startTime: s.start_time,
+            endTime: s.end_time,
+            isBreak: s.is_break === true,
+          };
+        });
+        renderEditableRows();
+      } else if (!activeSlots.length) {
+        activeSlots = JSON.parse(JSON.stringify(presets['morning_standard']));
+        renderEditableRows();
+      }
+    } catch (err) {
+      console.warn('Error cargando franjas:', err);
+    }
+  }
+
+  (window as any).openTimeSlotsModal = async function(schoolId?: string) {
+    currentSchoolId = schoolId || getActiveTenantSchoolId();
+    const modalId = getModalId();
+    const modal = document.getElementById(modalId);
+    if (modal) modal.style.display = 'flex';
+    await loadSlots();
+  };
+
+  (window as any)._applySlotPreset = function(presetKey: string) {
+    if (presets[presetKey]) {
+      activeSlots = JSON.parse(JSON.stringify(presets[presetKey]));
+      renderEditableRows();
+    }
+  };
+
+  (window as any)._updateSlotField = function(idx: number, field: string, value: any) {
+    if (activeSlots[idx]) {
+      activeSlots[idx][field] = value;
+      if (field === 'isBreak') {
+        renderEditableRows();
+      }
+    }
+  };
+
+  (window as any)._moveSlot = function(idx: number, direction: number) {
+    const targetIdx = idx + direction;
+    if (targetIdx < 0 || targetIdx >= activeSlots.length) return;
+    const temp = activeSlots[idx];
+    activeSlots[idx] = activeSlots[targetIdx];
+    activeSlots[targetIdx] = temp;
+    renderEditableRows();
+  };
+
+  (window as any)._removeSlotRow = function(idx: number) {
+    activeSlots.splice(idx, 1);
+    renderEditableRows();
+  };
+
+  (window as any)._addNewSlotRow = function() {
+    const lastSlot = activeSlots[activeSlots.length - 1];
+    const newStart = lastSlot ? lastSlot.endTime : '07:00';
+    
+    const parts = newStart.split(':').map(Number);
+    const endMin = (parts[0] * 60 + parts[1] + 55) % (24 * 60);
+    const endH = String(Math.floor(endMin / 60)).padStart(2, '0');
+    const endM = String(endMin % 60).padStart(2, '0');
+    const newEnd = `${endH}:${endM}`;
+
+    activeSlots.push({
+      id: `slot-${Date.now()}`,
+      name: `Bloque ${activeSlots.length + 1}`,
+      startTime: newStart,
+      endTime: newEnd,
+      isBreak: false
+    });
+
+    renderEditableRows();
+  };
+
+  (window as any)._saveAllSlots = async function() {
+    const modalId = getModalId();
+    const modal = document.getElementById(modalId);
+    const saveBtn = document.getElementById(modalId + 'BtnSaveAll') as HTMLButtonElement;
+    const feedback = document.getElementById(modalId + 'Feedback');
+
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Guardando franjas…';
+    }
+
+    try {
+      if (!currentSchoolId) throw new Error('Identificador de institución no encontrado.');
+      
+      const rows = activeSlots.map((s, idx) => ({
+        slot_id: s.id || `slot-${idx + 1}`,
+        name: s.name,
+        start_time: s.startTime || s.start_time,
+        end_time: s.endTime || s.end_time,
+        is_break: s.isBreak === true || s.is_break === true,
+        order_index: idx
+      }));
+
+      await scheduleService.replaceTimeSlots(currentSchoolId, rows);
+
+      if (modal) modal.style.display = 'none';
+      window.dispatchEvent(new CustomEvent('time-slots:updated'));
+      window.location.reload();
+
+    } catch (err: any) {
+      console.error('Error guardando todas las franjas:', err);
+      if (feedback) {
+        feedback.style.cssText = 'display:block; background:#FEE2E2; border:1px solid var(--rust); color:var(--rust);';
+        feedback.textContent = err?.message || 'Error al guardar franjas';
+      }
+    } finally {
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Guardar Todas las Franjas';
+      }
+    }
+  };
+</script>

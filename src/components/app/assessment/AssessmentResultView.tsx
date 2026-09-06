@@ -35,7 +35,7 @@ export const AssessmentResultView: React.FC<Props> = ({ result, onRetry, onClose
         }}
       >
         <div style={{ fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.12em', color: result.passed ? '#15803D' : '#B91C1C', marginBottom: 6 }}>
-          {result.passed ? '🎉 ¡EVALUACIÓN APROBADA EXITOSAMENTE!' : '⚠️ EVALUACIÓN FINALIZADA'}
+          {result.passed ? ' ¡EVALUACIÓN APROBADA EXITOSAMENTE!' : ' EVALUACIÓN FINALIZADA'}
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, margin: '10px 0' }}>
@@ -87,7 +87,7 @@ export const AssessmentResultView: React.FC<Props> = ({ result, onRetry, onClose
                 cursor: 'pointer',
               }}
             >
-              🔄 Reintentar Evaluación
+               Reintentar Evaluación
             </button>
           )}
 
@@ -146,7 +146,7 @@ export const AssessmentResultView: React.FC<Props> = ({ result, onRetry, onClose
                     color: '#fff',
                   }}
                 >
-                  {item.isCorrect ? '✓ CORRECTA' : item.selectedOptionIndex === undefined ? '⚪ EN BLANCO' : '✕ INCORRECTA'}
+                  {item.isCorrect ? '✓ CORRECTA' : item.selectedOptionIndex === undefined ? ' EN BLANCO' : '✕ INCORRECTA'}
                 </span>
                 <span style={{ fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 800, color: 'var(--ink-soft)' }}>
                   Pregunta {item.order}
@@ -273,7 +273,7 @@ export const AssessmentResultView: React.FC<Props> = ({ result, onRetry, onClose
             {item.explanation && (
               <div style={{ background: 'var(--cream)', borderLeft: '3px solid var(--rust)', padding: '8px 12px', marginTop: 8 }}>
                 <div style={{ fontFamily: 'var(--mono)', fontSize: 9.5, fontWeight: 800, color: 'var(--rust)', textTransform: 'uppercase', marginBottom: 2 }}>
-                  💡 JUSTIFICACIÓN DIDÁCTICA:
+                   JUSTIFICACIÓN DIDÁCTICA:
                 </div>
                 <p style={{ fontFamily: 'var(--sans)', fontSize: 12.5, color: '#3A362D', margin: 0, lineHeight: 1.45 }}>
                   {item.explanation}

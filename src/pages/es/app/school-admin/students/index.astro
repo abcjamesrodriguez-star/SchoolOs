@@ -1,7 +1,12 @@
 ---
+// ============================================================
+// SchoolOS — Directorio General de Estudiantes & Expedientes (Rectoría)
+// Cero emojis, estilo sobrio editorial institucional
+// ============================================================
 import AppLayout from '../../../../../layouts/AppLayout.astro';
 import StudentRegisterModal from '../../../../../components/app/school-admin/StudentRegisterModal.astro';
 import StudentCitationModal from '../../../../../components/app/school-admin/StudentCitationModal.astro';
+import StudentDetailsModal from '../../../../../components/app/school-admin/StudentDetailsModal.astro';
 
 const lang = 'es';
 ---
@@ -16,80 +21,117 @@ const lang = 'es';
   activeRoute="/app/school-admin/students"
   breadcrumbs={[{ label: 'Institución', href: `/${lang}/app/school-admin` }, { label: 'Estudiantes' }]}
 >
+  <!-- STATS HEADER -->
   <div class="stat-grid" style="margin-bottom:18px;">
     <div class="stat-card">
-      <div class="stat-label">MATRÍCULA ACTIVA TOTAL</div>
+      <div class="stat-label">MATRÍCULA TOTAL EN PLANTA</div>
       <div class="stat-num" id="student-stat-total">0</div>
       <div class="stat-sub" id="student-stat-total-sub">Sin información cargada</div>
     </div>
+    <div class="stat-card">
+      <div class="stat-label">MATRÍCULAS ACTIVAS</div>
+      <div class="stat-num" id="student-stat-active" style="color:var(--olive-dark);">0</div>
+      <div class="stat-sub">Cuentas formalizadas y activas</div>
+    </div>
     <div class="stat-card" style="border-left:4px solid var(--rust);">
-      <div class="stat-label">ALERTAS TEMPRANAS</div>
-      <div class="stat-num" id="student-stat-risk" style="color:var(--rust);">0</div>
-      <div class="stat-sub" id="student-stat-risk-sub" style="font-weight:700; color:var(--rust);">Módulo de notas pendiente</div>
+      <div class="stat-label">INVITACIONES PENDIENTES</div>
+      <div class="stat-num" id="student-stat-invited" style="color:var(--rust);">0</div>
+      <div class="stat-sub">Por formalizar por el acudiente</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">ASISTENCIA PROMEDIO</div>
-      <div class="stat-num" style="color:var(--olive-dark);">--</div>
-      <div class="stat-sub">Sin asistencia registrada</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">CONVIVENCIA</div>
-      <div class="stat-num">--</div>
-      <div class="stat-sub">Sin información cargada</div>
+      <div class="stat-label">PLAZAS DISPONIBLES</div>
+      <div class="stat-num" id="student-stat-available">0</div>
+      <div class="stat-sub">Cupos restantes en el plan</div>
     </div>
   </div>
 
+  <!-- BANNER INFORMATIVO -->
   <div class="panel" style="margin-bottom:18px; border-left:4px solid var(--ink); background:var(--paper);">
     <div class="panel-body" style="padding:12px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
       <div style="font-size:13px; color:var(--ink);">
-        <strong style="font-family:var(--mono); font-size:11px; text-transform:uppercase; margin-right:8px;">[Tenant en vivo]</strong>
-        <span id="student-live-banner-text">La matrícula se cargará desde Supabase para esta institución.</span>
+        <strong style="font-family:var(--mono); font-size:11px; text-transform:uppercase; margin-right:8px;">[Gestión de Matrícula]</strong>
+        <span id="student-live-banner-text">Supervisa expedientes estudiantiles, traslados de salón y estados de formalización parental.</span>
       </div>
-      <button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('studentRegisterModal').style.display='flex';" style="font-size:11px; font-weight:700;">＋ Matricular Alumno</button>
+      <button
+        type="button"
+        class="btn btn-primary btn-sm"
+        onclick="window.openStudentRegisterModal ? window.openStudentRegisterModal() : (document.getElementById('studentRegisterModal').style.display='flex');"
+        style="font-size:11.5px; font-weight:800;"
+      >
+        ＋ Matricular Nuevo Alumno
+      </button>
     </div>
   </div>
 
+  <!-- BARRA DE BÚSQUEDA Y FILTROS -->
   <div class="panel" style="margin-bottom:20px; background:var(--cream); padding:12px 16px;">
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
       <div style="position:relative; flex:1; min-width:280px;">
-        <input id="studentSearchInput" type="text" placeholder="Buscar por estudiante, documento, correo o teléfono..." style="width:100%; padding:7px 12px; border:1px solid var(--ink); background:var(--paper); font-family:var(--sans); font-size:12.5px; border-radius:2px;" />
+        <input
+          id="studentSearchInput"
+          type="text"
+          placeholder="Buscar por estudiante, código de matrícula, salón, correo o acudiente..."
+          style="width:100%; padding:8px 12px; border:1.5px solid var(--ink); background:var(--paper); font-family:var(--sans); font-size:12.5px; box-sizing:border-box;"
+        />
       </div>
-      <select id="filterGrade" style="border:1px solid var(--ink); background:var(--paper); padding:7px 12px; font-family:var(--mono); font-size:11.5px; border-radius:2px;">
-        <option value="all">Todos los Grados</option>
-      </select>
-      <select id="filterAcademicStatus" style="border:1px solid var(--ink); background:var(--paper); padding:7px 12px; font-family:var(--mono); font-size:11.5px; border-radius:2px;">
-        <option value="all">Estado: Todos</option>
-      </select>
+
+      <div style="display:flex; gap:8px;">
+        <select
+          id="filterGrade"
+          style="border:1.5px solid var(--ink); background:var(--paper); padding:8px 12px; font-family:var(--mono); font-size:11.5px; font-weight:700;"
+        >
+          <option value="all">Todos los Grados</option>
+        </select>
+
+        <select
+          id="filterAcademicStatus"
+          style="border:1.5px solid var(--ink); background:var(--paper); padding:8px 12px; font-family:var(--mono); font-size:11.5px; font-weight:700;"
+        >
+          <option value="all">Estado: Todos</option>
+          <option value="active">Solo Matrículas Activas</option>
+          <option value="invited">Solo Invitación Pendiente</option>
+        </select>
+      </div>
     </div>
   </div>
 
-  <div class="panel" style="margin-bottom:30px;">
-    <div class="panel-header" style="background:var(--paper); display:flex; justify-content:space-between; align-items:center; padding:12px 20px; border-bottom:1.5px solid var(--ink);">
+  <!-- TABLA PRINCIPAL DE ESTUDIANTES -->
+  <div class="panel" style="margin-bottom:30px; border:2px solid var(--ink); box-shadow:4px 4px 0 var(--ink);">
+    <div class="panel-header" style="background:var(--cream); display:flex; justify-content:space-between; align-items:center; padding:12px 20px; border-bottom:2px solid var(--ink);">
       <div style="display:flex; align-items:center; gap:10px;">
-        <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-weight:800; font-size:10.5px; padding:2px 7px;">EXPEDIENTES</span>
-        <h2 style="font-family:var(--serif); font-size:16.5px; margin:0; font-weight:700; color:var(--ink);">Directorio General de Matrícula</h2>
+        <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-weight:900; font-size:10px;">
+          EXPEDIENTES
+        </span>
+        <h2 style="font-family:var(--serif); font-size:16.5px; margin:0; font-weight:700; color:var(--ink);">
+          Directorio General de Matrícula
+        </h2>
       </div>
-      <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">Mostrando <strong id="studentCountVisible">0</strong> de <strong id="studentCountTotal">0</strong> registros</div>
+      <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">
+        Mostrando <strong id="studentCountVisible">0</strong> de <strong id="studentCountTotal">0</strong> registros
+      </div>
     </div>
-    <div class="panel-body">
-      <table class="data-table" id="studentsTable">
+
+    <div class="panel-body" style="overflow-x:auto;">
+      <table class="data-table" id="studentsTable" style="margin:0; width:100%;">
         <thead>
-          <tr>
-            <th>Estudiante & Documento</th>
-            <th>Grado / Sección</th>
-            <th>Acudiente & Contacto</th>
-            <th>Promedio</th>
-            <th>Asistencia</th>
-            <th>Estado</th>
-            <th style="text-align:right;">Acciones</th>
+          <tr style="background:var(--paper); border-bottom:1.5px solid var(--ink);">
+            <th>ESTUDIANTE & CÓDIGO</th>
+            <th>GRADO & SALÓN ASIGNADO</th>
+            <th>ACUDIENTE & CONTACTO</th>
+            <th>PROMEDIO</th>
+            <th>ESTADO</th>
+            <th style="text-align:right;">ACCIONES</th>
           </tr>
         </thead>
         <tbody id="studentsTableBody">
           <tr>
-            <td colspan="7" style="padding:34px; text-align:center;">
-              <div style="font-family:var(--serif); font-size:21px; font-weight:700; color:var(--ink); margin-bottom:6px;">Sin estudiantes vinculados</div>
-              <div style="font-size:13px; color:var(--ink-soft); margin-bottom:16px;">Cuando existan estudiantes reales en Supabase, aparecerán aquí.</div>
-              <button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('studentRegisterModal').style.display='flex';">＋ Matricular Alumno</button>
+            <td colspan="6" style="padding:34px; text-align:center;">
+              <div style="font-family:var(--serif); font-size:21px; font-weight:700; color:var(--ink); margin-bottom:6px;">
+                Cargando expedientes estudiantiles...
+              </div>
+              <div style="font-size:13px; color:var(--ink-soft); margin-bottom:16px;">
+                Consultando matrícula viva del tenant.
+              </div>
             </td>
           </tr>
         </tbody>
@@ -99,12 +141,14 @@ const lang = 'es';
 
   <StudentRegisterModal id="studentRegisterModal" lang={lang} />
   <StudentCitationModal id="studentCitationModal" lang={lang} />
+  <StudentDetailsModal id="studentDetailsModal" />
 </AppLayout>
 
 <script>
   import { schoolAdminTenantService } from '../../../../../services/schoolAdminTenantService';
+  import { studentService } from '../../../../../services/studentService';
 
-  function escapeHtml(value) {
+  function escapeHtml(value: any) {
     return String(value || '').replace(/[&<>"']/g, (char) => ({
       '&': '&amp;',
       '<': '&lt;',
@@ -114,71 +158,248 @@ const lang = 'es';
     }[char]));
   }
 
-  function renderLiveStudents(students, stats) {
+  let cachedStudents: any[] = [];
+  let currentSchoolId = '';
+
+  function renderLiveStudents(students: any[], stats: any) {
+    cachedStudents = students || [];
     const tbody = document.getElementById('studentsTableBody');
     if (!tbody) return;
 
-    const max = stats?.maxStudentsPlan || 0;
+    const max = stats?.maxStudentsPlan || 1500;
     const total = students.length;
+    const active = students.filter((s: any) => s.status === 'active').length;
+    const invited = students.filter((s: any) => s.status === 'invited' || s.status === 'pending_activation').length;
+    const available = Math.max(max - total, 0);
     const usage = max ? Math.round((total / max) * 100) : 0;
 
-    document.getElementById('student-stat-total').innerHTML = `${total} <span style="font-size:16px; font-weight:400; color:var(--ink-soft);">/ ${max || 0}</span>`;
-    document.getElementById('student-stat-total-sub').textContent = total ? `${usage}% cupos ocupados según usuarios del tenant` : 'Sin estudiantes vinculados';
-    document.getElementById('student-stat-risk').textContent = '0';
-    document.getElementById('student-stat-risk-sub').textContent = 'Alertas académicas se conectarán al módulo de notas';
-    document.getElementById('student-live-banner-text').innerHTML = `Rectoría está leyendo matrícula viva desde <strong>public.users</strong> filtrada por <strong>school_id</strong>.`;
-    document.getElementById('studentCountVisible').textContent = String(total);
-    document.getElementById('studentCountTotal').textContent = String(total);
+    const totalEl = document.getElementById('student-stat-total');
+    const totalSubEl = document.getElementById('student-stat-total-sub');
+    const activeEl = document.getElementById('student-stat-active');
+    const invitedEl = document.getElementById('student-stat-invited');
+    const availableEl = document.getElementById('student-stat-available');
 
-    if (!total) return;
+    if (totalEl) totalEl.innerHTML = `${total} <span style="font-size:16px; font-weight:400; color:var(--ink-soft);">/ ${max}</span>`;
+    if (totalSubEl) totalSubEl.textContent = total ? `${usage}% plazas ocupadas en el plan` : 'Sin estudiantes vinculados';
+    if (activeEl) activeEl.textContent = String(active);
+    if (invitedEl) invitedEl.textContent = String(invited);
+    if (availableEl) availableEl.textContent = String(available);
 
-    tbody.innerHTML = students.map((student) => {
-      const initials = schoolAdminTenantService.initials(student.name);
-      const search = `${student.name} ${student.email} ${student.documentId || ''} ${student.phone || ''}`.toLowerCase();
+    const countVis = document.getElementById('studentCountVisible');
+    const countTot = document.getElementById('studentCountTotal');
+    if (countVis) countVis.textContent = String(total);
+    if (countTot) countTot.textContent = String(total);
+
+    if (!total) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" style="padding:34px; text-align:center;">
+            <div style="font-family:var(--serif); font-size:21px; font-weight:700; color:var(--ink); margin-bottom:6px;">Sin estudiantes vinculados</div>
+            <div style="font-size:13px; color:var(--ink-soft); margin-bottom:16px;">Comienza matriculando al primer alumno de la institución.</div>
+            <button type="button" class="btn btn-primary btn-sm" onclick="window.openStudentRegisterModal ? window.openStudentRegisterModal() : (document.getElementById('studentRegisterModal').style.display='flex');">＋ Matricular Alumno</button>
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = students.map((student: any, idx: number) => {
+      const search = `${student.name} ${student.email} ${student.document_id || student.documentId || ''} ${student.phone || ''} ${student.job_title || student.jobTitle || ''} ${student.specialty || ''}`.toLowerCase();
+      const grade = student.job_title || student.jobTitle || '10° Grado';
+      const docId = student.document_id || student.documentId || 'EST-2026';
+      const guardian = (student.specialty || '').replace(/^Jornada [^·]+·\s*/, '').replace(/^Acudiente:\s*/, '') || 'Acudiente registrado';
+      const phone = student.phone || 'Sin teléfono';
+      const avatarUrl = student.avatar_url || student.avatarUrl || '/avatars/men/fila-1-columna-1.png';
+      const isInvited = student.status === 'invited' || student.status === 'pending_activation';
+      const isActive = student.status === 'active';
+
       return `
-        <tr class="student-table-row" data-search-text="${escapeHtml(search)}">
-          <td class="cell-name"><div style="display:flex; align-items:center; gap:12px;"><div style="width:34px; height:34px; background:var(--ink); color:#FFFFFF; font-family:var(--mono); font-size:12.5px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; border-radius:2px;">${escapeHtml(initials)}</div><div><div style="font-weight:700; font-size:14px;">${escapeHtml(student.name)}</div><div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:1px;">${escapeHtml(student.documentType || 'Doc.')} ${escapeHtml(student.documentId || 'Sin documento')} · ${escapeHtml(student.email)}</div></div></div></td>
-          <td><span class="plan-tag" style="background:var(--cream); font-weight:800; font-size:11px; padding:3px 8px; border:1.5px solid var(--ink);">Por asignar</span></td>
-          <td class="cell-muted"><div style="font-size:12.5px; color:var(--ink); font-weight:700;">Acudiente por registrar</div><div style="font-size:11px; font-family:var(--mono); color:var(--rust); margin-top:2px; font-weight:700;">Tel: ${escapeHtml(student.phone || 'Pendiente')}</div></td>
-          <td><span style="font-family:var(--mono); font-weight:800;">--</span><div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); margin-top:2px;">Sin notas</div></td>
-          <td><span style="font-family:var(--mono); font-weight:800;">--</span><div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);">Sin asistencia</div></td>
-          <td><span class="badge badge-${student.status === 'active' ? 'active' : 'suspended'}">${escapeHtml(student.status || 'active')}</span></td>
-          <td class="cell-actions"><button type="button" class="btn btn-secondary btn-sm" style="font-size:11px;">Ficha</button></td>
+        <tr
+          class="student-table-row"
+          data-search-text="${escapeHtml(search)}"
+          data-grade="${escapeHtml(grade)}"
+          data-status="${isActive ? 'active' : 'invited'}"
+        >
+          <td class="cell-name">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div style="width:38px; height:38px; border:1.5px solid var(--ink); background:#FFFFFF; display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden;">
+                <img src="${escapeHtml(avatarUrl)}" alt="" style="width:100%; height:100%; object-fit:contain;" />
+              </div>
+              <div>
+                <div style="font-weight:800; font-size:14px; color:var(--ink);">
+                  ${escapeHtml(student.name)}
+                </div>
+                <div style="font-family:var(--mono); font-size:11px; color:var(--rust); margin-top:1px; font-weight:700;">
+                  ${escapeHtml(docId)} · ${escapeHtml(student.email)}
+                </div>
+              </div>
+            </div>
+          </td>
+
+          <td>
+            <span class="plan-tag" style="background:var(--cream); font-weight:800; font-size:11.5px; padding:3px 8px; border:1.5px solid var(--ink);">
+              ${escapeHtml(grade)}
+            </span>
+          </td>
+
+          <td class="cell-muted">
+            <div style="font-size:12.5px; color:var(--ink); font-weight:800;">
+              ${escapeHtml(guardian)}
+            </div>
+            <div style="font-size:11px; font-family:var(--mono); color:var(--ink-soft); margin-top:2px;">
+              Tel: <strong>${escapeHtml(phone)}</strong>
+            </div>
+          </td>
+
+          <td>
+            <span style="font-family:var(--mono); font-weight:800; font-size:12px;">--</span>
+            <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); margin-top:2px;">Sin notas</div>
+          </td>
+
+          <td>
+            <span class="badge badge-${isActive ? 'active' : 'trial'}">
+              ${isActive ? 'Activo' : 'Invitación Pendiente'}
+            </span>
+          </td>
+
+          <td class="cell-actions" style="text-align:right;">
+            <div style="display:flex; justify-content:flex-end; align-items:center; gap:6px;">
+              ${isInvited ? `
+                <button
+                  type="button"
+                  id="btnResendStd-${student.id}"
+                  class="btn btn-secondary btn-sm"
+                  onclick="window._resendStudentInvitation('${student.id}', '${escapeHtml(student.email)}')"
+                  style="font-size:10.5px; padding:4px 8px; font-weight:800;"
+                  title="Reenviar correo de formalización parental"
+                >
+                  Reenviar Invitación
+                </button>
+              ` : ''}
+
+              <button
+                type="button"
+                class="btn btn-primary btn-sm"
+                onclick="window._openStudentDetails(${idx})"
+                style="font-size:10.5px; padding:4px 10px; font-weight:800;"
+              >
+                Ficha
+              </button>
+            </div>
+          </td>
         </tr>
       `;
     }).join('');
   }
 
-  function wireLiveStudentFilters() {
-    const searchInput = document.getElementById('studentSearchInput');
+  (window as any)._openStudentDetails = function(idx: number) {
+    const student = cachedStudents[idx];
+    if (student && (window as any).openStudentDetailsModal) {
+      (window as any).openStudentDetailsModal(student, currentSchoolId);
+    }
+  };
+
+  (window as any)._resendStudentInvitation = async function(studentId: string, email: string) {
+    const btn = document.getElementById(`btnResendStd-${studentId}`) as HTMLButtonElement;
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Enviando…';
+    }
+
+    try {
+      await studentService.resendInvitation(email, currentSchoolId, 'Estudiante');
+
+      alert(`✓ Enlace oficial de formalización parental reenviado exitosamente a ${email}.`);
+      if (btn) {
+        btn.textContent = 'Reenviada ✓';
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.textContent = 'Reenviar Invitación';
+        }, 4000);
+      }
+    } catch (err: any) {
+      console.error('Error reenviando invitación:', err);
+      alert(`Error al reenviar: ${err?.message || 'Error de conexión.'}`);
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Reintentar';
+      }
+    }
+  };
+
+  // ── FILTROS DINÁMICOS ──────────────────────────────────────────
+  function wireLiveStudentFilters(students: any[]) {
+    const searchInput = document.getElementById('studentSearchInput') as HTMLInputElement;
+    const filterGrade = document.getElementById('filterGrade') as HTMLSelectElement;
+    const filterStatus = document.getElementById('filterAcademicStatus') as HTMLSelectElement;
     const countVisible = document.getElementById('studentCountVisible');
-    searchInput?.addEventListener('input', () => {
-      const query = searchInput.value.trim().toLowerCase();
+
+    // Poblar grados dinámicamente
+    if (filterGrade && students && students.length > 0) {
+      const gradesSet = new Set<string>();
+      students.forEach((s) => {
+        const g = s.job_title || s.jobTitle;
+        if (g) gradesSet.add(g);
+      });
+      const gradesArr = Array.from(gradesSet);
+      if (gradesArr.length > 0) {
+        filterGrade.innerHTML = `<option value="all">Todos los Grados</option>` + gradesArr.map((g) => {
+          return `<option value="${escapeHtml(g)}">${escapeHtml(g)}</option>`;
+        }).join('');
+      }
+    }
+
+    function applyFilters() {
+      const query = (searchInput?.value || '').trim().toLowerCase();
+      const selectedGrade = filterGrade?.value || 'all';
+      const selectedStatus = filterStatus?.value || 'all';
+
       let count = 0;
+
       document.querySelectorAll('.student-table-row').forEach((row) => {
         const text = row.getAttribute('data-search-text') || '';
-        const show = !query || text.includes(query);
-        row.style.display = show ? '' : 'none';
+        const grade = row.getAttribute('data-grade') || '';
+        const status = row.getAttribute('data-status') || '';
+
+        let matchGrade = selectedGrade === 'all' || grade === selectedGrade;
+        let matchStatus = selectedStatus === 'all' || status === selectedStatus;
+        let matchSearch = !query || text.includes(query);
+
+        const show = matchGrade && matchStatus && matchSearch;
+        (row as HTMLElement).style.display = show ? '' : 'none';
         if (show) count++;
       });
+
       if (countVisible) countVisible.textContent = String(count);
-    });
+    }
+
+    searchInput?.addEventListener('input', applyFilters);
+    filterGrade?.addEventListener('change', applyFilters);
+    filterStatus?.addEventListener('change', applyFilters);
   }
 
+  // ── HIDRATACIÓN PRINCIPAL ──────────────────────────────────────
   async function hydrateStudents() {
     try {
       const context = await schoolAdminTenantService.getTenantContext();
-      if (!context) return;
+      currentSchoolId = context?.school?.id || context?.school?.slug || '';
+      if (!currentSchoolId) return;
+
       const [students, stats] = await Promise.all([
         schoolAdminTenantService.getTenantUsers('student'),
         schoolAdminTenantService.getTenantStats(),
       ]);
+
       renderLiveStudents(students, stats);
-      wireLiveStudentFilters();
+      wireLiveStudentFilters(students);
     } catch (error) {
       console.warn('No se pudo hidratar estudiantes del tenant:', error);
     }
   }
+
+  window.addEventListener('student:enrolled', () => {
+    hydrateStudents();
+  });
 
   const studentsLoad = hydrateStudents();
   (window as any).SchoolOSApp?.registerPageLoad(studentsLoad);

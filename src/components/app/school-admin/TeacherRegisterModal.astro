@@ -1,1239 +1,450 @@
----
+﻿---
 // ============================================================
-// SchoolOS — Wizard Directivo de Registro de Docente
-// Distribución Proporcional / Sin Emojis / Estilo Editorial
+// SchoolOS — Modal de Vinculación y Edición Docente (MVP)
+// Con Selección de Avatar por Género, Director de Grupo y Cero Emojis
 // ============================================================
 import type { Lang } from '../../../i18n';
-import type { SubjectDepartment } from '../../../types/academic';
+import AvatarPickerModal from './AvatarPickerModal.astro';
 
 interface Props {
   id?: string;
   lang?: Lang;
-  departments?: SubjectDepartment[];
+  schoolId?: string;
 }
 
-const { id = 'teacherRegisterModal', lang = 'es', departments = [] } = Astro.props;
-
-const isEs = lang === 'es';
-
-// Avatares provistos en public/avatars/
-const menAvatars = [
-  '/avatars/men/fila-1-columna-1.png',
-  '/avatars/men/fila-1-columna-2.png',
-  '/avatars/men/fila-1-columna-3.png',
-  '/avatars/men/fila-1-columna-4.png',
-  '/avatars/men/fila-2-columna-1.png',
-  '/avatars/men/fila-2-columna-2.png',
-  '/avatars/men/fila-2-columna-3.png',
-  '/avatars/men/fila-2-columna-4.png',
-  '/avatars/men/fila-3-columna-1.png',
-  '/avatars/men/fila-3-columna-2.png',
-  '/avatars/men/fila-3-columna-3.png',
-  '/avatars/men/fila-3-columna-4.png',
-  '/avatars/men/fila-4-columna-1.png',
-  '/avatars/men/fila-4-columna-2.png',
-  '/avatars/men/fila-4-columna-3.png',
-  '/avatars/men/fila-4-columna-4.png',
-];
-
-const womenAvatars = [
-  '/avatars/women/fila-1-columna-1.png',
-  '/avatars/women/fila-1-columna-2.png',
-  '/avatars/women/fila-1-columna-3.png',
-  '/avatars/women/fila-1-columna-4.png',
-  '/avatars/women/fila-2-columna-1.png',
-  '/avatars/women/fila-2-columna-2.png',
-  '/avatars/women/fila-2-columna-3.png',
-  '/avatars/women/fila-2-columna-4.png',
-  '/avatars/women/fila-3-columna-1.png',
-  '/avatars/women/fila-3-columna-2.png',
-  '/avatars/women/fila-3-columna-3.png',
-  '/avatars/women/fila-3-columna-4.png',
-  '/avatars/women/fila-4-columna-1.png',
-  '/avatars/women/fila-4-columna-2.png',
-  '/avatars/women/fila-4-columna-3.png',
-  '/avatars/women/fila-4-columna-4.png',
-];
-
-// Cursos y asignaturas disponibles por departamento
-const defaultCourses = [
-  // Matemáticas
-  { id: 'crs-mat-10a', dept: 'dep-mat', deptCode: 'MAT', code: '10-1', name: isEs ? 'Matemáticas 10-1' : 'Math 10-1', room: isEs ? 'Salón 204' : 'Room 204', students: 28, hours: 6, schedule: isEs ? 'Lun, Mié 08:30 - 10:00' : 'Mon, Wed 08:30 - 10:00', slots: [{ day: 'Lunes', time: '08:30 - 10:00' }, { day: 'Miércoles', time: '08:30 - 10:00' }] },
-  { id: 'crs-mat-10b', dept: 'dep-mat', deptCode: 'MAT', code: '10-2', name: isEs ? 'Matemáticas 10-2' : 'Math 10-2', room: isEs ? 'Salón 205' : 'Room 205', students: 30, hours: 6, schedule: isEs ? 'Lun, Mié 10:30 - 12:00' : 'Mon, Wed 10:30 - 12:00', slots: [{ day: 'Lunes', time: '10:30 - 12:00' }, { day: 'Miércoles', time: '10:30 - 12:00' }] },
-  { id: 'crs-mat-11b', dept: 'dep-mat', deptCode: 'MAT', code: '11-1', name: isEs ? 'Cálculo Avanzado 11-1' : 'Advanced Calculus 11-1', room: isEs ? 'Salón 301' : 'Room 301', students: 31, hours: 6, schedule: isEs ? 'Mar, Jue 10:30 - 12:00' : 'Tue, Thu 10:30 - 12:00', slots: [{ day: 'Martes', time: '10:30 - 12:00' }, { day: 'Jueves', time: '10:30 - 12:00' }] },
-  
-  // Ciencias Naturales
-  { id: 'crs-bio-10a', dept: 'dep-nat', deptCode: 'NAT', code: '10-1', name: isEs ? 'Biología Celular 10-1' : 'Cell Biology 10-1', room: isEs ? 'Lab. Biología 1' : 'Bio Lab 1', students: 28, hours: 6, schedule: isEs ? 'Lun, Mié 07:00 - 08:30' : 'Mon, Wed 07:00 - 08:30', slots: [{ day: 'Lunes', time: '07:00 - 08:30' }, { day: 'Miércoles', time: '07:00 - 08:30' }] },
-  { id: 'crs-bio-10b', dept: 'dep-nat', deptCode: 'NAT', code: '10-2', name: isEs ? 'Biología Celular 10-2' : 'Cell Biology 10-2', room: isEs ? 'Lab. Biología 1' : 'Bio Lab 1', students: 30, hours: 6, schedule: isEs ? 'Mar, Jue 08:30 - 10:00' : 'Tue, Thu 08:30 - 10:00', slots: [{ day: 'Martes', time: '08:30 - 10:00' }, { day: 'Jueves', time: '08:30 - 10:00' }] },
-  { id: 'crs-qui-10b', dept: 'dep-nat', deptCode: 'NAT', code: '10-3', name: isEs ? 'Química Orgánica 10-3' : 'Organic Chemistry 10-3', room: isEs ? 'Lab. Química 2' : 'Chem Lab 2', students: 29, hours: 6, schedule: isEs ? 'Mié, Vie 10:30 - 12:00' : 'Wed, Fri 10:30 - 12:00', slots: [{ day: 'Miércoles', time: '10:30 - 12:00' }, { day: 'Viernes', time: '10:30 - 12:00' }] },
-  { id: 'crs-fis-11a', dept: 'dep-nat', deptCode: 'NAT', code: '11-1', name: isEs ? 'Física Mecánica 11-1' : 'Physics 11-1', room: isEs ? 'Lab. Física' : 'Physics Lab', students: 32, hours: 6, schedule: isEs ? 'Mar, Jue 07:00 - 08:30' : 'Tue, Thu 07:00 - 08:30', slots: [{ day: 'Martes', time: '07:00 - 08:30' }, { day: 'Jueves', time: '07:00 - 08:30' }] },
-  
-  // Lenguaje
-  { id: 'crs-len-10a', dept: 'dep-len', deptCode: 'LEN', code: '10-1', name: isEs ? 'Literatura Universal 10-1' : 'Literature 10-1', room: isEs ? 'Salón 201' : 'Room 201', students: 29, hours: 6, schedule: isEs ? 'Mar, Jue 07:00 - 08:30' : 'Tue, Thu 07:00 - 08:30', slots: [{ day: 'Martes', time: '07:00 - 08:30' }, { day: 'Jueves', time: '07:00 - 08:30' }] },
-  { id: 'crs-len-9a', dept: 'dep-len', deptCode: 'LEN', code: '9-1', name: isEs ? 'Lengua Castellana 9-1' : 'Spanish Language 9-1', room: isEs ? 'Salón 101' : 'Room 101', students: 28, hours: 6, schedule: isEs ? 'Lun, Mié 07:00 - 08:30' : 'Mon, Wed 07:00 - 08:30', slots: [{ day: 'Lunes', time: '07:00 - 08:30' }, { day: 'Miércoles', time: '07:00 - 08:30' }] },
-  
-  // Inglés
-  { id: 'crs-ing-11a', dept: 'dep-ing', deptCode: 'ING', code: '11-1', name: isEs ? 'Inglés Avanzado C1 11-1' : 'Advanced English 11-1', room: isEs ? 'Lab. Idiomas' : 'Language Lab', students: 30, hours: 6, schedule: isEs ? 'Lun, Mié 12:00 - 13:30' : 'Mon, Wed 12:00 - 13:30', slots: [{ day: 'Lunes', time: '12:00 - 13:30' }, { day: 'Miércoles', time: '12:00 - 13:30' }] },
-  { id: 'crs-ing-10a', dept: 'dep-ing', deptCode: 'ING', code: '10-1', name: isEs ? 'Inglés Intermedio B2 10-1' : 'Intermediate English 10-1', room: isEs ? 'Lab. Idiomas' : 'Language Lab', students: 29, hours: 6, schedule: isEs ? 'Mar, Jue 12:00 - 13:30' : 'Tue, Thu 12:00 - 13:30', slots: [{ day: 'Martes', time: '12:00 - 13:30' }, { day: 'Jueves', time: '12:00 - 13:30' }] },
-  
-  // Ciencias Sociales & Filosofía
-  { id: 'crs-soc-10a', dept: 'dep-soc', deptCode: 'SOC', code: '10-1', name: isEs ? 'Historia Contemporánea 10-1' : 'Modern History 10-1', room: isEs ? 'Salón 202' : 'Room 202', students: 30, hours: 6, schedule: isEs ? 'Mar, Jue 08:30 - 10:00' : 'Tue, Thu 08:30 - 10:00', slots: [{ day: 'Martes', time: '08:30 - 10:00' }, { day: 'Jueves', time: '08:30 - 10:00' }] },
-  { id: 'crs-fil-11a', dept: 'dep-soc', deptCode: 'SOC', code: '11-1', name: isEs ? 'Filosofía & Lógica 11-1' : 'Philosophy 11-1', room: isEs ? 'Salón 302' : 'Room 302', students: 31, hours: 6, schedule: isEs ? 'Lun, Vie 10:30 - 12:00' : 'Mon, Fri 10:30 - 12:00', slots: [{ day: 'Lunes', time: '10:30 - 12:00' }, { day: 'Viernes', time: '10:30 - 12:00' }] },
-];
-
-const timeSlots = [
-  { key: 't1', label: '07:00 - 08:30' },
-  { key: 't2', label: '08:30 - 10:00' },
-  { key: 't3', label: '10:30 - 12:00' },
-  { key: 't4', label: '12:00 - 13:30' },
-];
-
-const days = isEs 
-  ? ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes']
-  : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+const { id = 'teacherRegisterModal', lang = 'es', schoolId } = Astro.props;
 ---
 
 <div
   id={id}
-  class="custom-modal-backdrop"
-  style="display:none; position:fixed; inset:0; background:rgba(18, 17, 14, 0.78); z-index:99999; align-items:center; justify-content:center; padding:16px; backdrop-filter:blur(3px);"
+  class="custom-modal-backdrop teacher-register-modal"
+  style="display:none; position:fixed; inset:0; background:rgba(18, 17, 14, 0.75); z-index:9999; align-items:center; justify-content:center; padding:20px; overflow-y:auto;"
+  role="dialog"
+  aria-modal="true"
 >
-  <div
-    class="panel wizard-modal-container"
-    style="width:80vw; max-width:1120px; min-width:320px; max-height:86vh; display:flex; flex-direction:column; background:var(--paper); box-shadow:12px 12px 0 rgba(18, 17, 14, 0.4); border:2px solid var(--ink); overflow:hidden;"
-  >
-    <!-- ── 1. CABECERA EJECUTIVA DEL WIZARD ────────────────────────── -->
-    <div
-      class="panel-header"
-      style="background:var(--ink); color:#FFFFFF; padding:12px 22px; display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--ink); flex-shrink:0;"
-    >
-      <div style="display:flex; align-items:center; gap:12px;">
-        <span class="plan-tag" style="background:var(--rust); color:#fff; border:none; font-family:var(--mono); font-size:10.5px; padding:3px 8px; font-weight:800; letter-spacing:0.06em; text-transform:uppercase;">
-          {isEs ? 'Rectoría · Vinculación' : 'Principal · Onboarding'}
+  <div class="panel" style="width:100%; max-width:700px; background:var(--paper); border:2px solid var(--ink); box-shadow:8px 8px 0 rgba(18, 17, 14, 0.35); max-height:90vh; display:flex; flex-direction:column; overflow:hidden;">
+    
+    <!-- HEADER -->
+    <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center; padding:14px 20px; background:var(--cream); border-bottom:2px solid var(--ink); flex-shrink:0;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-size:10px; font-weight:900;">
+          PLANTA DOCENTE
         </span>
-        <h2 style="font-family:var(--serif); font-size:18px; margin:0; color:#FFFFFF; font-weight:700;">
-          {isEs ? 'Expediente y Registro de Nuevo Docente' : 'Register New Faculty Member'}
+        <h2 id={`${id}ModalTitle`} style="font-family:var(--serif); font-size:16.5px; margin:0; font-weight:700; color:var(--ink);">
+          Vinculación Oficial de Docente
         </h2>
       </div>
 
-      <div style="display:flex; align-items:center; gap:10px;">
-        <button
-          type="button"
-          id="btnAutofillMock"
-          class="btn btn-sm"
-          style="background:rgba(255,255,255,0.12); color:#fff; border:1px solid rgba(255,255,255,0.3); font-family:var(--mono); font-size:11px; padding:4px 10px; cursor:pointer; font-weight:700;"
-          title={isEs ? 'Cargar datos de ejemplo para prueba rápida' : 'Fill demo data'}
-        >
-          {isEs ? '[ Cargar Datos Demo ]' : '[ Load Demo Data ]'}
-        </button>
-        <button
-          type="button"
-          class="close-modal-btn"
-          style="background:none; border:none; color:#FFFFFF; font-family:var(--mono); font-size:18px; cursor:pointer; font-weight:700; line-height:1; padding:2px 6px;"
-          title={isEs ? 'Cerrar' : 'Close'}
-        >✕</button>
-      </div>
+      <button type="button" class="close-modal-btn" onclick={`document.getElementById('${id}').style.display='none';`} style="background:none; border:none; font-family:var(--mono); font-size:18px; font-weight:700; cursor:pointer; color:var(--ink);">✕</button>
     </div>
 
-    <!-- ── 2. STEPPER DE 3 PASOS ─────────────────────────────────── -->
-    <div style="background:var(--cream); border-bottom:1px solid var(--line-strong); padding:10px 22px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-shrink:0;">
+    <!-- FEEDBACK ALERT -->
+    <div id={`${id}Feedback`} style="display:none; padding:12px 20px; font-family:var(--mono); font-size:12px; font-weight:700;"></div>
+
+    <!-- BODY WITH SCROLL -->
+    <div class="panel-body padded" style="background:#FFFDF9; padding:20px; overflow-y:auto; flex:1;">
       
-      <!-- Paso 1 -->
-      <div class="wizard-step-tab" data-step="1" style="display:flex; align-items:center; gap:8px; opacity:1; cursor:pointer;">
-        <span class="step-num" style="width:24px; height:24px; border-radius:50%; background:var(--ink); color:#fff; font-family:var(--mono); font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center;">1</span>
-        <div>
-          <div style="font-family:var(--mono); font-size:11.5px; font-weight:800; text-transform:uppercase; color:var(--ink);">
-            {isEs ? '1. Identificación y Avatar' : '1. Identity & Avatar'}
-          </div>
-          <div style="font-size:10.5px; color:var(--ink-soft);">
-            {isEs ? 'Datos personales y contacto directo' : 'Personal info & direct contact'}
-          </div>
-        </div>
-      </div>
-
-      <div style="flex:1; height:1px; background:var(--line); margin:0 10px;"></div>
-
-      <!-- Paso 2 -->
-      <div class="wizard-step-tab" data-step="2" style="display:flex; align-items:center; gap:8px; opacity:0.45; cursor:pointer;">
-        <span class="step-num" style="width:24px; height:24px; border-radius:50%; background:var(--paper); border:1px solid var(--ink); color:var(--ink); font-family:var(--mono); font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center;">2</span>
-        <div>
-          <div style="font-family:var(--mono); font-size:11.5px; font-weight:800; text-transform:uppercase; color:var(--ink);">
-            {isEs ? '2. Vinculación y Carga' : '2. Status & Load'}
-          </div>
-          <div style="font-size:10.5px; color:var(--ink-soft);">
-            {isEs ? 'Régimen, cursos, salones y tutoría' : 'Tenure, courses, rooms & tutoring'}
-          </div>
-        </div>
-      </div>
-
-      <div style="flex:1; height:1px; background:var(--line); margin:0 10px;"></div>
-
-      <!-- Paso 3 -->
-      <div class="wizard-step-tab" data-step="3" style="display:flex; align-items:center; gap:8px; opacity:0.45; cursor:pointer;">
-        <span class="step-num" style="width:24px; height:24px; border-radius:50%; background:var(--paper); border:1px solid var(--ink); color:var(--ink); font-family:var(--mono); font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center;">3</span>
-        <div>
-          <div style="font-family:var(--mono); font-size:11.5px; font-weight:800; text-transform:uppercase; color:var(--ink);">
-            {isEs ? '3. Ficha y Matriz Horaria' : '3. Summary & Schedule'}
-          </div>
-          <div style="font-size:10.5px; color:var(--ink-soft);">
-            {isEs ? 'Salones, alumnos y suplencias' : 'Rooms, students & substitutions'}
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ── 3. CONTENEDOR PRINCIPAL CON SCROLL ────────────────────── -->
-    <div class="panel-body" style="padding:20px 24px; overflow-y:auto; flex:1; background:var(--paper);">
-      
-      <!-- ══════════════════════════════════════════════════════════ -->
-      <!-- PASO 1: DATOS PERSONALES & GALERÍA DE AVATARES           -->
-      <!-- ══════════════════════════════════════════════════════════ -->
-      <div id="stepContainer1" class="wizard-step-content">
-        <div style="margin-bottom:16px; border-bottom:1px solid var(--line); padding-bottom:8px; display:flex; justify-content:space-between; align-items:flex-end;">
-          <div>
-            <h3 style="font-family:var(--serif); font-size:18px; margin:0 0 2px; color:var(--ink); font-weight:700;">
-              {isEs ? 'Paso 1: Identificación, Contacto y Avatar' : 'Step 1: Identity, Contact & Avatar'}
-            </h3>
-            <p style="font-size:12.5px; color:var(--ink-soft); margin:0;">
-              {isEs ? 'Complete los datos directos del docente y seleccione su avatar de la colección institucional.' : 'Complete direct teacher details and choose an avatar from institutional collection.'}
-            </p>
-          </div>
-          <span style="font-family:var(--mono); font-size:11px; color:var(--rust); font-weight:700;">
-            * {isEs ? 'Campos obligatorios' : 'Required fields'}
-          </span>
-        </div>
-
-        <div style="display:flex; flex-direction:column; gap:16px;">
-          
-          <!-- Bloque Superior: Formulario de Datos Principales (2 Columnas Limpias) -->
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; background:var(--cream); padding:16px; border:1px solid var(--ink);">
-            
-            <div class="form-field">
-              <label style="font-family:var(--mono); font-size:11px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:4px; color:var(--ink);">
-                {isEs ? 'Nombre Completo del Docente *' : 'Full Name *'}
-              </label>
-              <input
-                type="text"
-                id="docenteNombre"
-                placeholder={isEs ? 'Ej. Lic. Roberto Méndez Cruz' : 'E.g. Dr. Robert Mendez'}
-                value="Roberto Méndez Cruz"
-                required
-                style="width:100%; border:1px solid var(--ink); background:var(--paper); padding:8px 12px; font-family:var(--sans); font-size:13.5px; font-weight:600;"
-              />
-            </div>
-
-            <div class="form-field">
-              <label style="font-family:var(--mono); font-size:11px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:4px; color:var(--ink);">
-                {isEs ? 'Documento de Identidad (Cédula) *' : 'National ID Number *'}
-              </label>
-              <input
-                type="text"
-                id="docenteDocumento"
-                placeholder="CC 79.450.890"
-                value="CC 79.450.890"
-                style="width:100%; border:1px solid var(--ink); background:var(--paper); padding:8px 12px; font-family:var(--mono); font-size:13px;"
-              />
-            </div>
-
-            <div class="form-field">
-              <label style="font-family:var(--mono); font-size:11px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:4px; color:var(--ink);">
-                {isEs ? 'Teléfono Celular Directo *' : 'Direct Mobile Phone *'}
-              </label>
-              <input
-                type="tel"
-                id="docenteTelefono"
-                placeholder="+57 312 456 7890"
-                value="+57 312 890 1234"
-                required
-                style="width:100%; border:1px solid var(--ink); background:var(--paper); padding:8px 12px; font-family:var(--mono); font-size:13px;"
-              />
-              <span style="font-size:10.5px; color:var(--ink-soft); font-family:var(--mono); margin-top:2px; display:block;">
-                {isEs ? 'Línea de contacto para novedades y urgencias 6:50 AM' : 'Contact for morning notices & urgent cases'}
-              </span>
-            </div>
-
-            <div class="form-field">
-              <label style="font-family:var(--mono); font-size:11px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:4px; color:var(--ink);">
-                {isEs ? 'Correo Electrónico Institucional *' : 'Institutional Email *'}
-              </label>
-              <input
-                type="email"
-                id="docenteEmail"
-                placeholder="roberto.mendez@colegionorte.edu.co"
-                value="roberto.mendez@colegionorte.edu.co"
-                required
-                style="width:100%; border:1px solid var(--ink); background:var(--paper); padding:8px 12px; font-family:var(--mono); font-size:13px;"
-              />
-              <span style="font-size:10.5px; color:var(--ink-soft); font-family:var(--mono); margin-top:2px; display:block;">
-                {isEs ? 'Credenciales de acceso para carga de notas y guías' : 'Credentials for gradebooks and syllabus'}
-              </span>
-            </div>
-
-            <div class="form-field" style="grid-column:1 / -1;">
-              <label style="font-family:var(--mono); font-size:11px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:4px; color:var(--ink);">
-                {isEs ? 'Especialidad / Perfil Académico Principal' : 'Specialty / Primary Academic Profile'}
-              </label>
-              <input
-                type="text"
-                id="docenteEspecialidad"
-                placeholder={isEs ? 'Ej. Licenciado en Física Cuántica & Matemáticas Puras' : 'E.g. MSc in Physics & Applied Mathematics'}
-                value={isEs ? 'Licenciado en Física & Matemáticas Puras' : 'BSc Physics & Mathematics'}
-                style="width:100%; border:1px solid var(--ink); background:var(--paper); padding:8px 12px; font-family:var(--sans); font-size:13px;"
-              />
-            </div>
-
+      <form id={`${id}Form`}>
+        <input type="hidden" id={`${id}TeacherId`} value="" />
+        <input type="hidden" id={`${id}SchoolId`} value={schoolId || ''} />
+        <input type="hidden" id={`${id}AvatarUrl`} value="/avatars/men/fila-2-columna-1.png" />
+        
+        <!-- SECCIÓN 1: IDENTIDAD DOCENTE & AVATAR -->
+        <div style="background:var(--cream); border:1.5px solid var(--ink); padding:16px; margin-bottom:16px; box-shadow:2px 2px 0 var(--ink);">
+          <div style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; color:var(--rust); margin-bottom:12px; display:flex; align-items:center; gap:6px;">
+            <span>01 ·</span> Identificación Personal & Avatar Institucional
           </div>
 
-          <!-- Bloque Inferior: Selector Horizontal de Avatares (Sin scroll vertical roto) -->
-          <div style="background:var(--paper); padding:14px 16px; border:1px solid var(--ink);">
-            
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
-              <div style="display:flex; align-items:center; gap:12px;">
-                <!-- Avatar Activo Pequeño -->
-                <div style="width:40px; height:40px; border:2px solid var(--ink); background:var(--cream); overflow:hidden; flex-shrink:0;">
-                  <img id="avatarImageElem" src={menAvatars[0]} alt="Avatar Activo" style="width:100%; height:100%; object-fit:cover;" />
-                </div>
-                <div>
-                  <div style="font-family:var(--mono); font-size:11px; font-weight:800; text-transform:uppercase; color:var(--ink);">
-                    {isEs ? 'Avatar del Docente:' : 'Faculty Avatar:'} <span id="selectedAvatarLabel" style="color:var(--olive-dark); font-weight:700;">{isEs ? 'Hombre #1' : 'Men #1'}</span>
-                  </div>
-                  <div style="font-size:10.5px; color:var(--ink-soft); font-family:var(--sans);">
-                    {isEs ? 'Haga clic en una miniatura para asignarlo o cargue una foto propia' : 'Click a thumbnail to assign or upload a photo'}
-                  </div>
-                </div>
-              </div>
-
-              <!-- Pestañas de Género y Subida -->
-              <div style="display:flex; gap:6px; align-items:center;">
-                <button
-                  type="button"
-                  id="tabAvatarsMen"
-                  class="avatar-gender-tab btn btn-sm"
-                  style="font-size:11px; padding:3px 10px; background:var(--ink); color:#fff; font-family:var(--mono); font-weight:700; border:1px solid var(--ink);"
-                >
-                  {isEs ? 'Hombres (16)' : 'Men (16)'}
-                </button>
-                <button
-                  type="button"
-                  id="tabAvatarsWomen"
-                  class="avatar-gender-tab btn btn-sm"
-                  style="font-size:11px; padding:3px 10px; background:var(--cream); border:1px solid var(--ink); color:var(--ink); font-family:var(--mono); font-weight:700;"
-                >
-                  {isEs ? 'Mujeres (16)' : 'Women (16)'}
-                </button>
-                <button
-                  type="button"
-                  id="btnUploadPhoto"
-                  class="btn btn-secondary btn-sm"
-                  style="font-size:11px; padding:3px 10px; font-family:var(--mono);"
-                >
-                  {isEs ? 'Subir Foto...' : 'Upload File...'}
-                </button>
-                <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" />
-              </div>
-            </div>
-
-            <!-- Grilla 8x2 Hombres (16 Avatares visibles sin scroll forzado) -->
-            <div id="gridAvatarsMen" class="avatar-grid" style="display:grid; grid-template-columns:repeat(8, 1fr); gap:8px; padding:4px;">
-              {menAvatars.map((src, index) => (
-                <button
-                  type="button"
-                  class={`avatar-thumb-btn ${index === 0 ? 'selected' : ''}`}
-                  data-src={src}
-                  data-label={isEs ? `Hombre #${index + 1}` : `Men #${index + 1}`}
-                  style={`border:${index === 0 ? '2px solid var(--ink)' : '1px solid var(--line)'}; background:var(--cream); padding:2px; cursor:pointer; aspect-ratio:1; display:flex; align-items:center; justify-content:center; box-shadow:${index === 0 ? '2px 2px 0 var(--ink)' : 'none'};`}
-                >
-                  <img src={src} alt={`Hombre ${index + 1}`} style="width:100%; height:100%; object-fit:cover;" />
-                </button>
-              ))}
-            </div>
-
-            <!-- Grilla 8x2 Mujeres (16 Avatares) -->
-            <div id="gridAvatarsWomen" class="avatar-grid" style="display:none; grid-template-columns:repeat(8, 1fr); gap:8px; padding:4px;">
-              {womenAvatars.map((src, index) => (
-                <button
-                  type="button"
-                  class="avatar-thumb-btn"
-                  data-src={src}
-                  data-label={isEs ? `Mujer #${index + 1}` : `Women #${index + 1}`}
-                  style="border:1px solid var(--line); background:var(--cream); padding:2px; cursor:pointer; aspect-ratio:1; display:flex; align-items:center; justify-content:center;"
-                >
-                  <img src={src} alt={`Mujer ${index + 1}`} style="width:100%; height:100%; object-fit:cover;" />
-                </button>
-              ))}
-            </div>
-
-          </div>
-
-        </div>
-      </div>
-
-      <!-- ══════════════════════════════════════════════════════════ -->
-      <!-- PASO 2: VINCULACIÓN, ASIGNATURAS Y CARGA                 -->
-      <!-- ══════════════════════════════════════════════════════════ -->
-      <div id="stepContainer2" class="wizard-step-content" style="display:none;">
-        <div style="margin-bottom:16px; border-bottom:1px solid var(--line); padding-bottom:8px; display:flex; justify-content:space-between; align-items:flex-end;">
-          <div>
-            <h3 style="font-family:var(--serif); font-size:18px; margin:0 0 2px; color:var(--ink); font-weight:700;">
-              {isEs ? 'Paso 2: Vinculación, Asignaturas y Salones' : 'Step 2: Status, Courses & Room Assignments'}
-            </h3>
-            <p style="font-size:12.5px; color:var(--ink-soft); margin:0;">
-              {isEs ? 'Configure el régimen laboral, departamento, tutoría y marque los grupos con sus horarios y aulas.' : 'Set employment status, department, tutoring, and check assigned groups and rooms.'}
-            </p>
-          </div>
-          <div id="liveHoursBadge" style="font-family:var(--mono); font-size:12px; font-weight:800; background:var(--ink); color:#fff; padding:4px 12px; border-radius:2px;">
-            {isEs ? '12 hrs asignadas · 6 hrs libres' : '12 hrs assigned · 6 hrs free'}
-          </div>
-        </div>
-
-        <div style="display:grid; grid-template-columns:340px 1fr; gap:20px; align-items:start;">
-          
-          <!-- Columna Izquierda: Parámetros Institucionales -->
-          <div style="display:flex; flex-direction:column; gap:14px; background:var(--cream); padding:16px; border:1px solid var(--ink);">
-            
-            <!-- Régimen -->
-            <div class="form-field">
-              <label style="font-family:var(--mono); font-size:11px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:6px; color:var(--ink);">
-                {isEs ? 'Régimen de Vinculación *' : 'Employment Status *'}
-              </label>
-              <div style="display:flex; flex-direction:column; gap:6px;">
-                <label style="display:flex; align-items:center; justify-content:space-between; padding:6px 10px; background:var(--paper); border:1px solid var(--ink); cursor:pointer;">
-                  <span style="display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:700; color:var(--ink);">
-                    <input type="radio" name="teacherType" value="planta" checked style="accent-color:var(--ink);" />
-                    {isEs ? 'Docente de Planta' : 'Permanent Faculty'}
-                  </span>
-                  <span class="plan-tag" style="background:var(--olive-dark); color:#fff; font-size:9.5px; padding:1px 6px;">
-                    18 hrs
-                  </span>
-                </label>
-
-                <label style="display:flex; align-items:center; justify-content:space-between; padding:6px 10px; background:var(--paper); border:1px solid var(--line); cursor:pointer;">
-                  <span style="display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:700; color:var(--ink);">
-                    <input type="radio" name="teacherType" value="provisional" style="accent-color:var(--ink);" />
-                    {isEs ? 'Provisional / Cátedra' : 'Provisional / Hourly'}
-                  </span>
-                  <span class="plan-tag" style="background:var(--rust); color:#fff; font-size:9.5px; padding:1px 6px;">
-                    Variable
-                  </span>
-                </label>
-              </div>
-            </div>
-
-            <!-- Departamento -->
-            <div class="form-field">
-              <label style="font-family:var(--mono); font-size:11px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:4px; color:var(--ink);">
-                {isEs ? 'Departamento Académico *' : 'Academic Department *'}
-              </label>
-              <select id="docenteDept" style="width:100%; border:1px solid var(--ink); background:var(--paper); padding:7px 10px; font-family:var(--mono); font-size:12px;">
-                <option value="dep-nat" selected>{isEs ? 'Ciencias Naturales & Biología (NAT)' : 'Natural Sciences & Biology (NAT)'}</option>
-                <option value="dep-mat">{isEs ? 'Matemáticas & Cálculo (MAT)' : 'Mathematics & Calculus (MAT)'}</option>
-                <option value="dep-len">{isEs ? 'Lenguaje & Literatura (LEN)' : 'Language & Literature (LEN)'}</option>
-                <option value="dep-ing">{isEs ? 'Inglés & Bilingüismo (ING)' : 'English & Bilingualism (ING)'}</option>
-                <option value="dep-soc">{isEs ? 'Ciencias Sociales & Filosofía (SOC)' : 'Social Sciences (SOC)'}</option>
-              </select>
-            </div>
-
-            <!-- Director de Grupo -->
-            <div class="form-field">
-              <label style="font-family:var(--mono); font-size:11px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:4px; color:var(--ink);">
-                {isEs ? '¿Es Director de Grupo (Tutor)?' : 'Is Class Director / Tutor?'}
-              </label>
-              <div style="display:flex; gap:6px;">
-                <select id="docenteIsDirector" style="border:1px solid var(--ink); background:var(--paper); padding:7px 8px; font-family:var(--mono); font-size:12px; width:70px;">
-                  <option value="si" selected>{isEs ? 'Sí' : 'Yes'}</option>
-                  <option value="no">{isEs ? 'No' : 'No'}</option>
-                </select>
-                <select id="docenteDirectorGroup" style="flex:1; border:1px solid var(--ink); background:var(--paper); padding:7px 8px; font-family:var(--mono); font-size:11.5px;">
-                  <option value="10-1" selected>{isEs ? '10-1 (30 alumnos · Salón 204)' : '10-1 (30 students · Room 204)'}</option>
-                  <option value="10-2">{isEs ? '10-2 (28 alumnos · Salón 205)' : '10-2 (28 students · Room 205)'}</option>
-                  <option value="11-1">{isEs ? '11-1 (31 alumnos · Salón 301)' : '11-1 (31 students · Room 301)'}</option>
-                  <option value="11-2">{isEs ? '11-2 (32 alumnos · Salón 302)' : '11-2 (32 students · Room 302)'}</option>
-                  <option value="9-1">{isEs ? '9-1 (28 alumnos · Salón 101)' : '9-1 (28 students · Room 101)'}</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Atención a Padres -->
-            <div class="form-field">
-              <label style="font-family:var(--mono); font-size:11px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:4px; color:var(--ink);">
-                {isEs ? 'Franja de Atención a Padres *' : 'Parent Office Hours *'}
-              </label>
-              <div style="display:flex; flex-direction:column; gap:6px;">
-                <select id="docenteOfficeDay" style="width:100%; border:1px solid var(--ink); background:var(--paper); padding:7px 8px; font-family:var(--mono); font-size:11.5px;">
-                  <option value="Jueves" selected>{isEs ? 'Jueves' : 'Thursday'}</option>
-                  <option value="Viernes">{isEs ? 'Viernes' : 'Friday'}</option>
-                  <option value="Miércoles">{isEs ? 'Miércoles' : 'Wednesday'}</option>
-                  <option value="Martes">{isEs ? 'Martes' : 'Tuesday'}</option>
-                  <option value="Lunes">{isEs ? 'Lunes' : 'Monday'}</option>
-                </select>
-                <input
-                  type="text"
-                  id="docenteOfficeHour"
-                  value="09:30 - 10:30 AM (Sala de Profesores)"
-                  style="width:100%; border:1px solid var(--ink); background:var(--paper); padding:7px 8px; font-family:var(--mono); font-size:11px;"
-                />
-              </div>
-            </div>
-
-          </div>
-
-          <!-- Columna Derecha: Asignación de Cursos y Aulas -->
-          <div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-              <label style="font-family:var(--mono); font-size:11px; font-weight:800; text-transform:uppercase; margin:0; color:var(--ink);">
-                {isEs ? 'Marque las Asignaturas y Salones Asignados:' : 'Check Assigned Subjects and Classrooms:'}
-              </label>
-              
-              <!-- Filtro de Área -->
-              <div style="display:flex; gap:4px;">
-                <button type="button" class="btn-filter-dept btn btn-sm" data-dept="all" style="font-size:10px; padding:2px 7px; background:var(--ink); color:#fff; font-family:var(--mono);">
-                  {isEs ? 'Todos' : 'All'}
-                </button>
-                <button type="button" class="btn-filter-dept btn btn-sm" data-dept="dep-nat" style="font-size:10px; padding:2px 7px; background:var(--cream); border:1px solid var(--ink); font-family:var(--mono);">
-                  NAT
-                </button>
-                <button type="button" class="btn-filter-dept btn btn-sm" data-dept="dep-mat" style="font-size:10px; padding:2px 7px; background:var(--cream); border:1px solid var(--ink); font-family:var(--mono);">
-                  MAT
-                </button>
-                <button type="button" class="btn-filter-dept btn btn-sm" data-dept="dep-len" style="font-size:10px; padding:2px 7px; background:var(--cream); border:1px solid var(--ink); font-family:var(--mono);">
-                  LEN
-                </button>
-              </div>
-            </div>
-
-            <!-- Lista de Cursos -->
-            <div id="courseListContainer" style="border:1px solid var(--ink); background:var(--cream); max-height:300px; overflow-y:auto; padding:4px;">
-              {defaultCourses.map((crs, idx) => (
-                <label
-                  class="course-select-row"
-                  data-dept-id={crs.dept}
-                  style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; margin-bottom:3px; background:var(--paper); border:1px solid var(--line); cursor:pointer; transition:all 0.15s;"
-                >
-                  <div style="display:flex; align-items:center; gap:10px;">
-                    <input
-                      type="checkbox"
-                      class="course-checkbox"
-                      value={crs.id}
-                      checked={idx === 3 || idx === 6}
-                      data-name={crs.name}
-                      data-code={crs.code}
-                      data-dept={crs.dept}
-                      data-room={crs.room}
-                      data-students={crs.students}
-                      data-hours={crs.hours}
-                      data-schedule={crs.schedule}
-                      data-slots={JSON.stringify(crs.slots)}
-                      style="accent-color:var(--ink); transform:scale(1.15);"
-                    />
-                    <div>
-                      <div style="display:flex; align-items:center; gap:6px;">
-                        <strong style="font-size:13px; color:var(--ink);">{crs.name}</strong>
-                        <span class="plan-tag" style="background:var(--cream); color:var(--ink); font-size:9px; padding:1px 5px;">
-                          {crs.deptCode}
-                        </span>
-                      </div>
-                      <span style="font-size:11px; color:var(--ink-soft); font-family:var(--mono); margin-top:1px; display:block;">
-                        {crs.schedule} · <strong>Salón: {crs.room}</strong>
-                      </span>
-                    </div>
-                  </div>
-
-                  <div style="text-align:right;">
-                    <span class="badge badge-active" style="font-size:10.5px; padding:2px 7px; font-weight:700;">
-                      {crs.students} {isEs ? 'alumnos' : 'students'}
-                    </span>
-                    <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); margin-top:2px;">
-                      {crs.hours} hrs/sem
-                    </div>
-                  </div>
-                </label>
-              ))}
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-      <!-- ══════════════════════════════════════════════════════════ -->
-      <!-- PASO 3: RESUMEN DIRECTIVO & MATRIZ HORARIA               -->
-      <!-- ══════════════════════════════════════════════════════════ -->
-      <div id="stepContainer3" class="wizard-step-content" style="display:none;">
-        <div style="margin-bottom:14px; display:flex; justify-content:space-between; align-items:flex-end; border-bottom:1px solid var(--line); padding-bottom:8px;">
-          <div>
-            <h3 style="font-family:var(--serif); font-size:18px; margin:0 0 2px; color:var(--ink); font-weight:700;">
-              {isEs ? 'Paso 3: Ficha Directiva y Matriz Horaria' : 'Step 3: Principal Summary & Generated Schedule'}
-            </h3>
-            <p style="font-size:12.5px; color:var(--ink-soft); margin:0;">
-              {isEs ? 'Inspección final de la carga horaria semanal, salones físicos y horas disponibles para suplencias.' : 'Final review of weekly schedule load, physical rooms and free substitution hours.'}
-            </p>
-          </div>
-          <span class="plan-tag" style="background:var(--olive-dark); color:#fff; font-size:11px; font-weight:800; padding:4px 10px;">
-            {isEs ? '[ Ficha Completa ]' : '[ Complete Profile ]'}
-          </span>
-        </div>
-
-        <!-- Tarjeta de Resumen Ejecutivo Expandida -->
-        <div class="panel" style="background:var(--cream); padding:14px 18px; margin-bottom:16px; border:1px solid var(--ink);">
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-            
-            <div style="display:flex; gap:14px; align-items:center;">
+          <div style="display:grid; grid-template-columns: 100px 1fr; gap:16px; align-items:start;">
+            <!-- Avatar Box -->
+            <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
               <div
-                id="summaryAvatarBox"
-                style="width:52px; height:52px; background:var(--paper); color:#fff; font-family:var(--serif); font-size:22px; font-weight:800; display:flex; align-items:center; justify-content:center; border:2px solid var(--ink); overflow:hidden; flex-shrink:0;"
+                id={`${id}AvatarPreview`}
+                style="width:84px; height:84px; border:2px solid var(--ink); background:#FFFFFF; display:flex; align-items:center; justify-content:center; overflow:hidden; box-shadow:2px 2px 0 var(--ink);"
               >
-                <img id="summaryAvatarImg" src={menAvatars[0]} alt="Avatar" style="width:100%; height:100%; object-fit:cover; display:block;" />
-                <span id="summaryInitials" style="display:none; color:var(--ink);">RM</span>
+                <img id={`${id}AvatarImg`} src="/avatars/men/fila-2-columna-1.png" alt="Avatar Docente" style="width:100%; height:100%; object-fit:contain;" />
+              </div>
+              <button
+                type="button"
+                id={`${id}BtnChangeAvatar`}
+                class="btn btn-secondary btn-sm"
+                onclick={`window.openAvatarPicker && window.openAvatarPicker('${id}AvatarPickerModal', document.getElementById('${id}Gender')?.value || 'Hombre', '${id}AvatarUrl', '${id}AvatarImg');`}
+                style="font-size:9.5px; font-weight:800; padding:4px 6px; width:100%; text-align:center;"
+              >
+                Elegir Avatar
+              </button>
+            </div>
+
+            <!-- Datos Principales -->
+            <div style="display:grid; grid-template-columns: 1.4fr 1fr; gap:12px;">
+              <div style="grid-column: span 2;">
+                <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
+                  Nombre Completo del Docente *
+                </label>
+                <input type="text" id={`${id}Name`} required placeholder="Ej: Lic. Andrés Felipe Cárdenas" style="width:100%; border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-size:13px;" />
               </div>
 
               <div>
-                <h4 id="summaryName" style="font-family:var(--serif); font-size:17px; margin:0 0 3px; color:var(--ink); font-weight:800;">
-                  Roberto Méndez Cruz
-                </h4>
-                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                  <span id="summaryTypeBadge" class="plan-tag" style="background:var(--ink); color:#fff; font-size:9.5px; padding:1px 6px; font-weight:800;">
-                    PLANTA (18h)
-                  </span>
-                  <span id="summaryDeptText" style="font-size:11.5px; color:var(--ink-soft); font-family:var(--mono);">
-                    Ciencias Naturales & Biología
-                  </span>
-                  <span id="summaryDirectorBadge" class="badge" style="font-size:10px; background:#fff; border:1px solid var(--ink); color:var(--ink); font-weight:700;">
-                    Dir. Grupo: 10-1
-                  </span>
+                <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
+                  <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; text-transform:uppercase;">
+                    Código Docente *
+                  </label>
+                  <button
+                    type="button"
+                    onclick={`
+                      var codeInput = document.getElementById('${id}TeacherCode');
+                      if (codeInput) {
+                        var rand = Math.floor(100 + Math.random() * 900);
+                        codeInput.value = 'DOC-2026-' + rand;
+                      }
+                    `}
+                    style="background:none; border:none; color:var(--rust); font-family:var(--mono); font-size:10px; font-weight:800; cursor:pointer; text-decoration:underline;"
+                  >
+                    Generar ⟳
+                  </button>
+                </div>
+                <div style="display:flex; gap:4px;">
+                  <input
+                    type="text"
+                    id={`${id}TeacherCode`}
+                    required
+                    placeholder="DOC-2026-015"
+                    style="width:100%; border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-size:12.5px; font-family:var(--mono); font-weight:700;"
+                  />
+                </div>
+                <div style="font-size:10px; color:var(--ink-soft); margin-top:2px;">
+                  Generado automáticamente (configurable).
                 </div>
               </div>
-            </div>
 
-            <div style="text-align:right;">
-              <div style="font-size:11.5px; color:var(--ink-soft); font-family:var(--mono);">
-                Tel: <span id="summaryPhone" style="font-weight:700; color:var(--ink);">+57 312 890 1234</span>
+              <div>
+                <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
+                  Género *
+                </label>
+                <select
+                  id={`${id}Gender`}
+                  onchange={`
+                    var g = this.value;
+                    var defaultImg = g === 'Mujer' ? '/avatars/women/fila-2-columna-1.png' : '/avatars/men/fila-2-columna-1.png';
+                    document.getElementById('${id}AvatarUrl').value = defaultImg;
+                    document.getElementById('${id}AvatarImg').src = defaultImg;
+                  `}
+                  style="width:100%; border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-size:12.5px; font-family:var(--mono); font-weight:700;"
+                >
+                  <option value="Hombre" selected>Masculino</option>
+                  <option value="Mujer">Femenino</option>
+                </select>
               </div>
-              <div style="font-size:11.5px; color:var(--ink-soft); font-family:var(--mono); margin-top:2px;">
-                {isEs ? 'Atención a Padres:' : 'Office Hours:'} <strong id="summaryOffice" style="color:var(--ink);">Jueves 09:30 AM</strong>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- Métricas de Carga en 4 Columnas -->
-          <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; margin-top:12px; padding-top:10px; border-top:1px dashed var(--line-strong);">
-            <div style="background:var(--paper); padding:8px 12px; border:1px solid var(--line);">
-              <div style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft); text-transform:uppercase;">TOTAL ALUMNOS</div>
-              <div id="summaryTotalStudents" style="font-size:18px; font-weight:800; font-family:var(--mono); color:var(--ink);">60</div>
-            </div>
-            <div style="background:var(--paper); padding:8px 12px; border:1px solid var(--line);">
-              <div style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft); text-transform:uppercase;">GRUPOS ASIGNADOS</div>
-              <div id="summaryTotalGroups" style="font-size:18px; font-weight:800; font-family:var(--mono); color:var(--ink);">2 grupos</div>
-            </div>
-            <div style="background:var(--paper); padding:8px 12px; border:1px solid var(--line);">
-              <div style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft); text-transform:uppercase;">HORAS LECTIVAS</div>
-              <div id="summaryTotalHours" style="font-size:18px; font-weight:800; font-family:var(--mono); color:var(--ink);">12 hrs/sem</div>
-            </div>
-            <div style="background:var(--paper); padding:8px 12px; border:1px solid var(--line);">
-              <div style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft); text-transform:uppercase;">DISP. SUPLENCIAS</div>
-              <div id="summaryFreeHours" style="font-size:18px; font-weight:800; font-family:var(--mono); color:var(--olive-dark);">6 hrs libres</div>
             </div>
           </div>
         </div>
 
-        <!-- Matriz Horaria Semanal Lunes a Viernes con Salones -->
-        <div>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-            <div style="font-family:var(--mono); font-size:11px; font-weight:800; text-transform:uppercase; color:var(--ink);">
-              {isEs ? 'Matriz Semanal de Clases y Salones Físicos (L-V):' : 'Weekly Schedule & Room Matrix (M-F):'}
+        <!-- SECCIÓN 2: ESPECIALIDAD, DIRECCIÓN DE GRUPO & JORNADA -->
+        <div style="background:var(--cream); border:1.5px solid var(--ink); padding:16px; margin-bottom:16px; box-shadow:2px 2px 0 var(--ink);">
+          <div style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; color:var(--rust); margin-bottom:12px; display:flex; align-items:center; gap:6px;">
+            <span>02 ·</span> Especialidad Académica, Cargo & Dirección de Grupo
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1.2fr 1fr; gap:12px; margin-bottom:12px;">
+            <div>
+              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
+                Área / Departamento Curricular *
+              </label>
+              <select id={`${id}Specialty`} style="width:100%; border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-size:12px; font-family:var(--mono); font-weight:700;">
+                <option value="Ciencias Naturales y Educación Ambiental" selected>Ciencias Naturales y Educación Ambiental</option>
+                <option value="Matemáticas y Geometría">Matemáticas y Geometría</option>
+                <option value="Lengua Castellana y Literatura">Lengua Castellana y Literatura</option>
+                <option value="Idioma Extranjero (Inglés)">Idioma Extranjero (Inglés)</option>
+                <option value="Ciencias Sociales, Historia y Geografía">Ciencias Sociales, Historia y Geografía</option>
+                <option value="Educación Artística y Cultura">Educación Artística y Cultura</option>
+                <option value="Educación Física, Recreación y Deportes">Educación Física, Recreación y Deportes</option>
+                <option value="Tecnología e Informática">Tecnología e Informática</option>
+                <option value="Filosofía y Ética">Filosofía y Ética</option>
+                <option value="Educación Religiosa">Educación Religiosa</option>
+              </select>
             </div>
-            <div style="font-size:10.5px; color:var(--ink-soft); font-family:var(--mono);">
-              {isEs ? '[ Libre ] = Espacio disponible para suplencias' : '[ Free ] = Available for substitution'}
+
+            <div>
+              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
+                Director de Grupo / Titular
+              </label>
+              <select id={`${id}HomeroomGroup`} style="width:100%; border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-size:12px; font-family:var(--mono); font-weight:700;">
+                <option value="none" selected>Ninguno (Docente de Área)</option>
+                <!-- Salones cargados dinámicamente -->
+              </select>
             </div>
           </div>
 
-          <table class="data-table" style="font-size:11.5px; width:100%; border:1px solid var(--ink);">
-            <thead>
-              <tr style="background:var(--ink); color:#FFFFFF;">
-                <th style="width:100px; padding:7px 8px; font-family:var(--mono); font-size:10.5px;">BLOQUE</th>
-                {days.map(d => (
-                  <th style="padding:7px 8px; font-family:var(--mono); font-size:10.5px; text-align:center;">{d}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody id="summaryScheduleBody">
-              <!-- Renderizado dinámico en JS -->
-            </tbody>
-          </table>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+            <div>
+              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
+                Jornada Laboral *
+              </label>
+              <select id={`${id}Shift`} style="width:100%; border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-size:12px; font-family:var(--mono);">
+                <option value="Mañana" selected>Mañana</option>
+                <option value="Tarde">Tarde</option>
+                <option value="Única">Jornada Completa / Única</option>
+                <option value="Nocturna">Nocturna</option>
+              </select>
+            </div>
+
+            <div>
+              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
+                Teléfono / WhatsApp Docente
+              </label>
+              <input type="tel" id={`${id}Phone`} placeholder="+57 300 123 4567" style="width:100%; border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-size:12.5px; font-family:var(--mono);" />
+            </div>
+          </div>
         </div>
 
-      </div>
+        <!-- SECCIÓN 3: CORREO DE ACCESO & ACTIVACIÓN JWT -->
+        <div style="background:var(--cream); border:1.5px solid var(--ink); padding:16px; margin-bottom:20px; box-shadow:2px 2px 0 var(--ink);">
+          <div style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; color:var(--rust); margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+            <span>03 ·</span> Cuenta Institucional & Invitación Segura (JWT)
+          </div>
 
-    </div>
+          <div>
+            <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
+              Correo Electrónico Institucional de Acceso *
+            </label>
+            <input type="email" id={`${id}Email`} required placeholder="profesor@colegio.edu.co" style="width:100%; border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-size:12.5px; font-family:var(--mono);" />
+          </div>
 
-    <!-- ── 4. FOOTER DE ACCIONES DEL WIZARD ──────────────────────── -->
-    <div
-      class="panel-footer"
-      style="background:var(--cream); padding:12px 22px; border-top:1px solid var(--line-strong); display:flex; justify-content:space-between; align-items:center; flex-shrink:0;"
-    >
-      <div>
-        <button
-          type="button"
-          id="wizardPrevBtn"
-          class="btn btn-secondary btn-sm"
-          style="display:none; font-weight:700; font-size:11.5px; padding:5px 12px;"
-        >
-          ← {isEs ? 'Paso Anterior' : 'Previous Step'}
-        </button>
-      </div>
+          <div style="font-size:11.5px; color:var(--ink-soft); line-height:1.45; margin-top:8px;">
+            Al vincular al docente se despachará automáticamente un <strong>correo con token JWT de 48 horas</strong> para que el profesor confirme su código docente y cree su contraseña personal.
+          </div>
+        </div>
 
-      <div style="display:flex; gap:10px; align-items:center;">
-        <button
-          type="button"
-          class="btn btn-secondary btn-sm close-modal-btn"
-          style="font-size:11.5px; padding:5px 12px;"
-        >
-          {isEs ? 'Cancelar' : 'Cancel'}
-        </button>
+        <!-- FOOTER ACTIONS -->
+        <div style="display:flex; justify-content:space-between; align-items:center; border-top:1.5px solid var(--line); padding-top:16px;">
+          <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">
+            Las materias y horarios se asignan posteriormente en la Malla Curricular.
+          </div>
 
-        <button
-          type="button"
-          id="wizardNextBtn"
-          class="btn btn-primary btn-sm"
-          style="font-weight:800; font-size:11.5px; padding:6px 16px;"
-        >
-          {isEs ? 'Continuar a Asignación de Cursos →' : 'Continue to Course Assignment →'}
-        </button>
+          <div style="display:flex; gap:10px;">
+            <button type="button" class="btn btn-secondary" onclick={`document.getElementById('${id}').style.display='none';`}>
+              Cancelar
+            </button>
+            <button type="submit" id={`${id}SubmitBtn`} class="btn btn-primary" style="font-weight:800;">
+              Vincular y Enviar Invitación
+            </button>
+          </div>
+        </div>
 
-        <button
-          type="button"
-          id="wizardSubmitBtn"
-          class="btn btn-primary btn-sm"
-          style="display:none; background:var(--olive-dark); border-color:var(--olive-dark); font-weight:800; font-size:12px; padding:6px 18px;"
-        >
-          {isEs ? '✓ Confirmar y Vincular Docente' : '✓ Confirm & Register Faculty'}
-        </button>
-      </div>
+      </form>
     </div>
 
   </div>
 </div>
 
-<script is:inline define:vars={{ id, isEs, timeSlots, days }}>
-  (function() {
-    var modal = document.getElementById(id);
+<AvatarPickerModal id={`${id}AvatarPickerModal`} />
+
+
+<script>
+  import { teacherService } from '../../../services/teacherService';
+  import { courseManagementService } from '../../../services/courseManagementService';
+
+  function getActiveTenantSchoolId(): string {
+    try {
+      const user = JSON.parse(localStorage.getItem('schoolos-user') || '{}');
+      if (user.schoolId) return user.schoolId;
+    } catch (_) {}
+    return (window as any).SchoolOSApp?.currentSchoolId || (window as any)._currentTenantSchoolId || localStorage.getItem('schoolos_tenant_id') || localStorage.getItem('schoolos_tenant_slug') || '';
+  }
+
+  function getModalId(): string {
+    const modal = document.querySelector('[data-teacher-register-modal]') as HTMLElement || document.getElementById('TeacherRegisterModal');
+    return modal ? modal.id : 'TeacherRegisterModal';
+  }
+
+  async function loadHomeroomOptions(currentSchoolId?: string, selectedVal?: string) {
+    try {
+      const sId = currentSchoolId || getActiveTenantSchoolId();
+      if (!sId) return;
+
+      const res = await courseManagementService.getGradeCapacities(sId);
+      const gradeCapacities = res.data || [];
+
+      const modalId = getModalId();
+      const select = document.getElementById(modalId + 'HomeroomGroup') as HTMLSelectElement;
+      if (!select) return;
+
+      let html = '<option value="none">Ninguno (Docente de Área)</option>';
+      if (Array.isArray(gradeCapacities)) {
+        gradeCapacities.forEach(function(g: any) {
+          if (g.is_offered !== false && (g.sections_count || g.sectionsCount) > 0) {
+            const count = g.sections_count || g.sectionsCount || 1;
+            const gradeName = g.grade_level || g.gradeLevel || '';
+            for (let i = 1; i <= count; i++) {
+              const room = gradeName + '-' + i;
+              html += '<option value="' + room + '">Director Salón ' + room + '</option>';
+            }
+          }
+        });
+      }
+      select.innerHTML = html;
+      if (selectedVal) {
+        select.value = selectedVal;
+      }
+    } catch (err) {
+      console.warn('Error cargando salones para director de grupo:', err);
+    }
+  }
+
+  (window as any).openTeacherRegisterModal = function(customSchoolId?: string) {
+    const modalId = getModalId();
+    const modal = document.getElementById(modalId);
     if (!modal) return;
 
-    var currentStep = 1;
-    var selectedAvatarSrc = '/avatars/men/fila-1-columna-1.png';
+    const titleEl = document.getElementById(modalId + 'ModalTitle');
+    const submitBtn = document.getElementById(modalId + 'SubmitBtn') as HTMLButtonElement;
+    const teacherIdInput = document.getElementById(modalId + 'TeacherId') as HTMLInputElement;
+    const codeInput = document.getElementById(modalId + 'TeacherCode') as HTMLInputElement;
+    const nameInput = document.getElementById(modalId + 'Name') as HTMLInputElement;
+    const emailInput = document.getElementById(modalId + 'Email') as HTMLInputElement;
+    const phoneInput = document.getElementById(modalId + 'Phone') as HTMLInputElement;
+    const schoolInput = document.getElementById(modalId + 'SchoolId') as HTMLInputElement;
 
-    // Containers
-    var step1 = document.getElementById('stepContainer1');
-    var step2 = document.getElementById('stepContainer2');
-    var step3 = document.getElementById('stepContainer3');
-    
-    var stepTabs = modal.querySelectorAll('.wizard-step-tab');
-    var prevBtn = document.getElementById('wizardPrevBtn');
-    var nextBtn = document.getElementById('wizardNextBtn');
-    var submitBtn = document.getElementById('wizardSubmitBtn');
-    var autofillBtn = document.getElementById('btnAutofillMock');
-
-    // Inputs
-    var nameInput = document.getElementById('docenteNombre');
-    var docIdInput = document.getElementById('docenteDocumento');
-    var telInput = document.getElementById('docenteTelefono');
-    var emailInput = document.getElementById('docenteEmail');
-    var specInput = document.getElementById('docenteEspecialidad');
-    var deptSelect = document.getElementById('docenteDept');
-    var isDirectorSelect = document.getElementById('docenteIsDirector');
-    var directorGroupSelect = document.getElementById('docenteDirectorGroup');
-    var officeDaySelect = document.getElementById('docenteOfficeDay');
-    var officeHourInput = document.getElementById('docenteOfficeHour');
-
-    // Avatar handlers
-    var fileInput = document.getElementById('avatarFileInput');
-    var uploadBtn = document.getElementById('btnUploadPhoto');
-    var avatarImg = document.getElementById('avatarImageElem');
-    var selectedAvatarLabel = document.getElementById('selectedAvatarLabel');
-    var summaryAvatarImg = document.getElementById('summaryAvatarImg');
-
-    var tabMen = document.getElementById('tabAvatarsMen');
-    var tabWomen = document.getElementById('tabAvatarsWomen');
-    var gridMen = document.getElementById('gridAvatarsMen');
-    var gridWomen = document.getElementById('gridAvatarsWomen');
-
-    // Avatar Category Tabs
-    tabMen?.addEventListener('click', function() {
-      tabMen.style.background = 'var(--ink)';
-      tabMen.style.color = '#fff';
-      tabMen.style.border = '1px solid var(--ink)';
-
-      tabWomen.style.background = 'var(--cream)';
-      tabWomen.style.color = 'var(--ink)';
-      tabWomen.style.border = '1px solid var(--ink)';
-
-      if (gridMen) gridMen.style.display = 'grid';
-      if (gridWomen) gridWomen.style.display = 'none';
-    });
-
-    tabWomen?.addEventListener('click', function() {
-      tabWomen.style.background = 'var(--ink)';
-      tabWomen.style.color = '#fff';
-      tabWomen.style.border = '1px solid var(--ink)';
-
-      tabMen.style.background = 'var(--cream)';
-      tabMen.style.color = 'var(--ink)';
-      tabMen.style.border = '1px solid var(--ink)';
-
-      if (gridWomen) gridWomen.style.display = 'grid';
-      if (gridMen) gridMen.style.display = 'none';
-    });
-
-    // Avatar Thumbnails Click Handling
-    modal.querySelectorAll('.avatar-thumb-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        modal.querySelectorAll('.avatar-thumb-btn').forEach(function(b) {
-          b.style.border = '1px solid var(--line)';
-          b.style.boxShadow = 'none';
-          b.classList.remove('selected');
-        });
-
-        btn.style.border = '2px solid var(--ink)';
-        btn.style.boxShadow = '2px 2px 0 var(--ink)';
-        btn.classList.add('selected');
-
-        var src = btn.getAttribute('data-src') || '';
-        var label = btn.getAttribute('data-label') || '';
-        selectedAvatarSrc = src;
-
-        if (avatarImg) {
-          avatarImg.src = src;
-          avatarImg.style.display = 'block';
-        }
-        if (selectedAvatarLabel) selectedAvatarLabel.textContent = label;
-
-        if (summaryAvatarImg) {
-          summaryAvatarImg.src = src;
-          summaryAvatarImg.style.display = 'block';
-        }
-      });
-    });
-
-    // Custom File Upload handling
-    uploadBtn?.addEventListener('click', function() {
-      fileInput?.click();
-    });
-
-    fileInput?.addEventListener('change', function(e) {
-      var file = e.target.files && e.target.files[0];
-      if (file) {
-        var reader = new FileReader();
-        reader.onload = function(evt) {
-          var src = evt.target.result;
-          selectedAvatarSrc = src;
-          if (avatarImg) {
-            avatarImg.src = src;
-            avatarImg.style.display = 'block';
-          }
-          if (selectedAvatarLabel) selectedAvatarLabel.textContent = isEs ? 'Foto Personal' : 'Custom Photo';
-
-          if (summaryAvatarImg) {
-            summaryAvatarImg.src = src;
-            summaryAvatarImg.style.display = 'block';
-          }
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-
-    function getInitials(name) {
-      if (!name) return 'ND';
-      var parts = name.trim().split(' ').filter(Boolean);
-      if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
-      return (parts[0][0] + parts[1][0]).toUpperCase();
+    if (titleEl) titleEl.textContent = 'Vinculación Oficial de Docente';
+    if (submitBtn) submitBtn.textContent = 'Vincular y Enviar Invitación';
+    if (teacherIdInput) teacherIdInput.value = '';
+    if (nameInput) nameInput.value = '';
+    if (emailInput) emailInput.value = '';
+    if (phoneInput) phoneInput.value = '';
+    if (codeInput) {
+      const rand = Math.floor(100 + Math.random() * 900);
+      codeInput.value = 'DOC-2026-' + rand;
+    }
+    const sId = customSchoolId || getActiveTenantSchoolId();
+    if (schoolInput) {
+      schoolInput.value = sId;
     }
 
-    // Auto-generate suggested institutional email on name change
-    nameInput?.addEventListener('blur', function() {
-      if (nameInput.value && (!emailInput.value || emailInput.value.includes('@colegionorte.edu.co'))) {
-        var clean = nameInput.value.toLowerCase().replace(/lic\.|dr\.|ing\.|prof\./g, '').trim();
-        var parts = clean.split(' ').filter(Boolean);
-        if (parts.length >= 2) {
-          emailInput.value = parts[0] + '.' + parts[1] + '@colegionorte.edu.co';
-        }
+    loadHomeroomOptions(sId, 'none');
+    modal.style.display = 'flex';
+  };
+
+  (window as any).openTeacherModal = function(teacherData: any) {
+    const modalId = getModalId();
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+
+    const titleEl = document.getElementById(modalId + 'ModalTitle');
+    const submitBtn = document.getElementById(modalId + 'SubmitBtn') as HTMLButtonElement;
+    const teacherIdInput = document.getElementById(modalId + 'TeacherId') as HTMLInputElement;
+    const codeInput = document.getElementById(modalId + 'TeacherCode') as HTMLInputElement;
+    const nameInput = document.getElementById(modalId + 'Name') as HTMLInputElement;
+    const emailInput = document.getElementById(modalId + 'Email') as HTMLInputElement;
+    const phoneInput = document.getElementById(modalId + 'Phone') as HTMLInputElement;
+    const specialtySelect = document.getElementById(modalId + 'Specialty') as HTMLSelectElement;
+    const avatarUrlInput = document.getElementById(modalId + 'AvatarUrl') as HTMLInputElement;
+    const avatarImg = document.getElementById(modalId + 'AvatarImg') as HTMLImageElement;
+    const schoolInput = document.getElementById(modalId + 'SchoolId') as HTMLInputElement;
+
+    const sId = getActiveTenantSchoolId();
+    if (schoolInput) schoolInput.value = sId;
+
+    if (teacherData) {
+      if (titleEl) titleEl.textContent = 'Editar Expediente Docente — ' + (teacherData.name || '');
+      if (submitBtn) submitBtn.textContent = 'Guardar Cambios del Docente';
+      if (teacherIdInput) teacherIdInput.value = teacherData.id || '';
+      if (nameInput) nameInput.value = teacherData.name || '';
+      if (emailInput) emailInput.value = teacherData.email || '';
+      if (phoneInput) phoneInput.value = teacherData.phone || '';
+      if (codeInput) codeInput.value = teacherData.documentId || teacherData.teacherCode || '';
+      if (specialtySelect && teacherData.specialty) specialtySelect.value = teacherData.specialty;
+      if (avatarUrlInput && teacherData.avatarUrl) avatarUrlInput.value = teacherData.avatarUrl;
+      if (avatarImg && teacherData.avatarUrl) avatarImg.src = teacherData.avatarUrl;
+
+      let homeroomVal = 'none';
+      if (teacherData.jobTitle && teacherData.jobTitle.includes('Director de Grupo')) {
+        homeroomVal = teacherData.jobTitle.replace('Director de Grupo', '').trim();
       }
-    });
-
-    // Autofill Demo Data
-    autofillBtn?.addEventListener('click', function() {
-      if (nameInput) nameInput.value = isEs ? 'Lic. Roberto Méndez Cruz' : 'Dr. Robert Mendez';
-      if (docIdInput) docIdInput.value = 'CC 79.450.890';
-      if (telInput) telInput.value = '+57 312 890 1234';
-      if (emailInput) emailInput.value = 'roberto.mendez@colegionorte.edu.co';
-      if (specInput) specInput.value = isEs ? 'Licenciado en Física & Matemáticas Puras' : 'BSc Physics & Mathematics';
-      alert(isEs ? 'Datos de prueba cargados exitosamente.' : 'Demo data filled.');
-    });
-
-    // Department filtering in Step 2
-    function applyDeptFilter(deptId) {
-      modal.querySelectorAll('.course-select-row').forEach(function(row) {
-        var rDept = row.getAttribute('data-dept-id');
-        if (deptId === 'all' || rDept === deptId) {
-          row.style.display = 'flex';
-        } else {
-          row.style.display = 'none';
-        }
-      });
+      loadHomeroomOptions(sId, homeroomVal);
     }
 
-    modal.querySelectorAll('.btn-filter-dept').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        modal.querySelectorAll('.btn-filter-dept').forEach(function(b) {
-          b.style.background = 'var(--cream)';
-          b.style.color = 'var(--ink)';
-          b.style.border = '1px solid var(--ink)';
-        });
-        btn.style.background = 'var(--ink)';
-        btn.style.color = '#fff';
-        btn.style.border = 'none';
+    modal.style.display = 'flex';
+  };
 
-        var dept = btn.getAttribute('data-dept') || 'all';
-        applyDeptFilter(dept);
-      });
-    });
+  document.addEventListener('DOMContentLoaded', () => {
+    const modalId = getModalId();
+    const form = document.getElementById(modalId + 'Form');
+    const modal = document.getElementById(modalId);
+    if (!form || !modal) return;
 
-    deptSelect?.addEventListener('change', function() {
-      var selected = deptSelect.value;
-      var matchBtn = modal.querySelector('.btn-filter-dept[data-dept="' + selected + '"]');
-      if (matchBtn) {
-        matchBtn.click();
-      } else {
-        applyDeptFilter(selected);
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const submitBtn = document.getElementById(modalId + 'SubmitBtn') as HTMLButtonElement;
+      const feedback = document.getElementById(modalId + 'Feedback');
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Guardando datos…';
       }
-    });
-
-    // Live Hours & Student Recalculation
-    function updateLiveHours() {
-      var checkboxes = modal.querySelectorAll('.course-checkbox:checked');
-      var totalHours = 0;
-      var totalStudents = 0;
-
-      checkboxes.forEach(function(cb) {
-        totalHours += parseInt(cb.getAttribute('data-hours') || '6', 10);
-        totalStudents += parseInt(cb.getAttribute('data-students') || '0', 10);
-      });
-
-      var isPlanta = modal.querySelector('input[name="teacherType"]:checked')?.value === 'planta';
-      var maxBase = isPlanta ? 18 : Math.max(totalHours, 12);
-      var freeHours = Math.max(0, maxBase - totalHours);
-
-      if (liveHoursBadge) {
-        liveHoursBadge.textContent = isEs 
-          ? totalHours + ' hrs asignadas · ' + freeHours + ' hrs libres'
-          : totalHours + ' hrs assigned · ' + freeHours + ' hrs free';
-      }
-    }
-
-    modal.querySelectorAll('.course-checkbox').forEach(function(cb) {
-      cb.addEventListener('change', updateLiveHours);
-    });
-
-    modal.querySelectorAll('input[name="teacherType"]').forEach(function(r) {
-      r.addEventListener('change', updateLiveHours);
-    });
-
-    // Render Step 3 Summary & Weekly Schedule
-    function renderSummary() {
-      var name = nameInput?.value || (isEs ? 'Docente Nuevo' : 'New Teacher');
-      var inits = getInitials(name);
-      var phone = telInput?.value || '-';
-      var typeVal = modal.querySelector('input[name="teacherType"]:checked')?.value || 'planta';
-      var deptText = deptSelect?.options[deptSelect.selectedIndex]?.text || '';
-      var isDir = isDirectorSelect?.value === 'si';
-      var dirGroup = directorGroupSelect?.value || '10-1';
-      var officeDay = officeDaySelect?.value || 'Jueves';
-      var officeHour = officeHourInput?.value || '09:30 AM';
-
-      var summaryName = document.getElementById('summaryName');
-      var summaryPhone = document.getElementById('summaryPhone');
-      var summaryDeptText = document.getElementById('summaryDeptText');
-      var summaryOffice = document.getElementById('summaryOffice');
-      var summaryTypeBadge = document.getElementById('summaryTypeBadge');
-      var summaryDirectorBadge = document.getElementById('summaryDirectorBadge');
-      var summaryTotalStudents = document.getElementById('summaryTotalStudents');
-      var summaryTotalGroups = document.getElementById('summaryTotalGroups');
-      var summaryTotalHours = document.getElementById('summaryTotalHours');
-      var summaryFreeHours = document.getElementById('summaryFreeHours');
-      var summaryScheduleBody = document.getElementById('summaryScheduleBody');
-
-      if (summaryName) summaryName.textContent = name;
-      if (summaryPhone) summaryPhone.textContent = phone;
-      if (summaryDeptText) summaryDeptText.textContent = deptText.split('(')[0].trim();
-      if (summaryOffice) summaryOffice.textContent = officeDay + ' ' + officeHour;
-
-      if (summaryAvatarImg) {
-        summaryAvatarImg.src = selectedAvatarSrc;
-        summaryAvatarImg.style.display = 'block';
+      if (feedback) {
+        feedback.style.display = 'none';
+        feedback.textContent = '';
       }
 
-      if (summaryTypeBadge) {
-        summaryTypeBadge.textContent = typeVal === 'planta' ? (isEs ? 'PLANTA (18h)' : 'PERMANENT') : (isEs ? 'PROVISIONAL' : 'HOURLY');
-        summaryTypeBadge.style.background = typeVal === 'planta' ? 'var(--ink)' : 'var(--rust)';
-      }
+      try {
+        const teacherId = (document.getElementById(modalId + 'TeacherId') as HTMLInputElement)?.value;
+        const schoolId = (document.getElementById(modalId + 'SchoolId') as HTMLInputElement)?.value || getActiveTenantSchoolId();
+        const name = (document.getElementById(modalId + 'Name') as HTMLInputElement)?.value.trim();
+        const teacherCode = (document.getElementById(modalId + 'TeacherCode') as HTMLInputElement)?.value.trim();
+        const email = (document.getElementById(modalId + 'Email') as HTMLInputElement)?.value.trim().toLowerCase();
+        const avatarUrl = (document.getElementById(modalId + 'AvatarUrl') as HTMLInputElement)?.value;
+        const specialty = (document.getElementById(modalId + 'Specialty') as HTMLSelectElement)?.value;
+        const homeroomGroup = (document.getElementById(modalId + 'HomeroomGroup') as HTMLSelectElement)?.value;
+        const phone = (document.getElementById(modalId + 'Phone') as HTMLInputElement)?.value.trim() || undefined;
+        const jobTitle = (homeroomGroup && homeroomGroup !== 'none') ? ('Director de Grupo ' + homeroomGroup) : ('Docente de ' + specialty);
 
-      if (summaryDirectorBadge) {
-        if (isDir) {
-          summaryDirectorBadge.style.display = 'inline-block';
-          summaryDirectorBadge.textContent = (isEs ? 'Dir. Grupo: ' : 'Tutor: ') + dirGroup;
-        } else {
-          summaryDirectorBadge.style.display = 'none';
-        }
-      }
+        if (!name || !email) throw new Error('Nombre y correo son obligatorios.');
 
-      // Calculate checked courses
-      var checkedCbs = modal.querySelectorAll('.course-checkbox:checked');
-      var totalHours = 0;
-      var totalStudents = 0;
-      var groupsCount = checkedCbs.length;
-      var slotsMap = {};
-
-      checkedCbs.forEach(function(cb) {
-        totalHours += parseInt(cb.getAttribute('data-hours') || '6', 10);
-        totalStudents += parseInt(cb.getAttribute('data-students') || '0', 10);
-        var cName = cb.getAttribute('data-name');
-        var cRoom = cb.getAttribute('data-room');
-        var studCount = cb.getAttribute('data-students');
-        var slotsRaw = cb.getAttribute('data-slots');
-        try {
-          var slots = JSON.parse(slotsRaw || '[]');
-          slots.forEach(function(s) {
-            slotsMap[s.day + '_' + s.time] = { name: cName, room: cRoom, students: studCount };
+        if (!teacherId) {
+          if (submitBtn) submitBtn.textContent = 'Enviando invitación oficial…';
+          await teacherService.createTeacher({
+            email, name, schoolId, teacherCode, avatarUrl, specialty, jobTitle, phone
           });
-        } catch(e) {}
-      });
-
-      var isPlanta = typeVal === 'planta';
-      var maxBase = isPlanta ? 18 : Math.max(totalHours, 12);
-      var freeHours = Math.max(0, maxBase - totalHours);
-
-      if (summaryTotalStudents) summaryTotalStudents.textContent = totalStudents.toString();
-      if (summaryTotalGroups) summaryTotalGroups.textContent = groupsCount + (isEs ? ' asignaturas' : ' courses');
-      if (summaryTotalHours) summaryTotalHours.textContent = totalHours + ' hrs/sem';
-      if (summaryFreeHours) summaryFreeHours.textContent = freeHours + (isEs ? ' hrs libres' : ' hrs free');
-
-      // Build Weekly Schedule Matrix
-      if (summaryScheduleBody) {
-        var html = '';
-        timeSlots.forEach(function(slot) {
-          html += '<tr>';
-          html += '<td style="font-family:var(--mono); font-size:11px; font-weight:800; background:var(--cream); border-right:1px solid var(--ink); padding:6px 8px; white-space:nowrap;">' + slot.label + '</td>';
-
-          ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'].forEach(function(d) {
-            var item = slotsMap[d + '_' + slot.label];
-            if (item) {
-              html += '<td style="background:#E8F2EA; border:1px solid var(--ink); padding:6px 8px; vertical-align:top;">';
-              html += '<strong style="display:block; font-size:11.5px; color:var(--ink); line-height:1.2;">' + item.name + '</strong>';
-              html += '<div style="font-size:10.5px; color:var(--ink-soft); font-family:var(--mono); margin-top:2px;">';
-              html += 'Salón: <strong>' + item.room + '</strong> · ' + item.students + ' alum.';
-              html += '</div>';
-              html += '</td>';
-            } else {
-              html += '<td style="background:var(--paper); border:1px solid var(--line); padding:6px 8px; text-align:center; color:var(--ink-soft); font-size:10.5px; font-family:var(--mono);">';
-              html += '<span style="color:var(--olive-dark); font-weight:700;">[ Libre ]</span>';
-              html += '</td>';
-            }
-          });
-
-          html += '</tr>';
-        });
-
-        summaryScheduleBody.innerHTML = html;
-      }
-    }
-
-    function goToStep(step) {
-      currentStep = step;
-
-      // Update contents
-      if (step1) step1.style.display = step === 1 ? 'block' : 'none';
-      if (step2) step2.style.display = step === 2 ? 'block' : 'none';
-      if (step3) step3.style.display = step === 3 ? 'block' : 'none';
-
-      // Update stepper tabs
-      stepTabs.forEach(function(tab) {
-        var s = parseInt(tab.getAttribute('data-step') || '1', 10);
-        var numSpan = tab.querySelector('.step-num');
-        if (s === step) {
-          tab.style.opacity = '1';
-          if (numSpan) {
-            numSpan.style.background = 'var(--ink)';
-            numSpan.style.color = '#fff';
-            numSpan.style.border = 'none';
-          }
-        } else if (s < step) {
-          tab.style.opacity = '0.9';
-          if (numSpan) {
-            numSpan.style.background = 'var(--olive-dark)';
-            numSpan.style.color = '#fff';
-            numSpan.style.border = 'none';
-            numSpan.textContent = '✓';
-          }
         } else {
-          tab.style.opacity = '0.45';
-          if (numSpan) {
-            numSpan.style.background = 'var(--paper)';
-            numSpan.style.color = 'var(--ink)';
-            numSpan.style.border = '1px solid var(--ink)';
-            numSpan.textContent = s.toString();
+          if (submitBtn) submitBtn.textContent = 'Actualizando docente…';
+          await teacherService.updateTeacher({
+            teacherId, name, teacherCode, avatarUrl, specialty, jobTitle, phone
+          });
+        }
+
+        if (feedback) {
+          feedback.style.cssText = 'display:block; background:#E6F4EA; border-bottom:2px solid var(--sage-dark); color:var(--sage-dark); padding:12px 20px; font-family:var(--mono); font-size:12px; font-weight:700;';
+          feedback.textContent = teacherId ? 'Docente actualizado correctamente.' : 'Docente vinculado e invitación despachada con éxito.';
+        }
+
+        if (submitBtn) {
+          submitBtn.textContent = teacherId ? 'Cambios Guardados' : 'Docente Vinculado';
+        }
+
+        window.dispatchEvent(new CustomEvent('teacher:created', { detail: { ok: true, email } }));
+
+        setTimeout(() => {
+          modal.style.display = 'none';
+          (form as HTMLFormElement).reset();
+          if (feedback) feedback.style.display = 'none';
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Vincular y Enviar Invitación';
           }
-        }
-      });
+          window.location.reload();
+        }, 1000);
 
-      // Update buttons
-      if (prevBtn) prevBtn.style.display = step > 1 ? 'inline-block' : 'none';
-      
-      if (step === 1) {
-        if (nextBtn) {
-          nextBtn.style.display = 'inline-block';
-          nextBtn.textContent = isEs ? 'Continuar a Asignación de Cursos →' : 'Continue to Course Assignment →';
+      } catch (err: any) {
+        console.error('Error guardando docente:', err);
+        if (feedback) {
+          feedback.style.cssText = 'display:block; background:#FEE2E2; border-bottom:2px solid var(--danger); color:var(--danger); padding:12px 20px; font-family:var(--mono); font-size:12px; font-weight:700;';
+          feedback.textContent = err?.message || 'Error al procesar docente';
         }
-        if (submitBtn) submitBtn.style.display = 'none';
-      } else if (step === 2) {
-        updateLiveHours();
-        if (nextBtn) {
-          nextBtn.style.display = 'inline-block';
-          nextBtn.textContent = isEs ? 'Generar Matriz Horaria & Ficha →' : 'Generate Schedule & Summary →';
-        }
-        if (submitBtn) submitBtn.style.display = 'none';
-      } else if (step === 3) {
-        renderSummary();
-        if (nextBtn) nextBtn.style.display = 'none';
-        if (submitBtn) submitBtn.style.display = 'inline-block';
-      }
-    }
-
-    // Step clicks
-    stepTabs.forEach(function(tab) {
-      tab.addEventListener('click', function() {
-        var s = parseInt(tab.getAttribute('data-step') || '1', 10);
-        goToStep(s);
-      });
-    });
-
-    nextBtn?.addEventListener('click', function() {
-      if (currentStep === 1) {
-        if (!nameInput?.value.trim()) {
-          alert(isEs ? 'Por favor ingrese el nombre del docente.' : 'Please enter faculty name.');
-          nameInput?.focus();
-          return;
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Reintentar Guardado';
         }
       }
-      if (currentStep < 3) goToStep(currentStep + 1);
     });
-
-    prevBtn?.addEventListener('click', function() {
-      if (currentStep > 1) goToStep(currentStep - 1);
-    });
-
-    // Real Confirmation & Insertion into Live Table
-    submitBtn?.addEventListener('click', function() {
-      var name = nameInput?.value || (isEs ? 'Docente' : 'Teacher');
-      var spec = specInput?.value || 'Especialista';
-      var deptId = deptSelect?.value || 'dep-nat';
-      var isDir = isDirectorSelect?.value === 'si';
-      var dirGroup = directorGroupSelect?.value || '10-1';
-      var officeDay = officeDaySelect?.value || 'Jueves';
-      var officeHour = officeHourInput?.value || '09:30 AM';
-
-      // Find department table to dynamically insert teacher row
-      var deptContainer = document.querySelector('.dept-block[data-dept-id="' + deptId + '"] tbody');
-      if (deptContainer) {
-        var tr = document.createElement('tr');
-        tr.className = 'teacher-table-row';
-        tr.setAttribute('data-search-text', (name + ' ' + spec + ' ' + dirGroup).toLowerCase());
-        tr.setAttribute('data-has-free', 'true');
-        tr.setAttribute('data-is-director', isDir ? 'true' : 'false');
-        tr.setAttribute('data-has-leave', 'false');
-        tr.style.background = '#F4FAF4'; // Highlight newly added row
-
-        tr.innerHTML = `
-          <td>
-            <div style="display:flex; align-items:center; gap:12px;">
-              <div style="width:34px; height:34px; border-radius:2px; background:var(--paper); display:flex; align-items:center; justify-content:center; border:1px solid var(--ink); overflow:hidden;">
-                <img src="${selectedAvatarSrc}" alt="${name}" style="width:100%; height:100%; object-fit:cover;" />
-              </div>
-              <div>
-                <a href="#new-teacher" style="font-weight:700; color:var(--ink); text-decoration:none; font-size:13px; display:block;">
-                  ${name}
-                </a>
-                <div style="font-size:11px; color:var(--ink-soft); font-family:var(--mono); margin-top:1px;">
-                  ${spec} <span class="plan-tag" style="background:var(--olive-dark); color:#fff; font-size:9px; padding:0 4px; margin-left:4px;">NUEVO</span>
-                </div>
-              </div>
-            </div>
-          </td>
-          <td>
-            <div style="display:flex; flex-direction:column; gap:3px;">
-              <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                <span class="plan-tag" style="background:var(--paper); border:1px solid var(--ink); color:var(--ink); font-weight:800; font-size:10.5px; padding:1px 6px;">
-                  ${dirGroup}
-                </span>
-                <span style="font-size:11px; color:var(--ink-soft); font-family:var(--mono);">
-                  Salón Asignado
-                </span>
-              </div>
-            </div>
-          </td>
-          <td>
-            <div style="font-size:11.5px; font-family:var(--mono); color:var(--ink);">
-              <strong>${officeDay}</strong> ${officeHour}
-            </div>
-            <div style="font-size:10.5px; color:var(--ink-soft); font-family:var(--sans);">
-              Atención presencial / virtual
-            </div>
-          </td>
-          <td>
-            <div style="font-size:11.5px; font-family:var(--mono); color:var(--ink-soft);">
-              Vinculado hoy · Sin obs.
-            </div>
-          </td>
-          <td style="text-align:right;">
-            <div style="display:flex; gap:6px; justify-content:flex-end;">
-              <button class="btn btn-secondary btn-sm" style="font-size:11px; padding:3px 8px;" onclick="alert('Expediente disponible tras sincronización.');">
-                Expediente
-              </button>
-            </div>
-          </td>
-        `;
-
-        deptContainer.prepend(tr);
-      }
-
-      alert(isEs 
-        ? 'Docente ' + name + ' registrado exitosamente con su avatar en la planta activa.'
-        : 'Faculty member ' + name + ' registered successfully.');
-
-      modal.style.display = 'none';
-      goToStep(1);
-    });
-
-    // Close buttons
-    modal.querySelectorAll('.close-modal-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        modal.style.display = 'none';
-        goToStep(1);
-      });
-    });
-
-    modal.addEventListener('click', function(e) {
-      if (e.target === modal) {
-        modal.style.display = 'none';
-        goToStep(1);
-      }
-    });
-
-    // Global opener
-    window.openTeacherRegisterModal = function() {
-      modal.style.display = 'flex';
-      goToStep(1);
-    };
-
-  })();
+  });
 </script>

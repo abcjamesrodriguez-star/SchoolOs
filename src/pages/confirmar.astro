@@ -1,0 +1,540 @@
+---
+import '../styles/tokens.css';
+// Página de activación en 2 pasos: Identidad + Asignación de Contraseña Personal
+---
+
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Activación de Cuenta Institucional — SchoolOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      background: var(--cream);
+      color: var(--ink);
+      font-family: var(--sans);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      margin: 0;
+    }
+    .card {
+      max-width: 520px;
+      width: 100%;
+      background: var(--paper);
+      border: 2px solid var(--ink);
+      box-shadow: 8px 8px 0 rgba(18,17,14,.12);
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 22px 26px;
+      border-bottom: 1.5px solid var(--line);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--paper);
+    }
+    .school-logo {
+      width: 48px;
+      height: 48px;
+      border: 1.5px solid var(--ink);
+      background: var(--cream);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+      box-shadow: 2px 2px 0 var(--ink);
+    }
+    .school-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 4px;
+    }
+    .brand-name {
+      font-family: var(--serif);
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: -0.02em;
+    }
+    .brand-sub {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--ink-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .stepper {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-bottom: 1.5px solid var(--line);
+      background: var(--cream);
+    }
+    .step-tab {
+      padding: 10px 14px;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--ink-soft);
+      border-right: 1px solid var(--line);
+    }
+    .step-tab:last-child {
+      border-right: none;
+    }
+    .step-tab.active {
+      background: var(--paper);
+      color: var(--ink);
+      border-bottom: 2px solid var(--rust);
+    }
+    .step-tab.done {
+      color: var(--sage-dark, #2E4A1E);
+      background: #E6F4EA;
+    }
+    .step-num {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      border: 1px solid currentColor;
+    }
+    .body {
+      padding: 24px 26px;
+    }
+    .title {
+      font-family: var(--serif);
+      font-size: 21px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--ink);
+    }
+    .hint {
+      font-size: 13px;
+      color: var(--ink-soft);
+      margin-bottom: 18px;
+      line-height: 1.5;
+    }
+    .hint strong {
+      color: var(--ink);
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .field label {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .field input {
+      border: 1.5px solid var(--ink);
+      background: var(--cream);
+      padding: 10px 12px;
+      font-size: 14px;
+      border-radius: 2px;
+      font-family: var(--sans);
+    }
+    .field input:focus {
+      outline: none;
+      border-color: var(--rust);
+      background: #fff;
+    }
+    .pass-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .pass-container input {
+      width: 100%;
+      padding-right: 40px;
+      box-sizing: border-box;
+    }
+    .btn-toggle-pass {
+      position: absolute;
+      right: 10px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 4px;
+      color: var(--ink-soft);
+    }
+    .btn {
+      width: 100%;
+      padding: 13px;
+      font-family: var(--mono);
+      font-size: 12.5px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 700;
+      background: var(--ink);
+      color: var(--cream);
+      border: 1.5px solid var(--ink);
+      cursor: pointer;
+      border-radius: 2px;
+      box-shadow: 3px 3px 0 var(--ink);
+      transition: all 0.15s ease;
+    }
+    .btn:hover {
+      background: var(--rust);
+      border-color: var(--rust);
+      box-shadow: 3px 3px 0 rgba(0,0,0,0.3);
+    }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .alert {
+      padding: 12px 14px;
+      border: 1.5px solid var(--danger);
+      background: var(--danger-dim, #FEE2E2);
+      color: #991B1B;
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      border-radius: 2px;
+      display: none;
+    }
+    .alert.ok {
+      border-color: var(--sage-dark, #2E4A1E);
+      background: #E6F4EA;
+      color: #1B4D21;
+    }
+    .footer {
+      padding: 14px 26px;
+      border-top: 1px solid var(--line);
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--ink-soft);
+      text-align: center;
+      background: var(--paper);
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <!-- HEADER CON BRANDING INSTITUCIONAL -->
+    <div class="card-header">
+      <div class="school-logo" id="schoolLogo"><span style="font-weight:800;color:var(--rust)">SO</span></div>
+      <div>
+        <div class="brand-name" id="schoolName">SchoolOS</div>
+        <div class="brand-sub" id="schoolSub">Plataforma Educativa</div>
+      </div>
+    </div>
+
+    <!-- STEPPER INDICATOR -->
+    <div class="stepper" id="stepperNav" style="display:none">
+      <div class="step-tab active" id="tabStep1">
+        <span class="step-num" id="numStep1">1</span>
+        <span>Identidad</span>
+      </div>
+      <div class="step-tab" id="tabStep2">
+        <span class="step-num" id="numStep2">2</span>
+        <span>Crear Clave</span>
+      </div>
+    </div>
+
+    <div class="body">
+      <div id="tokenError" class="alert" style="display:none"></div>
+
+      <!-- ==================================================== -->
+      <!-- PASO 1: VERIFICACIÓN DE IDENTIDAD (CÉDULA + TELÉFONO) -->
+      <!-- ==================================================== -->
+      <div id="step1Block" style="display:none">
+        <div class="title">1. Confirma tu Identidad</div>
+        <p class="hint">Hola. Para habilitar el acceso institucional de <strong id="emailHint"></strong>, por seguridad confirma tus datos oficiales registrados.</p>
+        
+        <div id="step1Alert" class="alert"></div>
+
+        <form id="step1Form">
+          <div class="field">
+            <label for="doc">Número de Documento / Cédula</label>
+            <input id="doc" type="text" placeholder="Ej: 1012345678" required autocomplete="off" />
+          </div>
+          <div class="field">
+            <label for="phone">Teléfono / Celular Registrado</label>
+            <input id="phone" type="tel" placeholder="Ej: 3001234567" required autocomplete="off" />
+          </div>
+          <button id="step1Btn" class="btn" type="submit">Verificar Identidad →</button>
+        </form>
+        <p class="hint" style="margin-top:14px;font-size:11px">Máximo 3 intentos de seguridad. Si necesitas reenvío, contacta a la administración central.</p>
+      </div>
+
+      <!-- ==================================================== -->
+      <!-- PASO 2: ASIGNACIÓN DE CONTRASEÑA PERSONAL DIRECTA -->
+      <!-- ==================================================== -->
+      <div id="step2Block" style="display:none">
+        <div class="title">2. Crea tu Contraseña</div>
+        <p class="hint">✓ Identidad validada. Asigna la contraseña personal con la que iniciarás sesión en <strong>SchoolOS</strong>.</p>
+        
+        <div id="step2Alert" class="alert"></div>
+
+        <form id="step2Form">
+          <div class="field">
+            <label for="pass1">Nueva Contraseña (mínimo 8 caracteres)</label>
+            <div class="pass-container">
+              <input id="pass1" type="password" placeholder="Ingresa tu contraseña" required minlength="8" autocomplete="new-password" />
+              <button type="button" class="btn-toggle-pass" id="btnTogglePass1" aria-label="Mostrar contraseña">👁</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="pass2">Confirmar Nueva Contraseña</label>
+            <div class="pass-container">
+              <input id="pass2" type="password" placeholder="Repite tu contraseña" required minlength="8" autocomplete="new-password" />
+              <button type="button" class="btn-toggle-pass" id="btnTogglePass2" aria-label="Mostrar contraseña">👁</button>
+            </div>
+          </div>
+          <button id="step2Btn" class="btn" type="submit">Guardar Contraseña e Ingresar →</button>
+        </form>
+        <p class="hint" style="margin-top:14px;font-size:11px">Te recomendamos combinar letras mayúsculas, minúsculas, números y símbolos para mayor seguridad.</p>
+      </div>
+
+      <p id="noTokenHint" class="hint" style="display:none">Contacta a la administración para que te reenvíen un nuevo link. Este enlace expira en 24 horas y es de un solo uso.</p>
+    </div>
+
+    <div class="footer">SchoolOS · Activación Segura Institucional · Si no solicitaste esto, ignora este correo</div>
+  </div>
+
+  <script>
+    import { apiClient } from '../lib/apiClient';
+    import { authService } from '../services/authService';
+
+    const token = new URLSearchParams(window.location.search).get('token') || '';
+    const tokenErrorEl = document.getElementById('tokenError');
+    const stepperNav   = document.getElementById('stepperNav');
+    const tabStep1     = document.getElementById('tabStep1');
+    const tabStep2     = document.getElementById('tabStep2');
+    const numStep1     = document.getElementById('numStep1');
+    const step1Block   = document.getElementById('step1Block');
+    const step2Block   = document.getElementById('step2Block');
+    const noTokenHint  = document.getElementById('noTokenHint');
+    const emailHintEl  = document.getElementById('emailHint');
+    const schoolLogo   = document.getElementById('schoolLogo');
+    const schoolNameEl = document.getElementById('schoolName');
+    const schoolSubEl  = document.getElementById('schoolSub');
+
+    let verifiedDoc = '';
+    let verifiedPhone = '';
+    let userEmail = '';
+
+    (async () => {
+      if (!token) {
+        if (tokenErrorEl) {
+          tokenErrorEl.textContent = 'Falta el token de confirmación en el enlace.';
+          tokenErrorEl.style.display = 'block';
+        }
+        if (noTokenHint) noTokenHint.style.display = 'block';
+        return;
+      }
+
+      try {
+        const res = await apiClient.get<any>(`/api/auth/verify-ticket?token=${encodeURIComponent(token)}`);
+        if (res.ok) {
+          userEmail = res.email || '';
+          if (emailHintEl) emailHintEl.textContent = userEmail;
+
+          if (res.school) {
+            if (schoolNameEl) schoolNameEl.textContent = res.school.name;
+            if (schoolSubEl) {
+              schoolSubEl.textContent = (res.school.slogan || 'Plataforma Educativa') + (userEmail ? ` · ${userEmail}` : '');
+            }
+            if (schoolLogo && res.school.logo_url) {
+              schoolLogo.innerHTML = `<img src="${res.school.logo_url}" alt="${res.school.name}" />`;
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('No se pudo precargar branding del colegio:', err);
+      }
+
+      if (stepperNav) stepperNav.style.display = 'grid';
+      if (step1Block) step1Block.style.display = 'block';
+    })();
+
+    // ==========================================
+    // PASO 1: VERIFICAR IDENTIDAD
+    // ==========================================
+    const step1Form = document.getElementById('step1Form');
+    const step1Alert = document.getElementById('step1Alert');
+    const step1Btn = document.getElementById('step1Btn') as HTMLButtonElement;
+    const docInput = document.getElementById('doc') as HTMLInputElement;
+    const phoneInput = document.getElementById('phone') as HTMLInputElement;
+
+    step1Form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!token) return;
+      const doc = docInput?.value.trim();
+      const phone = phoneInput?.value.trim();
+      if (!doc || !phone) {
+        if (step1Alert) {
+          step1Alert.textContent = 'Por favor completa ambos campos.';
+          step1Alert.className = 'alert';
+          step1Alert.style.display = 'block';
+        }
+        return;
+      }
+
+      if (step1Btn) {
+        step1Btn.disabled = true;
+        step1Btn.textContent = 'Verificando identidad...';
+      }
+      if (step1Alert) step1Alert.style.display = 'none';
+
+      try {
+        const res = await apiClient.post<any>('/api/auth/verify-ticket', {
+          token,
+          documentId: doc,
+          phone,
+        });
+
+        if (res.ok && res.success) {
+          verifiedDoc = doc;
+          verifiedPhone = phone;
+
+          // Transición al Paso 2
+          if (tabStep1) tabStep1.className = 'step-tab done';
+          if (numStep1) numStep1.innerHTML = '✓';
+          if (tabStep2) tabStep2.className = 'step-tab active';
+
+          if (step1Block) step1Block.style.display = 'none';
+          if (step2Block) step2Block.style.display = 'block';
+          document.getElementById('pass1')?.focus();
+        } else {
+          if (step1Alert) {
+            step1Alert.textContent = res.message || res.error || 'Los datos no coinciden con los registrados en la plataforma.';
+            step1Alert.className = 'alert';
+            step1Alert.style.display = 'block';
+          }
+        }
+      } catch (err: any) {
+        if (step1Alert) {
+          step1Alert.textContent = err?.message || 'Error de conexión. Intenta de nuevo.';
+          step1Alert.className = 'alert';
+          step1Alert.style.display = 'block';
+        }
+      } finally {
+        if (step1Btn) {
+          step1Btn.disabled = false;
+          step1Btn.textContent = 'Verificar Identidad →';
+        }
+      }
+    });
+
+    // ==========================================
+    // PASO 2: ASIGNAR CONTRASEÑA
+    // ==========================================
+    const step2Form = document.getElementById('step2Form');
+    const step2Alert = document.getElementById('step2Alert');
+    const step2Btn = document.getElementById('step2Btn') as HTMLButtonElement;
+    const pass1Input = document.getElementById('pass1') as HTMLInputElement;
+    const pass2Input = document.getElementById('pass2') as HTMLInputElement;
+
+    // Toggle de visibilidad de contraseñas
+    document.getElementById('btnTogglePass1')?.addEventListener('click', () => {
+      if (pass1Input) pass1Input.type = pass1Input.type === 'password' ? 'text' : 'password';
+    });
+    document.getElementById('btnTogglePass2')?.addEventListener('click', () => {
+      if (pass2Input) pass2Input.type = pass2Input.type === 'password' ? 'text' : 'password';
+    });
+
+    step2Form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const p1 = pass1Input?.value.trim();
+      const p2 = pass2Input?.value.trim();
+
+      if (!p1 || p1.length < 8) {
+        if (step2Alert) {
+          step2Alert.textContent = 'La contraseña debe tener mínimo 8 caracteres.';
+          step2Alert.className = 'alert';
+          step2Alert.style.display = 'block';
+        }
+        return;
+      }
+      if (p1 !== p2) {
+        if (step2Alert) {
+          step2Alert.textContent = 'Las contraseñas no coinciden. Por favor verifícalas.';
+          step2Alert.className = 'alert';
+          step2Alert.style.display = 'block';
+        }
+        return;
+      }
+
+      if (step2Btn) {
+        step2Btn.disabled = true;
+        step2Btn.textContent = 'Asignando contraseña...';
+      }
+      if (step2Alert) step2Alert.style.display = 'none';
+
+      try {
+        // 1. Asignar contraseña a través del API seguro
+        const res = await apiClient.post<any>('/api/auth/complete-activation', {
+          token,
+          documentId: verifiedDoc,
+          phone: verifiedPhone,
+          password: p1,
+        });
+
+        if (!res.ok) {
+          throw new Error(res.error || 'No fue posible asignar la contraseña.');
+        }
+
+        if (step2Btn) step2Btn.textContent = 'Iniciando sesión…';
+        if (step2Alert) {
+          step2Alert.textContent = '✓ ¡Contraseña guardada y cuenta activada! Ingresando a la plataforma...';
+          step2Alert.className = 'alert ok';
+          step2Alert.style.display = 'block';
+        }
+
+        // 2. Iniciar sesión automáticamente en el cliente vía authService (REST)
+        try {
+          await authService.signIn(userEmail || res.email, p1);
+          setTimeout(() => {
+            window.location.href = '/es/app/school-admin';
+          }, 1200);
+          return;
+        } catch (authErr) {
+          console.warn('Auto-login fallback:', authErr);
+        }
+
+        // Si falló el auto-login en cliente, redirigir al login con mensaje de éxito
+        setTimeout(() => {
+          window.location.href = `/login?confirmado=1&email=${encodeURIComponent(userEmail || res.email || '')}`;
+        }, 1500);
+
+      } catch (err: any) {
+        console.error('Error:', err);
+        if (step2Alert) {
+          step2Alert.textContent = err.message || 'Error al asignar contraseña. Intenta nuevamente.';
+          step2Alert.className = 'alert';
+          step2Alert.style.display = 'block';
+        }
+        if (step2Btn) {
+          step2Btn.disabled = false;
+          step2Btn.textContent = 'Guardar Contraseña e Ingresar →';
+        }
+      }
+    });
+  </script>
+</body>
+</html>

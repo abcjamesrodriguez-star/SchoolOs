@@ -4,12 +4,8 @@
 // Fase 3 | Asistencia Swipe con Dropdown Interactivo en Lista Final
 // ============================================================
 import AppLayout from '../../../../layouts/AppLayout.astro';
-import { getAllTeacherStudents } from '../../../../data/app/mock-content';
 
 const lang = 'es';
-const allStudents = getAllTeacherStudents();
-// Los 30 estudiantes de 10°A
-const activeClassStudents = allStudents.filter(s => s.courseId === 'crs-bio-10a');
 ---
 
 <AppLayout
@@ -17,10 +13,10 @@ const activeClassStudents = allStudents.filter(s => s.courseId === 'crs-bio-10a'
   pageTitle="Aula Hoy — Acción Rápida"
   activeSection="today"
   role="teacher"
-  schoolName="Colegio Norte"
+  schoolName="Raptor Crew"
   lang={lang}
   activeRoute="/app/teacher"
-  breadcrumbs={[{ label: 'Colegio Norte' }, { label: 'Aula Hoy (Acción Rápida)' }]}
+  breadcrumbs={[{ label: 'Cargando...' }, { label: 'Aula Hoy (Acción Rápida)' }]}
 >
 
   <!-- ══════════════════════════════════════════════════════════════════════════ -->
@@ -43,41 +39,8 @@ const activeClassStudents = allStudents.filter(s => s.courseId === 'crs-bio-10a'
     </div>
 
     <!-- Tira de Bloques del Día -->
-    <div style="display:grid; grid-template-columns: repeat(5, 1fr); background:var(--cream);">
-      
-      <div style="padding:12px 16px; border-right:1.5px solid var(--ink); opacity:0.65;">
-        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); font-weight:700; margin-bottom:2px;">07:00 – 08:30</div>
-        <div style="font-family:var(--serif); font-size:14px; font-weight:700; color:var(--ink);">10° Grado B</div>
-        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);">Salón 204 · Concluida</div>
-      </div>
-
-      <div style="padding:12px 16px; border-right:1.5px solid var(--ink); background:#FFFDF9; border-top:3.5px solid var(--rust);">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
-          <span style="font-family:var(--mono); font-size:10px; color:var(--rust); font-weight:800;">08:30 – 10:00</span>
-          <span class="plan-tag" style="background:var(--rust); color:#FFFFFF; border-color:var(--rust); font-size:8.5px; font-weight:900; padding:1px 5px;">EN CURSO</span>
-        </div>
-        <div style="font-family:var(--serif); font-size:15px; font-weight:800; color:var(--ink);">10° Grado A</div>
-        <div style="font-family:var(--mono); font-size:10.5px; color:var(--rust); font-weight:700;">Lab. Ciencias 1 · 30 alumnos</div>
-      </div>
-
-      <div style="padding:12px 16px; border-right:1.5px solid var(--ink); opacity:0.75;">
-        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); font-weight:700; margin-bottom:2px;">10:00 – 10:30</div>
-        <div style="font-family:var(--serif); font-size:13.5px; font-weight:700; color:var(--ink-soft);">Receso</div>
-        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);">Sala Profesores</div>
-      </div>
-
-      <div style="padding:12px 16px; border-right:1.5px solid var(--ink); background:var(--paper);">
-        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); font-weight:700; margin-bottom:2px;">10:30 – 12:00</div>
-        <div style="font-family:var(--serif); font-size:14px; font-weight:700; color:var(--ink);">11° Grado A</div>
-        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);">Salón 301 · Siguiente</div>
-      </div>
-
-      <div style="padding:12px 16px; opacity:0.75;">
-        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); font-weight:700; margin-bottom:2px;">12:00 – 13:30</div>
-        <div style="font-family:var(--serif); font-size:13.5px; font-weight:700; color:var(--ink-soft);">Planeación</div>
-        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);">Hora libre</div>
-      </div>
-
+    <div id="today-schedule-strip" style="display:grid; grid-template-columns: repeat(5, 1fr); background:var(--cream); min-height:80px; align-items:center; text-align:center;">
+      <div style="font-family:var(--mono); font-size:12px; color:var(--ink-soft); grid-column:span 5;">Cargando bloques de clase...</div>
     </div>
   </div>
 
@@ -87,81 +50,8 @@ const activeClassStudents = allStudents.filter(s => s.courseId === 'crs-bio-10a'
   <div style="display:grid; grid-template-columns: 1.85fr 1fr; gap:24px; margin-bottom:24px;">
 
     <!-- PANEL PRINCIPAL DE CLASE EN VIVO -->
-    <div style="background:#FFFDF9; border:2px solid var(--ink); padding:24px 28px; box-shadow:4px 4px 0 rgba(18,17,14,0.08); display:flex; flex-direction:column; justify-content:space-between;">
-      
-      <div>
-        <!-- Encabezado de la clase -->
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
-          <div>
-            <span class="plan-tag" style="background:var(--rust); color:#FFFFFF; border-color:var(--rust); font-size:9.5px; font-weight:900; padding:2px 8px;">
-              CLASE EN CURSO
-            </span>
-            <h1 style="font-family:var(--serif); font-size:24px; font-weight:700; color:var(--ink); margin:6px 0 2px 0;">
-              Biología Celular y Genética · 10° Grado A
-            </h1>
-            <div style="font-family:var(--mono); font-size:12px; color:var(--ink-soft);">
-              Ubicación: <strong>Laboratorio de Ciencias 1</strong> · <strong>30 estudiantes matriculados</strong>
-            </div>
-          </div>
-
-          <div style="text-align:right; font-family:var(--mono);">
-            <div style="font-size:10.5px; color:var(--ink-soft); text-transform:uppercase;">Tiempo Restante</div>
-            <div style="font-size:22px; font-weight:900; color:var(--rust);">38 MIN</div>
-          </div>
-        </div>
-
-        <!-- Tema Activo y Notas de Bitácora -->
-        <div style="background:var(--paper); border:1.5px solid var(--ink); padding:16px 18px; margin:16px 0 20px 0;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid var(--line); padding-bottom:6px;">
-            <span style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; color:var(--rust);">
-              Material Pedagógico de Hoy
-            </span>
-            <span style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft);">Guía Asignada #1</span>
-          </div>
-
-          <h3 style="font-family:var(--serif); font-size:17px; font-weight:700; color:var(--ink); margin:0 0 8px 0;">
-            Estructura y Función de la Célula Eucariota
-          </h3>
-
-          <div style="font-size:12.5px; color:var(--ink); line-height:1.5; background:var(--cream); border-left:3px solid var(--rust); padding:10px 14px;">
-            <div style="font-family:var(--mono); font-size:10px; font-weight:800; color:var(--ink-soft); margin-bottom:2px; text-transform:uppercase;">
-              En qué quedamos la clase pasada:
-            </div>
-            Explicamos hasta el <strong>Bloque § 3 (Núcleo Celular y ADN)</strong>. Hoy corresponde abordar el <strong>Bloque § 4 (Membrana Nuclear)</strong> y realizar la práctica de microscopio del <strong>Bloque § 5 (Mitocondrias)</strong>.
-          </div>
-        </div>
-      </div>
-
-      <!-- BOTONES DE ACCIÓN -->
-      <div style="display:grid; grid-template-columns: 1.15fr 1fr 1fr; gap:10px; margin-top:8px;">
-        
-        <button
-          type="button"
-          class="btn btn-primary"
-          id="btnTriggerSwipe"
-          style="padding:12px 14px; font-size:12px; font-weight:800; justify-content:center; white-space:nowrap;"
-        >
-          Tomar Asistencia (Swipe)
-        </button>
-
-        <button
-          type="button"
-          class="btn btn-secondary"
-          id="btnOpenAttendance"
-          style="padding:12px 14px; font-size:12px; font-weight:700; justify-content:center; white-space:nowrap; border-color:var(--ink);"
-        >
-          Lista Tradicional
-        </button>
-
-        <a
-          href={`/${lang}/app/teacher/guides/gd-1`}
-          class="btn btn-secondary"
-          style="padding:12px 14px; font-size:12px; font-weight:700; justify-content:center; white-space:nowrap; border-color:var(--ink);"
-        >
-          Proyectar Guía
-        </a>
-      </div>
-
+    <div id="active-class-panel" style="background:#FFFDF9; border:2px solid var(--ink); padding:24px 28px; box-shadow:4px 4px 0 rgba(18,17,14,0.08); display:flex; flex-direction:column; justify-content:center; align-items:center;">
+      <div style="font-family:var(--mono); font-size:14px; color:var(--ink-soft);">Sincronizando clase actual...</div>
     </div>
 
     <!-- PANEL LATERAL: OBSERVACIONES DEL GRUPO DE HOY -->
@@ -487,33 +377,8 @@ const activeClassStudents = allStudents.filter(s => s.courseId === 'crs-bio-10a'
         <button id="btnCloseTradModal" style="background:transparent; border:none; color:#FFFFFF; font-size:22px; cursor:pointer; font-weight:700;">✕</button>
       </div>
 
-      <div style="padding:12px 20px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:6px; background:var(--paper);">
-        {activeClassStudents.map((std, idx) => (
-          <div
-            class="trad-row"
-            id={`trad-r-${std.id}`}
-            style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--cream); border:1px solid var(--line-strong);"
-          >
-            <div style="display:flex; align-items:center; gap:10px;">
-              <span style="font-family:var(--mono); font-size:10.5px; font-weight:800; color:var(--ink-soft); min-width:22px;">
-                {idx + 1 < 10 ? `0${idx + 1}` : idx + 1}.
-              </span>
-              <img
-                src={std.avatarUrl || '/avatars/women/fila-1-columna-1.png'}
-                alt={std.name}
-                style="width:28px; height:28px; border-radius:50%; border:1px solid var(--ink); object-fit:cover;"
-              />
-              <span style="font-size:12.5px; font-weight:700; color:var(--ink);">
-                {std.name}
-              </span>
-            </div>
-            <div style="display:flex; gap:6px;">
-              <button type="button" class="btn-trad-p" data-id={std.id} style="padding:5px 12px; font-family:var(--mono); font-size:11px; font-weight:700; border:1px solid var(--line-strong); background:#FFFFFF; cursor:pointer;">Presente</button>
-              <button type="button" class="btn-trad-a" data-id={std.id} style="padding:5px 12px; font-family:var(--mono); font-size:11px; font-weight:700; border:1px solid var(--line-strong); background:#FFFFFF; cursor:pointer;">Falta</button>
-              <button type="button" class="btn-trad-l" data-id={std.id} style="padding:5px 12px; font-family:var(--mono); font-size:11px; font-weight:700; border:1px solid var(--line-strong); background:#FFFFFF; cursor:pointer;">Retardo</button>
-            </div>
-          </div>
-        ))}
+      <div id="trad-list-container" style="padding:12px 20px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:6px; background:var(--paper);">
+        <div style="font-family:var(--mono); font-size:12px; color:var(--ink-soft); text-align:center; padding:20px;">Sincronizando lista de estudiantes...</div>
       </div>
 
       <div style="padding:12px 20px; border-top:2px solid var(--ink); background:var(--cream); display:flex; justify-content:space-between;">
@@ -537,38 +402,7 @@ const activeClassStudents = allStudents.filter(s => s.courseId === 'crs-bio-10a'
 
   <!-- SCRIPT DE INTERACTIVIDAD -->
   <script is:inline>
-    const STUDENTS_DATA = [
-      { id: 'std-1',  name: 'Álvarez Gómez, Sofía',        avatarUrl: '/avatars/women/fila-1-columna-1.png' },
-      { id: 'std-2',  name: 'Arango Botero, Juan Pablo',    avatarUrl: '/avatars/men/fila-1-columna-1.png' },
-      { id: 'std-3',  name: 'Barrientos López, Valentina',  avatarUrl: '/avatars/women/fila-1-columna-2.png' },
-      { id: 'std-4',  name: 'Bedoya Castro, Mateo',         avatarUrl: '/avatars/men/fila-1-columna-2.png' },
-      { id: 'std-5',  name: 'Cárdenas Ruiz, Andrés Felipe', avatarUrl: '/avatars/men/fila-1-columna-3.png' },
-      { id: 'std-6',  name: 'Castaño Morales, Isabella',    avatarUrl: '/avatars/women/fila-1-columna-3.png' },
-      { id: 'std-7',  name: 'Delgado Peña, Samuel',         avatarUrl: '/avatars/men/fila-1-columna-4.png' },
-      { id: 'std-8',  name: 'Echeverri Restrepo, Mariana',  avatarUrl: '/avatars/women/fila-1-columna-4.png' },
-      { id: 'std-9',  name: 'Franco Vargas, Lucas',         avatarUrl: '/avatars/men/fila-2-columna-1.png' },
-      { id: 'std-10', name: 'Gallego Herrera, Tomás',       avatarUrl: '/avatars/men/fila-2-columna-2.png' },
-      { id: 'std-11', name: 'Giraldo Ríos, Lucía',          avatarUrl: '/avatars/women/fila-2-columna-1.png' },
-      { id: 'std-12', name: 'Gómez Mendoza, Daniela',       avatarUrl: '/avatars/women/fila-2-columna-2.png' },
-      { id: 'std-13', name: 'Gutiérrez Caro, Santiago',     avatarUrl: '/avatars/men/fila-2-columna-3.png' },
-      { id: 'std-14', name: 'Hernández Ospina, Camila',     avatarUrl: '/avatars/women/fila-2-columna-3.png' },
-      { id: 'std-15', name: 'Jaramillo Sánchez, Nicolás',   avatarUrl: '/avatars/men/fila-2-columna-4.png' },
-      { id: 'std-16', name: 'Londoño Jiménez, Valeria',     avatarUrl: '/avatars/women/fila-2-columna-4.png' },
-      { id: 'std-17', name: 'Martínez Cruz, Alejandro',     avatarUrl: '/avatars/men/fila-3-columna-1.png' },
-      { id: 'std-18', name: 'Mejía Ortiz, Gabriela',        avatarUrl: '/avatars/women/fila-3-columna-1.png' },
-      { id: 'std-19', name: 'Morales Duque, Esteban',       avatarUrl: '/avatars/men/fila-3-columna-2.png' },
-      { id: 'std-20', name: 'Muñoz Salazar, Natalia',       avatarUrl: '/avatars/women/fila-3-columna-2.png' },
-      { id: 'std-21', name: 'Osorio Parra, Sebastián',      avatarUrl: '/avatars/men/fila-3-columna-3.png' },
-      { id: 'std-22', name: 'Palacio Pineda, Laura',        avatarUrl: '/avatars/women/fila-3-columna-3.png' },
-      { id: 'std-23', name: 'Quintero Gil, Martín',         avatarUrl: '/avatars/men/fila-3-columna-4.png' },
-      { id: 'std-24', name: 'Ramírez Correa, Salomé',       avatarUrl: '/avatars/women/fila-3-columna-4.png' },
-      { id: 'std-25', name: 'Restrepo Vega, David',         avatarUrl: '/avatars/men/fila-4-columna-1.png' },
-      { id: 'std-26', name: 'Rincón Torres, Paula',         avatarUrl: '/avatars/women/fila-4-columna-1.png' },
-      { id: 'std-27', name: 'Salazar Montoya, Jerónimo',    avatarUrl: '/avatars/men/fila-4-columna-2.png' },
-      { id: 'std-28', name: 'Tobón Flórez, Andrea',         avatarUrl: '/avatars/women/fila-4-columna-2.png' },
-      { id: 'std-29', name: 'Uribe Benítez, Simón',         avatarUrl: '/avatars/men/fila-4-columna-3.png' },
-      { id: 'std-30', name: 'Zapata Moreno, Manuela',       avatarUrl: '/avatars/women/fila-4-columna-3.png' }
-    ];
+    let STUDENTS_DATA = [];
 
     let currentIdx = 0;
     const swipeHistory = [];
@@ -635,6 +469,7 @@ const activeClassStudents = allStudents.filter(s => s.courseId === 'crs-bio-10a'
       renderSwipeCard();
       refreshSwipeHUD();
     }
+    window.startSwipeAttendance = startSwipeAttendance;
 
     function renderSwipeCard() {
       if (currentIdx >= STUDENTS_DATA.length) {
@@ -904,6 +739,142 @@ const activeClassStudents = allStudents.filter(s => s.courseId === 'crs-bio-10a'
         }
       }
     });
+  </script>
+
+  <script>
+    import { teacherTenantService } from '../../../../services/teacherTenantService';
+
+    async function hydrateTeacherDashboard() {
+      const teacher = await teacherTenantService.getTeacherContext();
+      if (!teacher) return;
+      
+      const classes = await teacherTenantService.getTeacherClasses(teacher.id);
+      
+      const today = new Date();
+      const dayOfWeek = today.getDay(); // 0 = Sun, 1 = Mon...
+      const dayMap = { 1: 'Lunes', 2: 'Martes', 3: 'Miércoles', 4: 'Jueves', 5: 'Viernes', 6: 'Sábado', 0: 'Domingo' };
+      const todayStr = dayMap[dayOfWeek];
+      
+      const todayClasses = classes
+        .filter(c => c.day_of_week === todayStr)
+        .sort((a, b) => a.time_slot.start_time.localeCompare(b.time_slot.start_time));
+      
+      const strip = document.getElementById('today-schedule-strip');
+      if (strip) {
+        if (todayClasses.length === 0) {
+          strip.innerHTML = `<div style="font-family:var(--mono); font-size:12px; color:var(--ink-soft); grid-column:span 5; padding:20px;">No hay clases programadas para hoy.</div>`;
+        } else {
+          strip.innerHTML = todayClasses.map(c => `
+            <div style="padding:12px 16px; border-right:1.5px solid var(--ink); background:var(--paper);">
+              <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); font-weight:700; margin-bottom:2px;">
+                ${c.time_slot.start_time} – ${c.time_slot.end_time}
+              </div>
+              <div style="font-family:var(--serif); font-size:14px; font-weight:700; color:var(--ink);">
+                ${c.course ? c.course.name : c.time_slot.name}
+              </div>
+              <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);">
+                ${c.room || 'Sin Salón'}
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+
+      // Find active class
+      const currentTimeStr = today.getHours().toString().padStart(2, '0') + ':' + today.getMinutes().toString().padStart(2, '0');
+      const activeClass = todayClasses.find(c => 
+        currentTimeStr >= c.time_slot.start_time && currentTimeStr <= c.time_slot.end_time
+      ) || todayClasses[0]; // fallback to first class for testing
+
+      const panel = document.getElementById('active-class-panel');
+      
+      if (!activeClass) {
+        if (panel) panel.innerHTML = `<div style="font-family:var(--mono); font-size:14px; color:var(--ink-soft);">No hay clases en curso.</div>`;
+        return;
+      }
+
+      // Hydrate students
+      let studentsData = [];
+      if (activeClass.course) {
+        const enrollments = await teacherTenantService.getCourseStudents(activeClass.course.id);
+        studentsData = enrollments.map(e => ({
+          id: e.student.id,
+          name: e.student.name,
+          avatarUrl: e.student.avatar_url || '/avatars/men/fila-1-columna-1.png'
+        }));
+        window.STUDENTS_DATA = studentsData;
+      }
+
+      if (panel) {
+        panel.innerHTML = `
+          <div style="width:100%;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+              <div>
+                <span class="plan-tag" style="background:var(--rust); color:#FFFFFF; border-color:var(--rust); font-size:9.5px; font-weight:900; padding:2px 8px;">
+                  CLASE ACTIVA
+                </span>
+                <h1 style="font-family:var(--serif); font-size:24px; font-weight:700; color:var(--ink); margin:6px 0 2px 0;">
+                  ${activeClass.course ? activeClass.course.name : activeClass.time_slot.name}
+                </h1>
+                <div style="font-family:var(--mono); font-size:12px; color:var(--ink-soft);">
+                  Ubicación: <strong>${activeClass.room || 'Sin Salón'}</strong> · <strong>${studentsData.length} estudiantes</strong>
+                </div>
+              </div>
+              <div style="text-align:right; font-family:var(--mono);">
+                <div style="font-size:10.5px; color:var(--ink-soft); text-transform:uppercase;">Horario</div>
+                <div style="font-size:22px; font-weight:900; color:var(--rust);">${activeClass.time_slot.start_time} - ${activeClass.time_slot.end_time}</div>
+              </div>
+            </div>
+
+            <div style="background:var(--paper); border:1.5px solid var(--ink); padding:16px 18px; margin:16px 0 20px 0;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid var(--line); padding-bottom:6px;">
+                <span style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; color:var(--rust);">
+                  Material Pedagógico de Hoy
+                </span>
+              </div>
+              <div style="font-size:12.5px; color:var(--ink); line-height:1.5; background:var(--cream); border-left:3px solid var(--rust); padding:10px 14px;">
+                Sin plan de estudios asociado. (Las guías se integrarán próximamente).
+              </div>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1.15fr 1fr 1fr; gap:10px; margin-top:8px; width:100%;">
+            <button type="button" class="btn btn-primary" id="btnTriggerSwipe" style="padding:12px 14px; font-size:12px; font-weight:800; justify-content:center; white-space:nowrap;">
+              Tomar Asistencia (Swipe)
+            </button>
+            <button type="button" class="btn btn-secondary" id="btnOpenAttendance" style="padding:12px 14px; font-size:12px; font-weight:700; justify-content:center; white-space:nowrap; border-color:var(--ink);">
+              Lista Tradicional
+            </button>
+          </div>
+        `;
+
+        document.getElementById('btnTriggerSwipe')?.addEventListener('click', window.startSwipeAttendance);
+        document.getElementById('btnOpenAttendance')?.addEventListener('click', () => {
+          document.getElementById('attendanceModal').style.display = 'flex';
+        });
+      }
+
+      const tradList = document.getElementById('trad-list-container');
+      if (tradList) {
+        tradList.innerHTML = studentsData.map((std, idx) => `
+          <div class="trad-row" id="trad-r-${std.id}" style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--cream); border:1px solid var(--line-strong);">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="font-family:var(--mono); font-size:10.5px; font-weight:800; color:var(--ink-soft); min-width:22px;">
+                ${(idx + 1).toString().padStart(2, '0')}.
+              </span>
+              <img src="${std.avatarUrl}" alt="${std.name}" style="width:28px; height:28px; border-radius:50%; border:1px solid var(--ink); object-fit:cover;" />
+              <span style="font-size:12.5px; font-weight:700; color:var(--ink);">${std.name}</span>
+            </div>
+            <div style="display:flex; gap:6px;">
+              <button type="button" class="btn-trad-p" data-id="${std.id}" style="padding:5px 12px; font-family:var(--mono); font-size:11px; font-weight:700; border:1px solid var(--line-strong); background:#FFFFFF; cursor:pointer;" onclick="this.parentElement.parentElement.style.opacity='0.5';">Presente</button>
+              <button type="button" class="btn-trad-a" data-id="${std.id}" style="padding:5px 12px; font-family:var(--mono); font-size:11px; font-weight:700; border:1px solid var(--line-strong); background:#FFFFFF; cursor:pointer;" onclick="this.parentElement.parentElement.style.opacity='0.5';">Falta</button>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', hydrateTeacherDashboard);
   </script>
 
 </AppLayout>

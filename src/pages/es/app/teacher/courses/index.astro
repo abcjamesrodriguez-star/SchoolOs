@@ -4,10 +4,8 @@
 // Fase 3 | Vista limpia y organizada de cursos del docente
 // ============================================================
 import AppLayout from '../../../../../layouts/AppLayout.astro';
-import { getTeacherCourses, getGuidesByCourse, getStudentsByCourse } from '../../../../../data/app/mock-content';
 
 const lang = 'es';
-const courses = getTeacherCourses();
 ---
 
 <AppLayout
@@ -15,10 +13,10 @@ const courses = getTeacherCourses();
   pageTitle="Mis Cursos Asignados"
   activeSection="courses"
   role="teacher"
-  schoolName="Colegio Norte"
+  schoolName="Raptor Crew"
   lang={lang}
   activeRoute="/app/teacher/courses"
-  breadcrumbs={[{ label: 'Colegio Norte' }, { label: 'Panel Docente', href: `/${lang}/app/teacher` }, { label: 'Mis Cursos' }]}
+  breadcrumbs={[{ label: 'Raptor Crew' }, { label: 'Panel Docente', href: `/${lang}/app/teacher` }, { label: 'Mis Cursos' }]}
 >
 
   <!-- ── 1. HEADER LIMPIO DEL CATÁLOGO ── -->
@@ -26,41 +24,56 @@ const courses = getTeacherCourses();
     <div>
       <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
         <span class="plan-tag" style="background:var(--rust); color:#FFFFFF; border-color:var(--rust); font-size:9.5px; font-weight:900; padding:2px 8px; border-radius:3px;">
-          PERIODO 1 · 2026
-        </span>
-        <span style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">
-          Semana 6 de 18 · Año Académico 2026
+          PERIODO 1
         </span>
       </div>
       <h1 style="font-family:var(--serif); font-size:24px; font-weight:700; color:var(--ink); margin:0;">
         Mis Cursos Asignados
       </h1>
       <div style="font-family:var(--mono); font-size:12px; color:var(--ink-soft); margin-top:4px;">
-        Accede al cuaderno de trabajo de cada grupo para gestionar guías didácticas, consultar el listado de alumnos y revisar calificaciones.
+        Accede al cuaderno de trabajo de cada grupo para gestionar laboratorios, simuladores y métricas.
       </div>
     </div>
 
     <div style="display:flex; gap:12px;">
       <div style="background:var(--cream); border:1.5px solid var(--ink); border-radius:6px; padding:8px 16px; text-align:center;">
         <div style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--ink-soft); text-transform:uppercase;">Cursos Activos</div>
-        <div style="font-family:var(--mono); font-size:18px; font-weight:900; color:var(--ink);">{courses.length}</div>
-      </div>
-      <div style="background:var(--cream); border:1.5px solid var(--ink); border-radius:6px; padding:8px 16px; text-align:center;">
-        <div style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--ink-soft); text-transform:uppercase;">Alumnos Totales</div>
-        <div style="font-family:var(--mono); font-size:18px; font-weight:900; color:var(--ink);">{courses.reduce((acc, c) => acc + c.studentCount, 0)}</div>
+        <div id="stats-courses" style="font-family:var(--mono); font-size:18px; font-weight:900; color:var(--ink);">0</div>
       </div>
     </div>
   </div>
 
   <!-- ── 2. GRID DE CURSOS (CARPETAS DE AULA) ── -->
-  <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap:20px; margin-bottom:28px;">
-    {courses.map((course) => {
-      const guides = getGuidesByCourse(course.id);
-      const publishedGuides = guides.filter(g => g.status === 'published');
-      const students = getStudentsByCourse(course.id);
-      const riskCount = students.filter(s => s.status === 'risk').length;
+  <div id="courses-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap:20px; margin-bottom:28px;">
+    <!-- Los cursos se renderizarán aquí vía JS -->
+    <div class="panel" style="padding:40px; text-align:center; color:var(--ink-soft); grid-column:1/-1;">
+      Cargando asignaturas...
+    </div>
+  </div>
 
-      return (
+  <script type="module">
+    import { teacherTenantService } from '../../../../../services/teacherTenantService';
+
+    async function hydrateCourses() {
+      const teacher = await teacherTenantService.getTeacherContext();
+      if (!teacher) {
+        document.getElementById('courses-grid').innerHTML = '<div style="color:var(--rust); padding:20px;">Error: No hay sesión de profesor activa.</div>';
+        return;
+      }
+
+      const courses = await teacherTenantService.getTeacherCourses(teacher.id);
+      
+      const stats = document.getElementById('stats-courses');
+      if (stats) stats.innerText = courses.length;
+
+      const grid = document.getElementById('courses-grid');
+      
+      if (courses.length === 0) {
+        grid.innerHTML = '<div style="padding:40px; text-align:center; grid-column:1/-1;">No tienes cursos asignados.</div>';
+        return;
+      }
+
+      grid.innerHTML = courses.map(course => `
         <div
           class="panel"
           style="border:2px solid var(--ink); border-radius:8px; box-shadow:5px 5px 0 rgba(18,17,14,0.08); display:flex; flex-direction:column; justify-content:space-between; background:var(--paper); transition:transform 0.15s ease, box-shadow 0.15s ease;"
@@ -68,75 +81,29 @@ const courses = getTeacherCourses();
           <!-- Encabezado de tarjeta -->
           <div style="padding:18px 20px 14px; border-bottom:1.5px solid var(--line);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-              <span
-                class={publishedGuides.length > 0 ? 'badge badge-active' : 'badge badge-warning'}
-                style="font-size:9.5px; font-weight:800; padding:2px 8px; border-radius:3px;"
-              >
-                {publishedGuides.length > 0 ? 'ACTIVO' : 'SIN PUBLICAR'}
+              <span class="badge badge-active" style="background:var(--ink); color:#FFF; font-size:9.5px; font-weight:800; padding:2px 8px; border-radius:3px;">
+                ACTIVO
               </span>
               <span style="font-family:var(--mono); font-size:11px; font-weight:700; color:var(--ink-soft);">
-                📍 {course.room}
+                Grado: ${course.grade_level} ${course.group_letter || ''}
               </span>
             </div>
 
             <h3 style="font-family:var(--serif); font-size:18px; font-weight:700; color:var(--ink); margin:0 0 6px 0; line-height:1.25;">
-              {course.name}
+              ${course.name}
             </h3>
-
-            <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft); display:flex; align-items:center; gap:6px;">
-              <span>🕒 {course.schedule}</span>
-            </div>
           </div>
 
-          <!-- Métricas esenciales del curso (Sin sobrecarga) -->
-          <div style="padding:14px 20px; border-bottom:1.5px solid var(--line); background:var(--cream); display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; text-align:center;">
-            <div>
-              <div style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--ink-soft); text-transform:uppercase;">Alumnos</div>
-              <div style="font-family:var(--mono); font-size:17px; font-weight:900; color:var(--ink); margin-top:2px;">
-                {course.studentCount}
-              </div>
-            </div>
-
-            <div>
-              <div style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--ink-soft); text-transform:uppercase;">Guías</div>
-              <div style="font-family:var(--mono); font-size:17px; font-weight:900; color:var(--ink); margin-top:2px;">
-                {publishedGuides.length} <span style="font-size:10px; font-weight:normal; color:var(--ink-soft);">/ {guides.length}</span>
-              </div>
-            </div>
-
-            <div>
-              <div style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--ink-soft); text-transform:uppercase;">Promedio</div>
-              <div style="font-family:var(--mono); font-size:17px; font-weight:900; color:var(--rust); margin-top:2px;">
-                {course.averageScore.toFixed(1)}
-              </div>
-            </div>
-          </div>
-
-          <!-- Pie con Alertas Rápidas y Acción de Entrada -->
-          <div style="padding:14px 20px; display:flex; justify-content:space-between; align-items:center; background:#FFFDFB;">
-            <div>
-              {riskCount > 0 ? (
-                <span style="font-family:var(--mono); font-size:10.5px; font-weight:800; color:var(--rust); display:flex; align-items:center; gap:4px;">
-                  ⚠️ {riskCount} en riesgo
-                </span>
-              ) : (
-                <span style="font-family:var(--mono); font-size:10.5px; font-weight:800; color:#2E5E1E; display:flex; align-items:center; gap:4px;">
-                  ✓ Al día
-                </span>
-              )}
-            </div>
-
-            <a
-              href={`/${lang}/app/teacher/courses/${course.id}`}
-              class="btn btn-primary btn-sm"
-              style="font-size:12px; font-weight:800; padding:8px 16px; border-radius:4px; text-decoration:none;"
-            >
-              Entrar al Curso →
+          <div style="padding:16px 20px;">
+            <a href="/es/app/teacher/courses/${course.id}?classroom=${encodeURIComponent(course.classroom)}" class="btn btn-primary" style="width:100%; display:block; text-align:center; font-size:12px; font-weight:800; padding:10px 0; border-radius:4px; text-decoration:none;">
+              Entrar al Aula Virtual →
             </a>
           </div>
         </div>
-      );
-    })}
-  </div>
+      `).join('');
+    }
+
+    document.addEventListener('DOMContentLoaded', hydrateCourses);
+  </script>
 
 </AppLayout>

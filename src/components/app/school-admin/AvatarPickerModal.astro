@@ -1,0 +1,192 @@
+---
+// ============================================================
+// SchoolOS — Modal Selector de Avatares Oficiales por Género
+// ============================================================
+interface Props {
+  id?: string;
+  defaultGender?: 'men' | 'women';
+}
+
+const { id = 'avatarPickerModal', defaultGender = 'men' } = Astro.props;
+
+// 16 avatares masculinos y 16 femeninos
+const rows = [1, 2, 3, 4];
+const cols = [1, 2, 3, 4];
+
+const menAvatars = rows.flatMap((r) =>
+  cols.map((c) => `/avatars/men/fila-${r}-columna-${c}.png`)
+);
+
+const womenAvatars = rows.flatMap((r) =>
+  cols.map((c) => `/avatars/women/fila-${r}-columna-${c}.png`)
+);
+---
+
+<div
+  id={id}
+  class="custom-modal-backdrop avatar-picker-modal"
+  style="display:none; position:fixed; inset:0; background:rgba(18, 17, 14, 0.75); z-index:10050; align-items:center; justify-content:center; padding:20px; overflow-y:auto;"
+  role="dialog"
+  aria-modal="true"
+>
+  <div class="panel" style="width:100%; max-width:540px; background:var(--paper); border:2px solid var(--ink); box-shadow:8px 8px 0 rgba(18, 17, 14, 0.4); max-height:90vh; display:flex; flex-direction:column; overflow:hidden;">
+    
+    <!-- HEADER -->
+    <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center; padding:14px 20px; background:var(--cream); border-bottom:2px solid var(--ink); flex-shrink:0;">
+      <div>
+        <div style="font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink-soft); letter-spacing:0.08em;">
+          GALERÍA OFICIAL DE AVATARES
+        </div>
+        <h3 style="font-family:var(--serif); font-size:17px; margin:2px 0 0; font-weight:700; color:var(--ink);">
+          Selecciona un Avatar Institucional
+        </h3>
+      </div>
+
+      <button type="button" class="close-avatar-modal-btn" onclick={`document.getElementById('${id}').style.display='none';`} style="background:none; border:none; font-family:var(--mono); font-size:18px; font-weight:700; cursor:pointer; color:var(--ink);">✕</button>
+    </div>
+
+    <!-- TABS DE GÉNERO -->
+    <div style="display:flex; border-bottom:2px solid var(--ink); background:var(--paper); flex-shrink:0;">
+      <button
+        type="button"
+        id={`${id}-tab-men`}
+        onclick={`window.switchAvatarGender && window.switchAvatarGender('${id}', 'men')`}
+        style="flex:1; padding:10px; font-family:var(--mono); font-size:12px; font-weight:800; text-transform:uppercase; border:none; border-right:1px solid var(--ink); background:var(--ink); color:#FFFFFF; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;"
+      >
+        <span>👦</span> Masculino (16)
+      </button>
+      <button
+        type="button"
+        id={`${id}-tab-women`}
+        onclick={`window.switchAvatarGender && window.switchAvatarGender('${id}', 'women')`}
+        style="flex:1; padding:10px; font-family:var(--mono); font-size:12px; font-weight:800; text-transform:uppercase; border:none; background:var(--cream); color:var(--ink); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;"
+      >
+        <span>👧</span> Femenino (16)
+      </button>
+    </div>
+
+    <!-- GRID DE AVATARES -->
+    <div class="panel-body padded" style="padding:20px; overflow-y:auto; flex:1; background:#FFFDF9;">
+      
+      <!-- GRID MASCULINO -->
+      <div id={`${id}-grid-men`} style="display:grid; grid-template-columns:repeat(4, 1fr); gap:12px;">
+        {menAvatars.map((url, idx) => (
+          <button
+            type="button"
+            class="avatar-option-btn"
+            data-url={url}
+            onclick={`window.selectAvatarOption && window.selectAvatarOption('${id}', '${url}')`}
+            style="width:100%; aspect-ratio:1; border:2px solid var(--ink); background:#FFFFFF; padding:4px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform 0.1s ease, box-shadow 0.1s ease; box-shadow:2px 2px 0 var(--ink);"
+            title={`Avatar Masculino #${idx + 1}`}
+          >
+            <img src={url} alt={`Avatar #${idx + 1}`} style="width:100%; height:100%; object-fit:contain;" loading="lazy" />
+          </button>
+        ))}
+      </div>
+
+      <!-- GRID FEMENINO -->
+      <div id={`${id}-grid-women`} style="display:none; grid-template-columns:repeat(4, 1fr); gap:12px;">
+        {womenAvatars.map((url, idx) => (
+          <button
+            type="button"
+            class="avatar-option-btn"
+            data-url={url}
+            onclick={`window.selectAvatarOption && window.selectAvatarOption('${id}', '${url}')`}
+            style="width:100%; aspect-ratio:1; border:2px solid var(--ink); background:#FFFFFF; padding:4px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform 0.1s ease, box-shadow 0.1s ease; box-shadow:2px 2px 0 var(--ink);"
+            title={`Avatar Femenino #${idx + 1}`}
+          >
+            <img src={url} alt={`Avatar #${idx + 1}`} style="width:100%; height:100%; object-fit:contain;" loading="lazy" />
+          </button>
+        ))}
+      </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <div style="padding:12px 20px; background:var(--cream); border-top:2px solid var(--ink); display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
+      <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">
+        Haz clic en cualquier avatar para seleccionarlo.
+      </span>
+      <button
+        type="button"
+        class="btn btn-secondary btn-sm"
+        onclick={`document.getElementById('${id}').style.display='none';`}
+        style="font-size:11px; font-weight:700;"
+      >
+        Cerrar
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script is:inline>
+  window._avatarPickerTargetInput = null;
+  window._avatarPickerTargetPreview = null;
+
+  window.openAvatarPicker = function(modalId, currentGender, inputElementId, previewElementId) {
+    var modal = document.getElementById(modalId || 'avatarPickerModal');
+    if (!modal) return;
+
+    window._avatarPickerTargetInput = inputElementId;
+    window._avatarPickerTargetPreview = previewElementId;
+
+    if (currentGender) {
+      window.switchAvatarGender(modalId || 'avatarPickerModal', currentGender === 'Mujer' || currentGender === 'women' ? 'women' : 'men');
+    }
+
+    modal.style.display = 'flex';
+  };
+
+  window.switchAvatarGender = function(modalId, gender) {
+    var tabMen = document.getElementById(modalId + '-tab-men');
+    var tabWomen = document.getElementById(modalId + '-tab-women');
+    var gridMen = document.getElementById(modalId + '-grid-men');
+    var gridWomen = document.getElementById(modalId + '-grid-women');
+
+    if (!tabMen || !tabWomen || !gridMen || !gridWomen) return;
+
+    if (gender === 'women') {
+      tabMen.style.background = 'var(--cream)';
+      tabMen.style.color = 'var(--ink)';
+      tabWomen.style.background = 'var(--ink)';
+      tabWomen.style.color = '#FFFFFF';
+      gridMen.style.display = 'none';
+      gridWomen.style.display = 'grid';
+    } else {
+      tabMen.style.background = 'var(--ink)';
+      tabMen.style.color = '#FFFFFF';
+      tabWomen.style.background = 'var(--cream)';
+      tabWomen.style.color = 'var(--ink)';
+      gridMen.style.display = 'grid';
+      gridWomen.style.display = 'none';
+    }
+  };
+
+  window.selectAvatarOption = function(modalId, avatarUrl) {
+    if (window._avatarPickerTargetInput) {
+      var inputEl = document.getElementById(window._avatarPickerTargetInput);
+      if (inputEl) inputEl.value = avatarUrl;
+    }
+
+    if (window._avatarPickerTargetPreview) {
+      var prevEl = document.getElementById(window._avatarPickerTargetPreview);
+      if (prevEl) {
+        if (prevEl.tagName === 'IMG') {
+          prevEl.src = avatarUrl;
+          prevEl.style.display = 'block';
+        } else {
+          prevEl.innerHTML = '<img src="' + avatarUrl + '" style="width:100%; height:100%; object-fit:contain;" />';
+        }
+      }
+    }
+
+    // Disparar evento personalizado
+    window.dispatchEvent(new CustomEvent('avatar:selected', {
+      detail: { modalId: modalId, avatarUrl: avatarUrl }
+    }));
+
+    var modal = document.getElementById(modalId);
+    if (modal) modal.style.display = 'none';
+  };
+</script>

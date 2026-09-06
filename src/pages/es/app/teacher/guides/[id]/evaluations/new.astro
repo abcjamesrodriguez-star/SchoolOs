@@ -6,11 +6,6 @@
 import AppLayout from '../../../../../../../layouts/AppLayout.astro';
 import { getAllTeacherGuides, getGuideById } from '../../../../../../../data/app/mock-content';
 
-export async function getStaticPaths() {
-  const guides = getAllTeacherGuides();
-  return guides.map((g) => ({ params: { id: g.id } }));
-}
-
 const lang = 'es';
 const { id } = Astro.params;
 const guide = getGuideById(id!);
@@ -22,11 +17,11 @@ const guide = getGuideById(id!);
     pageTitle="Crear Evaluación Pedagógica"
     activeSection="courses"
     role="teacher"
-    schoolName="Colegio Norte"
+    schoolName="Raptor Crew"
     lang={lang}
     activeRoute={`/app/teacher/guides/${id}`}
     breadcrumbs={[
-      { label: 'Colegio Norte' },
+      { label: 'Raptor Crew' },
       { label: 'Panel Docente', href: `/${lang}/app/teacher` },
       { label: guide.courseName, href: `/${lang}/app/teacher/courses/${guide.courseId}` },
       { label: guide.title, href: `/${lang}/app/teacher/guides/${guide.id}` },
@@ -185,10 +180,10 @@ const guide = getGuideById(id!);
           <div style="display:flex; gap:12px; margin-top:20px;">
             <button
               class="btn btn-primary"
-              onclick="alert('✅ Evaluación vinculada y programada exitosamente para los estudiantes del curso.'); window.location.href=`/${lang}/app/teacher/guides/${guide.id}`;"
+              onclick="alert(' Evaluación vinculada y programada exitosamente para los estudiantes del curso.'); window.location.href=`/${lang}/app/teacher/guides/${guide.id}`;"
               style="font-size:12.5px; font-weight:800; padding:10px 20px;"
             >
-              🚀 Guardar y Publicar Evaluación
+               Guardar y Publicar Evaluación
             </button>
             <a href={`/${lang}/app/teacher/guides/${guide.id}`} class="btn btn-secondary" style="font-size:12px;">
               Guardar como Borrador
@@ -227,7 +222,7 @@ const guide = getGuideById(id!);
 
   </AppLayout>
 ) : (
-  <AppLayout title="Error" pageTitle="Guía no encontrada" activeSection="courses" role="teacher" schoolName="Colegio Norte" lang={lang} activeRoute="/app/teacher" breadcrumbs={[{ label: 'Error' }]}>
+  <AppLayout title="Error" pageTitle="Guía no encontrada" activeSection="courses" role="teacher" schoolName="Raptor Crew" lang={lang} activeRoute="/app/teacher" breadcrumbs={[{ label: 'Error' }]}>
     <div style="padding:40px; text-align:center;">
       <h2>Guía no encontrada</h2>
       <a href={`/${lang}/app/teacher/courses`} class="btn btn-primary">Volver</a>

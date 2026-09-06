@@ -12,12 +12,17 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/node": "^11.1.4",
     "@astrojs/react": "^6.0.2",
     "@supabase/supabase-js": "^2.112.3",
-    "@types/pg": "^8.23.1",
     "astro": "^7.2.2",
-    "pg": "^8.23.0",
+    "jsonwebtoken": "^9.0.3",
+    "nodemailer": "^9.0.5",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/nodemailer": "^8.0.1"
   }
 }

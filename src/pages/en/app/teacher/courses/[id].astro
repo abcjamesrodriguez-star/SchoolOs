@@ -6,11 +6,6 @@
 import AppLayout from '../../../../../layouts/AppLayout.astro';
 import { getTeacherCourses, getTeacherCourseById, getGuidesByCourse, getStudentsByCourse } from '../../../../../data/app/mock-content';
 
-export async function getStaticPaths() {
-  const courses = getTeacherCourses();
-  return courses.map((c) => ({ params: { id: c.id } }));
-}
-
 const lang = 'en';
 const { id } = Astro.params;
 const course = getTeacherCourseById(id!);
@@ -45,7 +40,7 @@ const riskStudents = students.filter(s => s.status === 'risk');
             {course.level}
           </span>
           <span style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">
-            📍 {course.room} · 🕒 {course.schedule}
+             {course.room} ·  {course.schedule}
           </span>
         </div>
 
@@ -77,7 +72,7 @@ const riskStudents = students.filter(s => s.status === 'risk');
         class="course-tab-btn active"
         style="padding:10px 20px; font-family:var(--mono); font-size:12px; font-weight:800; border:2px solid var(--ink); border-bottom:none; border-radius:6px 6px 0 0; background:var(--ink); color:#FFFFFF; cursor:pointer; transition:all 0.15s ease;"
       >
-        📚 Guides & Content ({guides.length})
+         Guides & Content ({guides.length})
       </button>
 
       <button
@@ -87,7 +82,7 @@ const riskStudents = students.filter(s => s.status === 'risk');
         class="course-tab-btn"
         style="padding:10px 20px; font-family:var(--mono); font-size:12px; font-weight:800; border:2px solid var(--ink); border-bottom:none; border-radius:6px 6px 0 0; background:var(--cream); color:var(--ink); cursor:pointer; transition:all 0.15s ease;"
       >
-        👥 Class Roster ({students.length})
+         Class Roster ({students.length})
       </button>
 
       <button
@@ -97,7 +92,7 @@ const riskStudents = students.filter(s => s.status === 'risk');
         class="course-tab-btn"
         style="padding:10px 20px; font-family:var(--mono); font-size:12px; font-weight:800; border:2px solid var(--ink); border-bottom:none; border-radius:6px 6px 0 0; background:var(--cream); color:var(--ink); cursor:pointer; transition:all 0.15s ease;"
       >
-        📊 Evaluations & Grades
+         Evaluations & Grades
       </button>
     </div>
 
@@ -213,7 +208,7 @@ const riskStudents = students.filter(s => s.status === 'risk');
               class="student-filter-pill"
               style="padding:5px 10px; font-family:var(--mono); font-size:10.5px; font-weight:800; border:1px solid var(--ink); border-radius:3px; background:var(--cream); color:var(--ink); cursor:pointer;"
             >
-              ⭐ Honor ({honorStudents.length})
+               Honor ({honorStudents.length})
             </button>
             <button
               type="button"
@@ -222,7 +217,7 @@ const riskStudents = students.filter(s => s.status === 'risk');
               class="student-filter-pill"
               style="padding:5px 10px; font-family:var(--mono); font-size:10.5px; font-weight:800; border:1px solid var(--rust); border-radius:3px; background:#FFF0EE; color:var(--rust); cursor:pointer;"
             >
-              ⚠️ At Risk ({riskStudents.length})
+               At Risk ({riskStudents.length})
             </button>
           </div>
         </div>
@@ -290,7 +285,7 @@ const riskStudents = students.filter(s => s.status === 'risk');
                         <span style="font-family:var(--mono); font-size:11px; color:#2E5E1E; font-weight:700;">✓ Up to date</span>
                       ) : (
                         <span style="font-family:var(--mono); font-size:11px; font-weight:800; color:var(--rust); background:#FFF0EE; padding:2px 7px; border-radius:3px; border:1px solid #F5C6BC;">
-                          ⏳ {std.pendingCount} pending
+                           {std.pendingCount} pending
                         </span>
                       )}
                     </td>
@@ -300,7 +295,7 @@ const riskStudents = students.filter(s => s.status === 'risk');
                         class={std.status === 'honor' ? 'badge badge-active' : std.status === 'risk' ? 'badge badge-suspended' : 'badge'}
                         style={`font-size:9px; font-weight:900; padding:2px 8px; border-radius:3px; ${std.status === 'normal' ? 'background:var(--cream); border:1px solid var(--ink); color:var(--ink);' : ''}`}
                       >
-                        {std.status === 'honor' ? '⭐ SUPERIOR' : std.status === 'risk' ? '⚠️ AT RISK' : 'PASSING'}
+                        {std.status === 'honor' ? ' SUPERIOR' : std.status === 'risk' ? ' AT RISK' : 'PASSING'}
                       </span>
                     </td>
                   </tr>

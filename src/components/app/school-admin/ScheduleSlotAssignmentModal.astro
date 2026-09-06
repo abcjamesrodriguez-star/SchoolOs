@@ -1,0 +1,332 @@
+﻿---
+// ============================================================
+// SchoolOS — Modal de Asignación Rápida de Bloque Horario
+// Con verificación visual de disponibilidad de salones
+// Cero emojis, estilo sobrio editorial institucional
+// ============================================================
+interface Props {
+  id?: string;
+}
+
+const { id = 'scheduleSlotAssignmentModal' } = Astro.props;
+---
+
+<div
+  id={id}
+  class="custom-modal-backdrop"
+  style="display:none; position:fixed; inset:0; background:rgba(18, 17, 14, 0.75); z-index:9999; align-items:center; justify-content:center; padding:20px; overflow-y:auto;"
+  role="dialog"
+  aria-modal="true"
+>
+  <div class="panel" style="width:100%; max-width:580px; background:var(--paper); border:2px solid var(--ink); box-shadow:8px 8px 0 var(--ink); max-height:90vh; display:flex; flex-direction:column; overflow:hidden;">
+    
+    <!-- HEADER -->
+    <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center; padding:14px 20px; background:var(--cream); border-bottom:2px solid var(--ink);">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; font-size:10px; font-weight:900;">
+          ASIGNACIÓN DE CLASE
+        </span>
+        <h2 id={`${id}Title`} style="font-family:var(--serif); font-size:16.5px; margin:0; font-weight:700; color:var(--ink);">
+          Programar Bloque Docente
+        </h2>
+      </div>
+      <button type="button" onclick={`document.getElementById('${id}').style.display='none';`} style="background:none; border:none; font-family:var(--mono); font-size:18px; font-weight:700; cursor:pointer; color:var(--ink);">✕</button>
+    </div>
+
+    <!-- FEEDBACK ALERT -->
+    <div id={`${id}Feedback`} style="display:none; padding:10px 18px; font-family:var(--mono); font-size:12px; font-weight:700;"></div>
+
+    <!-- BODY -->
+    <div class="panel-body padded" style="background:#FFFDF9; padding:20px; overflow-y:auto; flex:1;">
+      
+      <form id={`${id}Form`} style="display:flex; flex-direction:column; gap:14px;">
+        <input type="hidden" id={`${id}SchoolId`} value="" />
+        <input type="hidden" id={`${id}TeacherId`} value="" />
+        <input type="hidden" id={`${id}Day`} value="" />
+        <input type="hidden" id={`${id}DayIndex`} value="0" />
+        <input type="hidden" id={`${id}SlotId`} value="" />
+        <input type="hidden" id={`${id}TimeLabel`} value="" />
+
+        <!-- FICHA RESUMEN DEL DOCENTE Y BLOQUE -->
+        <div style="background:var(--cream); border:1.5px solid var(--ink); padding:12px 14px; display:grid; grid-template-columns:1.2fr 1fr; gap:10px;">
+          <div>
+            <div style="font-family:var(--mono); font-size:10px; font-weight:800; color:var(--rust); text-transform:uppercase;">
+              Docente a Cargo:
+            </div>
+            <strong id={`${id}TeacherNameLabel`} style="font-size:14.5px; color:var(--ink); display:block; margin-top:2px;">
+              Prof. Jessica Rodriguez
+            </strong>
+          </div>
+          <div>
+            <div style="font-family:var(--mono); font-size:10px; font-weight:800; color:var(--rust); text-transform:uppercase;">
+              Horario del Bloque:
+            </div>
+            <strong id={`${id}SlotTimeLabel`} style="font-family:var(--mono); font-size:13px; color:var(--ink); display:block; margin-top:2px;">
+              LUNES · 07:00 - 07:55
+            </strong>
+          </div>
+        </div>
+
+        <!-- 1. SELECCIÓN DE MATERIA -->
+        <div style="background:#FFFFFF; border:1.5px solid var(--ink); padding:14px; box-shadow:2px 2px 0 var(--ink);">
+          <label style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:6px; color:var(--ink);">
+            1. Asignatura / Materia a Dictar *
+          </label>
+          <select
+            id={`${id}SubjectSelect`}
+            required
+            style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:9px 10px; font-size:13px; font-family:var(--mono); font-weight:700; box-sizing:border-box;"
+          >
+            <option value="">Selecciona la materia...</option>
+          </select>
+        </div>
+
+        <!-- 2. SELECCIÓN DE SALÓN CON DISPONIBILIDAD -->
+        <div style="background:#FFFFFF; border:1.5px solid var(--ink); padding:14px; box-shadow:2px 2px 0 var(--ink);">
+          <label style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:6px; color:var(--ink);">
+            2. Salón / Grupo Académico *
+          </label>
+          <select
+            id={`${id}ClassroomSelect`}
+            required
+            style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:9px 10px; font-size:13px; font-family:var(--mono); font-weight:700; box-sizing:border-box;"
+          >
+            <option value="">Cargando disponibilidad de salones...</option>
+          </select>
+          <div id={`${id}ClassroomNotice`} style="font-size:11px; color:var(--ink-soft); margin-top:6px;">
+            Solo los salones marcados como disponibles pueden ser seleccionados.
+          </div>
+        </div>
+
+        <!-- 3. AULA FÍSICA (OPCIONAL) -->
+        <div style="background:#FFFFFF; border:1.5px solid var(--ink); padding:14px; box-shadow:2px 2px 0 var(--ink);">
+          <label style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:6px; color:var(--ink);">
+            3. Espacio / Aula Física (Opcional)
+          </label>
+          <input
+            type="text"
+            id={`${id}RoomLocation`}
+            placeholder="Ej: Aula 101, Laboratorio de Física, Cancha Principal"
+            style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:8px 10px; font-size:12.5px; box-sizing:border-box;"
+          />
+        </div>
+
+        <!-- FOOTER ACTIONS -->
+        <div style="display:flex; justify-content:flex-end; gap:10px; border-top:1.5px solid var(--line); padding-top:14px; margin-top:4px;">
+          <button type="button" class="btn btn-secondary" onclick={`document.getElementById('${id}').style.display='none';`}>
+            Cancelar
+          </button>
+          <button type="submit" id={`${id}SubmitBtn`} class="btn btn-primary" style="font-weight:800; padding:8px 16px;">
+            ✓ Confirmar Asignación
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  import { scheduleService } from '../../../services/scheduleService';
+
+  function getActiveTenantSchoolId(): string {
+    try {
+      const user = JSON.parse(localStorage.getItem('schoolos-user') || '{}');
+      if (user.schoolId) return user.schoolId;
+    } catch (_) {}
+    return (window as any).SchoolOSApp?.currentSchoolId || (window as any)._currentTenantSchoolId || localStorage.getItem('schoolos_tenant_id') || localStorage.getItem('schoolos_tenant_slug') || '';
+  }
+
+  function getModalId(): string {
+    const modal = document.querySelector('[data-schedule-slot-assignment-modal]') as HTMLElement || document.getElementById('ScheduleSlotAssignmentModal');
+    return modal ? modal.id : 'ScheduleSlotAssignmentModal';
+  }
+
+  let currentTeacher: any = null;
+  let currentDay = '';
+  let currentSlot: any = null;
+  let currentSchoolId = '';
+
+  (window as any).openScheduleSlotAssignmentModal = function(opts: any = {}) {
+    currentTeacher = opts.teacher;
+    currentDay = (opts.day || 'LUNES').toUpperCase();
+    currentSlot = opts.slot;
+    currentSchoolId = opts.schoolId || getActiveTenantSchoolId();
+
+    const modalId = getModalId();
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+
+    const schoolInput = document.getElementById(modalId + 'SchoolId') as HTMLInputElement;
+    const teacherInput = document.getElementById(modalId + 'TeacherId') as HTMLInputElement;
+    const dayInput = document.getElementById(modalId + 'Day') as HTMLInputElement;
+    const dayIndexInput = document.getElementById(modalId + 'DayIndex') as HTMLInputElement;
+    const slotIdInput = document.getElementById(modalId + 'SlotId') as HTMLInputElement;
+    const timeLabelInput = document.getElementById(modalId + 'TimeLabel') as HTMLInputElement;
+
+    const teacherLabel = document.getElementById(modalId + 'TeacherNameLabel');
+    const slotTimeLabel = document.getElementById(modalId + 'SlotTimeLabel');
+
+    const subjectSelect = document.getElementById(modalId + 'SubjectSelect') as HTMLSelectElement;
+    const classroomSelect = document.getElementById(modalId + 'ClassroomSelect') as HTMLSelectElement;
+    const roomLocInput = document.getElementById(modalId + 'RoomLocation') as HTMLInputElement;
+    const feedback = document.getElementById(modalId + 'Feedback');
+
+    if (feedback) feedback.style.display = 'none';
+    if (roomLocInput) roomLocInput.value = '';
+
+    const daysList = ['LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES'];
+    const dayIndex = daysList.indexOf(currentDay);
+
+    if (schoolInput) schoolInput.value = currentSchoolId;
+    if (teacherInput) teacherInput.value = currentTeacher?.id || currentTeacher?.teacherId || '';
+    if (dayInput) dayInput.value = currentDay;
+    if (dayIndexInput) dayIndexInput.value = String(dayIndex >= 0 ? dayIndex : 0);
+    const sIdVal = currentSlot?.id || currentSlot?.slot_id || '';
+    if (slotIdInput) slotIdInput.value = sIdVal;
+    const sTime = currentSlot?.startTime || currentSlot?.start_time || '07:00';
+    const eTime = currentSlot?.endTime || currentSlot?.end_time || '07:55';
+    if (timeLabelInput) timeLabelInput.value = `${sTime} - ${eTime}`;
+
+    if (teacherLabel) teacherLabel.textContent = currentTeacher?.name || currentTeacher?.teacherName || 'Docente';
+    if (slotTimeLabel) slotTimeLabel.textContent = `${currentDay} · ${currentSlot?.name || 'Bloque'} (${sTime} - ${eTime})`;
+
+    const curriculum = opts.curriculum || [];
+    if (subjectSelect) {
+      const tId = currentTeacher?.id || currentTeacher?.teacherId;
+      const filteredCurriculum = curriculum.filter(function(s: any) {
+        return (s.qualified_teacher_ids || []).includes(tId);
+      });
+
+      if (!filteredCurriculum.length) {
+        subjectSelect.innerHTML = '<option value="">Este docente no está habilitado en ninguna materia.</option>';
+        subjectSelect.disabled = true;
+      } else {
+        subjectSelect.innerHTML = filteredCurriculum.map(function(s: any) {
+          return `<option value="${s.id}">${s.name} (${s.code}) · ${s.department || s.grade_level || 'Área General'}</option>`;
+        }).join('');
+        subjectSelect.disabled = false;
+      }
+    }
+
+    if (classroomSelect) {
+      const capacities = opts.gradeCapacities || [];
+      let allRooms: string[] = [];
+
+      capacities.forEach(function(g: any) {
+        const isOff = g.isOffered !== false && g.is_offered !== false;
+        const count = g.sectionsCount || g.sections_count || 1;
+        const gLevel = g.gradeLevel || g.grade_level || '';
+        if (isOff && count > 0) {
+          for (let i = 1; i <= count; i++) {
+            allRooms.push(`${gLevel}-${i}`);
+          }
+        }
+      });
+
+      if (!allRooms.length) {
+        allRooms = ['6°-1', '6°-2', '7°-1', '8°-1', '9°-1', '10°-1', '11°-1'];
+      }
+
+      const occupiedMap: Record<string, any> = {};
+      curriculum.forEach(function(s: any) {
+        (s.teachers || []).forEach(function(t: any) {
+          (t.assignments || []).forEach(function(asg: any) {
+            if (asg.day === currentDay && asg.slotId === sIdVal) {
+              occupiedMap[asg.classroom] = {
+                subject: s.name,
+                teacher: t.teacherName
+              };
+            }
+          });
+        });
+      });
+
+      const optionsHtml = allRooms.map(function(room) {
+        const occupied = occupiedMap[room];
+        if (occupied) {
+          return `<option value="${room}" disabled style="color:var(--rust); background:#FEE2E2;">✕ Salón ${room} (Ocupado: ${occupied.subject} - ${occupied.teacher})</option>`;
+        }
+        return `<option value="${room}">✓ Salón ${room} (Disponible)</option>`;
+      }).join('');
+
+      classroomSelect.innerHTML = optionsHtml;
+    }
+
+    modal.style.display = 'flex';
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const modalId = getModalId();
+    const form = document.getElementById(modalId + 'Form');
+    const modal = document.getElementById(modalId);
+    if (!form || !modal) return;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const submitBtn = document.getElementById(modalId + 'SubmitBtn') as HTMLButtonElement;
+      const feedback = document.getElementById(modalId + 'Feedback');
+
+      const schoolId = (document.getElementById(modalId + 'SchoolId') as HTMLInputElement)?.value || currentSchoolId;
+      const teacherId = (document.getElementById(modalId + 'TeacherId') as HTMLInputElement)?.value;
+      const subjectId = (document.getElementById(modalId + 'SubjectSelect') as HTMLSelectElement)?.value;
+      const classroom = (document.getElementById(modalId + 'ClassroomSelect') as HTMLSelectElement)?.value;
+      const day = (document.getElementById(modalId + 'Day') as HTMLInputElement)?.value;
+      const dayIndex = Number((document.getElementById(modalId + 'DayIndex') as HTMLInputElement)?.value) || 0;
+      const slotId = (document.getElementById(modalId + 'SlotId') as HTMLInputElement)?.value;
+      const timeLabel = (document.getElementById(modalId + 'TimeLabel') as HTMLInputElement)?.value;
+      const roomLocation = (document.getElementById(modalId + 'RoomLocation') as HTMLInputElement)?.value;
+
+      if (!subjectId || !classroom || !day || !slotId) {
+        alert('Por favor selecciona la materia y un salón disponible.');
+        return;
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Asignando bloque…';
+      }
+
+      try {
+        const normalizedDay = day.toUpperCase();
+        let startTime = '07:00';
+        let endTime = '07:55';
+        if (timeLabel && timeLabel.includes('-')) {
+          const parts = timeLabel.split('-').map(function(p: string) { return p.trim(); });
+          startTime = parts[0] || '07:00';
+          endTime = parts[1] || '07:55';
+        }
+
+        await scheduleService.createClassSlot({
+          schoolId,
+          subjectId,
+          teacherId: teacherId || null,
+          classroom: classroom.trim(),
+          dayOfWeek: normalizedDay,
+          dayIndex,
+          slotId,
+          startTime,
+          endTime,
+          roomLocation: roomLocation ? roomLocation.trim() : ('Salón ' + classroom)
+        });
+
+        modal.style.display = 'none';
+        window.dispatchEvent(new CustomEvent('curriculum:updated'));
+        window.location.reload();
+
+      } catch (err: any) {
+        console.error('Error al programar bloque:', err);
+        if (feedback) {
+          feedback.style.cssText = 'display:block; background:#FEE2E2; border:1.5px solid var(--rust); color:var(--rust);';
+          feedback.textContent = err?.message || 'Error al programar clase';
+        }
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = '✓ Confirmar Asignación';
+        }
+      }
+    });
+  });
+</script>

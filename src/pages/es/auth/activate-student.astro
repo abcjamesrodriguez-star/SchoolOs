@@ -1,0 +1,325 @@
+---
+export const prerender = false;
+import AvatarPickerModal from '../../../components/app/school-admin/AvatarPickerModal.astro';
+import { createAdminSupabase } from '../../../lib/supabase-admin';
+
+const token = Astro.url.searchParams.get('token') || '';
+let student: any = { name: 'Estudiante' };
+let school: any = { name: 'Institución' };
+let errorMsg = '';
+
+if (!token) {
+  errorMsg = 'Falta el token de activación en el enlace. Revisa el correo oficial de matrícula o solicita un reenvío.';
+} else {
+  try {
+    let payload: any;
+    if (token.includes('.')) {
+      const parts = token.split('.');
+      payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf-8'));
+    } else {
+      payload = JSON.parse(Buffer.from(token, 'base64url').toString('utf-8'));
+    }
+    const studentId = payload.studentId || payload.userId;
+    if (studentId) {
+      const admin = createAdminSupabase();
+      const { data: sData } = await admin
+        .from('users')
+        .select('*, school:schools(id, name, logo_url)')
+        .eq('id', studentId)
+        .maybeSingle();
+
+      if (sData) {
+        student = sData;
+        if (sData.school) school = sData.school;
+      }
+    }
+  } catch (err) {
+    console.warn('[activate-student] Error decodificando token en SSR:', err);
+  }
+}
+---
+
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Formalización de Matrícula — SchoolOS</title>
+  <link rel="stylesheet" href="/styles/global.css" />
+  <style>
+    :root {
+      --ink: #12110E;
+      --paper: #FAF8F5;
+      --cream: #F2EFE9;
+      --rust: #C84B31;
+      --sage-dark: #2E5E1E;
+      --mono: 'JetBrains Mono', monospace;
+      --serif: 'Playfair Display', Georgia, serif;
+      --sans: system-ui, -apple-system, sans-serif;
+    }
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--sans);
+      margin: 0;
+      padding: 30px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .activation-card {
+      width: 100%;
+      max-width: 620px;
+      background: #FFFFFF;
+      border: 2px solid var(--ink);
+      box-shadow: 8px 8px 0 var(--ink);
+      padding: 0;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+
+  <div style="text-align:center; margin-bottom:20px;">
+    <div style="font-family:var(--mono); font-size:12px; font-weight:800; letter-spacing:0.15em; text-transform:uppercase; color:var(--rust);">
+      SCHOOLOS · PORTAL DE BIENVENIDA FAMILIAR
+    </div>
+    <h1 style="font-family:var(--serif); font-size:26px; font-weight:700; margin:4px 0;">
+      Activación de Cuenta Estudiantil
+    </h1>
+    <div style="font-size:13px; color:#666;">
+      {school?.name ? `Institución Educativa: ${school.name}` : 'Formalización Oficial de Matrícula'}
+    </div>
+  </div>
+
+  <div class="activation-card">
+    
+    <!-- HEADER -->
+    <div style="background:var(--cream); padding:16px 24px; border-bottom:2px solid var(--ink); display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <div style="font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:#666;">
+          EXPEDIENTE DEL ALUMNO
+        </div>
+        <div id="dynamicUserName" style="font-size:16px; font-weight:700; color:var(--ink); margin-top:2px;">
+          {student?.name || 'Estudiante Registrado'}
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <span style="background:var(--ink); color:#FFF; font-family:var(--mono); font-size:10.5px; font-weight:800; padding:3px 8px;">
+          {student?.job_title || 'Grado Asignado'}
+        </span>
+      </div>
+    </div>
+
+    {errorMsg ? (
+      <div style="padding:32px; text-align:center;">
+        <div style="font-size:32px; margin-bottom:8px;">⚠️</div>
+        <div style="font-size:16px; font-weight:700; color:var(--rust); margin-bottom:8px;">{errorMsg}</div>
+        <div style="font-size:12.5px; color:#666;">Comunícate con la secretaría académica de tu colegio para recibir un nuevo enlace.</div>
+      </div>
+    ) : (
+      <form id="studentActivationForm" style="padding:24px; display:flex; flex-direction:column; gap:18px;">
+        <input type="hidden" id="activationToken" value={token} />
+        <input type="hidden" id="studentAvatarUrl" value={student?.avatar_url || '/avatars/men/fila-1-columna-1.png'} />
+
+        <!-- 1. CÓDIGO DE MATRÍCULA -->
+        <div style="background:var(--cream); border:1.5px solid var(--ink); padding:14px 16px;">
+          <label style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:4px;">
+            1. Código Institucional de Matrícula *
+          </label>
+          <input
+            type="text"
+            id="inputStudentCode"
+            required
+            style="width:100%; border:1.5px solid var(--ink); background:#FFFFFF; padding:8px 10px; font-family:var(--mono); font-size:13px; font-weight:700; box-sizing:border-box;"
+            placeholder="EST-2026-XXXX"
+          />
+          <div style="font-size:11px; color:#666; margin-top:4px;">
+            Confirma el código asignado por el colegio en el correo de bienvenida.
+          </div>
+        </div>
+
+        <!-- 2. AVATAR OFICIAL -->
+        <div style="background:var(--cream); border:1.5px solid var(--ink); padding:14px 16px;">
+          <label style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:8px;">
+            2. Avatar / Foto Institucional del Alumno *
+          </label>
+          <div style="display:flex; align-items:center; gap:16px;">
+            <div style="width:68px; height:68px; border:2px solid var(--ink); background:#FFFFFF; display:flex; align-items:center; justify-content:center; overflow:hidden; box-shadow:2px 2px 0 var(--ink);">
+              <img id="studentAvatarImg" src={student?.avatar_url || '/avatars/men/fila-1-columna-1.png'} alt="Avatar" style="width:100%; height:100%; object-fit:contain;" />
+            </div>
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              onclick="window.openAvatarPicker && window.openAvatarPicker('studentAvatarPickerModal', 'Hombre', 'studentAvatarUrl', 'studentAvatarImg');"
+              style="font-size:11px; font-weight:800; padding:6px 12px; border:1.5px solid var(--ink); background:#FFFFFF; cursor:pointer;"
+            >
+              🎨 Cambiar Avatar Institucional
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. CONTACTO SECUNDARIO DE EMERGENCIA -->
+        <div style="background:var(--cream); border:1.5px solid var(--ink); padding:14px 16px;">
+          <label style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:8px;">
+            3. Contacto Secundario / Familiar de Emergencia
+          </label>
+          <div style="display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:10px;">
+            <div>
+              <input type="text" id="secondaryName" placeholder="Nombre completo acudiente" style="width:100%; border:1.5px solid var(--ink); background:#FFFFFF; padding:7px 9px; font-size:12px; box-sizing:border-box;" />
+            </div>
+            <div>
+              <select id="secondaryRelation" style="width:100%; border:1.5px solid var(--ink); background:#FFFFFF; padding:7px 6px; font-size:12px; box-sizing:border-box;">
+                <option value="Padre">Padre</option>
+                <option value="Madre">Madre</option>
+                <option value="Tio">Tío(a)</option>
+                <option value="Abuelo">Abuelo(a)</option>
+                <option value="Hermano">Hermano(a) Mayor</option>
+              </select>
+            </div>
+            <div>
+              <input type="tel" id="inputPhone" placeholder="Celular / WhatsApp" style="width:100%; border:1.5px solid var(--ink); background:#FFFFFF; padding:7px 9px; font-size:12px; font-family:var(--mono); box-sizing:border-box;" />
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. CONTRASEÑA DE ACCESO DEL ESTUDIANTE -->
+        <div style="background:var(--cream); border:1.5px solid var(--ink); padding:14px 16px;">
+          <label style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:4px;">
+            4. Crear Contraseña de Acceso para el Estudiante *
+          </label>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div style="position:relative;">
+              <input
+                type="password"
+                id="userPassword"
+                required
+                minlength="6"
+                placeholder="Mínimo 6 caracteres"
+                style="width:100%; border:1.5px solid var(--ink); background:#FFFFFF; padding:8px 30px 8px 10px; font-size:12.5px; font-family:var(--mono); box-sizing:border-box;"
+              />
+              <button type="button" onclick="document.getElementById('userPassword').type = document.getElementById('userPassword').type === 'password' ? 'text' : 'password'" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; opacity:0.6;">👁️</button>
+            </div>
+            <div style="position:relative;">
+              <input
+                type="password"
+                id="userPasswordConfirm"
+                required
+                minlength="6"
+                placeholder="Repetir contraseña"
+                style="width:100%; border:1.5px solid var(--ink); background:#FFFFFF; padding:8px 30px 8px 10px; font-size:12.5px; font-family:var(--mono); box-sizing:border-box;"
+              />
+              <button type="button" onclick="document.getElementById('userPasswordConfirm').type = document.getElementById('userPasswordConfirm').type === 'password' ? 'text' : 'password'" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; opacity:0.6;">👁️</button>
+            </div>
+          </div>
+          <div style="font-size:11px; color:#666; margin-top:4px;">
+            Esta será la clave con la que el estudiante ingresará a sus clases y tareas.
+          </div>
+        </div>
+
+        <!-- FEEDBACK -->
+        <div id="activationFeedback" style="display:none; padding:12px; font-family:var(--mono); font-size:12px; font-weight:700;"></div>
+
+        <!-- BOTÓN DE ACTIVACIÓN -->
+        <button
+          type="submit"
+          id="btnSubmitActivation"
+          style="padding:14px; background:var(--ink); color:#FFFFFF; border:2px solid var(--ink); font-family:var(--mono); font-size:13px; font-weight:800; letter-spacing:0.04em; text-transform:uppercase; cursor:pointer; box-shadow:4px 4px 0 rgba(0,0,0,0.15);"
+        >
+          ✓ Completar Formalización y Activar Cuenta →
+        </button>
+      </form>
+    )}
+
+  </div>
+
+  <AvatarPickerModal id="studentAvatarPickerModal" />
+
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('studentActivationForm') as HTMLFormElement;
+    const submitBtn = document.getElementById('btnSubmitActivation') as HTMLButtonElement;
+    const feedback = document.getElementById('activationFeedback');
+
+    if (!form) return;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const tokenEl = document.getElementById('activationToken') as HTMLInputElement;
+      const activationToken = tokenEl?.value || new URLSearchParams(window.location.search).get('token') || '';
+      const docCode = (document.getElementById('inputStudentCode') as HTMLInputElement)?.value.trim();
+      const phone = (document.getElementById('inputPhone') as HTMLInputElement)?.value.trim();
+      const avatarUrl = (document.getElementById('studentAvatarUrl') as HTMLInputElement)?.value || '';
+      const pass1 = (document.getElementById('userPassword') as HTMLInputElement)?.value || '';
+      const pass2 = (document.getElementById('userPasswordConfirm') as HTMLInputElement)?.value || '';
+
+      if (!activationToken) {
+        if (feedback) {
+          feedback.style.cssText = 'display:block; background:#FEE2E2; border:1.5px solid var(--rust); color:var(--rust); margin-bottom:6px; padding: 10px;';
+          feedback.textContent = '❌ Falta el token de activación. Usa el enlace oficial que recibiste en el correo.';
+        }
+        return;
+      }
+
+      if (!pass1 || pass1.length < 6 || pass1 !== pass2) {
+        if (feedback) {
+          feedback.style.cssText = 'display:block; background:#FEE2E2; border:1.5px solid var(--rust); color:var(--rust); margin-bottom:6px; padding: 10px;';
+          feedback.textContent = '❌ Las contraseñas no coinciden o tienen menos de 6 caracteres.';
+        }
+        return;
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Activando cuenta de estudiante…';
+      }
+
+      try {
+        const res = await fetch('/api/auth/activate-student', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token: activationToken,
+            studentCode: docCode,
+            phone,
+            password: pass1,
+            avatarUrl,
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || 'Error al procesar la activación.');
+        }
+
+        if (feedback) {
+          feedback.style.cssText = 'display:block; background:#E6F4EA; border:1.5px solid var(--sage-dark); color:var(--sage-dark); margin-bottom:6px; padding: 10px;';
+          feedback.textContent = '✅ ¡Matrícula formalizada y cuenta activada con éxito! Redirigiendo al inicio de sesión...';
+        }
+
+        if (submitBtn) submitBtn.textContent = 'Acceso Concedido';
+
+        setTimeout(() => {
+          const userEmail = data.user?.email || '';
+          window.location.href = `/login?confirmado=1&email=${encodeURIComponent(userEmail)}`;
+        }, 1200);
+
+      } catch (err: any) {
+        if (feedback) {
+          feedback.style.cssText = 'display:block; background:#FEE2E2; border:1.5px solid var(--rust); color:var(--rust); margin-bottom:6px; padding: 10px;';
+          feedback.textContent = '❌ Error: ' + (err.message || 'Error desconocido');
+        }
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Intentar nuevamente';
+        }
+      }
+    });
+  });
+  </script>
+
+</body>
+</html>

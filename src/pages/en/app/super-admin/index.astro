@@ -3,12 +3,28 @@
 // SchoolOS — Super Admin Dashboard (/en/app/super-admin)
 // ============================================================
 import AppLayout from '../../../../layouts/AppLayout.astro';
-import { getMockDashboardStats, getMockSchools, getMockAuditLogs } from '../../../../data/app/mock-data';
+import { schoolService } from '../../../../services/schoolService';
+import { auditService } from '../../../../services/auditService';
 
 const lang = 'en';
-const stats = getMockDashboardStats(lang);
-const recentSchools = getMockSchools(lang).slice(0, 4);
-const recentLogs = getMockAuditLogs(lang);
+let schools: any[] = [];
+let recentLogs: any[] = [];
+
+try {
+  schools = (await schoolService.getSchools()) || [];
+} catch (e) {
+  console.error('Error loading schools from Supabase:', e);
+  schools = [];
+}
+
+try {
+  recentLogs = (await auditService.getRecentLogs(4)) || [];
+} catch (e) {
+  console.error('Error loading logs from Supabase:', e);
+  recentLogs = [];
+}
+
+const recentSchools = schools.slice(0, 4);
 
 function getStatusLabel(status: string) {
   switch (status) {
@@ -323,7 +339,7 @@ function getStatusLabel(status: string) {
         <div class="intel-agenda-list">
           <a class="intel-agenda-item" href={`/${lang}/app/super-admin/judicial-access`}>
             <div class="intel-agenda-left">
-              <span class="intel-agenda-icon">⚖️</span>
+              <span class="intel-agenda-icon"></span>
               <div>
                 <div class="intel-agenda-title">Review Judicial Case</div>
                 <div class="intel-agenda-sub">Expires in 2 days</div>
@@ -334,7 +350,7 @@ function getStatusLabel(status: string) {
 
           <a class="intel-agenda-item" href={`/${lang}/app/super-admin/schools`}>
             <div class="intel-agenda-left">
-              <span class="intel-agenda-icon">🏢</span>
+              <span class="intel-agenda-icon"></span>
               <div>
                 <div class="intel-agenda-title">Trial Liceo Andino</div>
                 <div class="intel-agenda-sub">Due in 4 days</div>
@@ -345,7 +361,7 @@ function getStatusLabel(status: string) {
 
           <a class="intel-agenda-item" href={`/${lang}/app/super-admin/settings`}>
             <div class="intel-agenda-left">
-              <span class="intel-agenda-icon">🔐</span>
+              <span class="intel-agenda-icon"></span>
               <div>
                 <div class="intel-agenda-title">API Key Rotation</div>
                 <div class="intel-agenda-sub">Scheduled in 6 days</div>

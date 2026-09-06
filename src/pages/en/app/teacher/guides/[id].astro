@@ -6,11 +6,6 @@
 import AppLayout from '../../../../../layouts/AppLayout.astro';
 import { getAllTeacherGuides, getGuideById, getEvaluationsByGuide } from '../../../../../data/app/mock-content';
 
-export async function getStaticPaths() {
-  const guides = getAllTeacherGuides();
-  return guides.map((g) => ({ params: { id: g.id } }));
-}
-
 const lang = 'en';
 const { id } = Astro.params;
 const guide = getGuideById(id!);
@@ -128,7 +123,7 @@ const evaluations = guide ? getEvaluationsByGuide(guide.id) : [];
             <div style="font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--rust); margin-bottom:8px;">DRAFT — Hidden from students</div>
             <p style="font-size:12px; color:var(--ink-soft); margin:0 0 12px 0; line-height:1.5;">This guide is currently unpublished. Students cannot view or access its content.</p>
             <button class="btn btn-primary" onclick="alert('Guide published. Enrolled students can now access this material.')" style="width:100%; font-size:12px; font-weight:700; justify-content:center;">
-              🚀 Publish Guide
+               Publish Guide
             </button>
           </div>
         )}

@@ -128,7 +128,22 @@ export function getTeacherCourses(): TeacherCourse[] {
 }
 
 export function getTeacherCourseById(id: string): TeacherCourse | undefined {
-  return TEACHER_COURSES.find((c) => c.id === id);
+  const found = TEACHER_COURSES.find((c) => c.id === id);
+  if (found) return found;
+
+  return {
+    id: id,
+    teacherId: 'usr-1',
+    name: 'Espacio de Trabajo (Cargando...)',
+    level: 'Grado Académico',
+    department: 'General',
+    room: 'Aula Virtual',
+    schedule: 'En sincronización',
+    studentsCount: 0,
+    averageScore: 0,
+    progressPercentage: 0,
+    nextLab: undefined
+  };
 }
 
 // ------------------------------------------------------------

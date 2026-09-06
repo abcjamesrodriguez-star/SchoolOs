@@ -25,7 +25,7 @@ export const PedagogicalReferenceDrawer: React.FC<Props> = ({ block, isOpen, onC
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, borderBottom: '1.5px solid var(--line-strong)', paddingBottom: 6 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 900, background: 'var(--rust)', color: '#fff', padding: '2px 8px', textTransform: 'uppercase' }}>
-            📖 FUNDAMENTACIÓN DIDÁCTICA · SECCIÓN § {block.order}
+             FUNDAMENTACIÓN DIDÁCTICA · SECCIÓN § {block.order}
           </span>
           {block.title && (
             <strong style={{ fontFamily: 'var(--serif)', fontSize: 14, color: 'var(--ink)' }}>

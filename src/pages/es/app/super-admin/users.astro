@@ -1,4 +1,6 @@
 ---
+export const prerender = false;
+
 // ============================================================
 // SchoolOS — Directorio de Usuarios (/es/app/super-admin/users)
 // ============================================================
@@ -12,11 +14,23 @@ let users: any[] = [];
 let schools: any[] = [];
 let passwordTickets: any[] = [];
 try {
-  users = await userService.getUsers();
-  schools = await schoolService.getSchools();
+  users = (await userService.getUsers()) || [];
+} catch (e) {
+  console.error('Error fetching users:', e);
+  users = [];
+}
+
+try {
+  schools = (await schoolService.getSchools()) || [];
+} catch (e) {
+  console.error('Error fetching schools:', e);
+  schools = [];
+}
+
+try {
   passwordTickets = await passwordResetTicketService.getTicketQueue();
 } catch (e) {
-  console.error('Error fetching users/schools:', e);
+  console.error('Error fetching password tickets:', e);
 }
 
 const superAdminsCount = users.filter((u) => u.role === 'super_admin').length;
@@ -143,26 +157,39 @@ const passwordTicketsJson = JSON.stringify(passwordTickets);
                 </td>
                 <td><span class={`badge badge-${u.status || 'active'}`}>{u.status || 'active'}</span></td>
                 <td class="cell-actions">
-                  {isRector ? (
-                    <div style="display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap;">
+                  <div style="display:flex; justify-content:flex-end; gap:6px; flex-wrap:wrap; align-items:center;">
+                    {isRector && (
+                      <>
+                        <button
+                          class="btn btn-secondary btn-sm"
+                          onclick={`window.openPasswordTicketModal && window.openPasswordTicketModal('${u.id}')`}
+                          type="button"
+                          title="Gestionar Clave"
+                        >
+                          Clave
+                        </button>
+                        <button
+                          class="btn btn-secondary btn-sm"
+                          onclick={`window.openRectorModal && window.openRectorModal('${u.id}', '${u.schoolId || ''}')`}
+                          type="button"
+                          title="Editar Directivo"
+                        >
+                          Editar →
+                        </button>
+                      </>
+                    )}
+                    {!isSuper && (
                       <button
-                        class="btn btn-secondary btn-sm"
-                        onclick={`window.openPasswordTicketModal && window.openPasswordTicketModal('${u.id}')`}
+                        class="btn btn-danger btn-sm"
+                        style="padding:4px 8px; font-size:11px;"
+                        onclick={`window.deleteUser && window.deleteUser('${u.id}', '${u.email}', '${u.name}')`}
                         type="button"
+                        title="Eliminar usuario definitivamente"
                       >
-                        Clave
+                        🗑 Borrar
                       </button>
-                      <button
-                        class="btn btn-secondary btn-sm"
-                        onclick={`window.openRectorModal && window.openRectorModal('${u.id}', '${u.schoolId || ''}')`}
-                        type="button"
-                      >
-                        Editar →
-                      </button>
-                    </div>
-                  ) : (
-                    <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">Global</span>
-                  )}
+                    )}
+                  </div>
                 </td>
               </tr>
             );
@@ -172,7 +199,7 @@ const passwordTicketsJson = JSON.stringify(passwordTickets);
 
       {users.length === 0 && (
         <div style="padding:48px; text-align:center; font-family:var(--mono); color:var(--ink-soft);">
-          <div style="font-size:32px; margin-bottom:12px;">👥</div>
+          <div style="font-size:32px; margin-bottom:12px;"></div>
           <div style="font-weight:700; color:var(--ink); margin-bottom:6px;">No hay usuarios registrados</div>
           <div style="font-size:12px;">Crea el primer directivo o docente desde el botón superior.</div>
         </div>
@@ -252,165 +279,159 @@ const passwordTicketsJson = JSON.stringify(passwordTickets);
     style="
       background:var(--paper);
       border:2px solid var(--ink);
-      width:min(760px, 100%);
-      max-height:92vh;
+      width:min(760px, 95vw);
+      max-height:90vh;
       overflow-y:auto;
       display:flex;
       flex-direction:column;
       opacity:0;
-      transform:scale(0.96);
-      transition:opacity 0.22s ease, transform 0.22s ease;
-      box-shadow:8px 8px 0 rgba(18, 17, 14, 0.25);
+      transform:scale(0.97);
+      transition:opacity 0.2s ease, transform 0.2s ease;
+      box-shadow:8px 8px 0 var(--ink);
     "
   >
     <!-- RECTOR HEADER -->
-    <div style="border-bottom:1px solid var(--line); padding:18px 24px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:var(--paper); z-index:2;">
-      <div style="display:flex; align-items:center; gap:12px;">
-        <div style="width:36px; height:36px; background:var(--ink); color:#FFFFFF; font-size:18px; display:flex; align-items:center; justify-content:center;">
-          👨‍🏫
-        </div>
-        <div>
-          <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:2px;">Directorio Institucional</div>
-          <h2 id="rector-modal-title" style="font-family:var(--serif); font-size:19px; font-weight:700; color:var(--ink); margin:0;">Registro de Rector / Directivo</h2>
-        </div>
+    <div style="border-bottom:2px solid var(--ink); padding:16px 24px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:var(--cream); z-index:2;">
+      <div>
+        <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:2px;">Directorio Institucional</div>
+        <h2 id="rector-modal-title" style="font-family:var(--serif); font-size:19px; font-weight:700; color:var(--ink); margin:0;">Registro de Rector / Directivo</h2>
       </div>
       <button
         id="rector-modal-close-btn"
         type="button"
         onclick="window.closeRectorModal && window.closeRectorModal()"
-        style="width:32px; height:32px; border:1px solid var(--ink); background:transparent; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; color:var(--ink);"
+        style="width:32px; height:32px; border:2px solid var(--ink); background:var(--paper); cursor:pointer; font-size:16px; font-weight:700; display:flex; align-items:center; justify-content:center; color:var(--ink); box-shadow:2px 2px 0 var(--ink);"
         aria-label="Cerrar modal de rector"
       >✕</button>
     </div>
 
     <!-- FORM -->
-    <form id="rector-form" style="padding:24px; display:flex; flex-direction:column; gap:0;">
+    <form id="rector-form" style="padding:22px 24px; display:flex; flex-direction:column; gap:16px; background:var(--paper);">
       <input type="hidden" id="rector-id" />
       <input type="hidden" id="rector-avatar-url" />
 
-      <!-- PASO 1: FOTO & IDENTIFICACIÓN PERSONAL -->
-      <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft); font-weight:700; margin-bottom:12px; padding-bottom:6px; border-bottom:1px solid var(--line);">
-        01 · Datos Personales & Identificación
-      </div>
-
-      <div style="display:grid; grid-template-columns:1fr 180px; gap:20px; margin-bottom:20px; align-items:start;">
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
-          <div style="display:flex; flex-direction:column; gap:5px; grid-column:span 2;">
-            <label style="font-family:var(--mono); font-size:11px; font-weight:600; color:var(--ink);">Nombre Completo del Rector / Directivo *</label>
-            <input id="rector-name" type="text" placeholder="ej. Coach Mike Johnson" required style="border:1px solid var(--ink); background:var(--cream); padding:9px 12px; font-family:var(--sans); font-size:13.5px;" />
-          </div>
-
-          <div style="display:flex; flex-direction:column; gap:5px;">
-            <label style="font-family:var(--mono); font-size:11px; font-weight:600; color:var(--ink);">Tipo de Documento</label>
-            <select id="rector-doc-type" style="border:1px solid var(--ink); background:var(--cream); padding:8px 10px; font-family:var(--mono); font-size:12px;">
-              <option value="CC">Cédula de Ciudadanía (CC)</option>
-              <option value="CE">Cédula de Extranjería (CE)</option>
-              <option value="PA">Pasaporte (PA)</option>
-              <option value="PEP">Permiso Especial (PEP)</option>
-            </select>
-          </div>
-
-          <div style="display:flex; flex-direction:column; gap:5px;">
-            <label style="font-family:var(--mono); font-size:11px; font-weight:600; color:var(--ink);">Número de Documento</label>
-            <input id="rector-doc-id" type="text" placeholder="ej. 1.045.890.123" style="border:1px solid var(--ink); background:var(--cream); padding:8px 10px; font-family:var(--mono); font-size:12.5px;" />
-          </div>
-
-          <div style="display:flex; flex-direction:column; gap:5px; grid-column:span 2;">
-            <label style="font-family:var(--mono); font-size:11px; font-weight:600; color:var(--ink);">Teléfono Móvil / WhatsApp de Contacto</label>
-            <input id="rector-phone" type="tel" placeholder="ej. +57 300 123 4567" style="border:1px solid var(--ink); background:var(--cream); padding:8px 10px; font-family:var(--sans); font-size:13px;" />
-          </div>
+      <!-- PASO 1: IDENTIFICACIÓN Y FOTO INTEGRADA -->
+      <div style="background:var(--cream); border:1.5px solid var(--ink); padding:16px; box-shadow:3px 3px 0 var(--ink);">
+        <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink); font-weight:800; margin-bottom:12px; padding-bottom:4px; border-bottom:1px solid var(--line);">
+          01 · Identificación Personal & Foto
         </div>
 
-        <!-- RECTOR AVATAR UPLOAD BOX -->
-        <div style="border:2px dashed var(--ink); padding:14px; text-align:center; background:var(--cream); border-radius:4px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-          <div style="font-family:var(--mono); font-size:9.5px; font-weight:700; text-transform:uppercase; margin-bottom:8px; color:var(--ink);">Foto del Rector</div>
-          <div id="rector-avatar-preview-box" style="width:85px; height:85px; border:1px solid var(--ink); background:var(--paper); display:flex; align-items:center; justify-content:center; margin-bottom:10px; overflow:hidden;">
-            <img id="rector-avatar-preview-img" src="" alt="Foto Rector" style="width:100%; height:100%; object-fit:cover; display:none;" />
-            <div id="rector-avatar-placeholder" style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); font-weight:700;">SIN FOTO</div>
+        <div style="display:grid; grid-template-columns:110px 1fr; gap:16px; align-items:start;">
+          <!-- Foto integrada a la izquierda -->
+          <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+            <div id="rector-avatar-preview-box" style="width:90px; height:90px; border:2px solid var(--ink); background:#FFFFFF; display:flex; align-items:center; justify-content:center; overflow:hidden; box-shadow:2px 2px 0 var(--ink);">
+              <img id="rector-avatar-preview-img" src="" alt="Foto Directivo" style="width:100%; height:100%; object-fit:cover; display:none;" />
+              <div id="rector-avatar-placeholder" style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft); font-weight:700; text-align:center;">FOTO</div>
+            </div>
+            <input type="file" id="rector-avatar-file-input" accept="image/png,image/jpeg,image/webp" style="display:none;" />
+            <button type="button" id="rector-btn-upload-avatar" class="btn btn-secondary btn-sm" style="font-size:9.5px; width:100%; padding:4px; font-weight:700;">
+              Subir Foto
+            </button>
+            <button type="button" id="rector-btn-remove-avatar" style="background:none; border:none; color:var(--danger); font-size:9.5px; font-family:var(--mono); cursor:pointer; display:none;">
+              ✕ Quitar
+            </button>
           </div>
-          <input type="file" id="rector-avatar-file-input" accept="image/png,image/jpeg,image/webp" style="display:none;" />
-          <button type="button" id="rector-btn-upload-avatar" class="btn btn-secondary btn-sm" style="font-size:10px; width:100%; padding:5px 6px; font-weight:700;">
-            📁 Subir Foto
-          </button>
-          <button type="button" id="rector-btn-remove-avatar" style="background:none; border:none; color:var(--danger); font-size:10px; font-family:var(--mono); margin-top:6px; cursor:pointer; display:none;">
-            ✕ Quitar foto
-          </button>
+
+          <!-- Campos alineados en Grid 2x2 a la derecha -->
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div style="display:flex; flex-direction:column; gap:4px; grid-column:span 2;">
+              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; color:var(--ink);">Nombre Completo del Directivo *</label>
+              <input id="rector-name" type="text" placeholder="ej. Coach Mike Johnson" required style="border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-family:var(--sans); font-size:13.5px;" />
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:4px; grid-column:span 2;">
+              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; color:var(--ink);">Correo Institucional de Acceso *</label>
+              <input id="rector-email" type="email" placeholder="rectoria@colegio.edu.co" required style="border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-family:var(--mono); font-size:13px;" />
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:4px;">
+              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; color:var(--ink);">Teléfono / WhatsApp</label>
+              <input id="rector-phone" type="tel" placeholder="ej. +57 300 123 4567" style="border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-family:var(--sans); font-size:13px;" />
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:4px;">
+              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; color:var(--ink);">Documento de Identidad</label>
+              <div style="display:flex; gap:6px;">
+                <select id="rector-doc-type" style="width:70px; border:1.5px solid var(--ink); background:var(--paper); padding:8px 4px; font-family:var(--mono); font-size:11px; font-weight:700;">
+                  <option value="CC">CC</option>
+                  <option value="CE">CE</option>
+                  <option value="PA">PA</option>
+                  <option value="PEP">PEP</option>
+                </select>
+                <input id="rector-doc-id" type="text" placeholder="1.045.890.123" style="flex:1; border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-family:var(--mono); font-size:12.5px;" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- PASO 2: VINCULACIÓN INSTITUCIONAL & CARGO -->
-      <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft); font-weight:700; margin-bottom:12px; padding-bottom:6px; border-bottom:1px solid var(--line);">
-        02 · Vinculación Institucional & Cargo
-      </div>
-
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:20px;">
-        <div style="display:flex; flex-direction:column; gap:5px; grid-column:span 2;">
-          <label style="font-family:var(--mono); font-size:11px; font-weight:600; color:var(--ink);">Institución Educativa Asignada *</label>
-          <select id="rector-school-id" required style="border:1px solid var(--ink); background:var(--cream); padding:9px 12px; font-family:var(--sans); font-size:13.5px; font-weight:700;">
-            <!-- Opciones renderizadas dinámicamente -->
-          </select>
+      <div style="background:var(--cream); border:1.5px solid var(--ink); padding:16px; box-shadow:3px 3px 0 var(--ink);">
+        <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink); font-weight:800; margin-bottom:12px; padding-bottom:4px; border-bottom:1px solid var(--line);">
+          02 · Asignación de Sede & Cargo
         </div>
 
-        <div style="display:flex; flex-direction:column; gap:5px;">
-          <label style="font-family:var(--mono); font-size:11px; font-weight:600; color:var(--ink);">Cargo Oficial</label>
-          <select id="rector-job-title" style="border:1px solid var(--ink); background:var(--cream); padding:8px 10px; font-family:var(--sans); font-size:12.5px;">
-            <option value="Rector General">Rector General</option>
-            <option value="Director Académico">Director Académico</option>
-            <option value="Vicerrector">Vicerrector</option>
-            <option value="Director Ejecutivo">Director Ejecutivo</option>
-            <option value="Coordinador General">Coordinador General</option>
-          </select>
-        </div>
-
-        <div style="display:flex; flex-direction:column; gap:5px;">
-          <label style="font-family:var(--mono); font-size:11px; font-weight:600; color:var(--ink);">Fecha de Nombramiento / Posesión</label>
-          <input id="rector-appointment-date" type="date" style="border:1px solid var(--ink); background:var(--cream); padding:8px 10px; font-family:var(--mono); font-size:12px;" />
-        </div>
-
-        <div style="display:flex; flex-direction:column; gap:5px; grid-column:span 2;">
-          <label style="font-family:var(--mono); font-size:11px; font-weight:600; color:var(--ink);">Título Académico / Especialidad</label>
-          <input id="rector-specialty" type="text" placeholder="ej. Magíster en Gestión Educativa y Liderazgo" style="border:1px solid var(--ink); background:var(--cream); padding:8px 10px; font-family:var(--sans); font-size:13px;" />
-        </div>
-      </div>
-
-      <!-- PASO 3: CREDENCIALES DE ACCESO -->
-      <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft); font-weight:700; margin-bottom:12px; padding-bottom:6px; border-bottom:1px solid var(--line);">
-        03 · Credenciales de Acceso a SchoolOS
-      </div>
-
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:20px;">
-        <div style="display:flex; flex-direction:column; gap:5px; grid-column:span 2;">
-          <label style="font-family:var(--mono); font-size:11px; font-weight:600; color:var(--ink);">Correo Institucional de Acceso *</label>
-          <input id="rector-email" type="email" placeholder="rectoria@cafelitosacademy.edu.co" required style="border:1px solid var(--ink); background:var(--cream); padding:9px 12px; font-family:var(--mono); font-size:13px;" />
-        </div>
-
-        <div style="display:flex; flex-direction:column; gap:5px;">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <label style="font-family:var(--mono); font-size:11px; font-weight:600; color:var(--ink);">Contraseña Inicial</label>
-            <button type="button" id="rector-btn-generate-pass" style="background:none; border:none; color:var(--sage-dark); font-family:var(--mono); font-size:10.5px; font-weight:700; cursor:pointer;">
-              🎲 Generar Segura
-            </button>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div style="display:flex; flex-direction:column; gap:4px; grid-column:span 2;">
+            <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; color:var(--ink);">Institución Educativa Asignada *</label>
+            <select id="rector-school-id" required style="border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-family:var(--sans); font-size:13.5px; font-weight:700;"></select>
           </div>
-          <input id="rector-password" type="text" placeholder="Mínimo 8 caracteres" style="border:1px solid var(--ink); background:var(--cream); padding:8px 10px; font-family:var(--mono); font-size:12.5px;" />
-        </div>
 
-        <div style="display:flex; flex-direction:column; gap:5px;">
-          <label style="font-family:var(--mono); font-size:11px; font-weight:600; color:var(--ink);">Estado de la Cuenta</label>
-          <select id="rector-status" style="border:1px solid var(--ink); background:var(--cream); padding:8px 10px; font-family:var(--mono); font-size:12px;">
-            <option value="active">Activa (Acceso Inmediato)</option>
-            <option value="pending">Invitación Pendiente</option>
-            <option value="suspended">Suspendida Preventivamente</option>
-          </select>
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; color:var(--ink);">Cargo Oficial</label>
+            <select id="rector-job-title" style="border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-family:var(--sans); font-size:12.5px;">
+              <option value="Rector General">Rector General</option>
+              <option value="Director Académico">Director Académico</option>
+              <option value="Vicerrector">Vicerrector</option>
+              <option value="Director Ejecutivo">Director Ejecutivo</option>
+              <option value="Coordinador General">Coordinador General</option>
+            </select>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; color:var(--ink);">Especialidad / Área Directiva</label>
+            <input id="rector-specialty" type="text" placeholder="ej. Gestión Curricular o Dirección General" style="border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-family:var(--sans); font-size:12.5px;" />
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; color:var(--ink);">Fecha de Nombramiento / Posesión</label>
+            <input id="rector-appointment-date" type="date" style="border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-family:var(--mono); font-size:12px;" />
+          </div>
+
+          <div id="rector-status-container" style="display:flex; flex-direction:column; gap:4px;">
+            <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; color:var(--ink);">Estado de la Cuenta</label>
+            <select id="rector-status" style="border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-family:var(--mono); font-size:12px;">
+              <option value="active">Activa (Acceso Habilitado)</option>
+              <option value="suspended">Suspendida Preventivamente</option>
+              <option value="invited">Invitación Pendiente (Esperando JWT)</option>
+            </select>
+          </div>
         </div>
+      </div>
+
+      <!-- PASO 3: INFORMACIÓN DE SEGURIDAD & ACTIVACIÓN JWT -->
+      <div id="rector-jwt-info-block" style="background:var(--cream); border:1.5px solid var(--ink); padding:14px 16px; box-shadow:3px 3px 0 var(--ink);">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+          <span style="font-size:16px;">✉️</span>
+          <span style="font-family:var(--mono); font-size:11px; font-weight:800; text-transform:uppercase; color:var(--ink);">Activación Segura Obligatoria (JWT)</span>
+        </div>
+        <p style="font-size:12px; color:var(--ink-soft); line-height:1.45; margin:0;">
+          Al registrar al directivo se despachará automáticamente un <strong>correo institucional con token JWT de 24 horas</strong>. El directivo ingresará a la plataforma, confirmará su <strong>cédula</strong> y <strong>teléfono</strong> registrados, y creará su propia contraseña personal.
+        </p>
       </div>
 
       <!-- FEEDBACK -->
-      <div id="rector-feedback" style="display:none; padding:10px 14px; margin-bottom:16px; font-family:var(--mono); font-size:12px; font-weight:600;"></div>
+      <div id="rector-feedback" style="display:none; padding:10px 14px; font-family:var(--mono); font-size:12px; font-weight:600;"></div>
 
       <!-- FORM ACTIONS -->
-      <div style="display:flex; gap:10px; justify-content:flex-end; padding-top:16px; border-top:1px solid var(--line);">
-        <button id="rector-cancel-btn" type="button" class="btn btn-secondary" onclick="window.closeRectorModal && window.closeRectorModal()">Cancelar</button>
-        <button id="rector-submit-btn" type="submit" class="btn btn-primary">Registrar Directivo</button>
+      <div style="display:flex; gap:10px; justify-content:space-between; align-items:center; padding-top:8px;">
+        <button id="rector-delete-btn" type="button" class="btn btn-danger btn-sm" style="display:none;" onclick="window.deleteCurrentRector && window.deleteCurrentRector()">
+          🗑 Eliminar Directivo
+        </button>
+        <div style="display:flex; gap:10px; margin-left:auto;">
+          <button id="rector-cancel-btn" type="button" class="btn btn-secondary" onclick="window.closeRectorModal && window.closeRectorModal()">Cancelar</button>
+          <button id="rector-submit-btn" type="submit" class="btn btn-primary">Registrar y Enviar Invitación →</button>
+        </div>
       </div>
     </form>
   </div>
@@ -478,11 +499,6 @@ const passwordTicketsJson = JSON.stringify(passwordTickets);
   </div>
 </div>
 
-<script>
-  import { passwordResetTicketService } from '../../../../services/passwordResetTicketService';
-  window.passwordResetTicketService = passwordResetTicketService;
-</script>
-
 <script define:vars={{ usersJson, schoolsJson, passwordTicketsJson }}>
 // ============================================================
 // DATOS EN CLIENTE
@@ -530,6 +546,7 @@ window.closePasswordTicketModal = function() {
   panel.style.transform = 'scale(0.96)';
   setTimeout(() => {
     if (overlay) overlay.style.display = 'none';
+    document.body.style.overflow = '';
   }, 220);
 };
 
@@ -546,10 +563,13 @@ window.executePasswordResetTicket = async function(ticketId, targetEmail) {
   if (!confirmed) return;
 
   try {
-    await window.passwordResetTicketService.executeTicket({
-      ticketId,
-      newPassword,
+    // ✅ Via API segura — no directo desde el browser
+    const res = await window.fetchAuth('/api/admin/password-tickets', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'execute_ticket', ticketId, newPassword }),
     });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Error desconocido');
 
     window.alert('Contraseña actualizada. Ahora prueba cerrar sesión e ingresar como rector con la nueva clave temporal.');
     window.location.reload();
@@ -585,25 +605,33 @@ window.openRectorModal = function(rectorId, preselectedSchoolId) {
   const fileInput = document.getElementById('rector-avatar-file-input');
   if (fileInput) fileInput.value = '';
 
+  const statusContainer = document.getElementById('rector-status-container');
+  const jwtInfoBlock = document.getElementById('rector-jwt-info-block');
+  const rectorDeleteBtn = document.getElementById('rector-delete-btn');
+
   if (rectorId) {
     // MODO EDICIÓN DE RECTOR EXISTENTE
     const user = window.USERS.find(u => u.id === rectorId);
     if (!user) return;
 
     document.getElementById('rector-id').value = user.id;
-    document.getElementById('rector-modal-title').textContent = `Editar Rector: ${user.name}`;
+    document.getElementById('rector-modal-title').textContent = `Editar Directivo: ${user.name}`;
     document.getElementById('rector-name').value = user.name || '';
+    document.getElementById('rector-email').value = user.email || '';
+    document.getElementById('rector-phone').value = user.phone || '';
     document.getElementById('rector-doc-type').value = user.documentType || 'CC';
     document.getElementById('rector-doc-id').value = user.documentId || '';
-    document.getElementById('rector-phone').value = user.phone || '';
     document.getElementById('rector-avatar-url').value = user.avatarUrl || '';
     document.getElementById('rector-job-title').value = user.jobTitle || 'Rector General';
-    document.getElementById('rector-appointment-date').value = user.appointmentDate || '';
     document.getElementById('rector-specialty').value = user.specialty || '';
-    document.getElementById('rector-email').value = user.email || '';
-    document.getElementById('rector-password').value = '';
-    document.getElementById('rector-password').placeholder = 'Dejar en blanco para conservar clave actual';
+    document.getElementById('rector-appointment-date').value = user.appointmentDate || user.appointment_date || new Date().toISOString().split('T')[0];
     document.getElementById('rector-status').value = user.status || 'active';
+    
+    // Mostrar selector de estado y botón de eliminar en edición
+    if (statusContainer) statusContainer.style.display = 'flex';
+    if (jwtInfoBlock) jwtInfoBlock.style.display = 'none';
+    if (rectorDeleteBtn) rectorDeleteBtn.style.display = 'inline-block';
+    document.getElementById('rector-submit-btn').textContent = 'Guardar Cambios';
     
     if (user.schoolId) schoolSelect.value = user.schoolId;
 
@@ -619,21 +647,25 @@ window.openRectorModal = function(rectorId, preselectedSchoolId) {
       removeBtn.style.display = 'none';
     }
   } else {
-    // MODO CREACIÓN DE NUEVO RECTOR
+    // MODO CREACIÓN DE NUEVO RECTOR (SIEMPRE INVITACIÓN PENDIENTE JWT)
     document.getElementById('rector-id').value = '';
     document.getElementById('rector-modal-title').textContent = 'Registro de Rector / Directivo';
     document.getElementById('rector-name').value = '';
+    document.getElementById('rector-email').value = '';
+    document.getElementById('rector-phone').value = '';
     document.getElementById('rector-doc-type').value = 'CC';
     document.getElementById('rector-doc-id').value = '';
-    document.getElementById('rector-phone').value = '';
     document.getElementById('rector-avatar-url').value = '';
     document.getElementById('rector-job-title').value = 'Rector General';
-    document.getElementById('rector-appointment-date').value = new Date().toISOString().split('T')[0];
     document.getElementById('rector-specialty').value = '';
-    document.getElementById('rector-email').value = '';
-    document.getElementById('rector-password').value = 'Rector2026!*';
-    document.getElementById('rector-password').placeholder = 'Mínimo 8 caracteres';
-    document.getElementById('rector-status').value = 'active';
+    document.getElementById('rector-appointment-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('rector-status').value = 'invited';
+
+    // Ocultar selector de estado y botón de eliminar en creación
+    if (statusContainer) statusContainer.style.display = 'none';
+    if (jwtInfoBlock) jwtInfoBlock.style.display = 'block';
+    if (rectorDeleteBtn) rectorDeleteBtn.style.display = 'none';
+    document.getElementById('rector-submit-btn').textContent = 'Registrar y Enviar Invitación JWT →';
 
     if (preselectedSchoolId) schoolSelect.value = preselectedSchoolId;
 
@@ -661,6 +693,7 @@ window.closeRectorModal = function() {
   panel.style.transform = 'scale(0.96)';
   setTimeout(() => {
     if (overlay) overlay.style.display = 'none';
+    document.body.style.overflow = '';
   }, 220);
 };
 
@@ -673,157 +706,233 @@ window.saveRector = async function() {
   submitBtn.textContent = 'Guardando…';
   fb.style.display      = 'none';
 
-  const schoolId = document.getElementById('rector-school-id').value;
-  const name     = document.getElementById('rector-name').value.trim();
-  const email    = document.getElementById('rector-email').value.trim();
-  const password = document.getElementById('rector-password').value.trim();
-  const docType  = document.getElementById('rector-doc-type').value;
-  const docId    = document.getElementById('rector-doc-id').value.trim();
-  const phone    = document.getElementById('rector-phone').value.trim();
-  const jobTitle = document.getElementById('rector-job-title').value;
-  const specialty= document.getElementById('rector-specialty').value.trim();
-  const appDate  = document.getElementById('rector-appointment-date').value;
-  const status   = document.getElementById('rector-status').value;
+  const schoolId        = document.getElementById('rector-school-id').value;
+  const name            = document.getElementById('rector-name').value.trim();
+  const email           = document.getElementById('rector-email').value.trim().toLowerCase();
+  const docType         = document.getElementById('rector-doc-type').value;
+  const docId           = document.getElementById('rector-doc-id').value.trim();
+  const phone           = document.getElementById('rector-phone').value.trim();
+  const jobTitle        = document.getElementById('rector-job-title').value;
+  const specialty       = document.getElementById('rector-specialty').value.trim();
+  const appointmentDate = document.getElementById('rector-appointment-date').value;
+  // Todo nuevo rector siempre es 'invited'; en edición se respeta el valor elegido
+  const status          = rectorId ? (document.getElementById('rector-status')?.value || 'active') : 'invited';
+
+  if (!name || !email) {
+    fb.style.cssText = 'display:block; padding:10px 14px; background:#FEE2E2; border:1px solid var(--danger); color:var(--danger); font-family:var(--mono); font-size:12px; font-weight:600; margin-bottom:16px;';
+    fb.textContent = 'Por favor completa el nombre y correo del directivo.';
+    submitBtn.disabled = false;
+    submitBtn.textContent = rectorId ? 'Guardar Cambios' : 'Registrar y Enviar Invitación JWT →';
+    return;
+  }
+
+  if (!rectorId && (!docId || !phone)) {
+    fb.style.cssText = 'display:block; padding:10px 14px; background:#FEE2E2; border:1px solid var(--danger); color:var(--danger); font-family:var(--mono); font-size:12px; font-weight:600; margin-bottom:16px;';
+    fb.textContent = 'Para la activación segura JWT es obligatorio ingresar el Documento de Identidad y el Teléfono registrado.';
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Registrar y Enviar Invitación JWT →';
+    return;
+  }
 
   try {
-    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
-    const supabase = createClient(
-      'https://tyzeirtdrvlufnkwpron.supabase.co',
-      'sb_publishable_416BDuzMEaASLp4BLzqEAQ_jsUgB7Yl'
-    );
-
     let avatarUrl = document.getElementById('rector-avatar-url').value.trim() || null;
 
-    // Subir foto a Supabase Storage si se seleccionó archivo
+    // Subir foto vía endpoint seguro (sin apikey hardcodeada)
     if (window._selectedRectorAvatarFile) {
-      submitBtn.textContent = 'Subiendo imagen…';
+      submitBtn.textContent = 'Subiendo foto…';
       const file = window._selectedRectorAvatarFile;
-      const fileExt = file.name.split('.').pop() || 'png';
-      const filePath = `avatars/rector-${Date.now()}.${fileExt}`;
-
-      const { error: upErr } = await supabase.storage
-        .from('school-assets')
-        .upload(filePath, file, {
-          contentType: file.type || 'image/png',
-          cacheControl: '3600',
-          upsert: true
-        });
-
-      if (!upErr) {
-        const { data: stData } = supabase.storage.from('school-assets').getPublicUrl(filePath);
-        avatarUrl = stData.publicUrl;
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('type', 'avatar');
+      fd.append('slug', 'rector-' + Date.now());
+      const uploadRes = await window.fetchAuth('/api/admin/upload-asset', { method: 'POST', body: fd });
+      const uploadData = await uploadRes.json();
+      if (uploadData.ok) {
+        avatarUrl = uploadData.url;
       } else {
-        console.warn('Storage fallback a DataURL:', upErr);
-        avatarUrl = await new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result);
-          reader.readAsDataURL(file);
-        });
+        console.warn('Error subiendo avatar:', uploadData.error);
       }
     }
 
-    submitBtn.textContent = 'Registrando directivo…';
+    submitBtn.textContent = 'Aprovisionando directivo…';
 
-    let targetUserId = rectorId;
-
-    if (!targetUserId) {
-      // 1. Primero crear usuario en auth.users con signUp para obtener ID válido de auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: email,
-        password: password || 'Rector2026!*',
-        options: {
-          data: {
-            name: name,
-            role: 'school_admin',
-            school_id: schoolId
-          }
-        }
-      });
-
-      if (authError) {
-        // Si ya existía el usuario en auth, buscamos su ID en public.users
-        const { data: existingUser } = await supabase
-          .from('users')
-          .select('id')
-          .eq('email', email)
-          .maybeSingle();
-
-        if (existingUser) {
-          targetUserId = existingUser.id;
-        } else {
-          throw authError;
-        }
-      } else if (authData.user) {
-        targetUserId = authData.user.id;
-      }
-    }
-
-    // 2. Actualizar o asegurar todos los campos del perfil en public.users
-    const profilePayload = {
-      name: name,
-      email: email,
-      role: 'school_admin',
-      school_id: schoolId,
-      document_type: docType,
-      document_id: docId || null,
-      phone: phone || null,
-      job_title: jobTitle,
-      specialty: specialty || null,
-      appointment_date: appDate || null,
-      avatar_url: avatarUrl,
-      status: status,
+    const payload = {
+      id: rectorId || null,
+      name,
+      email,
+      schoolId,
+      phone,
+      documentType: docType,
+      documentId: docId,
+      jobTitle,
+      specialty: specialty || undefined,
+      appointmentDate: appointmentDate || undefined,
+      status,
+      avatarUrl
     };
 
-    if (targetUserId) {
-      const { error: upsertErr } = await supabase
-        .from('users')
-        .upsert({ id: targetUserId, ...profilePayload });
+    // 1. Guardar a través de la API segura con credenciales de servicio
+    let savedUser = null;
+    let confirmUrl = null;
+    let emailSent = false;
 
-      if (upsertErr) {
-        console.warn('Upsert fallback a update:', upsertErr);
-        await supabase.from('users').update(profilePayload).eq('email', email);
-      }
+    const res = await fetch('/api/admin/rector', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const resData = await res.json();
+    if (resData.ok) {
+      savedUser = resData.user;
+      confirmUrl = resData.confirmUrl;
+      emailSent = !!resData.emailSent;
+    } else {
+      // ✅ Si la API falla, lanzar error — no hacer fallback directo a Supabase
+      throw new Error(resData.error || 'Error al guardar el rector en el servidor.');
     }
 
-    // 3. Sincronizar rector en la escuela correspondiente
-    await supabase.from('schools').update({
-      rector_name: name,
-      rector_email: email,
-    }).eq('id', schoolId);
+    // 3. Actualizar memoria del cliente
+    const clientPayload = {
+      id: rectorId || (savedUser && savedUser.id) || crypto.randomUUID(),
+      name,
+      email,
+      role: 'school_admin',
+      schoolId,
+      documentType: docType,
+      documentId: docId || null,
+      phone: phone || null,
+      jobTitle: jobTitle,
+      avatarUrl,
+      status,
+      schoolName: (window.SCHOOLS.find(s => s.id === schoolId) || {}).name || 'Colegio',
+    };
 
-    // 4. Actualizar memoria
-    const uIdx = window.USERS.findIndex(u => (targetUserId && u.id === targetUserId) || u.email === email);
+    const uIdx = window.USERS.findIndex(u => (rectorId && u.id === rectorId) || u.email === email);
     if (uIdx !== -1) {
-      window.USERS[uIdx] = {
-        ...window.USERS[uIdx],
-        ...profilePayload,
-        schoolName: (window.SCHOOLS.find(s => s.id === schoolId) || {}).name || 'Colegio'
-      };
+      window.USERS[uIdx] = { ...window.USERS[uIdx], ...clientPayload };
     } else {
-      window.USERS.push({
-        id: targetUserId || crypto.randomUUID(),
-        ...profilePayload,
-        schoolName: (window.SCHOOLS.find(s => s.id === schoolId) || {}).name || 'Colegio',
-        createdAt: new Date().toISOString()
-      });
+      window.USERS.push({ ...clientPayload, createdAt: new Date().toISOString() });
+    }
+
+    const sIdx = window.SCHOOLS.findIndex(s => s.id === schoolId);
+    if (sIdx !== -1) {
+      window.SCHOOLS[sIdx].rectorName = name;
+      window.SCHOOLS[sIdx].rectorEmail = email;
     }
 
     // Éxito
     fb.style.cssText = 'display:block; padding:10px 14px; background:#E6F4EA; border:1px solid var(--sage-dark); color:var(--sage-dark); font-family:var(--mono); font-size:12px; font-weight:600; margin-bottom:16px;';
-    fb.textContent = '✓ Directivo registrado y vinculado correctamente.';
+    
+    if (!rectorId) {
+      fb.textContent = emailSent 
+        ? `✓ Directivo registrado. Correo de confirmación JWT enviado exitosamente a ${email}.`
+        : `✓ Directivo registrado en estado Invitación Pendiente. Enlace JWT generado.`;
+    } else {
+      fb.textContent = '✓ Cambios del directivo guardados correctamente.';
+    }
+
     submitBtn.textContent = '✓ Guardado';
 
     setTimeout(() => {
       window.closeRectorModal();
       window.location.reload(); // Recargar para reflejar en tabla
-    }, 1000);
+    }, 1200);
 
   } catch (err) {
     console.error('Error guardando rector:', err);
     fb.style.cssText = 'display:block; padding:10px 14px; background:#FEE2E2; border:1px solid var(--danger); color:var(--danger); font-family:var(--mono); font-size:12px; font-weight:600; margin-bottom:16px;';
-    fb.textContent = '✗ No fue posible registrar el directivo. Intenta de nuevo.';
+    fb.textContent = 'No fue posible registrar el directivo: ' + (err.message || 'Error de conexión');
     submitBtn.disabled = false;
-    submitBtn.textContent = 'Registrar Directivo';
+    submitBtn.textContent = rectorId ? 'Guardar Cambios' : 'Registrar y Enviar Invitación JWT →';
+  }
+};
+
+// ============================================================
+// ELIMINAR USUARIO DEFINITIVAMENTE (CASCADA TOTAL)
+// ============================================================
+window.deleteUser = async function(userId, email, name) {
+  const displayName = name || email || 'este usuario';
+  const confirmed = await window.showConfirmModal({
+    title: '¿Eliminar Usuario?',
+    badge: 'PURGA PERMANENTE DE ACCESO',
+    message: `¿Estás seguro de eliminar definitivamente a "${displayName}"?\n\nEsta acción borrará todas sus credenciales en Supabase Auth, sus tickets y todos sus registros asociados. Esta acción no se puede deshacer.`,
+    confirmText: 'Eliminar Usuario',
+    cancelText: 'Cancelar',
+    type: 'danger'
+  });
+
+  if (!confirmed) return;
+
+  try {
+    const res = await window.fetchAuth('/api/admin/delete-user', {
+      method: 'POST',
+      body: JSON.stringify({ userId, email })
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'No se pudo eliminar el usuario.');
+
+    await window.showAlertModal({
+      title: 'Usuario Eliminado',
+      message: '✓ ' + (data.message || 'Usuario eliminado exitosamente.'),
+      type: 'success'
+    });
+    window.location.reload();
+  } catch (err) {
+    console.error('Error eliminando usuario:', err);
+    await window.showAlertModal({
+      title: 'Error de Eliminación',
+      message: 'Error al eliminar: ' + (err?.message || 'Error de conexión'),
+      type: 'danger'
+    });
+  }
+};
+
+window.deleteCurrentRector = async function() {
+  const rectorId = document.getElementById('rector-id')?.value;
+  const email = document.getElementById('rector-email')?.value;
+  const name = document.getElementById('rector-name')?.value;
+  const schoolId = document.getElementById('rector-school-id')?.value;
+
+  if (!rectorId && !email) return;
+
+  const displayName = name || email || 'el directivo';
+  const confirmed = await window.showConfirmModal({
+    title: '¿Eliminar Directivo?',
+    badge: 'PURGA PERMANENTE DE ACCESO',
+    message: `¿Estás seguro de eliminar al directivo "${displayName}"?\n\nSe borrará su cuenta en Supabase Auth, se desvinculará de la institución y se limpiarán sus tickets de acceso.`,
+    confirmText: 'Eliminar Directivo',
+    cancelText: 'Cancelar',
+    type: 'danger'
+  });
+
+  if (!confirmed) return;
+
+  const delBtn = document.getElementById('rector-delete-btn');
+  if (delBtn) { delBtn.disabled = true; delBtn.textContent = 'Eliminando…'; }
+
+  try {
+    const res = await window.fetchAuth('/api/admin/delete-user', {
+      method: 'POST',
+      body: JSON.stringify({ userId: rectorId, email, schoolId })
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'No se pudo eliminar el directivo.');
+
+    window.closeRectorModal();
+    await window.showAlertModal({
+      title: 'Directivo Eliminado',
+      message: '✓ ' + (data.message || 'Directivo eliminado exitosamente.'),
+      type: 'success'
+    });
+    window.location.reload();
+  } catch (err) {
+    console.error('Error eliminando rector:', err);
+    await window.showAlertModal({
+      title: 'Error de Eliminación',
+      message: 'Error al eliminar directivo: ' + (err?.message || 'Error de conexión'),
+      type: 'danger'
+    });
+    if (delBtn) { delBtn.disabled = false; delBtn.textContent = '🗑 Eliminar Directivo'; }
   }
 };
 
@@ -944,12 +1053,13 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.textContent = 'Creando ticket...';
         fb.style.display = 'none';
 
-        await window.passwordResetTicketService.createSuperAdminTicket({
-          targetUserId,
-          reason,
-          resetMethod,
-          requiresSecondApproval,
+        // ✅ Via API segura — no directo desde el browser
+        const res = await window.fetchAuth('/api/admin/password-tickets', {
+          method: 'POST',
+          body: JSON.stringify({ action: 'create_ticket', targetUserId, reason, resetMethod, requiresSecondApproval }),
         });
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'Error desconocido');
 
         fb.style.cssText = 'display:block; padding:10px 14px; background:#E6F4EA; border:1px solid var(--sage-dark); color:var(--sage-dark); font-family:var(--mono); font-size:12px; font-weight:600;';
         fb.textContent = 'Ticket creado correctamente. El cambio efectivo se ejecuta desde el flujo seguro de servidor.';

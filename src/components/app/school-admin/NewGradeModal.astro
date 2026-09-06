@@ -1,0 +1,343 @@
+﻿---
+// ============================================================
+// SchoolOS — Modal de Creación de Nuevo Grado / Nivel Académico
+// Soporta Colegios Tradicionales, Academias de Idiomas, Deportes, etc.
+// ============================================================
+interface Props {
+  id?: string;
+}
+
+const { id = 'newGradeModal' } = Astro.props;
+---
+
+<div
+  id={id}
+  class="custom-modal-backdrop"
+  style="display:none; position:fixed; inset:0; background:rgba(18, 17, 14, 0.75); z-index:9999; align-items:center; justify-content:center; padding:20px; overflow-y:auto;"
+  role="dialog"
+  aria-modal="true"
+>
+  <div class="panel" style="width:100%; max-width:500px; background:#FFFFFF; border:2px solid var(--ink); box-shadow:8px 8px 0 var(--ink); overflow:hidden;">
+    
+    <!-- HEADER -->
+    <div class="panel-header" style="display:flex; justify-content:space-between; align-items:flex-start; padding:16px 20px; background:var(--cream); border-bottom:2px solid var(--ink);">
+      <div>
+        <div style="font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--rust); letter-spacing:0.08em; margin-bottom:2px;">
+          OFERTA ACADÉMICA PERSONALIZADA
+        </div>
+        <h2 style="font-family:var(--serif); font-size:18px; margin:0; font-weight:800; color:var(--ink);">
+          Agregar Nuevo Grado / Nivel
+        </h2>
+        <div style="font-size:12px; color:var(--ink-soft); margin-top:2px;">
+          Válido para colegios, academias de idiomas, escuelas deportivas o formación técnica.
+        </div>
+      </div>
+
+      <button type="button" class="close-modal-btn" onclick={`document.getElementById('${id}').style.display='none';`} style="background:none; border:none; font-family:var(--mono); font-size:20px; font-weight:800; cursor:pointer; color:var(--ink); padding:2px 6px;">✕</button>
+    </div>
+
+    <!-- FEEDBACK ALERT -->
+    <div id={`${id}Feedback`} style="display:none; padding:10px 20px; font-family:var(--mono); font-size:12px; font-weight:700;"></div>
+
+    <!-- BODY -->
+    <div class="panel-body padded" style="padding:20px; background:#FFFDF9;">
+      
+      <form id={`${id}Form`}>
+        <input type="hidden" id={`${id}SchoolId`} value="" />
+
+        <!-- 1. NOMBRE LIBRE DEL GRADO / NIVEL -->
+        <div style="background:#FFFFFF; border:1.5px solid var(--ink); padding:14px; margin-bottom:14px; box-shadow:2px 2px 0 var(--ink);">
+          <label style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:4px; color:var(--ink);">
+            Nombre del Grado, Nivel o Categoría *
+          </label>
+          <input
+            type="text"
+            id={`${id}GradeName`}
+            required
+            placeholder="Ej: A1 Beginners, Sub-12 Infantil, Ciclo III, 6° Grado..."
+            style="width:100%; border:1.5px solid var(--ink); background:var(--cream); padding:10px 12px; font-size:14px; font-family:var(--mono); font-weight:800; box-sizing:border-box;"
+          />
+          <div style="font-size:11px; color:var(--ink-soft); margin-top:6px;">
+            Escribe cómo se identifica este nivel en tu institución.
+          </div>
+        </div>
+
+        <!-- 2. CANTIDAD DE SALONES / GRUPOS -->
+        <div style="background:#FFFFFF; border:1.5px solid var(--ink); padding:14px; margin-bottom:14px; box-shadow:2px 2px 0 var(--ink);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <label style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; color:var(--ink);">
+              Salones / Grupos Habilitados
+            </label>
+            <span style="font-size:11px; color:var(--ink-soft);">¿Cuántos grupos abres?</span>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button
+              type="button"
+              onclick={`window.adjustNewGradeRooms && window.adjustNewGradeRooms('${id}', -1)`}
+              style="width:38px; height:38px; border:1.5px solid var(--ink); background:var(--cream); font-family:var(--mono); font-size:18px; font-weight:900; cursor:pointer; display:flex; align-items:center; justify-content:center;"
+            >
+              −
+            </button>
+
+            <div style="flex:1; display:flex; align-items:center; border:1.5px solid var(--ink); background:#FFFFFF; padding:0 12px;">
+              <input
+                type="number"
+                id={`${id}SectionsCount`}
+                value="1"
+                min="1"
+                max="50"
+                required
+                style="width:100%; border:none; background:transparent; padding:8px 0; font-size:16px; font-family:var(--mono); font-weight:900; text-align:center; outline:none;"
+                oninput={`window.recalcNewGradePreview && window.recalcNewGradePreview('${id}')`}
+              />
+              <span style="font-family:var(--mono); font-size:12px; font-weight:800; color:var(--ink-soft); white-space:nowrap; margin-left:6px;" id={`${id}RoomsLabel`}>
+                salón
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onclick={`window.adjustNewGradeRooms && window.adjustNewGradeRooms('${id}', 1)`}
+              style="width:38px; height:38px; border:1.5px solid var(--ink); background:var(--cream); font-family:var(--mono); font-size:18px; font-weight:900; cursor:pointer; display:flex; align-items:center; justify-content:center;"
+            >
+              +
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. CUPOS POR CADA SALÓN -->
+        <div style="background:#FFFFFF; border:1.5px solid var(--ink); padding:14px; margin-bottom:14px; box-shadow:2px 2px 0 var(--ink);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <label style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; color:var(--ink);">
+              Cupos por Cada Salón
+            </label>
+            <span style="font-size:11px; color:var(--ink-soft);">Capacidad física del aula</span>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button
+              type="button"
+              onclick={`window.adjustNewGradeCap && window.adjustNewGradeCap('${id}', -1)`}
+              style="width:38px; height:38px; border:1.5px solid var(--ink); background:var(--cream); font-family:var(--mono); font-size:18px; font-weight:900; cursor:pointer; display:flex; align-items:center; justify-content:center;"
+            >
+              −
+            </button>
+
+            <div style="flex:1; display:flex; align-items:center; border:1.5px solid var(--ink); background:#FFFFFF; padding:0 12px;">
+              <input
+                type="number"
+                id={`${id}CapacityPerRoom`}
+                value="30"
+                min="5"
+                max="100"
+                required
+                style="width:100%; border:none; background:transparent; padding:8px 0; font-size:16px; font-family:var(--mono); font-weight:900; text-align:center; outline:none;"
+                oninput={`window.recalcNewGradePreview && window.recalcNewGradePreview('${id}')`}
+              />
+              <span style="font-family:var(--mono); font-size:12px; font-weight:800; color:var(--ink-soft); white-space:nowrap; margin-left:6px;">
+                estudiantes / aula
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onclick={`window.adjustNewGradeCap && window.adjustNewGradeCap('${id}', 1)`}
+              style="width:38px; height:38px; border:1.5px solid var(--ink); background:var(--cream); font-family:var(--mono); font-size:18px; font-weight:900; cursor:pointer; display:flex; align-items:center; justify-content:center;"
+            >
+              +
+            </button>
+          </div>
+        </div>
+
+        <!-- 4. TOTAL FORMULA -->
+        <div style="background:var(--cream); border:1.5px solid var(--ink); padding:12px 16px; margin-bottom:18px; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink-soft);">
+              CAPACIDAD TOTAL A OFERTAR
+            </div>
+            <div style="font-size:12px; font-weight:700; color:var(--ink); margin-top:2px;" id={`${id}Formula`}>
+              1 salón × 30 estudiantes
+            </div>
+          </div>
+
+          <div id={`${id}TotalBadge`} style="background:var(--ink); color:#FFFFFF; font-family:var(--mono); font-size:15px; font-weight:900; padding:6px 12px;">
+            30 cupos
+          </div>
+        </div>
+
+        <!-- FOOTER ACTIONS -->
+        <div style="display:flex; justify-content:space-between; align-items:center; border-top:1.5px solid var(--line); padding-top:14px;">
+          <button
+            type="button"
+            class="btn btn-secondary btn-sm"
+            onclick={`document.getElementById('${id}').style.display='none';`}
+            style="font-size:12px; font-weight:700;"
+          >
+            Cancelar
+          </button>
+          
+          <button
+            type="submit"
+            id={`${id}SubmitBtn`}
+            class="btn btn-primary btn-sm"
+            style="font-weight:800; font-size:13px; padding:8px 18px;"
+          >
+            ＋ Agregar Nivel al Catálogo
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+</div>
+
+
+<script>
+  import { courseManagementService } from '../../../services/courseManagementService';
+
+  function getActiveTenantSchoolId(): string {
+    try {
+      const user = JSON.parse(localStorage.getItem('schoolos-user') || '{}');
+      if (user.schoolId) return user.schoolId;
+    } catch (_) {}
+    return (window as any).SchoolOSApp?.currentSchoolId || (window as any)._currentTenantSchoolId || localStorage.getItem('schoolos_tenant_id') || localStorage.getItem('schoolos_tenant_slug') || '';
+  }
+
+  function getModalId(): string {
+    const modal = document.querySelector('[data-new-grade-modal]') as HTMLElement || document.getElementById('NewGradeModal');
+    return modal ? modal.id : 'NewGradeModal';
+  }
+
+  (window as any).recalcNewGradePreview = function(mId: string) {
+    const nameInput = document.getElementById(mId + 'GradeName') as HTMLInputElement;
+    const secInput = document.getElementById(mId + 'SectionsCount') as HTMLInputElement;
+    const capInput = document.getElementById(mId + 'CapacityPerRoom') as HTMLInputElement;
+    const totalBadge = document.getElementById(mId + 'TotalBadge');
+    const formulaText = document.getElementById(mId + 'SummaryFormula');
+    const badgesContainer = document.getElementById(mId + 'RoomsBadges');
+    const roomsCountLabel = document.getElementById(mId + 'RoomsLabel');
+
+    if (!secInput || !capInput || !totalBadge || !badgesContainer) return;
+
+    const name = nameInput && nameInput.value.trim() ? nameInput.value.trim() : 'Nuevo Nivel';
+    const secs = Math.max(1, Number(secInput.value) || 1);
+    const cap = Math.max(1, Number(capInput.value) || 30);
+    const total = secs * cap;
+
+    totalBadge.textContent = total + ' cupos';
+    if (roomsCountLabel) {
+      roomsCountLabel.textContent = secs === 1 ? 'salón' : 'salones';
+    }
+
+    if (formulaText) {
+      formulaText.textContent = secs + (secs === 1 ? ' salón' : ' salones') + ' × ' + cap + ' estudiantes';
+    }
+
+    let html = '';
+    for (let i = 1; i <= secs; i++) {
+      html += '<span style="background:#FFFFFF; border:1px solid var(--ink); padding:3px 8px; font-family:var(--mono); font-size:11px; font-weight:800; color:var(--ink); display:inline-flex; align-items:center; gap:4px;">' +
+        name + '-' + i + ' <span style="color:var(--rust); font-weight:700;">(' + cap + ' cupos)</span>' +
+      '</span>';
+    }
+    badgesContainer.innerHTML = html;
+  };
+
+  (window as any).adjustNewGradeRooms = function(mId: string, delta: number) {
+    const input = document.getElementById(mId + 'SectionsCount') as HTMLInputElement;
+    if (!input) return;
+    const cur = Math.max(1, Number(input.value) || 1);
+    const next = Math.max(1, cur + delta);
+    input.value = String(next);
+    (window as any).recalcNewGradePreview(mId);
+  };
+
+  (window as any).adjustNewGradeCap = function(mId: string, delta: number) {
+    const capInput = document.getElementById(mId + 'CapacityPerRoom') as HTMLInputElement;
+    if (!capInput) return;
+    const current = Number(capInput.value) || 30;
+    const next = Math.max(5, Math.min(100, current + delta));
+    capInput.value = String(next);
+    (window as any).recalcNewGradePreview(mId);
+  };
+
+  (window as any).openNewGradeModal = function(customSchoolId?: string) {
+    const modalId = getModalId();
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+
+    const schoolInput = document.getElementById(modalId + 'SchoolId') as HTMLInputElement;
+    if (schoolInput) {
+      schoolInput.value = customSchoolId || getActiveTenantSchoolId();
+    }
+
+    const nameInput = document.getElementById(modalId + 'GradeName') as HTMLInputElement;
+    if (nameInput) nameInput.value = '';
+
+    (window as any).recalcNewGradePreview(modalId);
+    modal.style.display = 'flex';
+  };
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const modalId = getModalId();
+    const form = document.getElementById(modalId + 'Form');
+    const modal = document.getElementById(modalId);
+    const feedback = document.getElementById(modalId + 'Feedback');
+    const submitBtn = document.getElementById(modalId + 'SubmitBtn') as HTMLButtonElement;
+
+    if (!form || !modal) return;
+
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Creando nivel…';
+      }
+      if (feedback) feedback.style.display = 'none';
+
+      try {
+        const gradeName = (document.getElementById(modalId + 'GradeName') as HTMLInputElement).value.trim();
+        const capPerRoom = Number((document.getElementById(modalId + 'CapacityPerRoom') as HTMLInputElement).value) || 30;
+        const sectionsCount = Number((document.getElementById(modalId + 'SectionsCount') as HTMLInputElement).value) || 1;
+        const schoolId = (document.getElementById(modalId + 'SchoolId') as HTMLInputElement).value || getActiveTenantSchoolId();
+
+        if (!gradeName) throw new Error('Debes ingresar el nombre del grado o nivel');
+
+        await courseManagementService.upsertGradeCapacity({
+          schoolId,
+          gradeLevel: gradeName,
+          capacityPerRoom: capPerRoom,
+          sectionsCount,
+          isOffered: true
+        });
+
+        if (feedback) {
+          feedback.style.cssText = 'display:block; background:#E6F4EA; border-bottom:1.5px solid var(--sage-dark); color:var(--sage-dark); padding:10px 18px; font-weight:700;';
+          feedback.textContent = 'Nivel ' + gradeName + ' creado exitosamente con ' + sectionsCount + ' salones.';
+        }
+
+        if (submitBtn) submitBtn.textContent = 'Creado ✓';
+
+        window.dispatchEvent(new CustomEvent('gradeCapacity:updated'));
+
+        setTimeout(function() {
+          modal.style.display = 'none';
+          window.location.reload();
+        }, 500);
+
+      } catch (err: any) {
+        console.error('Error creando grado:', err);
+        if (feedback) {
+          feedback.style.cssText = 'display:block; background:#FEE2E2; border-bottom:1.5px solid var(--danger); color:var(--danger); padding:10px 18px;';
+          feedback.textContent = err?.message || 'Error: No se pudo crear el nivel';
+        }
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Reintentar';
+        }
+      }
+    });
+  });
+</script>

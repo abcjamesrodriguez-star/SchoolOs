@@ -3,11 +3,16 @@
 // SchoolOS — School Directory (/en/app/super-admin/schools)
 // ============================================================
 import AppLayout from '../../../../../layouts/AppLayout.astro';
-import { getMockSchools, getMockDashboardStats } from '../../../../../data/app/mock-data';
+import { schoolService } from '../../../../../services/schoolService';
 
 const lang = 'en';
-const schools = getMockSchools(lang);
-const stats = getMockDashboardStats(lang);
+let schools: any[] = [];
+try {
+  schools = (await schoolService.getSchools()) || [];
+} catch (e) {
+  console.error('Error fetching schools from Supabase:', e);
+  schools = [];
+}
 
 function getAuditBadge(auditStatus: string) {
   if (auditStatus === 'under_investigation') {

@@ -6,11 +6,6 @@
 import AppLayout from '../../../../../../../layouts/AppLayout.astro';
 import { getAllTeacherGuides, getGuideById } from '../../../../../../../data/app/mock-content';
 
-export async function getStaticPaths() {
-  const guides = getAllTeacherGuides();
-  return guides.map((g) => ({ params: { id: g.id } }));
-}
-
 const lang = 'en';
 const { id } = Astro.params;
 const guide = getGuideById(id!);
@@ -185,10 +180,10 @@ const guide = getGuideById(id!);
           <div style="display:flex; gap:12px; margin-top:20px;">
             <button
               class="btn btn-primary"
-              onclick="alert('✅ Assessment linked and scheduled for enrolled students.'); window.location.href=`/${lang}/app/teacher/guides/${guide.id}`;"
+              onclick="alert(' Assessment linked and scheduled for enrolled students.'); window.location.href=`/${lang}/app/teacher/guides/${guide.id}`;"
               style="font-size:12.5px; font-weight:800; padding:10px 20px;"
             >
-              🚀 Save & Publish Assessment
+               Save & Publish Assessment
             </button>
             <a href={`/${lang}/app/teacher/guides/${guide.id}`} class="btn btn-secondary" style="font-size:12px;">
               Save as Draft
