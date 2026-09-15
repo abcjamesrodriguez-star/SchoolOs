@@ -132,7 +132,7 @@ export const schoolAdminTenantService = {
     try {
       if (role === 'teacher') {
         const res = await apiClient.get<any>(`/api/school-admin/teachers?schoolId=${encodeURIComponent(context.school.id)}`);
-        return (res.teachers || []).map(mapUser);
+        return (res.data || res.teachers || []).map(mapUser);
       }
       if (role === 'student') {
         const res = await apiClient.get<any>(`/api/school-admin/students?schoolId=${encodeURIComponent(context.school.id)}`);
@@ -145,7 +145,7 @@ export const schoolAdminTenantService = {
         apiClient.get<any>(`/api/school-admin/students?schoolId=${encodeURIComponent(context.school.id)}`),
       ]);
 
-      const teachers = (teachersRes.teachers || []).map(mapUser);
+      const teachers = (teachersRes.data || teachersRes.teachers || []).map(mapUser);
       const students = (studentsRes.data || studentsRes.students || []).map(mapUser);
       return [...teachers, ...students];
     } catch (err) {

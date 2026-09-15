@@ -90,6 +90,12 @@ export const authService = {
   async getCurrentUser(): Promise<User | null> {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) {
+      // Si no hay sesión activa en Supabase Auth, invalidar cualquier residuo de caché
+      try {
+        localStorage.removeItem(PROFILE_CACHE_KEY);
+        localStorage.removeItem('schoolos-user');
+        localStorage.removeItem('schoolos-auth');
+      } catch (_) {}
       return null;
     }
 

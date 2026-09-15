@@ -160,9 +160,25 @@ export const DELETE: APIRoute = async ({ request }) => {
 
     // 8. Eliminar de auth.users (Supabase Auth)
     if (targetUserId) {
-      const { error: authErr } = await supabase.auth.admin.deleteUser(targetUserId);
-      if (authErr) {
-        console.warn('[DELETE_USER] Advertencia al borrar auth.users:', authErr.message);
+      try {
+        await supabase.auth.admin.deleteUser(targetUserId);
+      } catch (authErr: any) {
+        console.warn('[DELETE_USER] Advertencia al borrar auth.users por ID:', authErr?.message);
+      }
+    }
+    if (targetEmail) {
+      try {
+        const { data: userList } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+        const matchingUsers = userList?.users?.filter((u: any) => (u.email || '').toLowerCase() === targetEmail.toLowerCase()) || [];
+        for (const u of matchingUsers) {
+          try {
+            await supabase.auth.admin.deleteUser(u.id);
+          } catch (delErr: any) {
+            console.warn('[DELETE_USER] Advertencia al borrar auth.users por email:', delErr?.message);
+          }
+        }
+      } catch (listErr: any) {
+        console.warn('[DELETE_USER] Advertencia consultando auth.users para borrado:', listErr?.message);
       }
     }
 

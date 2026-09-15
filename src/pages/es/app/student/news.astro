@@ -1,7 +1,7 @@
 ---
 // ============================================================
 // SchoolOS — Panel Estudiante: Muro de Noticias
-// Fase 4 | Mateo Gómez
+// Fase 4 | SchoolOS
 // ============================================================
 import AppLayout from '../../../../layouts/AppLayout.astro';
 import { getSchoolNews } from '../../../../data/app/mock-student';
@@ -35,15 +35,15 @@ function formatDate(iso: string): string {
 ---
 
 <AppLayout
-  title="Noticias del Colegio — Mateo Gómez"
+  title="Noticias del Colegio"
   pageTitle="Muro de Noticias y Comunicados"
   activeSection="news"
   role="student"
-  schoolName="Colegio Norte"
+  schoolName="SchoolOS"
   lang={lang}
   activeRoute="/app/student/news"
   breadcrumbs={[
-    { label: 'Colegio Norte' },
+    { label: 'Estudiante' },
     { label: 'Panel Estudiante', href: `/${lang}/app/student` },
     { label: 'Noticias' },
   ]}

@@ -281,64 +281,75 @@ const userData = isStudent
   import { authService } from '../../services/authService';
 
   /* ── Sincronizar datos del usuario autenticado en la barra superior ── */
-  (function() {
+  function renderTopbarUser(user: any) {
+    if (!user || !user.name) return;
     try {
-      const userRaw = localStorage.getItem('schoolos-user');
-      if (userRaw) {
-        const user = JSON.parse(userRaw);
-        if (user && user.name) {
-          // Iniciales (fallback si no hay avatar)
-          const names = user.name.trim().split(' ');
-          const initials = names.length > 1 ? (names[0][0] + names[names.length - 1][0]).toUpperCase() : names[0].slice(0, 2).toUpperCase();
+      // Iniciales (fallback si no hay avatar)
+      const names = (user.name || '').trim().split(' ');
+      const initials = names.length > 1 ? (names[0][0] + names[names.length - 1][0]).toUpperCase() : names[0].slice(0, 2).toUpperCase();
 
-          // Chip superior — respeta diseño actual, solo inserta <img> si hay avatarUrl
-          const chipAvatar = document.querySelector('#profileChipBtn .avatar');
-          const chipName = document.querySelector('#profileChipBtn span');
-          if (chipAvatar) {
-            if (user.avatarUrl) {
-              chipAvatar.innerHTML = `<img src="${user.avatarUrl}" alt="${user.name}" loading="eager" onerror="this.style.display='none'; this.parentElement.textContent='${initials}'" />`;
-            } else {
-              chipAvatar.textContent = initials;
-            }
-          }
-          if (chipName) chipName.textContent = user.name;
-
-          // Modal de perfil — mismo patrón, sin tocar layout
-          const modalAvatar = document.querySelector('.profile-avatar-xl');
-          const modalName = document.querySelector('.profile-name');
-          const modalRole = document.querySelector('.profile-role-badge');
-          const modalStatus = document.querySelector('[data-profile-status]');
-          const modalUserId = document.querySelector('[data-profile-user-id]');
-          if (modalAvatar) {
-            if (user.avatarUrl) {
-              modalAvatar.innerHTML = `<img src="${user.avatarUrl}" alt="${user.name}" loading="eager" onerror="this.style.display='none'; this.parentElement.textContent='${initials}'" />`;
-            } else {
-              modalAvatar.textContent = initials;
-            }
-          }
-          if (modalName) modalName.textContent = user.name;
-          if (modalRole) {
-            const labels = {
-              super_admin: 'Super Admin',
-              school_admin: 'Rectoría',
-              teacher: 'Docente',
-              student: 'Estudiante'
-            };
-            modalRole.textContent = labels[user.role] || user.role;
-          }
-          if (modalStatus) modalStatus.textContent = user.status || 'active';
-          if (modalUserId) modalUserId.textContent = user.id || '-';
-
-          // Actualizar rows de información
-          const infoValues = document.querySelectorAll('.profile-info-value');
-          if (infoValues.length >= 2) {
-            infoValues[0].textContent = user.name;
-            infoValues[1].textContent = user.email;
-          }
+      // Chip superior — respeta diseño actual, solo inserta <img> si hay avatarUrl
+      const chipAvatar = document.querySelector('#profileChipBtn .avatar');
+      const chipName = document.querySelector('#profileChipBtn span');
+      if (chipAvatar) {
+        if (user.avatarUrl) {
+          chipAvatar.innerHTML = `<img src="${user.avatarUrl}" alt="${user.name}" loading="eager" onerror="this.style.display='none'; this.parentElement.textContent='${initials}'" />`;
+        } else {
+          chipAvatar.textContent = initials;
         }
       }
+      if (chipName) chipName.textContent = user.name;
+
+      // Modal de perfil — mismo patrón, sin tocar layout
+      const modalAvatar = document.querySelector('.profile-avatar-xl');
+      const modalName = document.querySelector('.profile-name');
+      const modalRole = document.querySelector('.profile-role-badge');
+      const modalStatus = document.querySelector('[data-profile-status]');
+      const modalUserId = document.querySelector('[data-profile-user-id]');
+      if (modalAvatar) {
+        if (user.avatarUrl) {
+          modalAvatar.innerHTML = `<img src="${user.avatarUrl}" alt="${user.name}" loading="eager" onerror="this.style.display='none'; this.parentElement.textContent='${initials}'" />`;
+        } else {
+          modalAvatar.textContent = initials;
+        }
+      }
+      if (modalName) modalName.textContent = user.name;
+      if (modalRole) {
+        const labels: Record<string, string> = {
+          super_admin: 'Super Admin',
+          school_admin: 'Rectoría',
+          teacher: 'Docente',
+          student: 'Estudiante'
+        };
+        modalRole.textContent = labels[user.role] || user.role;
+      }
+      if (modalStatus) modalStatus.textContent = user.status || 'active';
+      if (modalUserId) modalUserId.textContent = user.id || '-';
+
+      // Actualizar rows de información
+      const infoValues = document.querySelectorAll('.profile-info-value');
+      if (infoValues.length >= 2) {
+        infoValues[0].textContent = user.name;
+        infoValues[1].textContent = user.email;
+      }
+
+      // Tenant indicator si existe
+      if (user.schoolName) {
+        document.querySelectorAll('[data-tenant-name]').forEach((el) => {
+          el.textContent = user.schoolName.toUpperCase();
+        });
+      }
     } catch (_) {}
-  })();
+  }
+
+  (window as any).updateTopbarUser = renderTopbarUser;
+
+  try {
+    const userRaw = localStorage.getItem('schoolos-user');
+    if (userRaw) {
+      renderTopbarUser(JSON.parse(userRaw));
+    }
+  } catch (_) {}
 
   /* ── Lang switcher ── */
   document.querySelectorAll('.topbar-lang-switcher').forEach((el) => {

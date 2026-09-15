@@ -734,37 +734,51 @@ function statItem(num, label, value, color) {
 // ============================================================
 window.openModal = function(schoolId) {
   window._currentSchoolId = schoolId;
-  const school = window.SCHOOLS.find(s => s.id === schoolId);
-  if (!school) return;
+  const school = (window.SCHOOLS || []).find(s => String(s.id) === String(schoolId));
+  if (!school) {
+    console.warn('Escuela no encontrada para ID:', schoolId);
+    return;
+  }
 
   // 1. Logo de la escuela
   const logoCont = document.getElementById('modal-logo-container');
-  const initials = school.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-  if (school.logoUrl) {
-    logoCont.innerHTML = `<img src="${school.logoUrl}" alt="${school.name}" style="max-width:100%; max-height:100%; object-fit:contain;"/>`;
-  } else {
-    const bg = school.brandColor || 'var(--ink)';
-    logoCont.innerHTML = `<div style="width:100%; height:100%; background:${bg}; color:#FFFFFF; font-family:var(--mono); font-size:20px; font-weight:800; display:flex; align-items:center; justify-content:center;">${initials}</div>`;
+  const initials = (school.name || 'SC').trim().split(/\s+/).map(w => w[0] || '').join('').slice(0, 2).toUpperCase() || 'SC';
+  if (logoCont) {
+    if (school.logoUrl) {
+      logoCont.innerHTML = `<img src="${school.logoUrl}" alt="${school.name || ''}" style="max-width:100%; max-height:100%; object-fit:contain;"/>`;
+    } else {
+      const bg = school.brandColor || 'var(--ink)';
+      logoCont.innerHTML = `<div style="width:100%; height:100%; background:${bg}; color:#FFFFFF; font-family:var(--mono); font-size:20px; font-weight:800; display:flex; align-items:center; justify-content:center;">${initials}</div>`;
+    }
   }
 
   // 2. Título y lema
-  document.getElementById('modal-school-name').textContent = school.name;
+  const nameEl = document.getElementById('modal-school-name');
+  if (nameEl) nameEl.textContent = school.name || 'Institución';
   const sloganEl = document.getElementById('modal-school-slogan');
-  sloganEl.textContent = school.slogan ? `«${school.slogan}»` : '';
-  sloganEl.style.display = school.slogan ? 'block' : 'none';
+  if (sloganEl) {
+    sloganEl.textContent = school.slogan ? `«${school.slogan}»` : '';
+    sloganEl.style.display = school.slogan ? 'block' : 'none';
+  }
 
   // 3. Badges en cabecera
-  document.getElementById('modal-header-badges').innerHTML = `
-    <span style="background:${statusColor(school.status)}; color:#FFF; font-family:var(--mono); font-size:10px; font-weight:700; padding:4px 8px; letter-spacing:0.06em; text-transform:uppercase; box-shadow:1px 1px 0 var(--ink);">ESTADO: ${statusLabel(school.status)}</span>
-    <span style="background:var(--ink); color:#FFF; font-family:var(--mono); font-size:10px; font-weight:700; padding:4px 8px; letter-spacing:0.06em; text-transform:uppercase; box-shadow:1px 1px 0 var(--ink);">PLAN: ${school.planName}</span>
-  `;
+  const badgesEl = document.getElementById('modal-header-badges');
+  if (badgesEl) {
+    badgesEl.innerHTML = `
+      <span style="background:${statusColor(school.status)}; color:#FFF; font-family:var(--mono); font-size:10px; font-weight:700; padding:4px 8px; letter-spacing:0.06em; text-transform:uppercase; box-shadow:1px 1px 0 var(--ink);">ESTADO: ${statusLabel(school.status)}</span>
+      <span style="background:var(--ink); color:#FFF; font-family:var(--mono); font-size:10px; font-weight:700; padding:4px 8px; letter-spacing:0.06em; text-transform:uppercase; box-shadow:1px 1px 0 var(--ink);">PLAN: ${school.planName || 'Starter'}</span>
+    `;
+  }
 
   // 4. Franja de 4 KPIs
-  document.getElementById('modal-stats-grid').innerHTML =
-    statItem('01', 'Estudiantes', (school.studentCount || 0).toLocaleString(), 'var(--sage-dark)') +
-    statItem('02', 'Docentes', (school.teacherCount || 0).toLocaleString(), 'var(--stone-dark)') +
-    statItem('03', 'Clases Activas', (school.activeClassesCount || 0).toLocaleString(), 'var(--orange-vibrant)') +
-    statItem('04', 'Dominio Web', `<span style="font-family:var(--mono); font-size:13px; color:var(--rust);">${school.domain || `${school.slug}.schoolos.com`}</span>`);
+  const statsEl = document.getElementById('modal-stats-grid');
+  if (statsEl) {
+    statsEl.innerHTML =
+      statItem('01', 'Estudiantes', (school.studentCount || 0).toLocaleString(), 'var(--sage-dark)') +
+      statItem('02', 'Docentes', (school.teacherCount || 0).toLocaleString(), 'var(--stone-dark)') +
+      statItem('03', 'Clases Activas', (school.activeClassesCount || 0).toLocaleString(), 'var(--orange-vibrant)') +
+      statItem('04', 'Dominio Web', `<span style="font-family:var(--mono); font-size:13px; color:var(--rust);">${school.domain || `${school.slug || 'colegio'}.schoolos.com`}</span>`);
+  }
 
   // 5. Datos de Sede & Tenancy en 2 Columnas Integrales
   let locStr = school.location || school.country || 'No registrada';
@@ -774,25 +788,33 @@ window.openModal = function(schoolId) {
   const planLimits = school.planName === 'Starter' ? 'Hasta 200 alumnos' : school.planName === 'Enterprise' ? 'Alumnos ilimitados' : 'Hasta 1,500 alumnos';
 
   // Columna Izquierda: Ubicación y Contacto
-  document.getElementById('modal-col-left').innerHTML =
-    cleanInfoRow('Ciudad & País', locStr) +
-    cleanInfoRow('Dirección Sede', school.address || 'Sin dirección registrada') +
-    cleanInfoRow('Correo Institucional', school.contactEmail || 'Sin registrar') +
-    cleanInfoRow('Teléfono / PBX', school.phone || 'Sin registrar');
+  const colLeftEl = document.getElementById('modal-col-left');
+  if (colLeftEl) {
+    colLeftEl.innerHTML =
+      cleanInfoRow('Ciudad & País', locStr) +
+      cleanInfoRow('Dirección Sede', school.address || 'Sin dirección registrada') +
+      cleanInfoRow('Correo Institucional', school.contactEmail || 'Sin registrar') +
+      cleanInfoRow('Teléfono / PBX', school.phone || 'Sin registrar');
+  }
 
   // Columna Derecha: Parámetros del Tenant & Gobernanza
-  document.getElementById('modal-col-right').innerHTML =
-    cleanInfoRow('Dominio Oficial', `<a href="https://${school.domain || `${school.slug}.schoolos.com`}" target="_blank" style="color:var(--rust); text-decoration:none; font-family:var(--mono);">${school.domain || `${school.slug}.schoolos.com`} ↗</a>`) +
-    cleanInfoRow('Plan & Capacidad', `<span class="plan-tag" style="font-weight:700;">${school.planName}</span> · <span style="font-size:11px; color:var(--ink-soft);">${planLimits}</span>`) +
-    cleanInfoRow('Color de Marca', `<div style="display:flex; align-items:center; gap:6px; justify-content:flex-end;"><span style="display:inline-block; width:13px; height:13px; background:${school.brandColor || '#12110E'}; border:1px solid var(--ink);"></span> <span style="font-family:var(--mono); font-size:11px;">${school.brandColor || '#12110E'}</span></div>`) +
-    cleanInfoRow('Fecha de Alta', fmtDate(school.createdAt)) +
-    cleanInfoRow('Auditoría Forense', auditLabel(school.auditStatus));
+  const colRightEl = document.getElementById('modal-col-right');
+  if (colRightEl) {
+    colRightEl.innerHTML =
+      cleanInfoRow('Dominio Oficial', `<a href="https://${school.domain || `${school.slug}.schoolos.com`}" target="_blank" style="color:var(--rust); text-decoration:none; font-family:var(--mono);">${school.domain || `${school.slug}.schoolos.com`} ↗</a>`) +
+      cleanInfoRow('Plan & Capacidad', `<span class="plan-tag" style="font-weight:700;">${school.planName}</span> · <span style="font-size:11px; color:var(--ink-soft);">${planLimits}</span>`) +
+      cleanInfoRow('Color de Marca', `<div style="display:flex; align-items:center; gap:6px; justify-content:flex-end;"><span style="display:inline-block; width:13px; height:13px; background:${school.brandColor || '#12110E'}; border:1px solid var(--ink);"></span> <span style="font-family:var(--mono); font-size:11px;">${school.brandColor || '#12110E'}</span></div>`) +
+      cleanInfoRow('Fecha de Alta', fmtDate(school.createdAt)) +
+      cleanInfoRow('Auditoría Forense', auditLabel(school.auditStatus));
+  }
 
   // 6. Sección Superior: Rectoría & Directivos (Componente Reactivo conectado a la API)
   const rectorContent = document.getElementById('modal-rector-content');
   const manageRectorBtn = document.getElementById('modal-manage-rector-btn');
-  manageRectorBtn.textContent = '+ Agregar Directivo';
-  manageRectorBtn.onclick = () => window.openRectorModal(null, schoolId);
+  if (manageRectorBtn) {
+    manageRectorBtn.textContent = '+ Agregar Directivo';
+    manageRectorBtn.onclick = () => window.openRectorModal(null, schoolId);
+  }
 
   const sortTenantDirectivos = (userList) => {
     return [...userList].sort((a, b) => {
@@ -883,61 +905,82 @@ window.openModal = function(schoolId) {
   };
 
   // 1. Render inmediato desde caché local si existe
-  const localRectorUsers = window.USERS.filter(u => 
+  const localRectorUsers = (window.USERS || []).filter(u => 
     u.role === 'school_admin' && (
-      u.schoolId === school.id ||
-      u.schoolId === school.slug ||
-      u.schoolId === schoolId ||
+      String(u.schoolId) === String(school.id) ||
+      String(u.schoolId) === String(school.slug) ||
+      String(u.schoolId) === String(schoolId) ||
+      String(u.school_id) === String(school.id) ||
+      String(u.school_id) === String(schoolId) ||
       (school.rectorEmail && u.email && u.email.toLowerCase() === school.rectorEmail.toLowerCase())
     )
   );
 
-  if (localRectorUsers.length > 0) {
-    const sortedLocal = sortTenantDirectivos(localRectorUsers);
-    rectorContent.innerHTML = sortedLocal.map((u, i) => renderRectorCardComponent(u, i, sortedLocal.length)).join('');
-  } else if (school.rectorName || school.rectorEmail) {
-    manageRectorBtn.textContent = '+ Vincular Cuenta';
-    manageRectorBtn.onclick = () => window.openRectorModal(null, schoolId, { name: school.rectorName, email: school.rectorEmail });
-    rectorContent.innerHTML = `
-      <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; padding:4px 0;">
-        <div>
-          <div style="font-size:14.5px; font-weight:700; color:var(--ink);">${school.rectorName || 'Rector Registrado'}</div>
-          <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft); margin-top:2px;">Correo de acceso sugerido: <strong style="color:var(--rust);">${school.rectorEmail || 'Sin correo'}</strong></div>
+  if (rectorContent) {
+    if (localRectorUsers.length > 0) {
+      const sortedLocal = sortTenantDirectivos(localRectorUsers);
+      rectorContent.innerHTML = sortedLocal.map((u, i) => renderRectorCardComponent(u, i, sortedLocal.length)).join('');
+    } else if (school.rectorName || school.rectorEmail) {
+      if (manageRectorBtn) {
+        manageRectorBtn.textContent = '+ Vincular Cuenta';
+        manageRectorBtn.onclick = () => window.openRectorModal(null, schoolId, { name: school.rectorName, email: school.rectorEmail });
+      }
+      rectorContent.innerHTML = `
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; padding:4px 0;">
+          <div>
+            <div style="font-size:14.5px; font-weight:700; color:var(--ink);">${school.rectorName || 'Rector Registrado'}</div>
+            <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft); margin-top:2px;">Correo de acceso sugerido: <strong style="color:var(--rust);">${school.rectorEmail || 'Sin correo'}</strong></div>
+          </div>
+          <button type="button" class="btn btn-primary btn-sm" onclick="window.openRectorModal(null, '${schoolId}', { name: '${school.rectorName || ''}', email: '${school.rectorEmail || ''}' })" style="font-size:11px; padding:6px 12px; flex-shrink:0;">
+            Crear Credenciales de Acceso →
+          </button>
         </div>
-        <button type="button" class="btn btn-primary btn-sm" onclick="window.openRectorModal(null, '${schoolId}', { name: '${school.rectorName || ''}', email: '${school.rectorEmail || ''}' })" style="font-size:11px; padding:6px 12px; flex-shrink:0;">
-          Crear Credenciales de Acceso →
-        </button>
-      </div>
-    `;
-  } else {
-    manageRectorBtn.textContent = '+ Asignar Rector';
-    manageRectorBtn.onclick = () => window.openRectorModal(null, schoolId);
-    rectorContent.innerHTML = `
-      <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; padding:4px 0;">
-        <div>
-          <div style="font-family:var(--mono); font-size:11.5px; font-weight:800; text-transform:uppercase; color:var(--ink);">Sin Rector Asignado</div>
-          <div style="font-size:12px; color:var(--ink-soft); margin-top:2px;">Esta institución aún no tiene un directivo con credenciales creadas en la plataforma.</div>
+      `;
+    } else {
+      if (manageRectorBtn) {
+        manageRectorBtn.textContent = '+ Asignar Rector';
+        manageRectorBtn.onclick = () => window.openRectorModal(null, schoolId);
+      }
+      rectorContent.innerHTML = `
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; padding:4px 0;">
+          <div>
+            <div style="font-family:var(--mono); font-size:11.5px; font-weight:800; text-transform:uppercase; color:var(--ink);">Sin Rector Asignado</div>
+            <div style="font-size:12px; color:var(--ink-soft); margin-top:2px;">Esta institución aún no tiene un directivo con credenciales creadas en la plataforma.</div>
+          </div>
+          <button type="button" class="btn btn-primary btn-sm" onclick="window.openRectorModal(null, '${schoolId}')" style="font-size:11px; padding:6px 14px; flex-shrink:0;">
+            + Crear y Vincular Rector
+          </button>
         </div>
-        <button type="button" class="btn btn-primary btn-sm" onclick="window.openRectorModal(null, '${schoolId}')" style="font-size:11px; padding:6px 14px; flex-shrink:0;">
-          + Crear y Vincular Rector
-        </button>
-      </div>
-    `;
+      `;
+    }
   }
 
   // 2. Fetch directo en vivo a la tabla de usuarios de Supabase usando el endpoint REST
-  window.fetchAuth('/api/admin/rector?schoolId=' + schoolId).then(res => res.json()).then(json => {
-    if (json.ok && Array.isArray(json.rectors)) {
-      json.rectors.forEach((fetchedUser: any) => {
-        const existingIdx = window.USERS.findIndex(u => u.id === fetchedUser.id);
-        if (existingIdx >= 0) window.USERS[existingIdx] = fetchedUser;
-        else window.USERS.push(fetchedUser);
+  const fetcher = window.fetchAuth || window.fetch;
+  if (fetcher) {
+    fetcher('/api/admin/rector?schoolId=' + encodeURIComponent(schoolId))
+      .then(res => res.json())
+      .then(json => {
+        if (json && json.ok && Array.isArray(json.rectors)) {
+          json.rectors.forEach(fetchedUser => {
+            const existingIdx = (window.USERS || []).findIndex(u => String(u.id) === String(fetchedUser.id));
+            if (existingIdx >= 0) window.USERS[existingIdx] = fetchedUser;
+            else (window.USERS || []).push(fetchedUser);
+          });
+          const updatedLocal = sortTenantDirectivos((window.USERS || []).filter(u => u.role === 'school_admin' && (String(u.school_id) === String(schoolId) || String(u.schoolId) === String(schoolId))));
+          if (rectorContent) {
+            rectorContent.innerHTML = updatedLocal.map((u, i) => renderRectorCardComponent(u, i, updatedLocal.length)).join('');
+          }
+          if (updatedLocal.length > 0 && manageRectorBtn) {
+            manageRectorBtn.textContent = '+ Registrar Otro Directivo';
+            manageRectorBtn.onclick = () => window.openRectorModal(null, schoolId);
+          }
+        }
+      })
+      .catch(err => {
+        console.warn('No se pudo refrescar directivos en vivo:', err);
       });
-      const updatedLocal = sortTenantDirectivos(window.USERS.filter(u => u.role === 'school_admin' && (u.school_id === schoolId || u.schoolId === schoolId)));
-      rectorContent.innerHTML = updatedLocal.map((u, i) => renderRectorCardComponent(u, i, updatedLocal.length)).join('');
-      if (updatedLocal.length > 0) { manageRectorBtn.textContent = '+ Registrar Otro Directivo'; manageRectorBtn.onclick = () => window.openRectorModal(null, schoolId); }
-    }
-  });
+  }
 
   // 7. Botón suspender / reactivar en el footer
   const suspendBtn = document.getElementById('modal-suspend-btn');
@@ -949,11 +992,14 @@ window.openModal = function(schoolId) {
 
   const overlay = document.getElementById('school-modal-overlay');
   const panel   = document.getElementById('school-modal-panel');
-  overlay.style.display = 'flex';
-  panel.getBoundingClientRect();
-  panel.style.opacity   = '1';
-  panel.style.transform = 'scale(1)';
-  document.getElementById('modal-close-btn').focus();
+  if (overlay && panel) {
+    overlay.style.display = 'flex';
+    panel.getBoundingClientRect();
+    panel.style.opacity   = '1';
+    panel.style.transform = 'scale(1)';
+  }
+  const closeBtn = document.getElementById('modal-close-btn');
+  if (closeBtn) closeBtn.focus();
   document.body.style.overflow = 'hidden';
 };
 
@@ -973,7 +1019,7 @@ window.closeModal = function() {
 // MODAL EDICIÓN DE COLEGIO
 // ============================================================
 window.openEditModal = function(schoolId) {
-  const school = window.SCHOOLS.find(s => s.id === schoolId);
+  const school = (window.SCHOOLS || []).find(s => String(s.id) === String(schoolId));
   if (!school) return;
 
   window._selectedLogoFile = null;
@@ -1390,21 +1436,17 @@ window.resendConfirmationEmail = async function(userId, email, schoolId, event) 
     const res = await window.fetchAuth('/api/admin/rector', {
       method: 'POST',
       body: JSON.stringify({
-        action: 'provision',
+        action: 'resend',
         email: email,
-        name: 'Directivo',
         schoolId: schoolId
       })
     });
     const json = await res.json();
-    const edgeData = json;
-    const edgeError = !json.ok ? { message: json.error } : null;
-
-    if (edgeError || edgeData?.error) throw new Error(edgeError?.message || edgeData?.error);
+    if (!json.ok) throw new Error(json.error || 'Error al reenviar invitación');
 
     await window.showAlertModal({
-      title: 'Invitación Reenviada',
-      message: `✓ Se ha despachado un nuevo correo criptográfico a ${email}.`,
+      title: 'Invitación Oficial Enviada',
+      message: `✓ Se ha despachado la invitación institucional vía Supabase SMTP a ${email}.`,
       type: 'success'
     });
   } catch (err) {
@@ -1420,11 +1462,36 @@ window.resendConfirmationEmail = async function(userId, email, schoolId, event) 
 
 window.copyConfirmationLink = async function(userId, email, schoolId, event) {
   if (event) event.stopPropagation();
-  await window.showAlertModal({
-    title: 'Función en Migración',
-    message: 'La copia manual de enlaces de activación está deshabilitada temporalmente en la nueva arquitectura de Supabase por motivos de seguridad. Por favor, usa el botón de "Reenviar Correo".',
-    type: 'warning'
-  });
+  const btn = event?.target;
+  if (btn) { btn.disabled = true; btn.textContent = 'Generando link…'; }
+
+  try {
+    const res = await window.fetchAuth('/api/admin/rector', {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'generate_link',
+        email: email,
+        schoolId: schoolId
+      })
+    });
+    const json = await res.json();
+    if (!json.ok || !json.actionLink) throw new Error(json.error || 'No se pudo generar el enlace');
+
+    await navigator.clipboard.writeText(json.actionLink);
+    await window.showAlertModal({
+      title: 'Enlace Oficial Copiado',
+      message: `✓ El enlace oficial de activación de Supabase para ${email} ha sido copiado al portapapeles.`,
+      type: 'success'
+    });
+  } catch (err) {
+    await window.showAlertModal({
+      title: 'Error al Copiar Enlace',
+      message: 'No se pudo generar o copiar el enlace: ' + (err?.message || 'Error'),
+      type: 'danger'
+    });
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Copiar Link'; }
+  }
 };
 
 // ============================================================
@@ -1799,7 +1866,7 @@ window.deleteCurrentRector = async function() {
 // ============================================================
 // EVENT LISTENERS
 // ============================================================
-document.addEventListener('DOMContentLoaded', () => {
+function initSchoolsPage() {
   const schoolOverlay = document.getElementById('school-modal-overlay');
   if (schoolOverlay) {
     schoolOverlay.addEventListener('click', e => {
@@ -1957,7 +2024,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const plan   = planFilter?.value || '';
 
     document.querySelectorAll('.school-row').forEach(row => {
-      const school = window.SCHOOLS.find(s => s.id === row.dataset.id);
+      const school = (window.SCHOOLS || []).find(s => String(s.id) === String(row.dataset.id));
       if (!school) return;
       const ok =
         (!search || school.name.toLowerCase().includes(search) || school.domain.toLowerCase().includes(search) || (school.slug || '').toLowerCase().includes(search)) &&
@@ -1971,15 +2038,25 @@ document.addEventListener('DOMContentLoaded', () => {
   if (statusFilter) statusFilter.addEventListener('change', applyFilters);
   if (planFilter) planFilter.addEventListener('change', applyFilters);
 
-  // Fallback directo para botones "Ver Ficha →"
-  document.querySelectorAll('.open-modal-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+  // Delegación de eventos y fallback para botones "Ver Ficha →"
+  document.addEventListener('click', (e) => {
+    const btn = e.target && e.target.closest ? e.target.closest('.open-modal-btn') : null;
+    if (btn) {
+      e.preventDefault();
       e.stopPropagation();
       const sId = btn.getAttribute('data-school-id');
-      if (sId && window.openModal) window.openModal(sId);
-    });
+      if (sId && typeof window.openModal === 'function') {
+        window.openModal(sId);
+      }
+    }
   });
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initSchoolsPage);
+} else {
+  initSchoolsPage();
+}
 </script>
 
 

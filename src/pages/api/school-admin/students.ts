@@ -1,25 +1,28 @@
 import type { APIRoute } from 'astro';
 import { requireAuth } from '../../../lib/apiAuth';
 
-async function provisionStudentUser(supabase: any, email: string, name: string, schoolId: string): Promise<string> {
+async function provisionStudentUser(supabase: any, email: string, name: string, schoolId: string, siteUrl: string): Promise<string> {
   const normalizedEmail = email.trim().toLowerCase();
+  const redirectTo = `${siteUrl}/cambiar-password`;
 
   try {
     const { data: userList } = await supabase.auth.admin.listUsers({ perPage: 1000 });
     const existing = userList?.users?.find((u: any) => (u.email || '').toLowerCase() === normalizedEmail);
-    if (existing) return existing.id;
+    if (existing) {
+      try {
+        await supabase.auth.admin.inviteUserByEmail(normalizedEmail, { redirectTo });
+      } catch (_) {}
+      return existing.id;
+    }
   } catch (_) {}
 
-  const tempPassword = 'Est' + Math.random().toString(36).slice(-6) + '!*';
-  const { data: created, error: createErr } = await supabase.auth.admin.createUser({
-    email: normalizedEmail,
-    password: tempPassword,
-    email_confirm: true,
-    user_metadata: {
+  const { data: created, error: createErr } = await supabase.auth.admin.inviteUserByEmail(normalizedEmail, {
+    data: {
       name: name.trim(),
       role: 'student',
       school_id: schoolId,
     },
+    redirectTo,
   });
 
   if (createErr) {
@@ -55,16 +58,18 @@ async function executeStudentTransfer(supabase: any, studentId: string, targetGr
   // 2. Eliminar matrículas anteriores
   await supabase.from('course_students').delete().eq('student_id', studentId);
 
-  // 3. Matricular en los cursos del nuevo grupo
-  const { data: newCourses } = await supabase
-    .from('courses')
-    .select('id')
+  // 3. Matricular en los cursos del nuevo salón vía classes
+  const { data: salonClasses } = await supabase
+    .from('classes')
+    .select('course_id')
     .eq('school_id', student.school_id)
-    .eq('grade_level', targetGroup);
+    .eq('classroom', targetGroup);
 
-  if (Array.isArray(newCourses) && newCourses.length > 0) {
-    const enrollments = newCourses.map((c: any) => ({
-      course_id: c.id,
+  const newCourseIds = Array.from(new Set((salonClasses || []).map((c: any) => c.course_id).filter(Boolean)));
+
+  if (newCourseIds.length > 0) {
+    const enrollments = newCourseIds.map((cId: any) => ({
+      course_id: cId,
       student_id: studentId,
       status: 'enrolled',
     }));
@@ -158,8 +163,9 @@ export const POST: APIRoute = async ({ request }) => {
         return new Response(JSON.stringify({ ok: false, error: 'Faltan campos obligatorios.' }), { status: 400 });
       }
 
-      await provisionStudentUser(supabase, email, name || 'Estudiante', targetSchoolId);
-      return new Response(JSON.stringify({ ok: true, message: 'Invitación procesada.' }), { status: 200 });
+      const siteUrl = new URL(request.url).origin;
+      await provisionStudentUser(supabase, email, name || 'Estudiante', targetSchoolId, siteUrl);
+      return new Response(JSON.stringify({ ok: true, message: 'Invitación oficial reenviada vía Supabase SMTP.' }), { status: 200 });
     }
 
     // Compatibilidad: update

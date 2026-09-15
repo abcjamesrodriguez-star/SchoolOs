@@ -46,4 +46,25 @@ export const studentService = {
     const query = schoolId ? `?schoolId=${encodeURIComponent(schoolId)}` : '';
     return apiClient.get(`/api/school-admin/students${query}`);
   },
+
+  // Portal del Estudiante
+  async getDashboard(): Promise<ApiResponse<any>> {
+    return apiClient.get('/api/student/dashboard');
+  },
+
+  async getCourses(): Promise<ApiResponse<any[]>> {
+    return apiClient.get('/api/student/courses');
+  },
+
+  async getSchedule(): Promise<ApiResponse<any>> {
+    return apiClient.get('/api/student/schedule');
+  },
+
+  async getGrades(): Promise<ApiResponse<any>> {
+    return apiClient.get('/api/student/grades');
+  },
+
+  async getLabs(): Promise<ApiResponse<any[]>> {
+    return apiClient.get('/api/student/labs');
+  },
 };

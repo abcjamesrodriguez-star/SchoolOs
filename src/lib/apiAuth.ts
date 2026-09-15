@@ -45,6 +45,13 @@ function extractToken(request: Request): string | null {
     }
   }
 
+  // 3. Query string token (fallback para descargas directas de archivos / export CSV / PDF)
+  try {
+    const url = new URL(request.url);
+    const queryToken = url.searchParams.get('token') || url.searchParams.get('auth_token');
+    if (queryToken) return queryToken.trim();
+  } catch (_) {}
+
   return null;
 }
 

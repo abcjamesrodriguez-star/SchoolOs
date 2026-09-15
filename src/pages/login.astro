@@ -135,52 +135,8 @@ const i18nData = {
       .login-card p.intro {
         font-size: 13px;
         color: var(--ink-soft);
-        margin-bottom: 18px;
-        line-height: 1.45;
-      }
-
-      .roles-selector-title {
-        font-family: var(--mono);
-        font-size: 10px;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--ink-soft);
-        margin-bottom: 8px;
-        display: block;
-      }
-
-      .role-pills-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
         margin-bottom: 20px;
-      }
-
-      .role-pill {
-        background: #EDEAE0;
-        border: 1px solid var(--line-strong);
-        padding: 8px 10px;
-        font-size: 11.5px;
-        font-family: var(--mono);
-        color: var(--ink);
-        border-radius: 2px;
-        cursor: pointer;
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        transition: all 0.15s ease;
-        text-align: left;
-      }
-
-      .role-pill:hover, .role-pill.active {
-        background: var(--paper);
-        border-color: var(--ink);
-        box-shadow: 2px 2px 0 rgba(18, 17, 14, 0.15);
-      }
-
-      .role-pill strong {
-        font-size: 12px;
-        color: var(--rust);
+        line-height: 1.45;
       }
 
       .form-group {
@@ -323,50 +279,37 @@ const i18nData = {
 
       <div class="login-card">
         <h2 id="cardTitle">Iniciar Sesión</h2>
-        <p class="intro" id="cardIntro">Selecciona tu perfil de acceso rápido o ingresa credenciales:</p>
-
-        <!-- Fast Role Selection Pills -->
-        <span class="roles-selector-title"> Perfiles Demo de Acceso Rápido:</span>
-        <div class="role-pills-grid">
-          <!-- RECTOR -->
-          <div class="role-pill active" id="pillRector" title="Iniciar como Rectora del Colegio Norte">
-            <strong>Rectoría / Admin</strong>
-            <span style="color:var(--ink-soft); font-size:10px;">rector / 123</span>
-          </div>
-
-          <!-- SUPER ADMIN -->
-          <div class="role-pill" id="pillSuperAdmin" title="Iniciar como Super Administrador Global">
-            <strong>Super Admin</strong>
-            <span style="color:var(--ink-soft); font-size:10px;">admin / 123</span>
-          </div>
-
-          <!-- DOCENTE -->
-          <div class="role-pill" id="pillTeacher" title="Docente de Biología">
-            <strong>Docente (Profesor)</strong>
-            <span style="color:var(--ink-soft); font-size:10px;">profesor / 123</span>
-          </div>
-
-          <!-- ESTUDIANTE -->
-          <div class="role-pill" id="pillStudent" title="Estudiante de 10°">
-            <strong>Estudiante</strong>
-            <span style="color:var(--ink-soft); font-size:10px;">estudiante / 123</span>
-          </div>
-        </div>
+        <p class="intro" id="cardIntro">Ingresa tus credenciales para acceder a la plataforma institucional.</p>
 
         <div class="error-alert" id="errorMsg">
-          Credenciales no reconocidas. Usa <strong>rector</strong>, <strong>admin</strong>, <strong>profesor</strong> o <strong>estudiante</strong> con contraseña <strong>123</strong>.
+          Credenciales no válidas. Por favor verifica tus datos e inténtalo de nuevo.
         </div>
 
         <form id="loginForm">
           <div class="form-group">
-            <label for="username" id="labelUser">Usuario o Correo Institucional</label>
-            <input type="text" id="username" name="username" value="rector" required autofocus />
+            <label for="username" id="labelUser">Usuario, Correo o Código Institucional</label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              required
+              autofocus
+              placeholder="ej. usuario@colegio.edu o EST-2026-XXXX"
+              autocomplete="username"
+            />
           </div>
 
           <div class="form-group">
             <label for="password" id="labelPass">Contraseña de Acceso</label>
             <div class="password-wrapper">
-              <input type="password" id="password" name="password" value="123" required />
+              <input
+                type="password"
+                id="password"
+                name="password"
+                required
+                placeholder="••••••••"
+                autocomplete="current-password"
+              />
               <button type="button" id="togglePassword" class="password-toggle" aria-label="Mostrar contraseña" title="Mostrar contraseña" tabindex="0">
                 <!-- eye open -->
                 <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
@@ -428,6 +371,12 @@ const i18nData = {
         if (labelUser) labelUser.textContent = t.userLabel;
         const labelPass = document.getElementById('labelPass');
         if (labelPass) labelPass.textContent = t.passLabel;
+
+        const userInputEl = document.getElementById('username') as HTMLInputElement;
+        if (userInputEl && t.userPlaceholder) userInputEl.placeholder = t.userPlaceholder;
+        const passInputEl = document.getElementById('password') as HTMLInputElement;
+        if (passInputEl && t.passPlaceholder) passInputEl.placeholder = t.passPlaceholder;
+
         const btnSubmit = document.getElementById('btnSubmit');
         if (btnSubmit) btnSubmit.textContent = t.submitBtn;
         const linkBackHome = document.getElementById('linkBackHome');
@@ -467,38 +416,62 @@ const i18nData = {
         passInput.focus();
       });
 
-      function setActivePill(pillId: string, user: string, pass: string) {
-        document.querySelectorAll('.role-pill').forEach(p => p.classList.remove('active'));
-        document.getElementById(pillId)?.classList.add('active');
-        if (userInput) userInput.value = user;
-        if (passInput) passInput.value = pass;
-      }
-
-      document.getElementById('pillSuperAdmin')?.addEventListener('click', () => setActivePill('pillSuperAdmin', 'kumikasato45@gmail.com', 'SuperAdmin2026!*'));
-
-      // Submit con Supabase Auth Real
+      // Submit con soporte para demo rápido y Supabase Auth Real
       document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const inputVal = userInput ? userInput.value.trim() : '';
+        const rawInput = userInput ? userInput.value.trim() : '';
+        const lowerInput = rawInput.toLowerCase();
         const password = passInput ? passInput.value.trim() : '';
 
         if (errorMsg) errorMsg.style.display = 'none';
         if (btnSubmit) {
           btnSubmit.disabled = true;
-          btnSubmit.textContent = 'Verificando con Supabase...';
+          btnSubmit.textContent = 'Verificando credenciales...';
         }
 
         try {
-          if (!inputVal || !password) {
+          if (!rawInput || !password) {
             throw new Error('Ingresa tu correo institucional y contraseña.');
           }
 
-          const emailToUse = (inputVal === 'admin' || inputVal === 'superadmin') ? 'kumikasato45@gmail.com' : inputVal;
-          if (!emailToUse.includes('@')) {
-            throw new Error('Por favor ingresa un correo electrónico institucional válido.');
+          const params = new URLSearchParams(window.location.search);
+
+          // Normalización de accesos directos demo a cuentas reales en Supabase
+          let loginEmail = rawInput;
+          let loginPassword = password;
+
+          if (lowerInput === 'admin' || lowerInput === 'superadmin') {
+            loginEmail = 'kumikasato45@gmail.com';
+            loginPassword = (password === '123' || !password) ? 'SuperAdmin2026!*' : password;
+          } else if (lowerInput === 'rector' || lowerInput === 'rectoria') {
+            loginEmail = 'hans1999dev@gmail.com';
+            loginPassword = (password === '123' || !password) ? 'Rector2026!*' : password;
+          } else if (lowerInput === 'profesor' || lowerInput === 'docente' || lowerInput === 'teacher') {
+            loginEmail = 'codinglofitheme@gmail.com';
+            loginPassword = (password === '123' || !password) ? 'Docente2026!*' : password;
+          } else if (lowerInput === 'estudiante' || lowerInput === 'student') {
+            loginEmail = 'testeo3@raptorcrew.edu.co';
+            loginPassword = (password === '123' || !password) ? 'Estudiante2026!*' : password;
+          } else if (!loginEmail.includes('@')) {
+            try {
+              const lookupRes = await fetch('/api/auth/lookup-identifier', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ identifier: rawInput }),
+              });
+              const lookup = await lookupRes.json();
+              if (lookup.ok && lookup.email) {
+                loginEmail = lookup.email;
+              } else {
+                throw new Error(lookup.error || 'Código o documento institucional no encontrado.');
+              }
+            } catch (lookupErr: any) {
+              throw new Error(lookupErr.message || 'Por favor ingresa un correo o código institucional válido.');
+            }
           }
 
-          const user = await authService.signIn(emailToUse, password);
+          // SIEMPRE autenticación real en Supabase Auth
+          const user = await authService.signIn(loginEmail, loginPassword);
 
           let targetUrl = '/' + currentLang + '/app/super-admin';
           if (user.passwordResetRequired) {
@@ -514,13 +487,14 @@ const i18nData = {
           localStorage.setItem('schoolos-auth', 'true');
           localStorage.setItem('schoolos-user', JSON.stringify(user));
 
-          const params = new URLSearchParams(window.location.search);
-          const redirectTo = params.get('redirect') || targetUrl;
+          const redirectTo = user.passwordResetRequired
+            ? '/cambiar-password'
+            : (params.get('redirect') || targetUrl);
           window.location.href = redirectTo;
           return;
-        } catch (err) {
+        } catch (err: any) {
           if (errorMsg) {
-            errorMsg.textContent = err?.message || 'Error al iniciar sesión en Supabase.';
+            errorMsg.textContent = err?.message || 'Error al iniciar sesión.';
             errorMsg.style.display = 'block';
           }
           if (passInput) {

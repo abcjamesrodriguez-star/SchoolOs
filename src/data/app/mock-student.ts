@@ -1,6 +1,5 @@
 // ============================================================
-// SchoolOS — Mock Data: Panel del Estudiante (Fase 4)
-// Sesión activa: Mateo Gómez | studentId: 'std-mateo' | 10° Grado A
+// SchoolOS — Datos Estudiante
 // ============================================================
 
 import type {
@@ -21,13 +20,13 @@ import { getGuideById, getEvaluationById } from './mock-content';
 
 export function getStudentProfile(): StudentProfile {
   return {
-    id: 'std-mateo',
-    name: 'Mateo Gómez',
-    email: 'mateo.gomez@colegio-norte.edu.co',
+    id: 'std-demo',
+    name: 'Estudiante',
+    email: 'estudiante@schoolos.app',
     grade: '10° Grado A',
     groupCode: '10-1',
     schoolId: 'sch-1',
-    schoolName: 'Colegio Norte',
+    schoolName: 'SchoolOS',
     avatarUrl: '/avatars/men/fila-1-columna-2.png',
     generalAverage: 8.8,
     averageLabel: 'Excelente',
@@ -158,8 +157,8 @@ const EVALUATION_HISTORY: EvaluationAttempt[] = [
     id: 'att-hist-1',
     evaluationId: 'eval-mat-q1',
     evaluationTitle: 'Quiz: Ecuaciones Cuadráticas',
-    studentId: 'std-mateo',
-    studentName: 'Mateo Gómez',
+    studentId: 'std-demo',
+    studentName: 'Estudiante',
     courseId: 'crs-mat-10a',
     courseName: 'Matemáticas 10°A',
     attemptNumber: 1,
@@ -175,8 +174,8 @@ const EVALUATION_HISTORY: EvaluationAttempt[] = [
     id: 'att-hist-2',
     evaluationId: 'eval-lit-q1',
     evaluationTitle: 'Quiz: El Romanticismo Latinoamericano',
-    studentId: 'std-mateo',
-    studentName: 'Mateo Gómez',
+    studentId: 'std-demo',
+    studentName: 'Estudiante',
     courseId: 'crs-lit-10a',
     courseName: 'Literatura 10°A',
     attemptNumber: 1,

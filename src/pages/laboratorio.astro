@@ -1,0 +1,492 @@
+---
+// ============================================================
+// SchoolOS — Laboratorio Virtual 3D (Simulador Unity WebGL)
+// ============================================================
+import '../styles/tokens.css';
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Laboratorio Virtual de Ciencias 3D — SchoolOS</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --lab-bg: #0E1013;
+        --lab-card: #15181E;
+        --lab-card-border: #232833;
+        --lab-text: #E5E9F0;
+        --lab-text-dim: #8892B0;
+        --lab-accent: #FF5A1F;
+        --lab-accent-glow: rgba(255, 90, 31, 0.25);
+        --lab-green: #10B981;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background-color: var(--lab-bg);
+        color: var(--lab-text);
+        font-family: var(--sans);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background-image: 
+          radial-gradient(circle at 50% 0%, rgba(255, 90, 31, 0.08) 0%, transparent 60%),
+          linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+        background-size: 100% 100%, 32px 32px, 32px 32px;
+      }
+
+      /* ── TOP NAVIGATION BAR ─────────────────────────────────────── */
+      .lab-nav {
+        background: rgba(21, 24, 30, 0.85);
+        backdrop-filter: blur(12px);
+        border-bottom: 1.5px solid var(--lab-card-border);
+        padding: 12px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        z-index: 50;
+      }
+
+      .nav-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--lab-text);
+        background: #1B1F27;
+        border: 1px solid var(--lab-card-border);
+        padding: 7px 12px;
+        text-decoration: none;
+        border-radius: 4px;
+        transition: all 0.15s ease;
+      }
+
+      .btn-back:hover {
+        background: var(--lab-accent);
+        border-color: var(--lab-accent);
+        color: #FFFFFF;
+        box-shadow: 0 0 12px var(--lab-accent-glow);
+      }
+
+      .lab-title-box h1 {
+        font-family: var(--serif);
+        font-size: 17px;
+        font-weight: 700;
+        color: #FFFFFF;
+        line-height: 1.2;
+      }
+
+      .lab-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-family: var(--mono);
+        font-size: 9.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--lab-green);
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        padding: 3px 8px;
+        border-radius: 999px;
+      }
+
+      .pulse-dot {
+        width: 6px;
+        height: 6px;
+        background: var(--lab-green);
+        border-radius: 50%;
+        box-shadow: 0 0 6px var(--lab-green);
+        animation: pulse 1.8s infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.4; transform: scale(0.85); }
+      }
+
+      .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .btn-action {
+        background: #1B1F27;
+        border: 1px solid var(--lab-card-border);
+        color: var(--lab-text);
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 700;
+        padding: 7px 13px;
+        border-radius: 4px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.15s ease;
+      }
+
+      .btn-action:hover {
+        background: var(--lab-card-border);
+        border-color: #3A4252;
+        color: #FFFFFF;
+      }
+
+      /* ── CONTENEDOR PRINCIPAL ───────────────────────────────────── */
+      .main-container {
+        flex: 1;
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px 20px 40px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      /* ── MARCO DEL VISOR 3D (VIEWPORT) ──────────────────────────── */
+      .viewport-frame {
+        background: #000000;
+        border: 2px solid var(--lab-card-border);
+        border-radius: 6px;
+        overflow: hidden;
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .viewport-header {
+        background: #171A21;
+        border-bottom: 1px solid var(--lab-card-border);
+        padding: 8px 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--lab-text-dim);
+      }
+
+      .viewport-wrapper {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 10;
+        max-height: 700px;
+        min-height: 500px;
+        background: #000000;
+      }
+
+      .viewport-iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+        display: block;
+      }
+
+      /* ── PANEL DE INFORMACIÓN INFERIOR ─────────────────────────── */
+      .info-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr 1fr;
+        gap: 16px;
+      }
+
+      @media (max-width: 900px) {
+        .info-grid {
+          grid-template-columns: 1fr;
+        }
+        .viewport-wrapper {
+          aspect-ratio: 16 / 10;
+          min-height: 380px;
+        }
+      }
+
+      .info-card {
+        background: var(--lab-card);
+        border: 1px solid var(--lab-card-border);
+        border-radius: 6px;
+        padding: 16px 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .info-card h3 {
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--lab-accent);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .controls-table {
+        width: 100%;
+        font-size: 12px;
+        line-height: 1.5;
+        border-collapse: collapse;
+      }
+
+      .controls-table tr {
+        border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+      }
+
+      .controls-table tr:last-child {
+        border-bottom: none;
+      }
+
+      .controls-table td {
+        padding: 6px 0;
+      }
+
+      .key-pill {
+        display: inline-block;
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 700;
+        background: #252B38;
+        border: 1px solid #3A4252;
+        color: #FFFFFF;
+        padding: 2px 6px;
+        border-radius: 3px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+      }
+
+      .mission-list {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        font-size: 12px;
+      }
+
+      .mission-list li {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        line-height: 1.4;
+      }
+
+      .mission-list li span.bullet {
+        color: var(--lab-accent);
+        font-weight: bold;
+      }
+
+      .sync-box {
+        background: rgba(255, 90, 31, 0.06);
+        border: 1px solid rgba(255, 90, 31, 0.2);
+        padding: 12px;
+        border-radius: 4px;
+        font-size: 11.5px;
+        line-height: 1.45;
+        color: #D1D5DB;
+      }
+
+      .sync-box strong {
+        color: #FFFFFF;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- TOP NAVIGATION BAR -->
+    <header class="lab-nav">
+      <div class="nav-left">
+        <a href="/es/app/student" class="btn-back" id="btnBackPortal">
+          ← Portal Estudiante
+        </a>
+        <div class="lab-title-box">
+          <div style="font-family:var(--mono); font-size:10px; color:var(--lab-accent); font-weight:700; letter-spacing:0.06em; text-transform:uppercase;">
+            SchoolOS · Entorno de Simulación
+          </div>
+          <h1>Laboratorio de Química & Hidrocarburos</h1>
+        </div>
+      </div>
+
+      <div class="nav-actions">
+        <div class="lab-status-badge">
+          <div class="pulse-dot"></div>
+          <span>WebGL 3D Activo</span>
+        </div>
+
+        <button type="button" class="btn-action" id="btnReloadLab" title="Reiniciar Simulación">
+          🔄 Reiniciar
+        </button>
+
+        <button type="button" class="btn-action" id="btnFullscreen" title="Pantalla Completa">
+          ⛶ Pantalla Completa
+        </button>
+      </div>
+    </header>
+
+    <!-- CUERPO PRINCIPAL -->
+    <main class="main-container">
+      <!-- MARCO DEL VISOR 3D (UNITY) -->
+      <section class="viewport-frame" id="labViewportContainer">
+        <div class="viewport-header">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="color:var(--lab-accent);">●</span>
+            <span>SIMULADOR EN LÍNEA // RESOLUCIÓN NATIVA HIGH-DPI</span>
+          </div>
+          <div>
+            <span>SERVIDOR: SCHOOLOS CLOUD // VERSIÓN 0.1.0</span>
+          </div>
+        </div>
+
+        <div class="viewport-wrapper">
+          <iframe
+            id="unityIframe"
+            class="viewport-iframe"
+            src="/game/index.html"
+            allow="fullscreen; autoplay; gamepad; xr-spatial-tracking"
+            tabindex="0"
+          ></iframe>
+        </div>
+      </section>
+
+      <!-- PANELES DE INFORMACIÓN Y GUÍA DE CONTROLES -->
+      <section class="info-grid">
+        <!-- Tarjeta 1: Controles -->
+        <article class="info-card">
+          <h3>🎮 Controles de Simulación</h3>
+          <table class="controls-table">
+            <tbody>
+              <tr>
+                <td style="width:110px;"><span class="key-pill">W</span> <span class="key-pill">A</span> <span class="key-pill">S</span> <span class="key-pill">D</span></td>
+                <td>Desplazarse por el laboratorio escolar</td>
+              </tr>
+              <tr>
+                <td><span class="key-pill">Mouse</span></td>
+                <td>Mirar alrededor e inspeccionar el instrumental</td>
+              </tr>
+              <tr>
+                <td><span class="key-pill">Clic Izq</span> / <span class="key-pill">E</span></td>
+                <td>Tomar reactivos, abrir mecheros y pipetear</td>
+              </tr>
+              <tr>
+                <td><span class="key-pill">Espacio</span></td>
+                <td>Saltar obstáculos / interactuar</td>
+              </tr>
+              <tr>
+                <td><span class="key-pill">Esc</span></td>
+                <td>Liberar cursor del ratón</td>
+              </tr>
+            </tbody>
+          </table>
+        </article>
+
+        <!-- Tarjeta 2: Objetivos de la Práctica -->
+        <article class="info-card">
+          <h3>📋 Objetivos de la Práctica</h3>
+          <ul class="mission-list">
+            <li>
+              <span class="bullet">01.</span>
+              <span>Identificar los reactivos orgánicos y preparar la muestra para ensayo.</span>
+            </li>
+            <li>
+              <span class="bullet">02.</span>
+              <span>Comprobar la reacción exotérmica bajo el protocolo de bioseguridad.</span>
+            </li>
+            <li>
+              <span class="bullet">03.</span>
+              <span>Registrar observaciones y asentar misiones evaluadas.</span>
+            </li>
+          </ul>
+        </article>
+
+        <!-- Tarjeta 3: Sincronización Institucional -->
+        <article class="info-card">
+          <h3>⚡ Calificación & Token</h3>
+          <div class="sync-box">
+            <strong>Sincronización en Tiempo Real:</strong>
+            <p style="margin-top:6px;">
+              Tus acciones en este simulador se registran en tu cuenta estudiantil. Al finalizar los experimentos, las misiones aprobadas se consolidan en tu boletín de notas.
+            </p>
+          </div>
+          <div style="font-family:var(--mono); font-size:10px; color:var(--lab-text-dim); margin-top:auto;">
+            ¿Prefieres pantalla completa sin marco? 
+            <a href="/game/index.html" target="_blank" style="color:var(--lab-accent); text-decoration:underline;">Abrir vista pura →</a>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <script>
+      // 1. Pantalla completa nativa
+      const btnFullscreen = document.getElementById('btnFullscreen');
+      const viewportContainer = document.getElementById('labViewportContainer');
+
+      btnFullscreen?.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+          viewportContainer?.requestFullscreen?.().catch((err) => {
+            console.warn('Error solicitando pantalla completa:', err);
+          });
+        } else {
+          document.exitFullscreen?.();
+        }
+      });
+
+      // 2. Reiniciar simulador
+      const btnReloadLab = document.getElementById('btnReloadLab');
+      const unityIframe = document.getElementById('unityIframe') as HTMLIFrameElement;
+
+      btnReloadLab?.addEventListener('click', () => {
+        if (unityIframe) {
+          const currentSrc = unityIframe.src;
+          unityIframe.src = 'about:blank';
+          setTimeout(() => {
+            unityIframe.src = currentSrc;
+          }, 150);
+        }
+      });
+
+      // 3. Adaptar enlace de retorno según sesión
+      try {
+        const rawUser = localStorage.getItem('schoolos-user');
+        if (!rawUser) {
+          const backBtn = document.getElementById('btnBackPortal');
+          if (backBtn) {
+            backBtn.textContent = '← Ir al Inicio';
+            backBtn.setAttribute('href', '/login');
+          }
+        }
+      } catch (_) {}
+    </script>
+  </body>
+</html>

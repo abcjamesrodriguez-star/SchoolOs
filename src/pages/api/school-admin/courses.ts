@@ -63,11 +63,16 @@ export const POST: APIRoute = async ({ request }) => {
     const { action, defaultGrades } = body;
 
     if (action === 'init_grades' && Array.isArray(defaultGrades)) {
-      const targetSchoolId = defaultGrades[0]?.school_id || auth.user.school_id;
+      let targetSchoolId = auth.user.role === 'school_admin' ? auth.user.school_id : (defaultGrades[0]?.school_id || auth.user.school_id);
 
-      if (auth.user.role === 'school_admin' && targetSchoolId !== auth.user.school_id) {
-        return new Response(JSON.stringify({ ok: false, error: 'No tienes permisos para inicializar grados de otra institución.' }), {
-          status: 403, headers: { 'Content-Type': 'application/json' }
+      if (targetSchoolId && !targetSchoolId.includes('-')) {
+        const { data: s } = await supabase.from('schools').select('id').eq('slug', targetSchoolId).maybeSingle();
+        if (s?.id) targetSchoolId = s.id;
+      }
+
+      if (!targetSchoolId) {
+        return new Response(JSON.stringify({ ok: false, error: 'Falta schoolId' }), {
+          status: 400, headers: { 'Content-Type': 'application/json' }
         });
       }
 

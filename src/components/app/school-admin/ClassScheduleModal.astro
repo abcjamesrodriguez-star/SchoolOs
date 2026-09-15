@@ -1,4 +1,4 @@
-﻿---
+---
 // ============================================================
 // SchoolOS — Modal de Programación de Clase & Horario por Curso
 // Cero emojis, estilo sobrio institucional
@@ -12,6 +12,8 @@ const { id = 'classScheduleModal' } = Astro.props;
 
 <div
   id={id}
+  data-modal-id={id}
+  data-class-schedule-modal
   class="custom-modal-backdrop"
   style="display:none; position:fixed; inset:0; background:rgba(18, 17, 14, 0.75); z-index:9999; align-items:center; justify-content:center; padding:20px; overflow-y:auto;"
   role="dialog"
@@ -156,8 +158,10 @@ const { id = 'classScheduleModal' } = Astro.props;
   }
 
   function getModalId(): string {
-    const modal = document.querySelector('[data-class-schedule-modal]') as HTMLElement || document.getElementById('ClassScheduleModal');
-    return modal ? modal.id : 'ClassScheduleModal';
+    const modal = (document.querySelector('[data-class-schedule-modal]') as HTMLElement) ||
+                  document.getElementById('classScheduleModal') ||
+                  document.getElementById('ClassScheduleModal');
+    return modal ? modal.id : 'classScheduleModal';
   }
 
   let currentSchoolId = '';

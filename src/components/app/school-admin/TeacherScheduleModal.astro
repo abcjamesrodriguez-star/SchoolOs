@@ -1,4 +1,4 @@
-﻿---
+---
 // ============================================================
 // SchoolOS — Pop-up Modal de Horario Semanal & Salones del Docente
 // Sincronización en Tiempo Real con Reloj Local:
@@ -17,6 +17,8 @@ const { id = 'teacherScheduleModal' } = Astro.props;
 
 <div
   id={id}
+  data-modal-id={id}
+  data-teacher-schedule-modal
   class="custom-modal-backdrop"
   style="display:none; position:fixed; inset:0; background:rgba(18, 17, 14, 0.75); z-index:9999; align-items:center; justify-content:center; padding:20px; overflow-y:auto;"
   role="dialog"
@@ -148,8 +150,10 @@ const { id = 'teacherScheduleModal' } = Astro.props;
   import { scheduleService } from '../../../services/scheduleService';
 
   function getModalId(): string {
-    const modal = document.querySelector('[data-teacher-schedule-modal]') as HTMLElement || document.getElementById('TeacherScheduleModal');
-    return modal ? modal.id : 'TeacherScheduleModal';
+    const modal = (document.querySelector('[data-teacher-schedule-modal]') as HTMLElement) ||
+                  document.getElementById('teacherScheduleModal') ||
+                  document.getElementById('TeacherScheduleModal');
+    return modal ? modal.id : 'teacherScheduleModal';
   }
 
   const daysMap = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO'];

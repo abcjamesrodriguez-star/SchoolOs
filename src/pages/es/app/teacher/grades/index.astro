@@ -1086,12 +1086,14 @@ const students10A = allStudents.filter(s => s.courseId === 'crs-bio-10a');
       window.scrollTo({ top: 0, behavior: 'smooth' });
       showToast(`Mesa de trabajo activa: ${courseName}`);
     }
+    window.selectCourseFromCard = selectCourseFromCard;
 
     function returnToCourseCatalog() {
       document.getElementById('viewCourseWorkbench').style.display = 'none';
       document.getElementById('viewCourseCatalog').style.display = 'block';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+    window.returnToCourseCatalog = returnToCourseCatalog;
 
     function switchMainTab(tab) {
       const btnP = document.getElementById('tabBtnPlanilla');
@@ -1115,6 +1117,7 @@ const students10A = allStudents.filter(s => s.courseId === 'crs-bio-10a');
         pnlR.style.display = 'block';
       }
     }
+    window.switchMainTab = switchMainTab;
 
     function filterStudentsTable() {
       const query = (document.getElementById('studentSearchInput')?.value || '').toLowerCase().trim();

@@ -403,17 +403,64 @@ const lang = 'es';
   <!-- SCRIPT DE INTERACTIVIDAD -->
   <script is:inline>
     let STUDENTS_DATA = [];
-
     let currentIdx = 0;
     const swipeHistory = [];
 
-    document.addEventListener('DOMContentLoaded', () => {
-      
-      const btnTriggerSwipe = document.getElementById('btnTriggerSwipe');
-      if (btnTriggerSwipe) {
-        btnTriggerSwipe.addEventListener('click', startSwipeAttendance);
+    function getActiveStudents() {
+      if (window.STUDENTS_DATA && Array.isArray(window.STUDENTS_DATA) && window.STUDENTS_DATA.length > 0) {
+        return window.STUDENTS_DATA;
       }
+      return STUDENTS_DATA;
+    }
 
+    function renderTraditionalList() {
+      const list = getActiveStudents();
+      const container = document.getElementById('trad-list-container');
+      if (!container) return;
+      if (!list || list.length === 0) {
+        container.innerHTML = '<div style="font-family:var(--mono); font-size:12px; color:var(--ink-soft); text-align:center; padding:20px;">No hay estudiantes cargados en esta clase activa.</div>';
+        return;
+      }
+      container.innerHTML = list.map((std, idx) => `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; border:1px solid var(--line); background:#FFFFFF; margin-bottom:4px;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-family:var(--mono); font-size:11px; font-weight:800; color:var(--ink-soft); width:20px;">${idx + 1}</span>
+            <img src="${std.avatarUrl || '/avatars/men/fila-1-columna-1.png'}" style="width:28px; height:28px; border-radius:50%; border:1px solid var(--ink);" />
+            <strong style="font-size:13px; color:var(--ink);">${std.name}</strong>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <label style="font-family:var(--mono); font-size:11px; font-weight:700; cursor:pointer;">
+              <input type="radio" name="trad_status_${std.id || idx}" value="present" checked /> Presente
+            </label>
+            <label style="font-family:var(--mono); font-size:11px; font-weight:700; cursor:pointer; color:var(--rust);">
+              <input type="radio" name="trad_status_${std.id || idx}" value="absent" /> Falta
+            </label>
+            <label style="font-family:var(--mono); font-size:11px; font-weight:700; cursor:pointer; color:#785700;">
+              <input type="radio" name="trad_status_${std.id || idx}" value="late" /> Retardo
+            </label>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    document.addEventListener('click', (e) => {
+      const targetSwipe = e.target.closest('#btnTriggerSwipe');
+      if (targetSwipe) {
+        startSwipeAttendance();
+        return;
+      }
+      const targetTrad = e.target.closest('#btnOpenAttendance');
+      if (targetTrad) {
+        const modal = document.getElementById('attendanceModal');
+        if (modal) {
+          modal.style.display = 'flex';
+          renderTraditionalList();
+        }
+        return;
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
       const btnCloseSwipe = document.getElementById('btnCloseSwipe');
       if (btnCloseSwipe) {
         btnCloseSwipe.addEventListener('click', () => {
@@ -434,9 +481,6 @@ const lang = 'es';
       document.getElementById('btnFinishSwipe')?.addEventListener('click', finishSwipeAttendance);
 
       // Modal tradicional
-      document.getElementById('btnOpenAttendance')?.addEventListener('click', () => {
-        document.getElementById('attendanceModal').style.display = 'flex';
-      });
       document.getElementById('btnCloseTradModal')?.addEventListener('click', () => {
         document.getElementById('attendanceModal').style.display = 'none';
       });
@@ -459,6 +503,12 @@ const lang = 'es';
     });
 
     function startSwipeAttendance() {
+      const list = getActiveStudents();
+      if (!list || list.length === 0) {
+        alert('No hay estudiantes cargados para la clase activa actual.');
+        return;
+      }
+      STUDENTS_DATA = list;
       currentIdx = 0;
       swipeHistory.length = 0;
       document.getElementById('swipeCompletedScreen').style.display = 'none';
@@ -701,7 +751,7 @@ const lang = 'es';
 
       const mainBtn = document.getElementById('btnTriggerSwipe');
       if (mainBtn) {
-        mainBtn.innerHTML = `Asistencia Lista (${p}/30) ✓`;
+        mainBtn.innerHTML = `Asistencia Lista (${p}/${swipeHistory.length || p}) ✓`;
         mainBtn.style.background = '#5B8A4A';
         mainBtn.style.borderColor = '#5B8A4A';
       }

@@ -103,7 +103,11 @@ const lang = 'es';
       `).join('');
     }
 
-    document.addEventListener('DOMContentLoaded', hydrateCourses);
+    if (document.readyState !== 'loading') {
+      hydrateCourses();
+    } else {
+      document.addEventListener('DOMContentLoaded', hydrateCourses);
+    }
   </script>
 
 </AppLayout>

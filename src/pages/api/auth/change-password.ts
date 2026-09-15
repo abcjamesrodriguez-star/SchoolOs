@@ -1,4 +1,4 @@
-﻿import type { APIRoute } from 'astro';
+import type { APIRoute } from 'astro';
 import { requireAuth } from '../../../lib/apiAuth';
 
 export const POST: APIRoute = async ({ request }) => {
@@ -7,7 +7,7 @@ export const POST: APIRoute = async ({ request }) => {
     if (!auth.ok) return auth.response;
 
     const body = await request.json();
-    const { newPassword } = body;
+    const { newPassword, avatarUrl } = body;
 
     if (!newPassword || typeof newPassword !== 'string' || newPassword.length < 8) {
       return new Response(
@@ -20,6 +20,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     const { error: pwError } = await supabase.auth.admin.updateUserById(auth.user.id, {
       password: newPassword,
+      email_confirm: true,
     });
 
     if (pwError) {
@@ -29,20 +30,26 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
+    const updatePayload: any = {
+      password_reset_required: false,
+      password_last_changed_at: new Date().toISOString(),
+      status: 'active',
+    };
+    if (avatarUrl && typeof avatarUrl === 'string' && avatarUrl.trim()) {
+      updatePayload.avatar_url = avatarUrl.trim();
+    }
+
     const { error: flagError } = await supabase
       .from('users')
-      .update({
-        password_reset_required: false,
-        password_last_changed_at: new Date().toISOString(),
-      })
+      .update(updatePayload)
       .eq('id', auth.user.id);
 
     if (flagError) {
-      console.warn('[change-password] No se pudo limpiar flag:', flagError.message);
+      console.warn('[change-password] No se pudo actualizar users:', flagError.message);
     }
 
     return new Response(
-      JSON.stringify({ ok: true, message: 'Contrasena actualizada correctamente.' }),
+      JSON.stringify({ ok: true, message: 'Cuenta activada y contrasena actualizada correctamente.' }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   } catch (err: any) {

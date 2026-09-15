@@ -1,432 +1,262 @@
 ---
 // ============================================================
 // SchoolOS — Panel Estudiante: El Cockpit del Alumno
-// Fase 4 Rediseñada | Sesión: Mateo Gómez (10°A)
+// Diseño Brutalista Editorial Oficial (Vibrant Brutalism)
+// Sincronizado en Vivo con Datos del Servidor y Supabase
 // ============================================================
 import AppLayout from '../../../../layouts/AppLayout.astro';
-import {
-  getStudentProfile,
-  getPendingEvaluations,
-  getStudentCourses,
-  getTodayStudentSchedule,
-  getTeacherClassroomNotes,
-  getActiveStudyProgress,
-  getEvaluationHistory,
-} from '../../../../data/app/mock-student';
 
 const lang = 'es';
-const student = getStudentProfile();
-const pending = getPendingEvaluations();
-const courses = getStudentCourses();
-const schedule = getTodayStudentSchedule();
-const notes = getTeacherClassroomNotes();
-const activeStudy = getActiveStudyProgress();
-const history = getEvaluationHistory();
-const urgentEval = pending.length > 0 ? pending[0] : null;
 ---
 
 <AppLayout
-  title="Mi Jornada — Mateo Gómez"
+  title="Mi Jornada"
   pageTitle="Mi Día en el Colegio"
   activeSection="dashboard"
   role="student"
-  schoolName="Colegio Norte"
+  schoolName="SchoolOS"
   lang={lang}
   activeRoute="/app/student"
-  breadcrumbs={[{ label: 'Colegio Norte' }, { label: 'Estudiante' }, { label: 'Mi Jornada Hoy' }]}
+  breadcrumbs={[{ label: 'Estudiante' }, { label: 'Mi Jornada Hoy' }]}
 >
 
   <!-- ══════════════════════════════════════════════════════════════════════════ -->
-  <!-- ── 1. CINTILLO SUPERIOR: SALUDO PERSONALIZADO Y CONTEXTO EN VIVO ── -->
+  <!-- ── 1. CINTILLO INSTITUCIONAL BRUTALISTA: CONTEXTO EN VIVO ── -->
   <!-- ══════════════════════════════════════════════════════════════════════════ -->
-  <div style="background:var(--paper); border:2px solid var(--ink); border-radius:10px; padding:18px 24px; margin-bottom:20px; box-shadow:4px 4px 0 rgba(18,17,14,0.08); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+  <div style="background:var(--paper); border:2px solid var(--ink); padding:16px 22px; margin-bottom:24px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; box-shadow:4px 4px 0 var(--ink);">
     
-    <div style="display:flex; align-items:center; gap:14px;">
+    <div style="display:flex; align-items:center; gap:16px;">
       <div style="position:relative;">
         <img
-          src={student.avatarUrl || '/avatars/men/fila-1-columna-2.png'}
-          alt={student.name}
-          style="width:50px; height:50px; border-radius:50%; border:2px solid var(--ink); object-fit:cover;"
+          id="std-avatar"
+          src="/avatars/men/fila-1-columna-2.png"
+          alt="Avatar del Estudiante"
+          style="width:52px; height:52px; border-radius:0; border:2px solid var(--ink); object-fit:cover; display:block; box-shadow:2px 2px 0 var(--ink);"
         />
-        <span style="position:absolute; bottom:0; right:0; width:14px; height:14px; border-radius:50%; background:#4ADE80; border:2px solid var(--paper);" title="Asistencia: Presente hoy"></span>
+        <span style="position:absolute; bottom:-3px; right:-3px; width:12px; height:12px; border-radius:0; background:#4ADE80; border:2px solid var(--ink);" title="Estado: Activo"></span>
       </div>
       <div>
-        <div style="display:flex; align-items:center; gap:8px; margin-bottom:2px;">
-          <span style="font-family:var(--mono); font-size:10px; font-weight:800; background:var(--rust); color:#FFFFFF; padding:2px 7px; border-radius:3px; letter-spacing:0.04em;">
-            {student.grade}
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+          <span class="plan-tag" id="std-grade" style="background:var(--orange-vibrant); color:#FFFFFF; border-color:var(--ink); font-weight:900; font-size:10px; padding:2px 6px; border-radius:0; letter-spacing:0.06em;">
+            ESTUDIANTE
           </span>
-          <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">
-            Grupo {student.groupCode} · {student.schoolName}
+          <span id="std-context" style="font-family:var(--mono); font-size:11.5px; font-weight:700; color:var(--ink);">
+            Sincronizando salón...
           </span>
         </div>
-        <h1 style="font-family:var(--serif); font-size:22px; font-weight:900; color:var(--ink); margin:0;">
-          ¡Hola, {student.name.split(' ')[0]}! 
+        <h1 id="std-greeting" style="font-family:var(--sans); font-size:24px; font-weight:900; text-transform:uppercase; letter-spacing:-0.03em; color:var(--ink); margin:0; line-height:1;">
+          ¡HOLA!
         </h1>
       </div>
     </div>
 
-    <!-- Indicadores de desempeño amigables -->
-    <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
-      <div style="background:var(--cream); border:1.5px solid var(--line); border-radius:8px; padding:8px 16px; text-align:right;">
-        <div style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft); font-weight:700; text-transform:uppercase;">Tu Promedio Actual</div>
+    <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+      <div style="background:var(--cream); border:1.5px solid var(--ink); border-radius:0; padding:8px 16px; text-align:right;">
+        <div style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft); font-weight:800; text-transform:uppercase; letter-spacing:0.06em;">Tu Promedio</div>
         <div style="display:flex; align-items:baseline; gap:4px; justify-content:flex-end;">
-          <span style="font-family:var(--serif); font-size:22px; font-weight:900; color:var(--ink); line-height:1;">{student.generalAverage}</span>
-          <span style="font-family:var(--mono); font-size:11px; color:#4A7C59; font-weight:800;">/ 10.0</span>
+          <span id="std-average" style="font-family:var(--mono); font-size:24px; font-weight:900; color:var(--ink); line-height:1;">--</span>
+          <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); font-weight:700;">/ 10.0</span>
         </div>
-        <div style="font-family:var(--mono); font-size:9.5px; color:#4A7C59; font-weight:800;"> Puesto 4 de 30</div>
       </div>
 
-      <div style="background:#E8F5E9; border:1.5px solid #A5D6A7; border-radius:8px; padding:8px 14px; text-align:center;">
-        <div style="font-family:var(--mono); font-size:9px; color:#2E7D32; font-weight:800; text-transform:uppercase;">Asistencia Hoy</div>
-        <div style="font-family:var(--mono); font-size:14px; font-weight:900; color:#1B5E20; margin-top:2px;">PRESENTE ✓</div>
+      <div style="background:#FFF1E6; border:1.5px solid var(--ink); border-radius:0; padding:10px 16px; text-align:center;">
+        <div style="font-family:var(--mono); font-size:9px; color:var(--orange-vibrant); font-weight:900; text-transform:uppercase; letter-spacing:0.08em;">Asistencia Hoy</div>
+        <div style="font-family:var(--mono); font-size:13px; font-weight:900; color:var(--ink); margin-top:2px;">PRESENTE ✓</div>
       </div>
     </div>
 
   </div>
 
   <!-- ══════════════════════════════════════════════════════════════════════════ -->
-  <!-- ── 2. TIRA DE HORARIO DE HOY (SINCRONIZADO CON EL COLEGIO) ── -->
+  <!-- ── 2. METRIC CARDS MODULARES (01, 02, 03) ── -->
   <!-- ══════════════════════════════════════════════════════════════════════════ -->
-  <div style="background:var(--paper); border:2px solid var(--ink); border-radius:10px; overflow:hidden; margin-bottom:24px; box-shadow:4px 4px 0 rgba(18,17,14,0.08);">
+  <div class="module-card-grid" style="margin-bottom:24px;">
     
-    <div style="background:var(--ink); color:#FFFFFF; padding:10px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-      <div style="display:flex; align-items:center; gap:8px;">
-        <span style="background:#4ADE80; width:8px; height:8px; border-radius:50%; display:inline-block; box-shadow:0 0 6px #4ADE80;"></span>
-        <span style="font-family:var(--mono); font-size:11px; font-weight:800; letter-spacing:0.06em; text-transform:uppercase;">
-          Tu Horario de Hoy · Martes 18 de Agosto, 2026
+    <!-- CARD 01: MATERIAS -->
+    <div class="module-card" style="border:2px solid var(--ink); box-shadow:4px 4px 0 rgba(18, 17, 14, 0.08);">
+      <div class="module-card-header">
+        <span class="module-num-badge">01</span>
+        <span class="module-pill-tag" style="color:var(--ink); font-weight:800;">INSCRIPCIÓN</span>
+      </div>
+      <div class="module-card-body">
+        <h3 class="module-card-title">MATERIAS ACTIVAS</h3>
+        <div class="module-card-sub">CURSOS ASIGNADOS AL SALÓN</div>
+        <div style="margin-top:16px; display:flex; align-items:baseline; gap:8px;">
+          <span id="stat-courses-num" style="font-family:var(--mono); font-size:38px; font-weight:900; color:var(--ink); line-height:1;">0</span>
+          <span style="font-family:var(--mono); font-size:12px; color:var(--ink-soft); font-weight:700;">asignaturas</span>
+        </div>
+      </div>
+      <a href={`/${lang}/app/student/courses`} class="module-card-footer footer-stone" style="text-decoration:none;">
+        <span>Ver todas las materias</span>
+        <span class="arrow-symbol">→</span>
+      </a>
+    </div>
+
+    <!-- CARD 02: EVALUACIONES -->
+    <div class="module-card" style="border:2px solid var(--ink); box-shadow:4px 4px 0 rgba(18, 17, 14, 0.08);">
+      <div class="module-card-header">
+        <span class="module-num-badge">02</span>
+        <span class="module-pill-tag" style="color:var(--orange-vibrant); font-weight:800;">TAREAS & QUICES</span>
+      </div>
+      <div class="module-card-body">
+        <h3 class="module-card-title">EVALUACIONES</h3>
+        <div class="module-card-sub">ACTIVIDADES POR PRESENTAR</div>
+        <div style="margin-top:16px; display:flex; align-items:baseline; gap:8px;">
+          <span id="stat-evals-num" style="font-family:var(--mono); font-size:38px; font-weight:900; color:var(--orange-vibrant); line-height:1;">0</span>
+          <span style="font-family:var(--mono); font-size:12px; color:var(--ink-soft); font-weight:700;">pendientes</span>
+        </div>
+      </div>
+      <a href={`/${lang}/app/student/grades`} class="module-card-footer footer-orange" style="text-decoration:none;">
+        <span>Consultar boletín</span>
+        <span class="arrow-symbol">→</span>
+      </a>
+    </div>
+
+    <!-- CARD 03: LABORATORIOS SIMULACIÓN -->
+    <div class="module-card" style="border:2px solid var(--ink); box-shadow:4px 4px 0 rgba(18, 17, 14, 0.08);">
+      <div class="module-card-header">
+        <span class="module-num-badge">03</span>
+        <span class="module-pill-tag" style="color:var(--orange-vibrant); font-weight:800;">SIMULACIÓN PC / VR</span>
+      </div>
+      <div class="module-card-body">
+        <h3 class="module-card-title">LABS VIRTUALES</h3>
+        <div class="module-card-sub">PRÁCTICAS Y SIMULADORES</div>
+        <div style="margin-top:16px; display:flex; align-items:baseline; gap:8px;">
+          <span id="stat-labs-num" style="font-family:var(--mono); font-size:38px; font-weight:900; color:var(--orange-vibrant); line-height:1;">0</span>
+          <span style="font-family:var(--mono); font-size:12px; color:var(--ink-soft); font-weight:700;">prácticas listas</span>
+        </div>
+      </div>
+      <div class="module-card-footer footer-orange">
+        <span>Prácticas en simulador</span>
+        <span class="arrow-symbol">→</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <!-- ── 3. TIRA DE HORARIO DE HOY (AULA HOY) ── -->
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <div style="background:var(--paper); border:2px solid var(--ink); overflow:hidden; margin-bottom:28px; box-shadow:4px 4px 0 var(--ink);">
+    
+    <div style="background:var(--ink); color:#FFFFFF; padding:12px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="background:var(--orange-vibrant); width:8px; height:8px; display:inline-block;"></span>
+        <span id="schedule-title-date" style="font-family:var(--mono); font-size:11.5px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase;">
+          Jornada de Hoy
         </span>
       </div>
-      <div style="font-family:var(--mono); font-size:11px; color:#E8E2D9;">
-        Hora actual: <strong style="color:#FFF8F5;">08:42 AM</strong> · Periodo 1 · Semana 6
+      <div id="schedule-current-time" style="font-family:var(--mono); font-size:11.5px; color:#E8E2D9;">
+        Sincronizando hora...
       </div>
     </div>
 
-    <div style="display:grid; grid-template-columns: repeat(5, 1fr); background:var(--cream); border-top:1px solid var(--ink);">
-      {schedule.map((slot) => {
-        const isActive = slot.status === 'active';
-        const isDone = slot.status === 'done';
-        const isBreak = slot.status === 'break';
-
-        let bg = 'var(--paper)';
-        let borderTop = 'none';
-        let opacity = '1';
-
-        if (isActive) {
-          bg = '#FFFDF9';
-          borderTop = '4px solid var(--rust)';
-        } else if (isDone) {
-          bg = 'var(--cream)';
-          opacity = '0.65';
-        } else if (isBreak) {
-          bg = '#F4EFE6';
-          opacity = '0.75';
-        }
-
-        return (
-          <div style={`padding:12px 14px; border-right:1.5px solid var(--ink); background:${bg}; border-top:${borderTop}; opacity:${opacity}; display:flex; flex-direction:column; justify-content:space-between;`}>
-            <div>
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
-                <span style={`font-family:var(--mono); font-size:9.5px; font-weight:800; color:${isActive ? 'var(--rust)' : 'var(--ink-soft)'};`}>
-                  {slot.time}
-                </span>
-                {isActive && (
-                  <span style="font-family:var(--mono); font-size:8px; font-weight:900; background:var(--rust); color:#FFFFFF; padding:1px 4px; border-radius:2px;">
-                    EN VIVO
-                  </span>
-                )}
-              </div>
-              <div style={`font-family:var(--serif); font-size:13.5px; font-weight:${isActive ? '800' : '700'}; color:var(--ink); line-height:1.25; margin:3px 0;`}>
-                {slot.courseName}
-              </div>
-            </div>
-            <div style="margin-top:6px;">
-              <div style={`font-family:var(--mono); font-size:10px; font-weight:${isActive ? '700' : '500'}; color:${isActive ? 'var(--rust)' : 'var(--ink-soft)'};`}>
-                 {slot.room}
-              </div>
-              <div style="font-family:var(--mono); font-size:9px; color:var(--ink-soft);">
-                {slot.teacherName}
-              </div>
-            </div>
-          </div>
-        );
-      })}
+    <!-- Tira de Bloques -->
+    <div id="today-schedule-strip" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); background:var(--cream); min-height:85px; align-items:stretch;">
+      <div style="font-family:var(--mono); font-size:12px; color:var(--ink-soft); text-align:center; padding:24px; width:100%; grid-column: 1 / -1;">
+        Sincronizando bloques de clase con el servidor...
+      </div>
     </div>
   </div>
 
   <!-- ══════════════════════════════════════════════════════════════════════════ -->
-  <!-- ── 3. CUERPO PRINCIPAL: 2 COLUMNAS (ACCIÓN vs COMUNICACIÓN) ── -->
+  <!-- ── 4. CUERPO PRINCIPAL: CANVAS vs RAIL (ESTILO SUPER-ADMIN) ── -->
   <!-- ══════════════════════════════════════════════════════════════════════════ -->
-  <div style="display:grid; grid-template-columns: 1.8fr 1.2fr; gap:24px; margin-bottom:28px;">
+  <div class="dashboard-grid" style="margin-bottom:28px;">
 
-    <!-- ── COLUMNA IZQUIERDA: LO QUE TIENES QUE HACER HOY ── -->
-    <div style="display:flex; flex-direction:column; gap:20px;">
+    <!-- LEFT / MAIN CANVAS -->
+    <div class="main-canvas">
 
-      <!-- 1. TARJETA DE URGENCIA MÁXIMA: EXAMEN PENDIENTE -->
-      {urgentEval && (
-        <div style="background:#FFFDF9; border:2.5px solid var(--rust); border-radius:10px; box-shadow:6px 6px 0 rgba(195,83,44,0.15); overflow:hidden;">
-          <div style="background:var(--rust); color:#FFFFFF; padding:10px 18px; display:flex; justify-content:space-between; align-items:center;">
-            <div style="display:flex; align-items:center; gap:8px;">
-              <span style="font-size:14px;"></span>
-              <span style="font-family:var(--mono); font-size:10.5px; font-weight:900; letter-spacing:0.06em; text-transform:uppercase;">
-                TU MISIÓN URGENTE · EVALUACIÓN PENDIENTE
-              </span>
-            </div>
-            <span style="font-family:var(--mono); font-size:10.5px; background:rgba(0,0,0,0.25); padding:2px 8px; border-radius:3px; font-weight:800;">
-              {urgentEval.dueLabel}
-            </span>
-          </div>
-
-          <div style="padding:20px 22px;">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
-              <div>
-                <span style="font-family:var(--mono); font-size:10px; font-weight:800; color:var(--rust); text-transform:uppercase;">
-                  {urgentEval.courseName} · Prof. Diana Restrepo
-                </span>
-                <h3 style="font-family:var(--serif); font-size:19px; font-weight:900; color:var(--ink); margin:4px 0 6px 0; line-height:1.25;">
-                  {urgentEval.evaluationTitle}
-                </h3>
-                <p style="font-size:13px; color:var(--ink-soft); margin:0; line-height:1.5;">
-                  Cuestionario virtual de 4 preguntas sobre organelos y membrana celular. Puedes presentarla en 45 minutos.
-                </p>
-              </div>
-            </div>
-
-            <!-- Chips de examen -->
-            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px;">
-              <div style="background:var(--cream); border:1px solid var(--line); border-radius:5px; padding:5px 10px; font-family:var(--mono); font-size:10.5px; color:var(--ink);">
-                 <strong>{urgentEval.timeLimitMinutes} min</strong> de límite
-              </div>
-              <div style="background:var(--cream); border:1px solid var(--line); border-radius:5px; padding:5px 10px; font-family:var(--mono); font-size:10.5px; color:var(--ink);">
-                 <strong>4 preguntas</strong>
-              </div>
-              <div style="background:var(--cream); border:1px solid var(--line); border-radius:5px; padding:5px 10px; font-family:var(--mono); font-size:10.5px; color:var(--ink);">
-                 Intentos: <strong>{urgentEval.attemptsUsed}/{urgentEval.maxAttempts}</strong>
-              </div>
-            </div>
-
-            <!-- Botones de acción directa -->
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-              <a
-                href={`/${lang}/app/student/evaluations/${urgentEval.evaluationId}/take`}
-                style="flex:1; min-width:200px; display:inline-flex; align-items:center; justify-content:center; gap:8px; background:var(--rust); color:#FFFFFF; border:2px solid var(--rust); border-radius:6px; padding:12px 18px; font-size:13.5px; font-weight:900; text-decoration:none; box-shadow:3px 3px 0 rgba(0,0,0,0.15); transition:all 0.15s;"
-              >
-                <span> Presentar Evaluación Ahora</span>
-                <span>→</span>
-              </a>
-              <a
-                href={`/${lang}/app/student/guides/${urgentEval.guideId}`}
-                style="display:inline-flex; align-items:center; justify-content:center; gap:6px; background:var(--paper); color:var(--ink); border:2px solid var(--ink); border-radius:6px; padding:12px 16px; font-size:12.5px; font-weight:800; text-decoration:none;"
-              >
-                <span> Repasar Guía Primero</span>
-              </a>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <!-- 2. TARJETA: CONTINUAR LECTURA DE LA GUÍA ACTIVA -->
-      <div style="background:var(--paper); border:2px solid var(--ink); border-radius:10px; box-shadow:4px 4px 0 rgba(18,17,14,0.08); overflow:hidden;">
-        <div style="background:var(--cream); border-bottom:1.5px solid var(--ink); padding:12px 20px; display:flex; justify-content:space-between; align-items:center;">
-          <div style="display:flex; align-items:center; gap:8px;">
-            <span style="font-size:14px;"></span>
-            <h3 style="font-family:var(--mono); font-size:11px; font-weight:900; margin:0; text-transform:uppercase; color:var(--ink); letter-spacing:0.04em;">
-              Continuar Lectura · Material de la Clase de Hoy
-            </h3>
-          </div>
-          <span style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); font-weight:700;">
-            {activeStudy.estimatedMinutesLeft} min restantes
-          </span>
-        </div>
-
-        <div style="padding:18px 22px;">
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
-            <div>
-              <div style="font-family:var(--mono); font-size:10px; font-weight:800; color:var(--rust); text-transform:uppercase;">
-                {activeStudy.courseName} · {activeStudy.teacherName}
-              </div>
-              <h4 style="font-family:var(--serif); font-size:17px; font-weight:800; margin:3px 0; color:var(--ink);">
-                {activeStudy.guideTitle}
-              </h4>
-              <div style="font-size:12.5px; color:var(--ink-soft);">
-                Quedaste en: <strong style="color:var(--ink);">{activeStudy.currentSectionTitle}</strong>
-              </div>
-            </div>
-            <div style="text-align:right;">
-              <span style="font-family:var(--mono); font-size:18px; font-weight:900; color:var(--rust);">{activeStudy.progressPercent}%</span>
-            </div>
-          </div>
-
-          <!-- Barra de progreso -->
-          <div style="height:8px; background:var(--line); border-radius:4px; overflow:hidden; margin-bottom:16px;">
-            <div style={`height:100%; width:${activeStudy.progressPercent}%; background:var(--rust); border-radius:4px;`}></div>
-          </div>
-
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-            <span style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft);">
-              Has leído 3 de 5 bloques estructurados
-            </span>
-            <a
-              href={`/${lang}/app/student/guides/${activeStudy.guideId}#${activeStudy.currentBlockId}`}
-              class="btn btn-secondary btn-sm"
-              style="font-size:11.5px; font-weight:800; border-radius:5px;"
-            >
-              Abrir en Bloque § 4 →
-            </a>
-          </div>
-        </div>
+      <!-- 1. MISIÓN URGENTE / EVALUACIÓN PENDIENTE -->
+      <div id="urgent-eval-container">
+        <!-- Renderizado dinámico -->
       </div>
 
-      <!-- 3. ACCESO RÁPIDO A TUS 4 MATERIAS -->
-      <div style="background:var(--paper); border:2px solid var(--ink); border-radius:10px; box-shadow:4px 4px 0 rgba(18,17,14,0.08); overflow:hidden;">
-        <div style="background:var(--cream); border-bottom:1.5px solid var(--ink); padding:12px 20px; display:flex; justify-content:space-between; align-items:center;">
-          <h3 style="font-family:var(--mono); font-size:11px; font-weight:900; margin:0; text-transform:uppercase; color:var(--ink); letter-spacing:0.04em;">
-            Tus Materias Matriculadas (4)
-          </h3>
-          <a href={`/${lang}/app/student/courses`} style="font-family:var(--mono); font-size:10.5px; color:var(--rust); font-weight:800; text-decoration:none;">
-            Ver todas →
+      <!-- 2. LABORATORIOS VIRTUALES ASIGNADOS -->
+      <div id="active-labs-container">
+        <!-- Renderizado dinámico -->
+      </div>
+
+      <!-- 3. PANEL: TUS MATERIAS MATRICULADAS -->
+      <div class="panel" style="border:2px solid var(--ink); box-shadow:4px 4px 0 rgba(18, 17, 14, 0.08);">
+        <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center; background:var(--cream); border-bottom:2px solid var(--ink); padding:12px 20px;">
+          <h2 style="font-family:var(--mono); font-size:12px; font-weight:900; text-transform:uppercase; letter-spacing:0.06em; margin:0;">
+            Materias del Salón (<span id="courses-count-badge">0</span>)
+          </h2>
+          <a href={`/${lang}/app/student/courses`} style="font-family:var(--mono); font-size:11px; font-weight:800; color:var(--rust); text-decoration:none;">
+            Ver catálogo completo →
           </a>
         </div>
 
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; padding:14px 16px;">
-          {courses.map((c) => {
-            const avgColor = c.currentAverage >= 8.5 ? '#4A7C59' : '#C8860A';
-            return (
-              <a
-                href={`/${lang}/app/student/courses`}
-                style="display:flex; justify-content:space-between; align-items:center; background:var(--cream); border:1.5px solid var(--line); border-radius:8px; padding:10px 14px; text-decoration:none; color:inherit; transition:border-color 0.15s;"
-                onmouseover="this.style.borderColor='var(--rust)';"
-                onmouseout="this.style.borderColor='var(--line)';"
-              >
-                <div>
-                  <div style="font-family:var(--mono); font-size:9px; color:var(--ink-soft); font-weight:700; text-transform:uppercase;">
-                    {c.subject}
-                  </div>
-                  <div style="font-weight:700; font-size:13px; color:var(--ink); margin-top:2px;">
-                    {c.courseName.split(' ')[0]} {c.courseName.split(' ')[1] || ''}
-                  </div>
-                  <div style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft);">
-                    {c.guidesRead}/{c.guidesTotal} guías leídas
-                  </div>
-                </div>
-                <div style="text-align:right;">
-                  <div style={`font-family:var(--mono); font-size:16px; font-weight:900; color:${avgColor};`}>
-                    {c.currentAverage.toFixed(1)}
-                  </div>
-                </div>
-              </a>
-            );
-          })}
+        <div id="enrolled-courses-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:12px; padding:18px;">
+          <div style="font-family:var(--mono); font-size:12px; color:var(--ink-soft); padding:16px; grid-column: 1 / -1; text-align:center;">
+            Cargando materias asignadas...
+          </div>
         </div>
       </div>
 
     </div>
 
-    <!-- ── COLUMNA DERECHA: AVISOS DEL PROFESOR Y TUS NOTAS ── -->
-    <div style="display:flex; flex-direction:column; gap:20px;">
+    <!-- RIGHT / INTEL RAIL -->
+    <div class="intel-rail">
 
-      <!-- 1. TABLERO DE TUS PROFESORES (MENSAJES DEL DÍA) -->
-      <div style="background:var(--paper); border:2px solid var(--ink); border-radius:10px; box-shadow:4px 4px 0 rgba(18,17,14,0.08); overflow:hidden;">
-        <div style="background:var(--cream); border-bottom:1.5px solid var(--ink); padding:12px 18px; display:flex; justify-content:space-between; align-items:center;">
-          <div style="display:flex; align-items:center; gap:6px;">
-            <span style="font-size:14px;"></span>
-            <h3 style="font-family:var(--mono); font-size:11px; font-weight:900; margin:0; text-transform:uppercase; color:var(--ink);">
-              Avisos de tus Profesores
-            </h3>
-          </div>
-          <span style="font-family:var(--mono); font-size:9.5px; color:var(--rust); font-weight:800; background:#FFF0EE; padding:2px 6px; border-radius:3px;">
-            2 AVISOS
+      <!-- 1. AVISOS DE TUS PROFESORES -->
+      <div class="panel" style="border:2px solid var(--ink); box-shadow:4px 4px 0 rgba(18, 17, 14, 0.08);">
+        <div class="panel-header" style="background:var(--ink); color:#FFFFFF; padding:12px 16px; display:flex; justify-content:space-between; align-items:center;">
+          <h2 style="font-family:var(--mono); font-size:11px; font-weight:900; letter-spacing:0.08em; text-transform:uppercase; color:#FFFFFF; margin:0;">
+            Avisos de Aula
+          </h2>
+          <span style="font-family:var(--mono); font-size:9.5px; font-weight:800; background:var(--orange-vibrant); color:#FFFFFF; padding:1px 6px;">
+            OFICIAL
           </span>
         </div>
-
-        <div style="padding:0;">
-          {notes.map((note) => (
-            <div style="padding:14px 18px; border-bottom:1px solid var(--line);">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <div style="display:flex; align-items:center; gap:8px;">
-                  <img
-                    src={note.teacherAvatarUrl}
-                    alt={note.teacherName}
-                    style="width:24px; height:24px; border-radius:50%; border:1px solid var(--ink); object-fit:cover;"
-                  />
-                  <div>
-                    <strong style="font-size:12px; color:var(--ink);">{note.teacherName}</strong>
-                    <span style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft); margin-left:4px;">· {note.postedAgo}</span>
-                  </div>
-                </div>
-                <span style="font-family:var(--mono); font-size:8.5px; font-weight:800; padding:1px 5px; border-radius:2px; background:var(--cream); border:1px solid var(--line); color:var(--rust);">
-                  {note.badgeLabel}
-                </span>
-              </div>
-
-              <p style="font-size:12.5px; color:var(--ink); line-height:1.55; margin:0 0 10px 0; background:var(--cream); border-left:3px solid var(--rust); padding:8px 12px; border-radius:0 4px 4px 0;">
-                "{note.message}"
-              </p>
-
-              {note.actionText && (
-                <a
-                  href={note.actionHref}
-                  style="display:inline-flex; align-items:center; gap:4px; font-family:var(--mono); font-size:10.5px; font-weight:800; color:var(--rust); text-decoration:none;"
-                >
-                  {note.actionText} →
-                </a>
-              )}
+        <div class="panel-body padded" style="padding:16px;">
+          <div style="background:var(--cream); border-left:3px solid var(--rust); padding:12px 14px; margin-bottom:12px;">
+            <div style="font-family:var(--mono); font-size:10px; font-weight:900; color:var(--rust); text-transform:uppercase; margin-bottom:4px;">
+              Información de Salón
             </div>
-          ))}
+            <p style="font-size:12.5px; color:var(--ink); line-height:1.5; margin:0;">
+              Bienvenido al ciclo académico. Asiste puntualmente a tus clases en tu salón asignado y mantén al día tus actividades.
+            </p>
+          </div>
+          <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">
+            Sincronizado con la malla horaria oficial.
+          </div>
         </div>
       </div>
 
-      <!-- 2. TUS ÚLTIMAS CALIFICACIONES (FEED EMOCIONAL) -->
-      <div style="background:var(--paper); border:2px solid var(--ink); border-radius:10px; box-shadow:4px 4px 0 rgba(18,17,14,0.08); overflow:hidden;">
-        <div style="background:var(--cream); border-bottom:1.5px solid var(--ink); padding:12px 18px; display:flex; justify-content:space-between; align-items:center;">
-          <div style="display:flex; align-items:center; gap:6px;">
-            <span style="font-size:14px;"></span>
-            <h3 style="font-family:var(--mono); font-size:11px; font-weight:900; margin:0; text-transform:uppercase; color:var(--ink);">
-              Tus Últimas Notas
-            </h3>
-          </div>
-          <a href={`/${lang}/app/student/grades`} style="font-family:var(--mono); font-size:10px; color:var(--rust); font-weight:800; text-decoration:none;">
+      <!-- 2. ÚLTIMAS CALIFICACIONES -->
+      <div class="panel" style="border:2px solid var(--ink); box-shadow:4px 4px 0 rgba(18, 17, 14, 0.08);">
+        <div class="panel-header" style="background:var(--cream); border-bottom:2px solid var(--ink); padding:12px 16px; display:flex; justify-content:space-between; align-items:center;">
+          <h2 style="font-family:var(--mono); font-size:11px; font-weight:900; letter-spacing:0.06em; text-transform:uppercase; margin:0;">
+            Tus Calificaciones
+          </h2>
+          <a href={`/${lang}/app/student/grades`} style="font-family:var(--mono); font-size:10.5px; color:var(--rust); font-weight:800; text-decoration:none;">
             Boletín →
           </a>
         </div>
-
-        <div style="padding:0;">
-          {history.map((att) => (
-            <div style="padding:12px 18px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;">
-              <div>
-                <div style="font-size:12.5px; font-weight:700; color:var(--ink);">{att.evaluationTitle}</div>
-                <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);">{att.courseName} · Hace 4 días</div>
-              </div>
-              <div style="text-align:right;">
-                <div style="font-family:var(--mono); font-size:16px; font-weight:900; color:#4A7C59;">{att.score} / 100</div>
-                <span style="font-family:var(--mono); font-size:8.5px; font-weight:800; color:#4A7C59; background:#E8F5E9; padding:1px 5px; border-radius:2px;">
-                  APROBADO ✓
-                </span>
-              </div>
-            </div>
-          ))}
+        <div id="recent-grades-feed" style="padding:16px;">
+          <div style="font-family:var(--mono); font-size:12px; color:var(--ink-soft); text-align:center;">
+            Cargando boletín...
+          </div>
         </div>
       </div>
 
-      <!-- 3. AGENDA DEL COLEGIO (FECHAS CLAVE) -->
-      <div style="background:var(--paper); border:2px solid var(--ink); border-radius:10px; padding:16px 18px; box-shadow:4px 4px 0 rgba(18,17,14,0.08);">
-        <div style="font-family:var(--mono); font-size:10.5px; font-weight:900; text-transform:uppercase; color:var(--ink); margin-bottom:12px; border-bottom:1.5px solid var(--ink); padding-bottom:6px;">
-           LO QUE NO SE TE PUEDE OLVIDAR
+      <!-- 3. AGENDA DEL COLEGIO -->
+      <div class="panel" style="border:2px solid var(--ink); background:var(--paper); padding:16px; box-shadow:4px 4px 0 rgba(18, 17, 14, 0.08);">
+        <div style="font-family:var(--mono); font-size:10.5px; font-weight:900; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink); margin-bottom:12px; border-bottom:1.5px solid var(--ink); padding-bottom:6px;">
+          CALENDARIO INSTITUCIONAL
         </div>
         <div style="display:flex; flex-direction:column; gap:10px; font-size:12px;">
           <div style="border-left:3px solid var(--rust); padding-left:10px;">
-            <div style="font-family:var(--mono); font-size:9.5px; color:var(--rust); font-weight:800;">ESTE VIERNES</div>
-            <strong style="color:var(--ink);">Entrega Quiz Biología Celular</strong>
-            <div style="font-size:11px; color:var(--ink-soft);">Hasta las 11:59 PM (Virtual)</div>
+            <div style="font-family:var(--mono); font-size:9.5px; color:var(--rust); font-weight:900;">PERIODO 1</div>
+            <strong style="color:var(--ink); display:block;">Actividades en curso</strong>
+            <div style="font-size:11px; color:var(--ink-soft);">Presenta tus talleres y quices</div>
           </div>
           <div style="border-left:3px solid var(--ink); padding-left:10px;">
-            <div style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft); font-weight:800;">VIERNES 22 AGOSTO</div>
-            <strong style="color:var(--ink);">Jornada Pedagógica</strong>
-            <div style="font-size:11px; color:var(--ink-soft);">Sin clases presenciales</div>
-          </div>
-          <div style="border-left:3px solid var(--ink); padding-left:10px;">
-            <div style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft); font-weight:800;">5 SEPTIEMBRE</div>
-            <strong style="color:var(--ink);">Cierre de Periodo 1</strong>
-            <div style="font-size:11px; color:var(--ink-soft);">Cierre de calificaciones oficial</div>
+            <div style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft); font-weight:800;">CIERRE ACADÉMICO</div>
+            <strong style="color:var(--ink); display:block;">Publicación de Notas</strong>
+            <div style="font-size:11px; color:var(--ink-soft);">Cierre oficial del boletín</div>
           </div>
         </div>
       </div>
@@ -434,5 +264,1349 @@ const urgentEval = pending.length > 0 ? pending[0] : null;
     </div>
 
   </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <!-- ── 4.5 MODAL: SIMULADOR DE LABORATORIO & ENCUESTA DE INVESTIGACIÓN ── -->
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <div id="labModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(18,17,14,0.92); z-index:10000; justify-content:center; align-items:center; padding:16px; box-sizing:border-box;">
+    <div style="background:var(--paper); border:2.5px solid var(--ink); box-shadow:8px 8px 0 var(--ink); width:100%; max-width:1100px; max-height:92vh; display:flex; flex-direction:column; overflow:hidden;">
+      
+      <!-- Modal Header -->
+      <div style="background:var(--ink); color:#FFFFFF; padding:14px 22px; display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid var(--orange-vibrant);">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span style="background:var(--orange-vibrant); color:#FFFFFF; font-family:var(--mono); font-size:10px; font-weight:900; padding:4px 8px; letter-spacing:0.08em; text-transform:uppercase;">
+            SIMULACIÓN EDUCATIVA
+          </span>
+          <h2 id="modal-lab-title" style="font-family:var(--sans); font-size:16px; font-weight:900; text-transform:uppercase; margin:0; color:#FFFFFF; letter-spacing:0.02em;">
+            LABORATORIO VIRTUAL
+          </h2>
+        </div>
+        <button id="btn-close-lab-modal" type="button" style="background:transparent; border:none; color:#FFFFFF; font-size:24px; cursor:pointer; font-weight:900; line-height:1; transition:color 0.15s;">✕</button>
+      </div>
+
+      <!-- Modal Body (Scrollable, Two-Panel Grid) -->
+      <div style="padding:22px; overflow-y:auto; flex:1; background:#FFF8F3;">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(440px, 1fr)); gap:22px; align-items:start;">
+
+          <!-- ══════════════════════════════════════════════════════════ -->
+          <!-- ── PANEL 1 (IZQUIERDA): SIMULADOR UNITY & ESTADO ── -->
+          <!-- ══════════════════════════════════════════════════════════ -->
+          <div style="display:flex; flex-direction:column; gap:16px;">
+            
+            <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid var(--ink); padding-bottom:6px;">
+              <span style="font-family:var(--mono); font-size:11px; font-weight:900; color:var(--rust); text-transform:uppercase; letter-spacing:0.05em;">
+                🎮 PASO 1 · PRÁCTICA EN SIMULADOR
+              </span>
+              <span style="font-family:var(--mono); font-size:10px; font-weight:800; background:#FFF; border:1px solid var(--ink); padding:2px 6px;">
+                UNITY 3D / VR
+              </span>
+            </div>
+
+            <!-- Context Banner: Código de Acceso & Modo -->
+            <div style="background:#FFF1E6; border:2px solid var(--ink); padding:14px 16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; box-shadow:2px 2px 0 var(--ink);">
+              <div>
+                <div style="font-family:var(--mono); font-size:9.5px; font-weight:900; color:var(--orange-vibrant); text-transform:uppercase; letter-spacing:0.06em;">
+                  CÓDIGO DE ACCESO A LA PRÁCTICA (UN SOLO USO)
+                </div>
+                <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+                  <code id="modal-token-display" style="font-family:var(--mono); font-size:13px; font-weight:900; color:var(--ink); background:#FFFFFF; border:1.5px solid var(--ink); padding:4px 8px;">
+                    --
+                  </code>
+                  <button id="btn-copy-token" type="button" style="background:var(--ink); color:#FFFFFF; border:1.5px solid var(--ink); font-family:var(--mono); font-size:10px; font-weight:800; padding:5px 10px; cursor:pointer; text-transform:uppercase; box-shadow:1px 1px 0 var(--ink);">
+                    Copiar
+                  </button>
+                </div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-family:var(--mono); font-size:9.5px; font-weight:900; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.06em;">MODALIDAD</div>
+                <div id="modal-mode-display" style="font-family:var(--mono); font-size:13px; font-weight:900; color:var(--ink); margin-top:2px;">
+                  PC / GAFAS VR
+                </div>
+              </div>
+            </div>
+
+            <!-- Guía Paso a Paso -->
+            <div style="background:#FFF; border:2px solid var(--ink); padding:16px; box-shadow:2px 2px 0 var(--ink);">
+              <div style="font-family:var(--mono); font-size:10px; font-weight:900; color:var(--rust); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">
+                📖 ¿CÓMO RESOLVER ESTA PRÁCTICA? (3 PASOS FÁCILES)
+              </div>
+              <div style="display:flex; flex-direction:column; gap:8px; font-size:12px; line-height:1.4; color:var(--ink);">
+                <div style="display:flex; align-items:flex-start; gap:8px;">
+                  <span style="background:var(--ink); color:#FFF; font-family:var(--mono); font-size:9.5px; font-weight:900; padding:2px 6px; border-radius:2px;">1</span>
+                  <div><strong>Abre el simulador en tu PC o visor VR</strong> e ingresa con tu usuario institucional o código de estudiante.</div>
+                </div>
+                <div style="display:flex; align-items:flex-start; gap:8px;">
+                  <span style="background:var(--ink); color:#FFF; font-family:var(--mono); font-size:9.5px; font-weight:900; padding:2px 6px; border-radius:2px;">2</span>
+                  <div><strong>¡El juego detecta tu práctica automáticamente!</strong> No requieres copiar ni pegar códigos ni tokens en el casco VR.</div>
+                </div>
+                <div style="display:flex; align-items:flex-start; gap:8px;">
+                  <span style="background:var(--ink); color:#FFF; font-family:var(--mono); font-size:9.5px; font-weight:900; padding:2px 6px; border-radius:2px;">3</span>
+                  <div><strong>Cumple las misiones experimentales de la práctica.</strong> Al completarlas, Unity enviará tus notas, quemará el intento y desbloqueará la encuesta del panel derecho.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Rúbrica de Misiones Evaluadas (Componente Dinámico) -->
+            <div id="student-modal-missions-container" style="background:#FFF; border:2px solid var(--ink); padding:14px 16px; box-shadow:2px 2px 0 var(--ink);">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-family:var(--mono); font-size:10px; font-weight:900; color:var(--ink); text-transform:uppercase; letter-spacing:0.06em;">
+                  📋 MISIONES EVALUADAS EN SIMULADOR (UNITY)
+                </span>
+                <span id="student-missions-count-badge" style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--rust); background:#FFF0EE; border:1px solid var(--rust); padding:2px 6px;">
+                  EVALUACIÓN DINÁMICA
+                </span>
+              </div>
+              <div id="student-modal-missions-list" style="display:flex; flex-direction:column; gap:6px;">
+                <!-- Se llena dinámicamente según el experimento -->
+              </div>
+            </div>
+
+            <!-- Caja de Instrucciones y Acción -->
+            <div style="background:var(--ink); border:2px solid var(--ink); padding:16px; color:#FFFFFF; box-shadow:3px 3px 0 var(--orange-vibrant);">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                <span style="font-size:18px;">🕹️</span>
+                <h4 style="font-family:var(--sans); font-size:13px; font-weight:900; text-transform:uppercase; margin:0; color:#FFFFFF;">
+                  Sincronización del Intento
+                </h4>
+              </div>
+
+              <!-- Simulation Finalize / Test Trigger -->
+              <div id="modal-step1-action-box" style="background:rgba(255,255,255,0.08); border:1.5px dashed var(--orange-vibrant); padding:12px 14px; display:flex; flex-direction:column; gap:10px;">
+                <div style="font-family:var(--sans); font-size:11.5px; color:#FFF8F3;">
+                  <strong style="color:var(--orange-vibrant);">¿Terminaste tu sesión en Unity o deseas asentar tus resultados en línea?</strong>
+                  <div style="font-size:10.5px; opacity:0.85; margin-top:2px;">El simulador Unity envía automáticamente los resultados y marca si lo resolviste en PC, VR o Ambos:</div>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px;">
+                  <span style="font-family:var(--mono); font-size:10.5px; color:#FFF8F3; font-weight:800;">
+                    Dispositivo a registrar:
+                  </span>
+                  <select id="select-test-device" style="background:#FFFFFF; color:var(--ink); border:1.5px solid var(--ink); font-family:var(--mono); font-size:10.5px; font-weight:900; padding:4px 8px; box-shadow:1px 1px 0 var(--ink);">
+                    <option value="PC">🖥️ PC / LAPTOP (Teclado y Mouse)</option>
+                    <option value="VR">🥽 VISOR VR (Meta Quest / Casco)</option>
+                    <option value="AMBOS">🔄 AMBOS (Híbrido PC + VR)</option>
+                  </select>
+                </div>
+                <button id="btn-simulate-unity-finish" type="button" style="background:var(--orange-vibrant); color:#FFFFFF; border:2px solid #FFFFFF; font-family:var(--mono); font-size:11px; font-weight:900; padding:9px 14px; cursor:pointer; box-shadow:2px 2px 0 #000000; text-transform:uppercase; letter-spacing:0.04em;">
+                  ⚡ REGISTRAR RESULTADOS DE UNITY Y ABRIR ENCUESTA
+                </button>
+              </div>
+
+              <!-- Banner de Token Quemado / Finalizado -->
+              <div id="modal-step1-burned-box" style="display:none; background:#2E5E1E; border:2px solid #A8C99B; padding:12px 14px; color:#FFFFFF;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                  <div>
+                    <div style="font-family:var(--mono); font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:0.06em; color:#C8E6C9;">
+                      🔒 TOKEN CONSUMIDO (PRÁCTICA ASENTADA)
+                    </div>
+                    <div style="font-size:12px; font-weight:800; margin-top:2px;">
+                      Tu práctica ha concluido y los resultados fueron guardados en el servidor.
+                    </div>
+                    <div style="font-size:10.5px; opacity:0.9; margin-top:3px; line-height:1.35;">
+                      Este token está quemado. Si necesitas presentar un nuevo intento, solicítale la reactivación a tu docente de Química.
+                    </div>
+                  </div>
+                  <span style="font-family:var(--mono); font-size:10px; font-weight:900; background:#FFFFFF; color:#2E5E1E; padding:3px 8px; border-radius:3px; border:1px solid #A8C99B; white-space:nowrap;">
+                    ✓ ENTREGADO
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Estado del Servidor & Comprobación -->
+            <div id="modal-wait-box" style="background:#FFF1E6; border:2px solid var(--ink); padding:14px; display:flex; flex-direction:column; gap:10px; box-shadow:2px 2px 0 var(--ink);">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span id="modal-wait-icon" style="font-size:22px;">⏳</span>
+                <div>
+                  <div id="modal-wait-tag" style="font-family:var(--mono); font-size:9.5px; font-weight:900; color:var(--orange-vibrant); text-transform:uppercase; letter-spacing:0.06em;">
+                    ESTADO DEL SERVIDOR
+                  </div>
+                  <div id="modal-wait-text" style="font-family:var(--sans); font-size:12px; font-weight:800; color:var(--ink); margin-top:2px;">
+                    Esperando que el juego termine y envíe tus resultados...
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px; justify-content:space-between; flex-wrap:wrap;">
+                <button id="btn-check-server-now" type="button" style="background:#FFFFFF; color:var(--ink); border:1.5px solid var(--ink); font-family:var(--mono); font-size:10px; font-weight:800; padding:7px 11px; cursor:pointer; box-shadow:1.5px 1.5px 0 var(--ink); text-transform:uppercase;">
+                  ↻ Comprobar Servidor
+                </button>
+                <button id="btn-survey-trigger" disabled style="background:#E8E2D9; color:#7A756D; border:1.5px solid var(--ink); font-family:var(--mono); font-size:10.5px; font-weight:900; padding:7px 12px; cursor:not-allowed; text-transform:uppercase;">
+                  ENCUESTA BLOQUEADA 🔒
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- ══════════════════════════════════════════════════════════ -->
+          <!-- ── PANEL 2 (DERECHA): ENCUESTA DE INVESTIGACIÓN ── -->
+          <!-- ══════════════════════════════════════════════════════════ -->
+          <div style="display:flex; flex-direction:column; gap:16px;">
+            
+            <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid var(--ink); padding-bottom:6px;">
+              <span style="font-family:var(--mono); font-size:11px; font-weight:900; color:var(--orange-vibrant); text-transform:uppercase; letter-spacing:0.05em;">
+                📝 PASO 2 · INVESTIGACIÓN PEDAGÓGICA
+              </span>
+              <span style="font-family:var(--mono); font-size:10px; font-weight:800; background:#FFF1E6; border:1px solid var(--orange-vibrant); color:var(--orange-vibrant); padding:2px 6px;">
+                5 PREGUNTAS
+              </span>
+            </div>
+
+            <!-- Bloque cuando la encuesta está bloqueada (Esperando práctica) -->
+            <div id="modal-survey-locked-notice" style="background:#FFFFFF; border:2px dashed var(--ink); padding:28px 20px; text-align:center; box-shadow:3px 3px 0 var(--ink);">
+              <div style="font-size:36px; margin-bottom:8px;">🔒</div>
+              <div style="font-family:var(--mono); font-size:10.5px; font-weight:900; color:var(--rust); text-transform:uppercase; letter-spacing:0.06em;">
+                EVALUACIÓN PENDIENTE
+              </div>
+              <h4 style="font-family:var(--sans); font-size:15px; font-weight:900; text-transform:uppercase; color:var(--ink); margin:6px 0 8px 0;">
+                Encuesta Bloqueada
+              </h4>
+              <p style="font-family:var(--sans); font-size:12px; color:var(--ink-soft); line-height:1.45; margin:0 auto; max-width:340px;">
+                Para responder la encuesta de investigación pedagógica y registrar tu entrega final, primero debes iniciar y finalizar la simulación en Unity.
+              </p>
+              <div style="margin-top:16px; display:inline-block; background:var(--cream); border:1.5px solid var(--ink); padding:6px 12px; font-family:var(--mono); font-size:10px; font-weight:800; color:var(--ink);">
+                💡 Se desbloqueará automáticamente al finalizar la práctica
+              </div>
+            </div>
+
+            <!-- Formulario de Encuesta (Se muestra al desbloquear o completada) -->
+            <div id="modal-survey-section" style="display:none; background:#FFFFFF; border:2px solid var(--ink); padding:18px; box-shadow:3px 3px 0 var(--ink);">
+              <div style="border-bottom:2px solid var(--ink); padding-bottom:10px; margin-bottom:16px;">
+                <span style="background:var(--orange-vibrant); color:#FFFFFF; font-family:var(--mono); font-size:9.5px; font-weight:900; padding:2px 7px; text-transform:uppercase;">
+                  EVALUACIÓN DE IMPACTO CIENTÍFICO
+                </span>
+                <h4 style="font-family:var(--sans); font-size:16px; font-weight:900; text-transform:uppercase; color:var(--ink); margin:6px 0 2px 0;">
+                  Encuesta de Impacto y Usabilidad
+                </h4>
+                <p style="font-size:11.5px; color:var(--ink-soft); margin:0; line-height:1.35;">
+                  Responde con sinceridad para evaluar la efectividad pedagógica del simulador.
+                </p>
+              </div>
+
+              <form id="lab-research-form" style="display:flex; flex-direction:column; gap:16px;">
+                
+                <!-- Pregunta 0: Plataforma / Dispositivo Utilizado -->
+                <div style="background:#FFF1E6; border:2px solid var(--ink); padding:14px; box-shadow:2px 2px 0 var(--ink);">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <label style="font-family:var(--sans); font-size:12px; font-weight:900; color:var(--ink); text-transform:uppercase; margin:0;">
+                      🕹️ 0. ¿En qué dispositivo realizaste esta práctica de laboratorio?
+                    </label>
+                    <span style="font-family:var(--mono); font-size:9px; font-weight:900; background:var(--rust); color:#FFFFFF; padding:1px 5px;">
+                      OBLIGATORIO
+                    </span>
+                  </div>
+                  <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-top:8px;">
+                    <label style="background:#FFFFFF; border:1.5px solid var(--ink); padding:10px 6px; text-align:center; font-family:var(--mono); font-size:11px; font-weight:900; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; box-shadow:1.5px 1.5px 0 var(--ink);">
+                      <input type="radio" name="deviceUsed" value="PC" checked />
+                      <span>🖥️ PC / LAPTOP</span>
+                      <span style="font-size:8.5px; font-weight:700; color:var(--ink-soft);">Teclado y Mouse</span>
+                    </label>
+                    <label style="background:#FFFFFF; border:1.5px solid var(--ink); padding:10px 6px; text-align:center; font-family:var(--mono); font-size:11px; font-weight:900; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; box-shadow:1.5px 1.5px 0 var(--ink);">
+                      <input type="radio" name="deviceUsed" value="VR" />
+                      <span>🥽 VISOR VR</span>
+                      <span style="font-size:8.5px; font-weight:700; color:var(--rust);">Casco Inmersivo</span>
+                    </label>
+                    <label style="background:#FFFFFF; border:1.5px solid var(--ink); padding:10px 6px; text-align:center; font-family:var(--mono); font-size:11px; font-weight:900; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; box-shadow:1.5px 1.5px 0 var(--ink);">
+                      <input type="radio" name="deviceUsed" value="AMBOS" />
+                      <span>🔄 AMBOS</span>
+                      <span style="font-size:8.5px; font-weight:700; color:#2E7D32;">PC + Gafas VR</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Pregunta 1 -->
+                <div style="background:#FFF8F3; border:1.5px solid var(--ink); padding:12px;">
+                  <label style="font-family:var(--sans); font-size:12px; font-weight:800; color:var(--ink); display:block; margin-bottom:8px;">
+                    1. ¿Qué tanto facilitó el simulador la comprensión de los temas teóricos?
+                  </label>
+                  <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:6px;">
+                    <label style="background:#FFFFFF; border:1.5px solid var(--ink); padding:8px 2px; text-align:center; font-family:var(--mono); font-size:11px; font-weight:900; cursor:pointer;"><input type="radio" name="understandingScore" value="1" /> 1<br><span style="font-size:8.5px; font-weight:700; color:var(--ink-soft);">Nada</span></label>
+                    <label style="background:#FFFFFF; border:1.5px solid var(--ink); padding:8px 2px; text-align:center; font-family:var(--mono); font-size:11px; font-weight:900; cursor:pointer;"><input type="radio" name="understandingScore" value="2" /> 2<br><span style="font-size:8.5px; font-weight:700; color:var(--ink-soft);">Poco</span></label>
+                    <label style="background:#FFFFFF; border:1.5px solid var(--ink); padding:8px 2px; text-align:center; font-family:var(--mono); font-size:11px; font-weight:900; cursor:pointer;"><input type="radio" name="understandingScore" value="3" /> 3<br><span style="font-size:8.5px; font-weight:700; color:var(--ink-soft);">Medio</span></label>
+                    <label style="background:#FFFFFF; border:1.5px solid var(--ink); padding:8px 2px; text-align:center; font-family:var(--mono); font-size:11px; font-weight:900; cursor:pointer;"><input type="radio" name="understandingScore" value="4" /> 4<br><span style="font-size:8.5px; font-weight:700; color:var(--ink-soft);">Mucho</span></label>
+                    <label style="background:#FFFFFF; border:1.5px solid var(--ink); padding:8px 2px; text-align:center; font-family:var(--mono); font-size:11px; font-weight:900; cursor:pointer;"><input type="radio" name="understandingScore" value="5" checked /> 5<br><span style="font-size:8.5px; font-weight:700; color:var(--orange-vibrant);">Total</span></label>
+                  </div>
+                </div>
+
+                <!-- Pregunta 2 -->
+                <div style="background:#FFF8F3; border:1.5px solid var(--ink); padding:12px;">
+                  <label style="font-family:var(--sans); font-size:12px; font-weight:800; color:var(--ink); display:block; margin-bottom:8px;">
+                    2. ¿Qué tan cómoda y fluida fue la interacción y controles del simulador?
+                  </label>
+                  <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:6px;">
+                    <label style="background:#FFFFFF; border:1.5px solid var(--ink); padding:8px 2px; text-align:center; font-family:var(--mono); font-size:11px; font-weight:900; cursor:pointer;"><input type="radio" name="usabilityScore" value="1" /> 1<br><span style="font-size:8.5px; font-weight:700; color:var(--ink-soft);">Difícil</span></label>
+                    <label style="background:#FFFFFF; border:1.5px solid var(--ink); padding:8px 2px; text-align:center; font-family:var(--mono); font-size:11px; font-weight:900; cursor:pointer;"><input type="radio" name="usabilityScore" value="2" /> 2<br><span style="font-size:8.5px; font-weight:700; color:var(--ink-soft);">Regular</span></label>
+                    <label style="background:#FFFFFF; border:1.5px solid var(--ink); padding:8px 2px; text-align:center; font-family:var(--mono); font-size:11px; font-weight:900; cursor:pointer;"><input type="radio" name="usabilityScore" value="3" /> 3<br><span style="font-size:8.5px; font-weight:700; color:var(--ink-soft);">Acept.</span></label>
+                    <label style="background:#FFFFFF; border:1.5px solid var(--ink); padding:8px 2px; text-align:center; font-family:var(--mono); font-size:11px; font-weight:900; cursor:pointer;"><input type="radio" name="usabilityScore" value="4" checked /> 4<br><span style="font-size:8.5px; font-weight:700; color:var(--ink-soft);">Buena</span></label>
+                    <label style="background:#FFFFFF; border:1.5px solid var(--ink); padding:8px 2px; text-align:center; font-family:var(--mono); font-size:11px; font-weight:900; cursor:pointer;"><input type="radio" name="usabilityScore" value="5" /> 5<br><span style="font-size:8.5px; font-weight:700; color:var(--orange-vibrant);">Excel.</span></label>
+                  </div>
+                </div>
+
+                <!-- Pregunta 3 -->
+                <div style="background:#FFF8F3; border:1.5px solid var(--ink); padding:12px;">
+                  <label style="font-family:var(--sans); font-size:12px; font-weight:800; color:var(--ink); display:block; margin-bottom:8px;">
+                    3. ¿Sientes mayor motivación para aprender con este simulador frente a una clase tradicional?
+                  </label>
+                  <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:6px;">
+                    <label style="background:#FFFFFF; border:1.5px solid var(--ink); padding:8px 2px; text-align:center; font-family:var(--mono); font-size:11px; font-weight:900; cursor:pointer;"><input type="radio" name="motivationScore" value="1" /> 1<br><span style="font-size:8.5px; font-weight:700; color:var(--ink-soft);">Igual</span></label>
+                    <label style="background:#FFFFFF; border:1.5px solid var(--ink); padding:8px 2px; text-align:center; font-family:var(--mono); font-size:11px; font-weight:900; cursor:pointer;"><input type="radio" name="motivationScore" value="2" /> 2<br><span style="font-size:8.5px; font-weight:700; color:var(--ink-soft);">Poco</span></label>
+                    <label style="background:#FFFFFF; border:1.5px solid var(--ink); padding:8px 2px; text-align:center; font-family:var(--mono); font-size:11px; font-weight:900; cursor:pointer;"><input type="radio" name="motivationScore" value="3" /> 3<br><span style="font-size:8.5px; font-weight:700; color:var(--ink-soft);">Notable</span></label>
+                    <label style="background:#FFFFFF; border:1.5px solid var(--ink); padding:8px 2px; text-align:center; font-family:var(--mono); font-size:11px; font-weight:900; cursor:pointer;"><input type="radio" name="motivationScore" value="4" /> 4<br><span style="font-size:8.5px; font-weight:700; color:var(--ink-soft);">Mucho</span></label>
+                    <label style="background:#FFFFFF; border:1.5px solid var(--ink); padding:8px 2px; text-align:center; font-family:var(--mono); font-size:11px; font-weight:900; cursor:pointer;"><input type="radio" name="motivationScore" value="5" checked /> 5<br><span style="font-size:8.5px; font-weight:700; color:var(--orange-vibrant);">Total</span></label>
+                  </div>
+                </div>
+
+                <!-- Pregunta 4 -->
+                <div style="background:#FFF8F3; border:1.5px solid var(--ink); padding:12px;">
+                  <label style="font-family:var(--sans); font-size:12px; font-weight:800; color:var(--ink); display:block; margin-bottom:6px;">
+                    4. ¿Cuál fue la misión o paso más desafiante o que te costó más trabajo resolver?
+                  </label>
+                  <input type="text" id="survey-challenging" placeholder="Ej: Medir pH de la solución concentrada..." style="width:100%; box-sizing:border-box; background:#FFFFFF; border:1.5px solid var(--ink); padding:8px 12px; font-size:12px; font-family:inherit;" required />
+                </div>
+
+                <!-- Pregunta 5 -->
+                <div style="background:#FFF8F3; border:1.5px solid var(--ink); padding:12px;">
+                  <label style="font-family:var(--sans); font-size:12px; font-weight:800; color:var(--ink); display:block; margin-bottom:6px;">
+                    5. ¿Qué sugerencias u opiniones tienes para mejorar esta experiencia?
+                  </label>
+                  <textarea id="survey-suggestions" rows="2" placeholder="Tus observaciones nos ayudan en la investigación..." style="width:100%; box-sizing:border-box; background:#FFFFFF; border:1.5px solid var(--ink); padding:8px 12px; font-size:12px; font-family:inherit;"></textarea>
+                </div>
+
+                <!-- Botón de Enviar -->
+                <button type="submit" id="btn-submit-survey" style="background:var(--orange-vibrant); color:#FFFFFF; border:2px solid var(--ink); padding:12px 20px; font-family:var(--mono); font-size:12px; font-weight:900; text-transform:uppercase; cursor:pointer; box-shadow:3px 3px 0 var(--ink); letter-spacing:0.04em;">
+                  ENVIAR ENCUESTA Y FINALIZAR PRÁCTICA ✓
+                </button>
+
+                <!-- Banner de Encuesta Ya Enviada (Token Quemado / Solo Lectura) -->
+                <div id="survey-burned-banner" style="display:none; background:#E5EFE0; border:2px solid #2E5E1E; padding:12px 14px; color:#2E5E1E;">
+                  <div style="font-family:var(--mono); font-size:10.5px; font-weight:900; text-transform:uppercase; display:flex; align-items:center; gap:6px;">
+                    <span>✓</span> ENCUESTA DE INVESTIGACIÓN REGISTRADA · MODO SOLO LECTURA
+                  </div>
+                  <div style="font-size:11.5px; color:var(--ink); margin-top:4px; line-height:1.35;">
+                    Tus respuestas ya fueron asentadas junto con la simulación. El token está consumido. Para presentarla otra vez, solicita a tu profesor de Química la reactivación de tu intento.
+                  </div>
+                </div>
+              </form>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <!-- ── 5. SCRIPT DE HIDRATACIÓN REACTIVA ── -->
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <script>
+    import { fetchAuth } from '../../../../lib/apiClient';
+
+    async function hydrateStudentDashboard() {
+      try {
+        const res = await fetchAuth('/api/student/dashboard');
+        const json = await res.json().catch(() => null);
+
+        if (!json || !json.ok) {
+          console.error('[Dashboard Student] Error cargando dashboard:', json?.error);
+          return;
+        }
+
+        const data = json.data;
+        const profile = data.profile || {};
+        const todaySchedule = data.todaySchedule || [];
+        const pendingEvals = data.pendingEvaluations || [];
+        const activeLabs = data.activeLabs || [];
+
+        // Sincronizar Topbar con los datos reales del estudiante
+        if (typeof (window as any).updateTopbarUser === 'function' && profile.name) {
+          (window as any).updateTopbarUser({
+            name: profile.name,
+            role: 'student',
+            avatarUrl: profile.avatarUrl,
+            schoolName: profile.schoolName,
+          });
+        }
+
+        // Perfil
+        const avatarEl = document.getElementById('std-avatar') as HTMLImageElement;
+        if (avatarEl && profile.avatarUrl) avatarEl.src = profile.avatarUrl;
+
+        const gradeEl = document.getElementById('std-grade');
+        if (gradeEl) gradeEl.textContent = (profile.grade || 'ESTUDIANTE').toUpperCase();
+
+        const contextEl = document.getElementById('std-context');
+        if (contextEl) contextEl.textContent = `SALÓN ${profile.classroom || 'GENERAL'} · ${profile.schoolName || 'INSTITUCIÓN'}`;
+
+        const greetingEl = document.getElementById('std-greeting');
+        if (greetingEl) {
+          const firstName = (profile.name || '').split(' ')[0] || 'ESTUDIANTE';
+          greetingEl.textContent = `¡HOLA, ${firstName.toUpperCase()}!`;
+        }
+
+        const avgEl = document.getElementById('std-average');
+        if (avgEl) avgEl.textContent = profile.generalAverage > 0 ? profile.generalAverage.toFixed(1) : '--';
+
+        const coursesBadge = document.getElementById('courses-count-badge');
+        if (coursesBadge) coursesBadge.textContent = String(profile.coursesCount || 0);
+
+        const statCoursesEl = document.getElementById('stat-courses-num');
+        if (statCoursesEl) statCoursesEl.textContent = String(profile.coursesCount || 0);
+
+        const statEvalsEl = document.getElementById('stat-evals-num');
+        if (statEvalsEl) statEvalsEl.textContent = String(pendingEvals.length);
+
+        const statLabsEl = document.getElementById('stat-labs-num');
+        if (statLabsEl) statLabsEl.textContent = String(activeLabs.length);
+
+        // Fecha y hora
+        const dateNow = new Date();
+        const options: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+        const dateStr = dateNow.toLocaleDateString('es-ES', options);
+        const titleDateEl = document.getElementById('schedule-title-date');
+        if (titleDateEl) {
+          titleDateEl.textContent = `JORNADA DE HOY · ${dateStr.toUpperCase()}`;
+        }
+
+        const hours = String(dateNow.getHours()).padStart(2, '0');
+        const minutes = String(dateNow.getMinutes()).padStart(2, '0');
+        const currentTimeEl = document.getElementById('schedule-current-time');
+        if (currentTimeEl) {
+          currentTimeEl.innerHTML = `Hora en aula: <strong style="color:#FFF8F5;">${hours}:${minutes}</strong>`;
+        }
+
+        // Tira de Horario
+        const scheduleStrip = document.getElementById('today-schedule-strip');
+        if (scheduleStrip) {
+          if (todaySchedule.length === 0) {
+            scheduleStrip.innerHTML = `
+              <div style="padding:24px; text-align:center; color:var(--ink-soft); font-family:var(--mono); font-size:12.5px; grid-column: 1 / -1;">
+                No tienes clases programadas para el día de hoy en el salón <strong>${profile.classroom}</strong>.
+              </div>
+            `;
+          } else {
+            scheduleStrip.innerHTML = todaySchedule.map((slot: any) => {
+              const isActive = slot.status === 'active';
+              const isDone = slot.status === 'done';
+
+              let bg = 'var(--paper)';
+              let borderTop = 'none';
+              let opacity = '1';
+
+              if (isActive) {
+                bg = '#FFFDF9';
+                borderTop = '4px solid var(--orange-vibrant)';
+              } else if (isDone) {
+                bg = 'var(--cream)';
+                opacity = '0.65';
+              }
+
+              return `
+                <div style="padding:14px 18px; border-right:2px solid var(--ink); background:${bg}; border-top:${borderTop}; opacity:${opacity}; display:flex; flex-direction:column; justify-content:space-between;">
+                  <div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                      <span style="font-family:var(--mono); font-size:10.5px; font-weight:900; color:${isActive ? 'var(--orange-vibrant)' : 'var(--ink-soft)'};">
+                        ${slot.time}
+                      </span>
+                      ${isActive ? '<span style="font-family:var(--mono); font-size:8.5px; font-weight:900; background:var(--orange-vibrant); color:#FFFFFF; padding:1px 5px; border:1px solid var(--ink);">EN VIVO</span>' : ''}
+                    </div>
+                    <div style="font-family:var(--sans); font-size:14px; font-weight:800; text-transform:uppercase; color:var(--ink); line-height:1.2; margin:4px 0;">
+                      ${slot.courseName}
+                    </div>
+                  </div>
+                  <div style="margin-top:10px; border-top:1px solid var(--line); padding-top:6px;">
+                    <div style="font-family:var(--mono); font-size:10px; font-weight:800; color:${isActive ? 'var(--rust)' : 'var(--ink-soft)'};">
+                      ${slot.room}
+                    </div>
+                    <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); margin-top:2px;">
+                      ${slot.teacherName}
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('');
+          }
+        }
+
+        // Misión Urgente / Evaluación Práctica 24/7
+        const evalContainer = document.getElementById('urgent-eval-container');
+        if (evalContainer) {
+          const pendingLab = (activeLabs || []).find((l: any) => l.status !== 'completed');
+          const completedLab = (activeLabs || []).find((l: any) => l.status === 'completed');
+
+          if (pendingEvals.length > 0) {
+            const urgent = pendingEvals[0];
+            evalContainer.innerHTML = `
+              <div class="mission-strip" style="border:2px solid var(--ink); box-shadow:4px 4px 0 rgba(18, 17, 14, 0.15);">
+                <div class="mission-num-box" style="border-right:2px solid var(--ink);">!</div>
+                <div class="mission-body" style="padding:18px 22px;">
+                  <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;">
+                    <div>
+                      <span class="plan-tag" style="background:var(--rust); color:#FFFFFF; border-color:var(--ink); font-size:9.5px; font-weight:900; padding:2px 6px;">
+                        ${urgent.dueLabel.toUpperCase()}
+                      </span>
+                      <h3 style="font-family:var(--sans); font-size:18px; font-weight:900; text-transform:uppercase; color:var(--ink); margin:6px 0 2px 0;">
+                        ${urgent.evaluationTitle}
+                      </h3>
+                      <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">
+                        ${urgent.courseName} · Nota Máxima: <strong>${urgent.maxScore}</strong>
+                      </div>
+                    </div>
+                    <a href="/es/app/student/grades" class="btn btn-primary btn-sm" style="font-size:11.5px; font-weight:900; padding:10px 16px; border:2px solid var(--ink); text-decoration:none;">
+                      VER EN BOLETÍN →
+                    </a>
+                  </div>
+                </div>
+              </div>
+            `;
+          } else if (pendingLab) {
+            evalContainer.innerHTML = `
+              <div class="mission-strip" style="border:2px solid var(--ink); background:#FFFDF9; box-shadow:4px 4px 0 rgba(18, 17, 14, 0.15);">
+                <div class="mission-num-box" style="border-right:2px solid var(--ink); background:var(--orange-vibrant); color:#FFFFFF;">🔬</div>
+                <div class="mission-body" style="padding:18px 22px;">
+                  <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
+                    <div>
+                      <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;">
+                        <span class="plan-tag" style="background:var(--orange-vibrant); color:#FFFFFF; border-color:var(--ink); font-size:9.5px; font-weight:900; padding:2px 6px;">
+                          EVALUACIÓN PRÁCTICA EN VIVO
+                        </span>
+                        <span class="plan-tag" style="background:#FFF1E6; color:var(--rust); border-color:var(--ink); font-size:9.5px; font-weight:800; padding:2px 6px;">
+                          DISPONIBLE 24/7
+                        </span>
+                      </div>
+                      <h3 style="font-family:var(--sans); font-size:18px; font-weight:900; text-transform:uppercase; color:var(--ink); margin:4px 0 3px 0;">
+                        ${pendingLab.labName || 'Laboratorio Virtual de Química'}
+                      </h3>
+                      <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">
+                        ${pendingLab.courseName || 'Química'} · Calificación Máxima: <strong>10.0 PTS</strong> · Protocolo 4 Misiones Unity
+                      </div>
+                    </div>
+                    <button onclick="window.openLabModal('${pendingLab.id}')" class="btn btn-primary btn-sm" style="font-size:11.5px; font-weight:900; padding:10px 18px; border:2px solid var(--ink); cursor:pointer; background:var(--orange-vibrant); color:#FFFFFF; box-shadow:2px 2px 0 var(--ink);">
+                      ▶ INICIAR EVALUACIÓN VR (24/7) →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            `;
+          } else if (completedLab) {
+            evalContainer.innerHTML = `
+              <div style="background:#FFF8F3; border:2px solid var(--ink); padding:16px 20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px; box-shadow:4px 4px 0 rgba(18, 17, 14, 0.08);">
+                <div style="display:flex; align-items:center; gap:14px;">
+                  <div style="background:#E8F5E9; border:1.5px solid var(--ink); width:36px; height:36px; display:flex; align-items:center; justify-content:center; color:#2E7D32; font-weight:900; font-family:var(--mono);">
+                    ✓
+                  </div>
+                  <div>
+                    <h4 style="font-family:var(--sans); font-size:14px; font-weight:900; text-transform:uppercase; color:var(--ink); margin:0;">
+                      PRÁCTICA DE LABORATORIO COMPLETADA
+                    </h4>
+                    <div style="font-size:12px; color:var(--ink-soft); font-family:var(--mono); margin-top:2px;">
+                      Tu evaluación virtual ha sido calificada y registrada en tu boletín académico.
+                    </div>
+                  </div>
+                </div>
+                <a href="/es/app/student/grades" class="btn btn-sm" style="font-size:11px; font-weight:900; padding:8px 14px; border:1.5px solid var(--ink); text-decoration:none; background:var(--cream); color:var(--ink);">
+                  VER NOTA EN BOLETÍN →
+                </a>
+              </div>
+            `;
+          } else {
+            evalContainer.innerHTML = `
+              <div style="background:#FFF8F3; border:2px solid var(--ink); padding:16px 20px; display:flex; align-items:center; gap:14px; box-shadow:4px 4px 0 rgba(18, 17, 14, 0.08);">
+                <div style="background:#FFF1E6; border:1.5px solid var(--ink); width:36px; height:36px; display:flex; align-items:center; justify-content:center; color:var(--orange-vibrant); font-weight:900; font-family:var(--mono);">
+                  ✓
+                </div>
+                <div>
+                  <h4 style="font-family:var(--sans); font-size:14px; font-weight:900; text-transform:uppercase; color:var(--ink); margin:0;">
+                    ESTÁS AL DÍA CON TUS ACTIVIDADES
+                  </h4>
+                  <div style="font-size:12px; color:var(--ink-soft);">
+                    No tienes evaluaciones pendientes por entregar en este momento.
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+        }
+
+        // Labs Virtuales
+        const labsContainer = document.getElementById('active-labs-container');
+        if (labsContainer) {
+          if (activeLabs.length > 0) {
+            (window as any).studentLabsCache = activeLabs;
+            labsContainer.innerHTML = activeLabs.map((lab: any) => {
+              const isCompleted = lab.status === 'completed';
+              
+              let parsedFeedback: any = {};
+              try {
+                if (lab.feedbackText && typeof lab.feedbackText === 'string') {
+                  parsedFeedback = JSON.parse(lab.feedbackText);
+                }
+              } catch (_) {}
+
+              const totalMissions = (lab.tasksCompleted || 0) + (lab.tasksMissing || 0);
+              const percentage = parsedFeedback.percentage !== undefined
+                ? parsedFeedback.percentage
+                : (totalMissions > 0 ? Math.round((lab.tasksCompleted / totalMissions) * 100) : 0);
+              const score = parsedFeedback.score !== undefined
+                ? parsedFeedback.score
+                : (totalMissions > 0 ? ((lab.tasksCompleted / totalMissions) * 10).toFixed(1) : 0);
+              const hasSurvey = Boolean(parsedFeedback.survey && parsedFeedback.survey.submittedAt);
+
+              return `
+                <div style="background:#FFF8F3; border:2.5px solid var(--ink); padding:20px 24px; box-shadow:5px 5px 0 var(--ink); margin-bottom:20px;">
+                  
+                  <!-- Header Strip -->
+                  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-bottom:1.5px solid rgba(18,17,14,0.12); padding-bottom:12px; margin-bottom:14px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                      <span style="background:var(--ink); color:#FFFFFF; font-family:var(--mono); font-size:10px; font-weight:900; padding:3px 8px; text-transform:uppercase;">
+                        SIMULADOR ${lab.playMode || 'PC'}
+                      </span>
+                      <span style="font-family:var(--mono); font-size:11px; font-weight:800; color:var(--orange-vibrant); text-transform:uppercase;">
+                        MATERIA: ${lab.courseName || 'ASIGNATURA'}
+                      </span>
+                    </div>
+
+                    <div>
+                      ${isCompleted ? `
+                        <span style="font-family:var(--mono); font-size:10px; font-weight:900; color:#FFFFFF; background:var(--ink); border:1.5px solid var(--ink); padding:3px 10px; text-transform:uppercase;">
+                          PRÁCTICA COMPLETADA ✓
+                        </span>
+                      ` : `
+                        <span style="font-family:var(--mono); font-size:10px; font-weight:900; color:#FFFFFF; background:var(--orange-vibrant); border:1.5px solid var(--ink); padding:3px 10px; text-transform:uppercase;">
+                          PENDIENTE POR PRESENTAR ⏳
+                        </span>
+                      `}
+                    </div>
+                  </div>
+
+                  <!-- Title & Description -->
+                  <h3 style="font-family:var(--sans); font-size:18px; font-weight:900; text-transform:uppercase; color:var(--ink); margin:0 0 6px 0;">
+                    ${lab.labName}
+                  </h3>
+                  <p style="font-size:12.5px; color:var(--ink-soft); line-height:1.45; margin:0 0 16px 0;">
+                    ${lab.labDescription || 'Práctica interactiva en simulador para evaluar tus habilidades y resolver misiones.'}
+                  </p>
+
+                  <!-- Status Body -->
+                  ${isCompleted ? `
+                    <!-- Metric Cards -->
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:10px; margin-bottom:16px;">
+                      <div style="background:#FFFFFF; border:1.5px solid var(--ink); padding:10px 14px;">
+                        <div style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--ink-soft); text-transform:uppercase;">Misiones Logradas</div>
+                        <div style="font-family:var(--mono); font-size:20px; font-weight:900; color:var(--ink); margin-top:2px;">
+                          ${lab.tasksCompleted} <span style="font-size:12px; font-weight:700; color:var(--ink-soft);">de ${totalMissions}</span>
+                        </div>
+                      </div>
+
+                      <div style="background:#FFF1E6; border:1.5px solid var(--ink); padding:10px 14px;">
+                        <div style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--orange-vibrant); text-transform:uppercase;">Efectividad</div>
+                        <div style="font-family:var(--mono); font-size:20px; font-weight:900; color:var(--orange-vibrant); margin-top:2px;">
+                          ${percentage}%
+                        </div>
+                      </div>
+
+                      <div style="background:var(--ink); color:#FFFFFF; border:1.5px solid var(--ink); padding:10px 14px;">
+                        <div style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--orange-vibrant); text-transform:uppercase;">Calificación</div>
+                        <div style="font-family:var(--mono); font-size:20px; font-weight:900; color:#FFFFFF; margin-top:2px;">
+                          ${score} <span style="font-size:12px; font-weight:700; color:rgba(255,255,255,0.7);">/ 10</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Survey Status Strip -->
+                    ${hasSurvey ? `
+                      <div style="background:#E5EFE0; border:1.5px solid #A8C99B; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                        <div>
+                          <div style="display:flex; align-items:center; gap:8px; font-family:var(--mono); font-size:11.5px; font-weight:900; color:#2E5E1E;">
+                            <span>✓</span> PRÁCTICA Y ENCUESTA REGISTRADAS EXITOSAMENTE
+                          </div>
+                          <div style="font-size:11px; color:var(--ink-soft); font-family:var(--mono); margin-top:2px;">
+                            🔒 Token consumido. Para presentar un nuevo intento solicita la reactivación a tu docente de Química.
+                          </div>
+                        </div>
+                        <button
+                          onclick="window.handleOpenLab('${lab.tokenId}')"
+                          style="background:var(--ink); color:#FFFFFF; border:1.5px solid var(--ink); padding:6px 14px; font-family:var(--mono); font-size:11px; font-weight:900; cursor:pointer; text-transform:uppercase; box-shadow:2px 2px 0 #2E5E1E;"
+                        >
+                          Ver mi reporte y respuestas →
+                        </button>
+                      </div>
+                    ` : `
+                      <div style="background:#FFF1E6; border:2px solid var(--orange-vibrant); padding:14px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; box-shadow:3px 3px 0 var(--ink);">
+                        <div>
+                          <div style="font-family:var(--mono); font-size:10px; font-weight:900; color:var(--orange-vibrant); text-transform:uppercase;">
+                            PASO PENDIENTE REQUERIDO
+                          </div>
+                          <div style="font-size:12.5px; font-weight:800; color:var(--ink); margin-top:2px;">
+                            Tu simulación fue recibida. Falta responder la encuesta de investigación.
+                          </div>
+                        </div>
+                        <button
+                          onclick="window.handleOpenLab('${lab.tokenId}')"
+                          style="background:var(--orange-vibrant); color:#FFFFFF; border:2px solid var(--ink); padding:10px 18px; font-family:var(--mono); font-size:12px; font-weight:900; cursor:pointer; box-shadow:3px 3px 0 var(--ink); text-transform:uppercase;"
+                        >
+                          📝 RESPONDER ENCUESTA AHORA →
+                        </button>
+                      </div>
+                    `}
+                  ` : `
+                    <!-- Pending Instructions & Access -->
+                    <div style="background:#FFF1E6; border:1.5px solid var(--ink); padding:14px 16px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                      <div>
+                        <div style="font-family:var(--mono); font-size:10px; font-weight:900; color:var(--orange-vibrant); text-transform:uppercase;">
+                          INSTRUCCIONES DE ACCESO
+                        </div>
+                        <div style="font-size:12px; color:var(--ink); margin-top:2px;">
+                          Haz clic en el botón naranja para abrir el simulador, o copia tu código para ingresar desde el visor VR.
+                        </div>
+                      </div>
+                      <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-family:var(--mono); font-size:10px; font-weight:800; color:var(--ink-soft);">CÓDIGO VR:</span>
+                        <code style="font-family:var(--mono); font-size:12px; font-weight:900; background:#FFFFFF; border:1px solid var(--ink); padding:3px 7px;">
+                          ${lab.tokenId.slice(0, 8)}...
+                        </code>
+                      </div>
+                    </div>
+
+                    <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+                      <button
+                        onclick="window.handleOpenLab('${lab.tokenId}')"
+                        style="background:var(--orange-vibrant); color:#FFFFFF; border:2px solid var(--ink); padding:12px 22px; font-family:var(--mono); font-size:12.5px; font-weight:900; cursor:pointer; box-shadow:3px 3px 0 var(--ink); text-transform:uppercase; display:flex; align-items:center; gap:8px;"
+                      >
+                        <span>▶ INICIAR PRÁCTICA EN SIMULADOR</span>
+                      </button>
+                      <span style="font-size:12px; color:var(--ink-soft);">
+                        Sesión protegida de un solo uso por estudiante.
+                      </span>
+                    </div>
+                  `}
+
+                </div>
+              `;
+            }).join('');
+          } else {
+            labsContainer.innerHTML = '';
+          }
+        }
+
+
+        // Grilla de Cursos
+        const coursesRes = await fetchAuth('/api/student/courses');
+        const coursesJson = await coursesRes.json().catch(() => null);
+        const courses = coursesJson?.data || [];
+
+        const coursesGrid = document.getElementById('enrolled-courses-grid');
+        if (coursesGrid) {
+          if (courses.length === 0) {
+            coursesGrid.innerHTML = `
+              <div style="font-family:var(--mono); font-size:12px; color:var(--ink-soft); grid-column: 1 / -1; padding:20px; text-align:center;">
+                No tienes asignaturas matriculadas actualmente.
+              </div>
+            `;
+          } else {
+            coursesGrid.innerHTML = courses.map((c: any) => {
+              const avg = c.hasGrades ? c.currentAverage.toFixed(1) : '--';
+              const avgColor = c.currentAverage >= 8 ? '#4A7C59' : c.currentAverage >= 6 ? '#C8860A' : 'var(--ink)';
+              return `
+                <a
+                  href="/es/app/student/courses"
+                  style="display:flex; justify-content:space-between; align-items:center; background:var(--paper); border:2px solid var(--ink); padding:14px 16px; text-decoration:none; color:inherit; box-shadow:3px 3px 0 var(--ink); transition:all 0.15s ease;"
+                  onmouseover="this.style.transform='translateY(-2px)';"
+                  onmouseout="this.style.transform='translateY(0)';"
+                >
+                  <div>
+                    <div style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft); font-weight:800; text-transform:uppercase;">
+                      ${c.subject} ${c.code ? `· ${c.code}` : ''}
+                    </div>
+                    <div style="font-family:var(--sans); font-weight:800; font-size:14px; text-transform:uppercase; color:var(--ink); margin-top:2px;">
+                      ${c.courseName}
+                    </div>
+                    <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); margin-top:2px;">
+                      ${c.teacherName}
+                    </div>
+                  </div>
+                  <div style="text-align:right;">
+                    <div style="font-family:var(--mono); font-size:18px; font-weight:900; color:${avgColor};">
+                      ${avg}
+                    </div>
+                    <div style="font-family:var(--mono); font-size:9px; color:var(--ink-soft);">
+                      ${c.hasGrades ? 'PROM' : 'S/N'}
+                    </div>
+                  </div>
+                </a>
+              `;
+            }).join('');
+          }
+        }
+
+        // Calificaciones recientes
+        const gradesRes = await fetchAuth('/api/student/grades');
+        const gradesJson = await gradesRes.json().catch(() => null);
+        const gradesData = gradesJson?.data || {};
+        const coursesGrades = gradesData.courses || [];
+
+        const gradesFeed = document.getElementById('recent-grades-feed');
+        if (gradesFeed) {
+          const gradedCourses = coursesGrades.filter((cg: any) => cg.hasGrades);
+          if (gradedCourses.length === 0) {
+            gradesFeed.innerHTML = `
+              <div style="text-align:center; padding:16px; color:var(--ink-soft); font-size:12px; font-family:var(--mono);">
+                Tus calificaciones se reflejarán a medida que los docentes evalúen tus actividades.
+              </div>
+            `;
+          } else {
+            gradesFeed.innerHTML = gradedCourses.slice(0, 3).map((cg: any) => `
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--line-strong);">
+                <div>
+                  <div style="font-family:var(--sans); font-weight:800; font-size:13px; text-transform:uppercase; color:var(--ink);">${cg.courseName}</div>
+                  <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);">${cg.subject}</div>
+                </div>
+                <div style="text-align:right;">
+                  <div style="font-family:var(--mono); font-size:16px; font-weight:900; color:#4A7C59;">
+                    ${cg.currentAverage.toFixed(1)}
+                  </div>
+                  <span style="font-family:var(--mono); font-size:8.5px; font-weight:900; color:#4A7C59; background:#E8F5E9; padding:1px 5px; border:1px solid var(--ink);">
+                    ${cg.status === 'passing' ? 'APROBADO' : 'EN PROCESO'}
+                  </span>
+                </div>
+              </div>
+            `).join('');
+          }
+        }
+
+      } catch (err) {
+        console.error('[Hydrate Student Dashboard] Failed:', err);
+      }
+    }
+
+    let activeModalToken: string | null = null;
+    let modalPollTimer: any = null;
+
+    function stopModalPolling() {
+      if (modalPollTimer) {
+        clearInterval(modalPollTimer);
+        modalPollTimer = null;
+      }
+    }
+
+    async function checkTokenStatusInModal(tokenId: string) {
+      if (!tokenId || activeModalToken !== tokenId) return;
+      try {
+        const res = await fetch(`/api/labs/submit?tokenId=${encodeURIComponent(tokenId)}`);
+        const json = await res.json();
+        if (json.ok && json.data) {
+          const { status, tasksCompleted, totalMissions, score, hasSurvey, resolvedIn, device, markedByUnity } = json.data;
+          if (status === 'completed') {
+            const waitBox = document.getElementById('modal-wait-box');
+            const waitText = document.getElementById('modal-wait-text');
+            const waitTag = document.getElementById('modal-wait-tag');
+            const waitIcon = document.getElementById('modal-wait-icon');
+            const surveyTrigger = document.getElementById('btn-survey-trigger') as HTMLButtonElement;
+            const surveySection = document.getElementById('modal-survey-section');
+            const surveyLockedNotice = document.getElementById('modal-survey-locked-notice');
+
+            const step1ActionBox = document.getElementById('modal-step1-action-box');
+            const step1BurnedBox = document.getElementById('modal-step1-burned-box');
+            if (step1ActionBox) step1ActionBox.style.display = 'none';
+            if (step1BurnedBox) step1BurnedBox.style.display = 'block';
+
+            if (surveyLockedNotice) surveyLockedNotice.style.display = 'none';
+
+            const finalDev = (resolvedIn || device || 'PC').toUpperCase();
+            const devLabel = finalDev === 'AMBOS' ? '🔄 Híbrido (PC + VR)' : (finalDev === 'VR' ? '🥽 Visor VR' : '🖥️ PC');
+
+            const modeEl = document.getElementById('modal-mode-display');
+            if (modeEl) modeEl.textContent = devLabel;
+
+            const devRadio = document.querySelector(`input[name="deviceUsed"][value="${finalDev}"]`) as HTMLInputElement;
+            if (devRadio) devRadio.checked = true;
+
+            if (waitBox) {
+              waitBox.style.background = '#FFE5D0';
+              waitBox.style.borderColor = 'var(--orange-vibrant)';
+            }
+            if (waitIcon) waitIcon.textContent = '✓';
+            if (waitTag) {
+              waitTag.textContent = markedByUnity ? 'SERVIDOR: REGISTRADO POR UNITY 🎮' : 'SERVIDOR: SIMULACIÓN CONFIRMADA';
+              waitTag.style.color = 'var(--orange-vibrant)';
+            }
+            if (waitText) {
+              waitText.textContent = `Aciertos: ${tasksCompleted} / ${totalMissions || tasksCompleted} · Calificación: ${score}/10 · Resuelto en: ${devLabel}`;
+              waitText.style.color = 'var(--ink)';
+            }
+            if (surveyTrigger) {
+              surveyTrigger.disabled = false;
+              surveyTrigger.style.cursor = 'pointer';
+              surveyTrigger.style.background = 'var(--orange-vibrant)';
+              surveyTrigger.style.color = '#FFFFFF';
+              surveyTrigger.textContent = hasSurvey ? '✓ ENCUESTA YA REGISTRADA' : 'CONTINUAR AL PASO 2: ENCUESTA →';
+            }
+            if (surveySection && surveySection.style.display === 'none' && !hasSurvey) {
+              surveySection.style.display = 'block';
+            }
+            renderStudentModalMissions(body.feedback?.missions || [], true);
+            stopModalPolling();
+          }
+        }
+      } catch (_) {}
+    }
+
+    function renderStudentModalMissions(missions: any[], isDone: boolean) {
+      const container = document.getElementById('student-modal-missions-list');
+      const badge = document.getElementById('student-missions-count-badge');
+      if (!container) return;
+
+      if (Array.isArray(missions) && missions.length > 0) {
+        if (badge) badge.textContent = `${missions.length} MISIONES = 10.0 PTS`;
+        container.innerHTML = missions.map((m: any, idx: number) => {
+          const isPassed = Boolean(
+            m.passed === true ||
+            m.pass === true ||
+            m.status === 'pass' ||
+            m.pass === 'pass' ||
+            String(m.passed ?? m.status ?? m.pass ?? '').toLowerCase().trim() === 'pass'
+          );
+          const title = m.mission || m.name || m.title || m.description || `Misión ${idx + 1}`;
+          const statusBadge = isDone
+            ? `<span style="font-family:var(--mono); font-size:9.5px; font-weight:900; color:${isPassed ? '#2E7D32' : 'var(--rust)'}; background:${isPassed ? '#E8F5E9' : '#FFF0EE'}; border:1px solid ${isPassed ? '#A8C99B' : 'var(--rust)'}; padding:1px 6px; border-radius:2px;">${isPassed ? '✓ SUPERADA' : '✗ NO SUPERADA'}</span>`
+            : `<span style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--ink-soft); background:var(--cream); padding:1px 6px; border:1px solid var(--ink);">En juego</span>`;
+
+          return `
+            <div style="background:${isDone ? (isPassed ? '#F1F8E9' : '#FFF8F6') : 'var(--cream)'}; border:1px solid var(--ink); padding:8px 10px; display:flex; justify-content:space-between; align-items:center; border-radius:3px;">
+              <span style="font-size:11.5px; font-weight:700; color:var(--ink);">🎯 ${idx + 1}. ${title}</span>
+              ${statusBadge}
+            </div>
+          `;
+        }).join('');
+      } else {
+        if (badge) badge.textContent = isDone ? 'FINALIZADO' : 'EN VIVO';
+        container.innerHTML = `
+          <div style="background:var(--cream); border:1px dashed var(--ink); padding:12px; font-size:11.5px; color:var(--ink); font-family:var(--mono); line-height:1.4; text-align:center;">
+            🎮 Las misiones son configuradas y evaluadas en tiempo real por este experimento en Unity.
+            <div style="font-size:10px; color:var(--ink-soft); margin-top:4px;">(Al concluir tu práctica en el simulador, se desglosarán aquí tus misiones aprobadas)</div>
+          </div>
+        `;
+      }
+    }
+
+    (window as any).handleOpenLab = function(tokenId: string) {
+      const labs = (window as any).studentLabsCache || [];
+      const lab = labs.find((l: any) => l.tokenId === tokenId);
+      if (!lab) return;
+
+      stopModalPolling();
+      activeModalToken = tokenId;
+      const modal = document.getElementById('labModal');
+      const titleEl = document.getElementById('modal-lab-title');
+      const tokenEl = document.getElementById('modal-token-display');
+      const modeEl = document.getElementById('modal-mode-display');
+      const waitBox = document.getElementById('modal-wait-box');
+      const waitText = document.getElementById('modal-wait-text');
+      const waitTag = document.getElementById('modal-wait-tag');
+      const waitIcon = document.getElementById('modal-wait-icon');
+      const surveyTrigger = document.getElementById('btn-survey-trigger') as HTMLButtonElement;
+      const surveySection = document.getElementById('modal-survey-section');
+
+      let parsedFeedback: any = {};
+      try {
+        if (lab.feedbackText && typeof lab.feedbackText === 'string') {
+          parsedFeedback = JSON.parse(lab.feedbackText);
+        }
+      } catch (_) {}
+
+      const effectiveDevice = (
+        parsedFeedback.resolvedIn ||
+        parsedFeedback.device ||
+        parsedFeedback.survey?.deviceUsed ||
+        parsedFeedback.playMode ||
+        lab.playMode ||
+        'PC'
+      ).toUpperCase();
+
+      const devLabel = effectiveDevice === 'AMBOS'
+        ? '🔄 Híbrido (PC + VR)'
+        : effectiveDevice === 'VR'
+        ? '🥽 Visor VR'
+        : '🖥️ PC';
+
+      if (titleEl) titleEl.textContent = lab.labName;
+      if (tokenEl) tokenEl.textContent = lab.tokenId;
+      if (modeEl) {
+        modeEl.textContent = effectiveDevice === 'AMBOS'
+          ? '🔄 AMBOS (PC + VR)'
+          : effectiveDevice === 'VR'
+          ? '🥽 VISOR VR'
+          : '🖥️ COMPUTADOR (PC)';
+      }
+
+      const hasSurvey = Boolean(parsedFeedback?.survey?.submittedAt);
+      const isCompleted = lab.status === 'completed' || hasSurvey;
+
+      renderStudentModalMissions(parsedFeedback.missions || lab.missions || [], isCompleted);
+
+      const step1ActionBox = document.getElementById('modal-step1-action-box');
+      const step1BurnedBox = document.getElementById('modal-step1-burned-box');
+      const btnSubmitSurvey = document.getElementById('btn-submit-survey');
+      const surveyBurnedBanner = document.getElementById('survey-burned-banner');
+      const form = document.getElementById('lab-research-form') as HTMLFormElement;
+      const surveyLockedNotice = document.getElementById('modal-survey-locked-notice');
+
+      if (isCompleted) {
+        if (surveyLockedNotice) surveyLockedNotice.style.display = 'none';
+        if (waitBox) {
+          waitBox.style.background = '#FFE5D0';
+          waitBox.style.borderColor = 'var(--orange-vibrant)';
+        }
+        if (waitIcon) waitIcon.textContent = '✓';
+        if (waitTag) {
+          waitTag.textContent = parsedFeedback.markedByUnity ? 'SERVIDOR: REGISTRADO POR UNITY 🎮' : 'RESULTADOS CONFIRMADOS POR EL SERVIDOR';
+          waitTag.style.color = 'var(--orange-vibrant)';
+        }
+        if (waitText) {
+          waitText.textContent = `Aciertos: ${lab.tasksCompleted} | Fallos: ${lab.tasksMissing} · Resuelto en: ${devLabel} · Sesión registrada con éxito.`;
+          waitText.style.color = 'var(--ink)';
+        }
+
+        if (hasSurvey) {
+          // TOKEN COMPLETAMENTE QUEMADO (SIMULACIÓN Y ENCUESTA REALIZADAS)
+          if (step1ActionBox) step1ActionBox.style.display = 'none';
+          if (step1BurnedBox) step1BurnedBox.style.display = 'block';
+
+          if (surveyTrigger) {
+            surveyTrigger.disabled = false;
+            surveyTrigger.style.cursor = 'pointer';
+            surveyTrigger.style.background = 'var(--ink)';
+            surveyTrigger.style.color = '#FFFFFF';
+            surveyTrigger.textContent = 'VER RESPUESTAS DE LA ENCUESTA (SOLO LECTURA) ↓';
+          }
+          if (surveySection) surveySection.style.display = 'block';
+
+          // Bloquear campos de la encuesta en modo solo lectura
+          if (form) {
+            form.querySelectorAll('input, textarea').forEach((el: any) => {
+              el.disabled = true;
+            });
+          }
+          if (btnSubmitSurvey) btnSubmitSurvey.style.display = 'none';
+          if (surveyBurnedBanner) surveyBurnedBanner.style.display = 'block';
+
+        } else {
+          // SIMULACIÓN COMPLETADA, PERO ENCUESTA PENDIENTE
+          if (step1ActionBox) step1ActionBox.style.display = 'none';
+          if (step1BurnedBox) step1BurnedBox.style.display = 'block';
+
+          if (surveyTrigger) {
+            surveyTrigger.disabled = false;
+            surveyTrigger.style.cursor = 'pointer';
+            surveyTrigger.style.background = 'var(--orange-vibrant)';
+            surveyTrigger.style.color = '#FFFFFF';
+            surveyTrigger.textContent = 'DILIGENCIAR ENCUESTA DE INVESTIGACIÓN →';
+          }
+          if (surveySection) surveySection.style.display = 'block';
+
+          // Habilitar campos de la encuesta
+          if (form) {
+            form.querySelectorAll('input, textarea').forEach((el: any) => {
+              el.disabled = false;
+            });
+          }
+          if (btnSubmitSurvey) {
+            btnSubmitSurvey.style.display = 'block';
+            (btnSubmitSurvey as HTMLButtonElement).disabled = false;
+          }
+          if (surveyBurnedBanner) surveyBurnedBanner.style.display = 'none';
+        }
+
+        // Pre-cargar respuestas previamente guardadas en el formulario
+        if (hasSurvey && parsedFeedback.survey) {
+          const s = parsedFeedback.survey;
+          const dev = (s.deviceUsed || parsedFeedback.resolvedIn || parsedFeedback.device || 'PC').toUpperCase();
+          const devR = document.querySelector(`input[name="deviceUsed"][value="${dev}"]`) as HTMLInputElement;
+          if (devR) devR.checked = true;
+
+          if (s.understandingScore) {
+            const r = document.querySelector(`input[name="understandingScore"][value="${s.understandingScore}"]`) as HTMLInputElement;
+            if (r) r.checked = true;
+          }
+          if (s.usabilityScore) {
+            const r = document.querySelector(`input[name="usabilityScore"][value="${s.usabilityScore}"]`) as HTMLInputElement;
+            if (r) r.checked = true;
+          }
+          if (s.motivationScore) {
+            const r = document.querySelector(`input[name="motivationScore"][value="${s.motivationScore}"]`) as HTMLInputElement;
+            if (r) r.checked = true;
+          }
+          const ch = document.getElementById('survey-challenging') as HTMLInputElement;
+          if (ch) ch.value = s.challengingMission || '';
+          const sg = document.getElementById('survey-suggestions') as HTMLTextAreaElement;
+          if (sg) sg.value = s.suggestions || '';
+        } else {
+          // Pre-seleccionar dispositivo marcado por Unity o token
+          const devR = document.querySelector(`input[name="deviceUsed"][value="${effectiveDevice}"]`) as HTMLInputElement;
+          if (devR) devR.checked = true;
+          const ch = document.getElementById('survey-challenging') as HTMLInputElement;
+          if (ch) ch.value = '';
+          const sg = document.getElementById('survey-suggestions') as HTMLTextAreaElement;
+          if (sg) sg.value = '';
+        }
+      } else {
+        // TOKEN PENDIENTE / NUEVO INTENTO (FRESH)
+        if (step1ActionBox) step1ActionBox.style.display = 'flex';
+        if (step1BurnedBox) step1BurnedBox.style.display = 'none';
+
+        if (form) {
+          form.querySelectorAll('input, textarea').forEach((el: any) => {
+            el.disabled = false;
+          });
+        }
+        if (btnSubmitSurvey) {
+          btnSubmitSurvey.style.display = 'block';
+          (btnSubmitSurvey as HTMLButtonElement).disabled = false;
+        }
+        if (surveyBurnedBanner) surveyBurnedBanner.style.display = 'none';
+
+        if (waitBox) {
+          waitBox.style.background = '#FFF1E6';
+          waitBox.style.borderColor = 'var(--ink)';
+        }
+        if (waitIcon) waitIcon.textContent = '⏳';
+        if (waitTag) {
+          waitTag.textContent = 'ESTADO DEL SERVIDOR';
+          waitTag.style.color = 'var(--orange-vibrant)';
+        }
+        if (waitText) {
+          waitText.textContent = 'Esperando que el juego termine y envíe tus resultados...';
+          waitText.style.color = 'var(--ink)';
+        }
+        if (surveyTrigger) {
+          surveyTrigger.disabled = true;
+          surveyTrigger.style.cursor = 'not-allowed';
+          surveyTrigger.style.background = '#E8E2D9';
+          surveyTrigger.style.color = '#7A756D';
+          surveyTrigger.textContent = 'ENCUESTA BLOQUEADA 🔒';
+        }
+        if (surveyLockedNotice) surveyLockedNotice.style.display = 'block';
+        if (surveySection) surveySection.style.display = 'none';
+
+        // Iniciar monitoreo reactivo para detectar cuando Unity envíe los datos
+        modalPollTimer = setInterval(() => checkTokenStatusInModal(tokenId), 2500);
+      }
+
+      if (modal) modal.style.display = 'flex';
+    };
+
+    // Cerrar modal
+    document.getElementById('btn-close-lab-modal')?.addEventListener('click', () => {
+      stopModalPolling();
+      const modal = document.getElementById('labModal');
+      if (modal) modal.style.display = 'none';
+    });
+
+    // Botón manual de comprobar estado con el servidor
+    document.getElementById('btn-check-server-now')?.addEventListener('click', async () => {
+      if (!activeModalToken) return;
+      const checkBtn = document.getElementById('btn-check-server-now');
+      if (checkBtn) checkBtn.textContent = '⏳ ...';
+      await checkTokenStatusInModal(activeModalToken);
+      if (checkBtn) checkBtn.textContent = '↻ Comprobar';
+    });
+
+    // Copiar código de acceso
+    document.getElementById('btn-copy-token')?.addEventListener('click', () => {
+      if (activeModalToken) {
+        navigator.clipboard.writeText(activeModalToken);
+        const btn = document.getElementById('btn-copy-token');
+        if (btn) {
+          const original = btn.textContent;
+          btn.textContent = '¡COPIADO! ✓';
+          setTimeout(() => { btn.textContent = original; }, 2000);
+        }
+      }
+    });
+
+    // Desbloquear / scroll a encuesta
+    document.getElementById('btn-survey-trigger')?.addEventListener('click', () => {
+      const surveyLockedNotice = document.getElementById('modal-survey-locked-notice');
+      if (surveyLockedNotice) surveyLockedNotice.style.display = 'none';
+      const surveySection = document.getElementById('modal-survey-section');
+      if (surveySection) {
+        surveySection.style.display = 'block';
+        surveySection.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+
+    // Finalizar simulación y abrir encuesta directamente
+    document.getElementById('btn-simulate-unity-finish')?.addEventListener('click', async () => {
+      if (!activeModalToken) return;
+      const simBtn = document.getElementById('btn-simulate-unity-finish') as HTMLButtonElement;
+      if (simBtn) {
+        simBtn.disabled = true;
+        simBtn.textContent = 'ENVIANDO RESULTADOS AL SERVIDOR...';
+      }
+
+      try {
+        const chosenDev = (document.getElementById('select-test-device') as HTMLSelectElement)?.value || 'PC';
+        const payload = {
+          tokenId: activeModalToken,
+          timeSpentSeconds: 140,
+          device: chosenDev,
+          playMode: chosenDev,
+          resolvedIn: chosenDev,
+          missions: [
+            { mission: "Obten aceite.", passed: true, status: 'pass' },
+            { mission: "Obten agua", passed: true, status: 'pass' },
+            { mission: "Consigue un recipiente vacío (vaso precipitado recomendado).", passed: true, status: 'pass' },
+            { mission: "Consigue un embudo.", passed: true, status: 'pass' },
+            { mission: "Consigue un embudo de decantación.", passed: true, status: 'pass' },
+          ]
+        };
+
+        const res = await fetchAuth('/api/labs/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const resJson = await res.json();
+
+        if (res.ok && resJson.ok) {
+          stopModalPolling();
+          const step1ActionBox = document.getElementById('modal-step1-action-box');
+          const step1BurnedBox = document.getElementById('modal-step1-burned-box');
+          if (step1ActionBox) step1ActionBox.style.display = 'none';
+          if (step1BurnedBox) step1BurnedBox.style.display = 'block';
+
+          const waitBox = document.getElementById('modal-wait-box');
+          const waitText = document.getElementById('modal-wait-text');
+          const waitTag = document.getElementById('modal-wait-tag');
+          const waitIcon = document.getElementById('modal-wait-icon');
+          const surveyTrigger = document.getElementById('btn-survey-trigger') as HTMLButtonElement;
+          const surveySection = document.getElementById('modal-survey-section');
+          const surveyLockedNotice = document.getElementById('modal-survey-locked-notice');
+          if (surveyLockedNotice) surveyLockedNotice.style.display = 'none';
+
+          const finalDev = (resJson.data?.resolvedIn || resJson.data?.device || chosenDev).toUpperCase();
+          const devLabel = finalDev === 'AMBOS' ? '🔄 Híbrido (PC + VR)' : (finalDev === 'VR' ? '🥽 Visor VR' : '🖥️ PC');
+
+          const modeEl = document.getElementById('modal-mode-display');
+          if (modeEl) modeEl.textContent = devLabel;
+
+          const devRadio = document.querySelector(`input[name="deviceUsed"][value="${finalDev}"]`) as HTMLInputElement;
+          if (devRadio) devRadio.checked = true;
+
+          if (waitBox) {
+            waitBox.style.background = '#FFE5D0';
+            waitBox.style.borderColor = 'var(--orange-vibrant)';
+          }
+          if (waitIcon) waitIcon.textContent = '✓';
+          if (waitTag) {
+            waitTag.textContent = 'SERVIDOR: SIMULACIÓN CONFIRMADA';
+            waitTag.style.color = 'var(--orange-vibrant)';
+          }
+          if (waitText) {
+            waitText.textContent = `Aciertos: ${resJson.data.tasksCompleted} / ${resJson.data.totalMissions} (${resJson.data.percentage}%) · Calificación: ${resJson.data.score}/10 · Resuelto en: ${devLabel}`;
+            waitText.style.color = 'var(--ink)';
+          }
+          if (surveyTrigger) {
+            surveyTrigger.disabled = false;
+            surveyTrigger.style.cursor = 'pointer';
+            surveyTrigger.style.background = 'var(--orange-vibrant)';
+            surveyTrigger.style.color = '#FFFFFF';
+            surveyTrigger.textContent = 'PASO 2: DILIGENCIAR ENCUESTA ↓';
+          }
+          if (surveySection) {
+            surveySection.style.display = 'block';
+            surveySection.scrollIntoView({ behavior: 'smooth' });
+          }
+
+          alert(`✓ ¡Simulación registrada en el servidor como ${devLabel}! Procede a responder la encuesta de investigación a continuación.`);
+        } else if (res.status === 409 || resJson.status === 'already_completed' || resJson.status === 'token_burned') {
+          stopModalPolling();
+          const step1ActionBox = document.getElementById('modal-step1-action-box');
+          const step1BurnedBox = document.getElementById('modal-step1-burned-box');
+          if (step1ActionBox) step1ActionBox.style.display = 'none';
+          if (step1BurnedBox) step1BurnedBox.style.display = 'block';
+          alert('🔒 Token consumido: ' + (resJson.error || 'Este token ya fue utilizado previamente. Solicita al docente de Química que reactive tu intento.'));
+        } else {
+          alert('Aviso del Servidor: ' + (resJson.error || 'Error al procesar intento.'));
+        }
+      } catch (err: any) {
+        alert('Error en conexión: ' + err.message);
+      } finally {
+        if (simBtn) {
+          simBtn.disabled = false;
+          simBtn.textContent = '⚡ FINALIZAR SIMULACIÓN Y ABRIR ENCUESTA';
+        }
+      }
+    });
+
+    // Envío del formulario de la encuesta
+    document.getElementById('lab-research-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!activeModalToken) return;
+
+      const form = e.target as HTMLFormElement;
+      const formData = new FormData(form);
+      const submitBtn = document.getElementById('btn-submit-survey') as HTMLButtonElement;
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'GUARDANDO EN EL SERVIDOR...';
+      }
+
+      try {
+        const devRadio = form.querySelector('input[name="deviceUsed"]:checked') as HTMLInputElement;
+        const deviceUsed = devRadio ? devRadio.value : ((formData.get('deviceUsed') as string) || 'PC');
+        const uRadio = form.querySelector('input[name="understandingScore"]:checked') as HTMLInputElement;
+        const usRadio = form.querySelector('input[name="usabilityScore"]:checked') as HTMLInputElement;
+        const mRadio = form.querySelector('input[name="motivationScore"]:checked') as HTMLInputElement;
+        const chEl = document.getElementById('survey-challenging') as HTMLInputElement;
+        const sgEl = document.getElementById('survey-suggestions') as HTMLTextAreaElement;
+
+        const answers = {
+          deviceUsed,
+          understandingScore: uRadio ? Number(uRadio.value) : (Number(formData.get('understandingScore')) || 5),
+          usabilityScore: usRadio ? Number(usRadio.value) : (Number(formData.get('usabilityScore')) || 4),
+          motivationScore: mRadio ? Number(mRadio.value) : (Number(formData.get('motivationScore')) || 5),
+          challengingMission: chEl ? chEl.value.trim() : '',
+          suggestions: sgEl ? sgEl.value.trim() : '',
+        };
+
+        const res = await fetchAuth('/api/labs/survey', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tokenId: activeModalToken, answers })
+        });
+        const resJson = await res.json();
+
+        if (res.ok && resJson.ok) {
+          stopModalPolling();
+          alert('✓ ¡Práctica y encuesta completadas exitosamente! Tus respuestas y calificación han quedado asentadas en el sistema. Tu token ha quedado consumido.');
+          const modal = document.getElementById('labModal');
+          if (modal) modal.style.display = 'none';
+          await hydrateStudentDashboard();
+        } else if (res.status === 409 || resJson.status === 'token_burned') {
+          stopModalPolling();
+          alert('🔒 Token consumido: ' + (resJson.error || 'Este token ya fue quemado. Solicita a tu docente de Química que reactive tu intento.'));
+          const modal = document.getElementById('labModal');
+          if (modal) modal.style.display = 'none';
+          await hydrateStudentDashboard();
+        } else {
+          alert('Error: ' + (resJson.error || 'No se pudo guardar la encuesta.'));
+        }
+      } catch (err: any) {
+        alert('Error: ' + err.message);
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'ENVIAR ENCUESTA Y FINALIZAR PRÁCTICA ✓';
+        }
+      }
+    });
+
+    const studentDashboardLoad = hydrateStudentDashboard();
+    (window as any).SchoolOSApp?.registerPageLoad(studentDashboardLoad);
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => hydrateStudentDashboard());
+    }
+  </script>
 
 </AppLayout>

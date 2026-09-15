@@ -1,4 +1,4 @@
-﻿---
+---
 // ============================================================
 // SchoolOS — Modal de Edición Rápida de Franjas Horarias
 // Edición en vivo, Plantillas con 1 clic y Reordenamiento
@@ -13,6 +13,8 @@ const { id = 'timeSlotsModal' } = Astro.props;
 
 <div
   id={id}
+  data-modal-id={id}
+  data-time-slots-modal
   class="custom-modal-backdrop"
   style="display:none; position:fixed; inset:0; background:rgba(18, 17, 14, 0.75); z-index:9999; align-items:center; justify-content:center; padding:20px; overflow-y:auto;"
   role="dialog"
@@ -132,8 +134,10 @@ const { id = 'timeSlotsModal' } = Astro.props;
   }
 
   function getModalId(): string {
-    const modal = document.querySelector('[data-time-slots-modal]') as HTMLElement || document.getElementById('TimeSlotsModal');
-    return modal ? modal.id : 'TimeSlotsModal';
+    const modal = (document.querySelector('[data-time-slots-modal]') as HTMLElement) ||
+                  document.getElementById('timeSlotsModal') ||
+                  document.getElementById('TimeSlotsModal');
+    return modal ? modal.id : 'timeSlotsModal';
   }
 
   let currentSchoolId = '';

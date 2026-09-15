@@ -1,4 +1,4 @@
-﻿---
+---
 // ============================================================
 // SchoolOS — Modal de Creación de Asignatura / Materia Curricular
 // Cero emojis, estilo sobrio institucional
@@ -12,6 +12,8 @@ const { id = 'subjectModal' } = Astro.props;
 
 <div
   id={id}
+  data-modal-id={id}
+  data-subject-modal
   class="custom-modal-backdrop"
   style="display:none; position:fixed; inset:0; background:rgba(18, 17, 14, 0.75); z-index:9999; align-items:center; justify-content:center; padding:20px; overflow-y:auto;"
   role="dialog"
@@ -135,6 +137,7 @@ const { id = 'subjectModal' } = Astro.props;
 
 <script>
   import { courseManagementService } from '../../../services/courseManagementService';
+  import { teacherService } from '../../../services/teacherService';
 
   function getActiveTenantSchoolId(): string {
     try {
@@ -145,73 +148,41 @@ const { id = 'subjectModal' } = Astro.props;
   }
 
   function getModalId(): string {
-    const modal = document.querySelector('[data-subject-modal]') as HTMLElement || document.getElementById('SubjectModal');
-    return modal ? modal.id : 'SubjectModal';
+    const modal = (document.querySelector('[data-subject-modal]') as HTMLElement) ||
+                  document.getElementById('subjectModal') ||
+                  document.getElementById('SubjectModal');
+    return modal ? modal.id : 'subjectModal';
   }
 
   let currentSchoolId = '';
   let currentSubject: any = null;
 
-  (window as any).openSubjectModal = function(subjectOrSchoolId: any, optionalSchoolId?: string, faculty: any[] = []) {
-    const modalId = getModalId();
-    const modal = document.getElementById(modalId);
-    if (!modal) return;
-
-    if (typeof subjectOrSchoolId === 'object' && subjectOrSchoolId !== null) {
-      currentSubject = subjectOrSchoolId;
-      currentSchoolId = optionalSchoolId || currentSubject.school_id || getActiveTenantSchoolId();
-    } else {
-      currentSubject = null;
-      currentSchoolId = subjectOrSchoolId || getActiveTenantSchoolId();
-    }
-
-    const schoolInput = document.getElementById(modalId + 'SchoolId') as HTMLInputElement;
-    if (schoolInput) schoolInput.value = currentSchoolId;
-
-    const title = document.getElementById(modalId + 'Title');
-    const submitBtn = document.getElementById(modalId + 'SubmitBtn');
-    if (title) title.textContent = currentSubject ? 'Editar Materia Curricular' : 'Añadir Nueva Materia / Asignatura';
-    if (submitBtn) submitBtn.textContent = currentSubject ? 'Guardar Cambios' : '＋ Crear Materia Curricular';
-
-    const nameInput = document.getElementById(modalId + 'Name') as HTMLInputElement;
-    const codeInput = document.getElementById(modalId + 'Code') as HTMLInputElement;
-    const deptInput = document.getElementById(modalId + 'Department') as HTMLSelectElement;
-    const hoursInput = document.getElementById(modalId + 'WeeklyHours') as HTMLInputElement;
-
-    if (nameInput) nameInput.value = currentSubject ? (currentSubject.name || '') : '';
-    if (codeInput) codeInput.value = currentSubject ? (currentSubject.code || '') : '';
-    if (deptInput) deptInput.value = currentSubject ? (currentSubject.department || currentSubject.grade_level || currentSubject.gradeLevel || 'Ciencias Exactas & Matemáticas') : 'Ciencias Exactas & Matemáticas';
-    if (hoursInput) hoursInput.value = currentSubject ? (currentSubject.hours_per_week || currentSubject.weeklyHoursTarget || 4) : '4';
-
-    const teachersList = document.getElementById(modalId + 'TeachersList');
-    if (teachersList) {
-      const qualifiedIds = currentSubject ? (currentSubject.qualified_teacher_ids || []) : [];
-      if (faculty && faculty.length > 0) {
-        teachersList.innerHTML = faculty.map((f: any) => `
-          <label style="display:flex; align-items:center; gap:8px; font-size:12px; font-family:var(--mono); cursor:pointer;">
-            <input type="checkbox" name="subjectTeacher" value="${f.id}" ${qualifiedIds.includes(f.id) ? 'checked' : ''} style="width:14px; height:14px;" />
-            <span>${f.name} <span style="color:var(--ink-soft); font-size:10px;">(${f.specialty || 'Docente'})</span></span>
-          </label>
-        `).join('');
-      } else {
-        teachersList.innerHTML = '<div style="font-size:12px; color:var(--ink-soft); font-family:var(--mono);">No hay docentes registrados en la institución.</div>';
-      }
-    }
-
-    const feedback = document.getElementById(modalId + 'Feedback');
-    if (feedback) {
-      feedback.style.display = 'none';
-      feedback.textContent = '';
-    }
-
-    modal.style.display = 'flex';
-  };
-
-  document.addEventListener('DOMContentLoaded', () => {
+  function initSubjectModalEvents() {
     const modalId = getModalId();
     const form = document.getElementById(modalId + 'Form');
     const modal = document.getElementById(modalId);
-    if (!form || !modal) return;
+    if (!form || !modal || (form as any)._bound) return;
+    (form as any)._bound = true;
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.style.display = 'none';
+    });
+
+    const nameInput = document.getElementById(modalId + 'Name') as HTMLInputElement;
+    const codeInput = document.getElementById(modalId + 'Code') as HTMLInputElement;
+
+    nameInput?.addEventListener('input', () => {
+      if (codeInput && codeInput.dataset.touched !== 'true') {
+        const val = nameInput.value.trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]/g, '');
+        if (val) {
+          codeInput.value = val.slice(0, 3).toUpperCase();
+        }
+      }
+    });
+
+    codeInput?.addEventListener('input', () => {
+      codeInput.dataset.touched = 'true';
+    });
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -224,9 +195,15 @@ const { id = 'subjectModal' } = Astro.props;
       const weeklyHoursTarget = (document.getElementById(modalId + 'WeeklyHours') as HTMLInputElement)?.value;
       const finalCode = (code || name.slice(0, 3)).toUpperCase().replace(/[^A-Z0-9]/g, '');
 
-      const selectedTeachers = Array.from(document.querySelectorAll(`input[name="subjectTeacher"]:checked`)).map((cb: any) => cb.value);
+      const selectedTeachers = Array.from(form.querySelectorAll(`input[name="subjectTeacher"]:checked`)).map((cb: any) => cb.value);
 
-      if (!name) return;
+      if (!name) {
+        if (feedback) {
+          feedback.style.cssText = 'display:block; background:#FEE2E2; border:1.5px solid var(--rust); color:var(--rust); padding:10px 14px; font-weight:700; font-size:12px; margin-bottom:12px;';
+          feedback.textContent = 'El nombre de la materia es obligatorio.';
+        }
+        return;
+      }
 
       if (submitBtn) {
         submitBtn.disabled = true;
@@ -243,29 +220,160 @@ const { id = 'subjectModal' } = Astro.props;
           qualified_teacher_ids: selectedTeachers,
         };
 
+        const targetSchool = currentSchoolId || getActiveTenantSchoolId();
+
         if (currentSubject && currentSubject.id) {
           await courseManagementService.updateSubject(currentSubject.id, payload);
         } else {
-          await courseManagementService.createSubject(currentSchoolId, payload);
+          await courseManagementService.createSubject(targetSchool, payload);
         }
 
         modal.style.display = 'none';
         (form as HTMLFormElement).reset();
+
+        // Notificar para refrescar en vivo la malla curricular y aforos
         window.dispatchEvent(new CustomEvent('curriculum:updated'));
-        window.location.reload();
+
+        // Mantener vista en el catálogo de materias
+        if ((window as any)._switchMainTab) {
+          (window as any)._switchMainTab('subjects');
+        }
 
       } catch (err: any) {
         console.error('Error guardando materia:', err);
         if (feedback) {
-          feedback.style.cssText = 'display:block; background:#FEE2E2; border:1px solid var(--rust); color:var(--rust);';
-          feedback.textContent = err?.message || 'Error al guardar materia';
+          feedback.style.cssText = 'display:block; background:#FEE2E2; border:1.5px solid var(--rust); color:var(--rust); padding:10px 14px; font-weight:700; font-size:12px; margin-bottom:12px;';
+          feedback.textContent = err?.message || err?.error || 'Error al guardar materia';
         }
       } finally {
         if (submitBtn) {
           submitBtn.disabled = false;
-          submitBtn.textContent = 'Guardar Cambios';
+          submitBtn.textContent = currentSubject ? 'Guardar Cambios' : '＋ Crear Materia Curricular';
         }
       }
     });
-  });
+  }
+
+  (window as any).openSubjectModal = async function(arg1?: any, arg2?: any, arg3?: any) {
+    const modalId = getModalId();
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+
+    initSubjectModalEvents();
+
+    let subject: any = null;
+    let schoolId: string = '';
+    let facultyList: any[] = [];
+
+    // Caso 1: openSubjectModal(subjectObject, schoolId, faculty)
+    if (arg1 && typeof arg1 === 'object' && !Array.isArray(arg1)) {
+      subject = arg1;
+      schoolId = (typeof arg2 === 'string' ? arg2 : '') || subject.school_id || '';
+      facultyList = Array.isArray(arg3) ? arg3 : (Array.isArray(arg2) ? arg2 : []);
+    } 
+    // Caso 2: openSubjectModal(null, schoolId, faculty)
+    else if (arg1 === null || arg1 === undefined) {
+      subject = null;
+      schoolId = typeof arg2 === 'string' ? arg2 : '';
+      facultyList = Array.isArray(arg3) ? arg3 : (Array.isArray(arg2) ? arg2 : []);
+    }
+    // Caso 3: openSubjectModal(schoolIdString, faculty)
+    else if (typeof arg1 === 'string') {
+      subject = null;
+      schoolId = arg1;
+      facultyList = Array.isArray(arg2) ? arg2 : [];
+    }
+
+    if (!schoolId) schoolId = getActiveTenantSchoolId();
+    currentSchoolId = schoolId;
+    currentSubject = subject;
+
+    const schoolInput = document.getElementById(modalId + 'SchoolId') as HTMLInputElement;
+    if (schoolInput) schoolInput.value = currentSchoolId;
+
+    const title = document.getElementById(modalId + 'Title');
+    const submitBtn = document.getElementById(modalId + 'SubmitBtn') as HTMLButtonElement;
+    if (title) title.textContent = currentSubject ? 'Editar Materia Curricular' : 'Añadir Nueva Materia / Asignatura';
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = currentSubject ? 'Guardar Cambios' : '＋ Crear Materia Curricular';
+    }
+
+    const nameInput = document.getElementById(modalId + 'Name') as HTMLInputElement;
+    const codeInput = document.getElementById(modalId + 'Code') as HTMLInputElement;
+    const deptInput = document.getElementById(modalId + 'Department') as HTMLSelectElement;
+    const hoursInput = document.getElementById(modalId + 'WeeklyHours') as HTMLInputElement;
+
+    if (nameInput) {
+      nameInput.value = currentSubject ? (currentSubject.name || '') : '';
+    }
+    if (codeInput) {
+      codeInput.value = currentSubject ? (currentSubject.code || '') : '';
+      codeInput.dataset.touched = currentSubject ? 'true' : 'false';
+    }
+    if (deptInput) {
+      deptInput.value = currentSubject ? (currentSubject.department || currentSubject.grade_level || currentSubject.gradeLevel || 'Ciencias Exactas') : 'Ciencias Exactas';
+    }
+    if (hoursInput) {
+      hoursInput.value = currentSubject ? (currentSubject.hours_per_week || currentSubject.weeklyHoursTarget || 4) : '4';
+    }
+
+    const feedback = document.getElementById(modalId + 'Feedback');
+    if (feedback) {
+      feedback.style.display = 'none';
+      feedback.textContent = '';
+    }
+
+    // MOSTRAR MODAL INMEDIATAMENTE AL CLIC
+    modal.style.display = 'flex';
+
+    // Renderizar docentes síncrono si ya están disponibles
+    const teachersList = document.getElementById(modalId + 'TeachersList');
+    const qualifiedIds = currentSubject ? (currentSubject.qualified_teacher_ids || []) : [];
+
+    const renderTeachers = (list: any[]) => {
+      if (!teachersList) return;
+      if (list && list.length > 0) {
+        teachersList.innerHTML = list.map((f: any) => `
+          <label style="display:flex; align-items:center; gap:8px; font-size:12px; font-family:var(--mono); cursor:pointer; padding:3px 0;">
+            <input type="checkbox" name="subjectTeacher" value="${f.id}" ${qualifiedIds.includes(f.id) ? 'checked' : ''} style="width:15px; height:15px;" />
+            <span>${f.name} <span style="color:var(--ink-soft); font-size:10.5px;">(${f.specialty || f.job_title || 'Docente'})</span></span>
+          </label>
+        `).join('');
+      } else {
+        teachersList.innerHTML = '<div style="font-size:12px; color:var(--ink-soft); font-family:var(--mono);">No hay docentes registrados en la institución.</div>';
+      }
+    };
+
+    if (!facultyList.length) {
+      facultyList = (window as any).cachedFaculty || [];
+    }
+
+    if (facultyList.length > 0) {
+      renderTeachers(facultyList);
+    } else if (currentSchoolId) {
+      if (teachersList) {
+        teachersList.innerHTML = '<div style="font-size:12px; color:var(--ink-soft); font-family:var(--mono);">Cargando docentes...</div>';
+      }
+      try {
+        const res = await teacherService.getTeachers(currentSchoolId);
+        if (res && res.data && Array.isArray(res.data)) {
+          facultyList = res.data;
+          renderTeachers(facultyList);
+        } else {
+          renderTeachers([]);
+        }
+      } catch (_) {
+        renderTeachers([]);
+      }
+    } else {
+      renderTeachers([]);
+    }
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSubjectModalEvents);
+  } else {
+    initSubjectModalEvents();
+  }
 </script>

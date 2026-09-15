@@ -1,4 +1,4 @@
-﻿---
+---
 // ============================================================
 // SchoolOS — Asignación de Horarios, Malla Curricular & Aforos (Rectoría)
 // Flujo Ordenado: Docente -> Salón/Materia -> Horario con Prevención de Cruces
@@ -72,8 +72,9 @@ const lang = 'es';
       </button>
         <button
           type="button"
+          id="btnTopAddSubject"
           class="btn btn-primary btn-sm"
-          onclick="window.openSubjectModal && window.openSubjectModal(null, currentLoadedSchoolId, cachedFaculty)"
+          onclick="window._openAddSubjectModal ? window._openAddSubjectModal() : (window.openSubjectModal ? window.openSubjectModal() : (document.getElementById('subjectModal') && (document.getElementById('subjectModal').style.display='flex')))"
           style="font-family:var(--mono); font-size:11px; font-weight:800;"
         >
           ＋ Nueva Materia
@@ -286,8 +287,9 @@ const lang = 'es';
         </div>
         <button
           type="button"
+          id="btnCatalogAddSubject"
           class="btn btn-primary btn-sm"
-          onclick="window.openSubjectModal && window.openSubjectModal(null, currentLoadedSchoolId, cachedFaculty)"
+          onclick="window._openAddSubjectModal ? window._openAddSubjectModal() : (window.openSubjectModal ? window.openSubjectModal() : (document.getElementById('subjectModal') && (document.getElementById('subjectModal').style.display='flex')))"
           style="font-size:11px; font-weight:800;"
         >
           ＋ Agregar Materia
@@ -443,6 +445,21 @@ const lang = 'es';
   let cachedCapacities: any[] = [];
   let cachedTimeSlots: any[] = [];
 
+  // Exponer a window para compatibilidad global y modales
+  (window as any).currentLoadedSchoolId = currentLoadedSchoolId;
+  (window as any).cachedFaculty = cachedFaculty;
+
+  (window as any)._openAddSubjectModal = function() {
+    const schoolId = currentLoadedSchoolId || (window as any).currentLoadedSchoolId || '';
+    const faculty = (cachedFaculty && cachedFaculty.length) ? cachedFaculty : ((window as any).cachedFaculty || []);
+    if (typeof (window as any).openSubjectModal === 'function') {
+      (window as any).openSubjectModal(null, schoolId, faculty);
+    } else {
+      const modal = document.getElementById('subjectModal');
+      if (modal) modal.style.display = 'flex';
+    }
+  };
+
   let selectedTeacherId = '';
   let selectedClassroomId = '';
   let activeScheduleMode = 'teacher'; // 'teacher' | 'classroom'
@@ -454,6 +471,10 @@ const lang = 'es';
       'subjects': { btn: 'tabBtnSubjects', section: 'tabSectionSubjects' },
       'timeslots': { btn: 'tabBtnTimeSlots', section: 'tabSectionTimeSlots' },
     };
+
+    try {
+      sessionStorage.setItem('schoolos_academic_tab', tabName);
+    } catch (_) {}
 
     Object.keys(tabs).forEach((key) => {
       const item = tabs[key];
@@ -978,11 +999,11 @@ const lang = 'es';
     };
 
     (window as any)._deleteSubject = async function(subjectId: string) {
-      if (!confirm('ATENCIÓN: Al eliminar una materia se borrarán permanentemente sus clases, estudiantes matriculados y calificaciones asociadas. ¿Estás absolutamente seguro de proceder?')) return;
+      if (!confirm('ATENCIÓN: Al eliminar una materia se borrarán permanentemente sus clases, estudiantes matriculados y calificaciones asociadas. ¿Estás seguro de proceder?')) return;
       try {
         await courseManagementService.deleteCourse(subjectId);
         window.dispatchEvent(new CustomEvent('curriculum:updated'));
-        window.location.reload();
+        if ((window as any)._switchMainTab) (window as any)._switchMainTab('subjects');
       } catch(err: any) {
         alert('Error al eliminar materia: ' + err.message);
       }
@@ -1076,6 +1097,7 @@ const lang = 'es';
       const faculty = facRes.data || [];
 
       cachedFaculty = faculty;
+      (window as any).cachedFaculty = faculty;
       const teacherMap = new Map(faculty.map((t: any) => [t.id, t]));
 
       // 2. Cargar materias vía courseManagementService
@@ -1174,6 +1196,7 @@ const lang = 'es';
     try {
       const context = await schoolAdminTenantService.getTenantContext();
       currentLoadedSchoolId = context?.school?.id || context?.school?.slug || '';
+      (window as any).currentLoadedSchoolId = currentLoadedSchoolId;
       if (!currentLoadedSchoolId) return;
 
       await Promise.all([
@@ -1181,9 +1204,39 @@ const lang = 'es';
         renderGradeCapacities(),
         loadCurriculum(),
       ]);
+
+      try {
+        const savedTab = sessionStorage.getItem('schoolos_academic_tab');
+        if (savedTab && (window as any)._switchMainTab) {
+          (window as any)._switchMainTab(savedTab);
+        }
+      } catch (_) {}
     } catch (err) {
       console.warn('Error hidratando centro académico:', err);
     }
+  }
+
+  function setupAddSubjectButtons() {
+    const btnTop = document.getElementById('btnTopAddSubject');
+    const btnCat = document.getElementById('btnCatalogAddSubject');
+    const handler = (e: Event) => {
+      e.preventDefault();
+      (window as any)._openAddSubjectModal();
+    };
+    if (btnTop && !btnTop.dataset.bound) {
+      btnTop.dataset.bound = 'true';
+      btnTop.addEventListener('click', handler);
+    }
+    if (btnCat && !btnCat.dataset.bound) {
+      btnCat.dataset.bound = 'true';
+      btnCat.addEventListener('click', handler);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupAddSubjectButtons);
+  } else {
+    setupAddSubjectButtons();
   }
 
   window.addEventListener('curriculum:updated', () => {

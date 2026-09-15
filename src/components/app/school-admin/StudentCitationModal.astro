@@ -209,3 +209,57 @@ const { id = 'studentCitationModal', lang = 'es' } = Astro.props;
 
   </div>
 </div>
+
+<script is:inline define:vars={{ id, lang }}>
+  (function() {
+    var modal = document.getElementById(id);
+    if (!modal) return;
+
+    window.openStudentCitationModal = function(student) {
+      if (student) {
+        var nameEl = document.getElementById('citationStudentTargetName');
+        var subEl = document.getElementById('citationStudentTargetSub');
+        var avatarEl = document.getElementById('citationStudentAvatar');
+        
+        var name = student.name || 'Estudiante';
+        if (nameEl) nameEl.textContent = name;
+        if (subEl) {
+          subEl.textContent = (student.grade_level || student.grade || 'Grado Escolar') + ' · Acudiente: ' + (student.guardian_name || 'Acudiente Principal');
+        }
+        if (avatarEl) {
+          var initials = name.split(' ').map(function(n) { return n[0]; }).slice(0, 2).join('').toUpperCase();
+          avatarEl.textContent = initials || 'ST';
+        }
+      }
+      modal.style.display = 'flex';
+    };
+
+    modal.querySelectorAll('.close-modal-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        modal.style.display = 'none';
+      });
+    });
+
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) modal.style.display = 'none';
+    });
+
+    window.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && modal.style.display === 'flex') {
+        modal.style.display = 'none';
+      }
+    });
+
+    var form = document.getElementById(id + 'Form');
+    if (form) {
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        alert(lang === 'en' 
+          ? 'Invitation sent cordially to the guardian via WhatsApp and email. Meeting logged in academic follow-up calendar.' 
+          : 'Invitación enviada cordialmente al acudiente vía WhatsApp y correo institucional. El espacio quedó agendado en el calendario escolar.');
+        modal.style.display = 'none';
+        form.reset();
+      });
+    }
+  })();
+</script>

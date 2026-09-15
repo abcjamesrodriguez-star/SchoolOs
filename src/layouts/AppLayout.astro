@@ -99,6 +99,13 @@ const roleLabels = {
       </main>
     </div>
     <AlertModal />
+    <script is:inline>
+      if (!window.fetchAuth) {
+        window.fetchAuth = function(url, opts) {
+          return window.fetch(url, opts);
+        };
+      }
+    </script>
     <script>
       import { authService } from '../services/authService';
       import { fetchAuth } from '../lib/apiClient';
@@ -148,6 +155,7 @@ const roleLabels = {
 
           localStorage.setItem('schoolos-user', JSON.stringify(user));
           localStorage.setItem('schoolos-auth', 'true');
+          (window as any).updateTopbarUser?.(user);
           return user;
         } catch (error) {
           console.warn('No se pudo validar la sesión real:', error);

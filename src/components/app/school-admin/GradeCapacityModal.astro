@@ -1,4 +1,4 @@
-﻿---
+---
 // ============================================================
 // SchoolOS — Modal Elegante de Salones & Aforo por Grado (Rectoría)
 // Con Stepper Infinito de Salones, Eliminación Escolar y Cero Emojis
@@ -13,6 +13,8 @@ const { id = 'gradeCapacityModal' } = Astro.props;
 <!-- MODAL PRINCIPAL DE CONFIGURACIÓN DE GRADO -->
 <div
   id={id}
+  data-modal-id={id}
+  data-grade-capacity-modal
   class="custom-modal-backdrop"
   style="display:none; position:fixed; inset:0; background:rgba(18, 17, 14, 0.75); z-index:9999; align-items:center; justify-content:center; padding:20px; overflow-y:auto;"
   role="dialog"
@@ -310,8 +312,10 @@ const { id = 'gradeCapacityModal' } = Astro.props;
   }
 
   function getModalId(): string {
-    const modal = document.querySelector('[data-grade-capacity-modal]') as HTMLElement || document.getElementById('GradeCapacityModal');
-    return modal ? modal.id : 'GradeCapacityModal';
+    const modal = (document.querySelector('[data-grade-capacity-modal]') as HTMLElement) ||
+                  document.getElementById('gradeCapacityModal') ||
+                  document.getElementById('GradeCapacityModal');
+    return modal ? modal.id : 'gradeCapacityModal';
   }
 
   (window as any).recalcRectorSleek = function(mId: string) {

@@ -1,4 +1,4 @@
-﻿---
+---
 // ============================================================
 // SchoolOS — Modal de Creación de Nuevo Grado / Nivel Académico
 // Soporta Colegios Tradicionales, Academias de Idiomas, Deportes, etc.
@@ -12,6 +12,8 @@ const { id = 'newGradeModal' } = Astro.props;
 
 <div
   id={id}
+  data-modal-id={id}
+  data-new-grade-modal
   class="custom-modal-backdrop"
   style="display:none; position:fixed; inset:0; background:rgba(18, 17, 14, 0.75); z-index:9999; align-items:center; justify-content:center; padding:20px; overflow-y:auto;"
   role="dialog"
@@ -206,8 +208,10 @@ const { id = 'newGradeModal' } = Astro.props;
   }
 
   function getModalId(): string {
-    const modal = document.querySelector('[data-new-grade-modal]') as HTMLElement || document.getElementById('NewGradeModal');
-    return modal ? modal.id : 'NewGradeModal';
+    const modal = (document.querySelector('[data-new-grade-modal]') as HTMLElement) ||
+                  document.getElementById('newGradeModal') ||
+                  document.getElementById('NewGradeModal');
+    return modal ? modal.id : 'newGradeModal';
   }
 
   (window as any).recalcNewGradePreview = function(mId: string) {

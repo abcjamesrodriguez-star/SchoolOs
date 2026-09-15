@@ -1,10 +1,14 @@
 import type { APIRoute } from 'astro';
 import { requireAuth } from '../../../lib/apiAuth';
-import { provisionRectorAccount } from '../../../services/rectorProvisioningService';
+import {
+  provisionRectorAccount,
+  generateRectorInviteLink,
+  resendRectorInviteEmail,
+} from '../../../services/rectorProvisioningService';
 
 /**
  * POST /api/admin/rector
- * Aprovisiona y configura el perfil de un directivo/rector para una institución.
+ * Aprovisiona, reenvía o genera enlaces de invitación institucional con Supabase Auth Nativo.
  * Requiere rol super_admin.
  */
 export const POST: APIRoute = async ({ request }) => {
@@ -13,8 +17,53 @@ export const POST: APIRoute = async ({ request }) => {
     if (!auth.ok) return auth.response;
 
     const body = await request.json();
-    const payload = body.action === 'provision' ? body : body;
+    const siteUrl = new URL(request.url).origin;
 
+    // Acción 1: Generar enlace criptográfico oficial de Supabase Auth ("Copiar Link")
+    if (body.action === 'generate_link') {
+      const email = body.email?.trim().toLowerCase();
+      if (!email) {
+        return new Response(JSON.stringify({ ok: false, error: 'Falta email para generar el enlace.' }), {
+          status: 400, headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
+      const inviteLink = await generateRectorInviteLink(email, siteUrl);
+      return new Response(JSON.stringify({
+        ok: true,
+        actionLink: inviteLink,
+        confirmUrl: inviteLink,
+      }), {
+        status: 200, headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Acción 2: Reenviar invitación por correo vía Supabase SMTP ("Reenviar Correo")
+    if (body.action === 'resend') {
+      const email = body.email?.trim().toLowerCase();
+      if (!email) {
+        return new Response(JSON.stringify({ ok: false, error: 'Falta email para reenviar la invitación.' }), {
+          status: 400, headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
+      const resendResult = await resendRectorInviteEmail(email, siteUrl);
+      if (!resendResult.ok) {
+        return new Response(JSON.stringify({ ok: false, error: resendResult.error || 'Error al reenviar.' }), {
+          status: 500, headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
+      return new Response(JSON.stringify({
+        ok: true,
+        message: `Invitación oficial reenviada vía Supabase SMTP a ${email}.`,
+      }), {
+        status: 200, headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Acción 3: Aprovisionamiento inicial del directivo
+    const payload = body;
     const {
       schoolId, name, email, phone, documentType, documentId,
       jobTitle, specialty, appointmentDate, status, avatarUrl
@@ -26,7 +75,7 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    // Aprovisionamiento centralizado y nativo en el servidor
+    // Aprovisionamiento centralizado y nativo en el servidor con Supabase Auth
     const result = await provisionRectorAccount({
       schoolId,
       name,
@@ -39,6 +88,7 @@ export const POST: APIRoute = async ({ request }) => {
       appointmentDate,
       status,
       avatarUrl,
+      siteUrl,
     });
 
     // Registrar en auditoría

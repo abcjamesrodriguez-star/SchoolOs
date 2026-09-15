@@ -23,11 +23,13 @@ const { id = 'inviteModal', defaultRole = 'teacher', lang = 'es' } = Astro.props
     </div>
 
     <div class="panel-body padded">
-      <form id={`${id}Form`} onsubmit="event.preventDefault(); alert(this.getAttribute('data-success-msg')); document.getElementById(this.getAttribute('data-modal-id')).style.display='none';" data-modal-id={id} data-success-msg={lang === 'es' ? '¡Invitación enviada con éxito por correo electrónico!' : 'Invitation successfully sent via email!'}>
+      <div id={`${id}Feedback`} style="display:none; padding:10px 14px; margin-bottom:14px; font-family:var(--mono); font-size:12px; font-weight:700;"></div>
+
+      <form id={`${id}Form`} data-modal-id={id}>
         <div class="form-grid">
           <div class="form-field full">
             <label>{lang === 'es' ? 'Rol en la Institución' : 'School Role'}</label>
-            <select style="border:1px solid var(--ink); background:var(--cream); padding:8px 10px; font-family:var(--mono); font-size:12px; width:100%;">
+            <select id={`${id}Role`} style="border:1.5px solid var(--ink); background:var(--cream); padding:8px 10px; font-family:var(--mono); font-size:12px; width:100%;">
               <option value="teacher" selected={defaultRole === 'teacher'}>{lang === 'es' ? 'Docente / Profesor' : 'Teacher / Faculty'}</option>
               <option value="student" selected={defaultRole === 'student'}>{lang === 'es' ? 'Estudiante / Alumno' : 'Student'}</option>
             </select>
@@ -35,39 +37,28 @@ const { id = 'inviteModal', defaultRole = 'teacher', lang = 'es' } = Astro.props
 
           <div class="form-field full">
             <label>{lang === 'es' ? 'Nombre Completo' : 'Full Name'}</label>
-            <input type="text" placeholder={lang === 'es' ? 'Ej. Andrés Camargo' : 'E.g. Andres Camargo'} required style="border:1px solid var(--ink); background:var(--cream); padding:8px 10px; width:100%;" />
+            <input id={`${id}Name`} type="text" placeholder={lang === 'es' ? 'Ej. Andrés Camargo' : 'E.g. Andres Camargo'} required style="border:1.5px solid var(--ink); background:var(--cream); padding:8px 10px; width:100%;" />
           </div>
 
           <div class="form-field full">
             <label>{lang === 'es' ? 'Correo Electrónico Institucional' : 'Institutional Email'}</label>
-            <input type="email" placeholder="usuario@colegionorte.edu.co" required style="border:1px solid var(--ink); background:var(--cream); padding:8px 10px; width:100%; font-family:var(--mono);" />
+            <input id={`${id}Email`} type="email" placeholder="usuario@colegionorte.edu.co" required style="border:1.5px solid var(--ink); background:var(--cream); padding:8px 10px; width:100%; font-family:var(--mono);" />
             <span class="hint" style="font-size:11px; color:var(--ink-soft); margin-top:4px; display:block;">
-              {lang === 'es' ? 'Se enviará un enlace seguro de activación con credenciales temporales.' : 'A secure activation link with temporary credentials will be sent.'}
+              {lang === 'es' ? 'Se enviará un enlace seguro de activación con credenciales oficiales.' : 'A secure activation link with credentials will be sent.'}
             </span>
-          </div>
-
-          <div class="form-field full">
-            <label>{lang === 'es' ? 'Asignar a Cursos / Grado' : 'Assign to Courses / Grade'}</label>
-            <select style="border:1px solid var(--ink); background:var(--cream); padding:8px 10px; width:100%;">
-              <option>{lang === 'es' ? 'Biología Celular (10° A)' : 'Cell Biology (10th A)'}</option>
-              <option>{lang === 'es' ? 'Matemáticas Avanzadas (11° B)' : 'Advanced Math (11th B)'}</option>
-              <option>{lang === 'es' ? 'Literatura Hispanoamericana (9° C)' : 'Literature (9th C)'}</option>
-              <option>{lang === 'es' ? 'Física Mecánica (11° A)' : 'Physics (11th A)'}</option>
-              <option>{lang === 'es' ? 'Historia Universal (8° A)' : 'World History (8th A)'}</option>
-            </select>
           </div>
         </div>
 
         <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px; border-top:1px solid var(--line); padding-top:16px;">
           <button type="button" class="btn btn-secondary close-modal-btn">{lang === 'es' ? 'Cancelar' : 'Cancel'}</button>
-          <button type="submit" class="btn btn-primary">{lang === 'es' ? 'Enviar Invitación →' : 'Send Invitation →'}</button>
+          <button type="submit" id={`${id}SubmitBtn`} class="btn btn-primary">{lang === 'es' ? 'Enviar Invitación →' : 'Send Invitation →'}</button>
         </div>
       </form>
     </div>
   </div>
 </div>
 
-<script is:inline define:vars={{ id }}>
+<script is:inline define:vars={{ id, lang }}>
   (function() {
     var modal = document.getElementById(id);
     if (!modal) return;
@@ -83,5 +74,78 @@ const { id = 'inviteModal', defaultRole = 'teacher', lang = 'es' } = Astro.props
         modal.style.display = 'none';
       }
     });
+
+    var form = document.getElementById(id + 'Form');
+    if (form) {
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        var submitBtn = document.getElementById(id + 'SubmitBtn');
+        var feedback = document.getElementById(id + 'Feedback');
+        var roleEl = document.getElementById(id + 'Role');
+        var nameEl = document.getElementById(id + 'Name');
+        var emailEl = document.getElementById(id + 'Email');
+
+        var role = roleEl ? roleEl.value : 'teacher';
+        var name = nameEl ? nameEl.value.trim() : '';
+        var email = emailEl ? emailEl.value.trim() : '';
+
+        if (!name || !email) return;
+
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = lang === 'es' ? 'Enviando invitación…' : 'Sending invite…';
+        }
+        if (feedback) {
+          feedback.style.display = 'none';
+          feedback.textContent = '';
+        }
+
+        try {
+          var endpoint = role === 'teacher' ? '/api/school-admin/teachers' : '/api/admin/create-student';
+          var payload = role === 'teacher'
+            ? { action: 'create', name: name, email: email }
+            : { name: name, email: email, send_invite: true };
+
+          var res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          var data = await res.json().catch(function() { return {}; });
+
+          if (!res.ok || data.ok === false) {
+            throw new Error(data.error || 'Error al procesar la invitación');
+          }
+
+          if (feedback) {
+            feedback.style.cssText = 'display:block; background:#E6F4EA; border:1px solid #1E4620; color:#1E4620;';
+            feedback.textContent = lang === 'es'
+              ? '✓ Invitación enviada con éxito a ' + email
+              : '✓ Invitation sent successfully to ' + email;
+          }
+
+          setTimeout(function() {
+            modal.style.display = 'none';
+            form.reset();
+            if (feedback) feedback.style.display = 'none';
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.textContent = lang === 'es' ? 'Enviar Invitación →' : 'Send Invitation →';
+            }
+          }, 1500);
+
+        } catch (err) {
+          console.error('[InviteUserModal] Error:', err);
+          if (feedback) {
+            feedback.style.cssText = 'display:block; background:#FEE2E2; border:1px solid var(--danger); color:var(--danger);';
+            feedback.textContent = err.message || 'Error al enviar invitación';
+          }
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = lang === 'es' ? 'Reintentar →' : 'Retry →';
+          }
+        }
+      });
+    }
   })();
 </script>

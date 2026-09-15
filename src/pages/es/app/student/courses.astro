@@ -1,120 +1,190 @@
 ---
 // ============================================================
 // SchoolOS — Panel Estudiante: Mis Cursos
-// Fase 4 | Mateo Gómez
+// Diseño Brutalista Editorial Oficial (Vibrant Brutalism)
+// Conectado en Vivo con /api/student/courses
 // ============================================================
 import AppLayout from '../../../../layouts/AppLayout.astro';
-import { getStudentCourses, getStudentProfile } from '../../../../data/app/mock-student';
 
 const lang = 'es';
-const student = getStudentProfile();
-const courses = getStudentCourses();
 ---
 
 <AppLayout
-  title="Mis Cursos — Mateo Gómez"
+  title="Mis Cursos"
   pageTitle="Mis Materias Matriculadas"
   activeSection="courses"
   role="student"
-  schoolName="Colegio Norte"
+  schoolName="SchoolOS"
   lang={lang}
   activeRoute="/app/student/courses"
   breadcrumbs={[
-    { label: 'Colegio Norte' },
+    { label: 'Estudiante' },
     { label: 'Panel Estudiante', href: `/${lang}/app/student` },
     { label: 'Mis Cursos' },
   ]}
 >
 
-  <!-- HEADER -->
-  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:12px;">
+  <!-- HEADER INSTITUCIONAL BRUTALISTA -->
+  <div style="background:var(--paper); border:2px solid var(--ink); padding:18px 24px; margin-bottom:28px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; box-shadow:4px 4px 0 var(--ink);">
     <div>
-      <h1 style="font-family:var(--serif); font-size:22px; font-weight:800; margin:0 0 4px 0;">
-        Mis Materias — {student.grade}
-      </h1>
-      <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">
-        {courses.length} asignaturas matriculadas · Periodo 1 · 2026
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+        <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-weight:900; font-size:10.5px; padding:2px 6px; border-radius:0;">
+          PLAN DE ESTUDIOS
+        </span>
+        <span id="courses-header-subtitle" style="font-family:var(--mono); font-size:11.5px; font-weight:700; color:var(--ink-soft);">
+          Sincronizando asignaturas...
+        </span>
       </div>
+      <h1 id="courses-header-title" style="font-family:var(--sans); font-size:24px; font-weight:900; text-transform:uppercase; letter-spacing:-0.03em; margin:0; color:var(--ink);">
+        MIS MATERIAS MATRICULADAS
+      </h1>
     </div>
     <a
       href={`/${lang}/app/student`}
-      class="btn btn-secondary btn-sm"
-      style="font-size:11.5px; font-weight:700;"
+      class="btn btn-secondary"
+      style="font-family:var(--mono); font-size:11.5px; font-weight:800; text-transform:uppercase; border:2px solid var(--ink); box-shadow:3px 3px 0 var(--ink); padding:10px 16px; text-decoration:none;"
     >
-      ← Volver al Dashboard
+      ← Volver a Mi Jornada
     </a>
   </div>
 
   <!-- GRID DE CURSOS -->
-  <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap:20px; margin-bottom:32px;">
-    {courses.map((c) => {
-      const progressPct = c.guidesTotal > 0 ? Math.round((c.guidesRead / c.guidesTotal) * 100) : 0;
-      const avgColor = c.currentAverage >= 8 ? '#4A7C59' : c.currentAverage >= 6 ? '#C8860A' : 'var(--rust)';
-      return (
-        <div style="background:var(--paper); border:2px solid var(--ink); border-radius:10px; overflow:hidden; box-shadow:5px 5px 0 rgba(18,17,14,0.07); display:flex; flex-direction:column;">
-          <!-- Card Header -->
-          <div style="background:var(--ink); padding:14px 18px; display:flex; justify-content:space-between; align-items:flex-start;">
-            <div>
-              <div style="font-family:var(--mono); font-size:9.5px; color:rgba(255,255,255,0.6); font-weight:700; text-transform:uppercase; margin-bottom:4px;">
-                {c.subject}
-              </div>
-              <div style="font-family:var(--serif); font-size:15px; font-weight:700; color:#FFFFFF; line-height:1.3;">
-                {c.courseName}
-              </div>
-            </div>
-            <div style={`font-family:var(--mono); font-size:20px; font-weight:900; color:${avgColor === '#4A7C59' ? '#7EBC8E' : avgColor === '#C8860A' ? '#F4C150' : '#F08060'}; line-height:1;`}>
-              {c.currentAverage.toFixed(1)}
-            </div>
-          </div>
-
-          <!-- Card Body -->
-          <div style="padding:16px 18px; flex:1; display:flex; flex-direction:column; gap:12px;">
-            <!-- Profesor -->
-            <div style="display:flex; align-items:center; gap:9px;">
-              <img
-                src={c.teacherAvatarUrl || '/avatars/women/fila-1-columna-1.png'}
-                alt={c.teacherName}
-                style="width:28px; height:28px; border-radius:50%; border:1.5px solid var(--line); object-fit:cover;"
-              />
-              <div>
-                <div style="font-size:11.5px; font-weight:700; color:var(--ink);">{c.teacherName}</div>
-                <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);">{c.schedule}</div>
-              </div>
-            </div>
-
-            <!-- Progreso de Guías -->
-            <div>
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                <span style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); font-weight:700;">GUÍAS LEÍDAS</span>
-                <span style="font-family:var(--mono); font-size:11px; font-weight:800; color:var(--ink);">{c.guidesRead}/{c.guidesTotal}</span>
-              </div>
-              <div style="height:6px; background:var(--line); border-radius:3px; overflow:hidden;">
-                <div style={`height:100%; width:${progressPct}%; background:${progressPct === 100 ? '#4A7C59' : 'var(--rust)'}; border-radius:3px; transition:width 0.3s;`}></div>
-              </div>
-              <div style="font-family:var(--mono); font-size:9px; color:var(--ink-soft); margin-top:3px;">{progressPct}% completado</div>
-            </div>
-          </div>
-
-          <!-- Card Footer -->
-          <div style="border-top:1.5px solid var(--line); padding:12px 18px; display:flex; gap:8px;">
-            <a
-              href={`/${lang}/app/student/courses`}
-              class="btn btn-secondary btn-sm"
-              style="flex:1; text-align:center; font-size:11px; font-weight:700; border-radius:4px;"
-            >
-              Ver Guías
-            </a>
-            <a
-              href={`/${lang}/app/student/grades`}
-              class="btn btn-secondary btn-sm"
-              style="flex:1; text-align:center; font-size:11px; font-weight:700; border-radius:4px;"
-            >
-              Ver Notas
-            </a>
-          </div>
-        </div>
-      );
-    })}
+  <div id="student-courses-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap:24px; margin-bottom:32px;">
+    <div style="font-family:var(--mono); font-size:12.5px; color:var(--ink-soft); grid-column: 1 / -1; padding:36px; text-align:center; background:var(--paper); border:2px solid var(--ink); box-shadow:4px 4px 0 var(--ink);">
+      Sincronizando catálogo de asignaturas con el servidor...
+    </div>
   </div>
+
+  <!-- SCRIPT DE HIDRATACIÓN DINÁMICA -->
+  <script>
+    import { fetchAuth } from '../../../../lib/apiClient';
+
+    async function hydrateStudentCourses() {
+      try {
+        const res = await fetchAuth('/api/student/courses');
+        const json = await res.json().catch(() => null);
+
+        const container = document.getElementById('student-courses-grid');
+        const subtitleEl = document.getElementById('courses-header-subtitle');
+
+        if (!json || !json.ok) {
+          if (container) {
+            container.innerHTML = `
+              <div style="grid-column: 1 / -1; padding:30px; text-align:center; color:var(--rust); font-family:var(--mono); border:2px solid var(--ink); background:var(--paper);">
+                Error al cargar las materias: ${json?.error || 'Error de conexión'}
+              </div>
+            `;
+          }
+          return;
+        }
+
+        const courses = json.data || [];
+
+        if (subtitleEl) {
+          subtitleEl.textContent = `${courses.length} ${courses.length === 1 ? 'ASIGNATURA REGISTRADA' : 'ASIGNATURAS REGISTRADAS'} · PERIODO OFICIAL`;
+        }
+
+        if (!container) return;
+
+        if (courses.length === 0) {
+          container.innerHTML = `
+            <div style="grid-column: 1 / -1; background:var(--paper); border:2px solid var(--ink); padding:44px 24px; text-align:center; box-shadow:4px 4px 0 var(--ink);">
+              <h3 style="font-family:var(--sans); font-size:20px; font-weight:900; text-transform:uppercase; color:var(--ink); margin:0 0 8px 0;">
+                SIN MATERIAS ASIGNADAS
+              </h3>
+              <p style="font-size:13px; color:var(--ink-soft); margin:0; font-family:var(--mono);">
+                Tu salón todavía no cuenta con materias programadas en la malla horaria del colegio.
+              </p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = courses.map((c: any) => {
+          const avgDisplay = c.hasGrades ? Number(c.currentAverage).toFixed(1) : '--';
+          const avgColor = c.hasGrades
+            ? (c.currentAverage >= 8 ? '#7EBC8E' : c.currentAverage >= 6 ? '#F4C150' : '#F08060')
+            : 'rgba(255,255,255,0.7)';
+
+          return `
+            <div style="background:var(--paper); border:2px solid var(--ink); box-shadow:5px 5px 0 var(--ink); display:flex; flex-direction:column; transition:transform 0.15s ease;" onmouseover="this.style.transform='translateY(-2px)';" onmouseout="this.style.transform='translateY(0)';">
+              
+              <!-- Card Header -->
+              <div style="background:var(--ink); padding:14px 18px; display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid var(--ink);">
+                <div>
+                  <div style="font-family:var(--mono); font-size:10px; color:rgba(255,255,255,0.65); font-weight:800; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">
+                    ${c.subject} ${c.code ? `· [${c.code}]` : ''}
+                  </div>
+                  <div style="font-family:var(--sans); font-size:17px; font-weight:900; text-transform:uppercase; color:#FFFFFF; line-height:1.2;">
+                    ${c.courseName}
+                  </div>
+                </div>
+                <div style="text-align:right;">
+                  <div style="font-family:var(--mono); font-size:22px; font-weight:900; color:${avgColor}; line-height:1;">
+                    ${avgDisplay}
+                  </div>
+                  <div style="font-family:var(--mono); font-size:9.5px; color:rgba(255,255,255,0.6); margin-top:2px; font-weight:700;">
+                    ${c.hasGrades ? '/ 10.0' : 'SIN NOTAS'}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card Body -->
+              <div style="padding:16px 18px; flex:1; display:flex; flex-direction:column; gap:14px;">
+                
+                <!-- Profesor -->
+                <div style="display:flex; align-items:center; gap:12px;">
+                  <img
+                    src="${c.teacherAvatarUrl || '/avatars/women/fila-1-columna-1.png'}"
+                    alt="${c.teacherName}"
+                    style="width:36px; height:36px; border-radius:0; border:1.5px solid var(--ink); object-fit:cover; display:block; box-shadow:2px 2px 0 var(--ink);"
+                  />
+                  <div>
+                    <div style="font-family:var(--sans); font-size:13px; font-weight:800; text-transform:uppercase; color:var(--ink);">${c.teacherName}</div>
+                    <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft);">${c.scheduleInfo || 'Horario por coordinar'}</div>
+                  </div>
+                </div>
+
+                <!-- Detalles de Salón y Actividades -->
+                <div style="background:var(--cream); border:1.5px solid var(--ink); padding:10px 14px; font-size:11.5px; display:flex; justify-content:space-between; align-items:center;">
+                  <div>
+                    <span style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft); text-transform:uppercase; font-weight:800; display:block;">Aula Asignada</span>
+                    <strong style="font-family:var(--sans); font-size:12.5px; font-weight:800; text-transform:uppercase; color:var(--ink);">${c.classroom}</strong>
+                  </div>
+                  <div style="text-align:right;">
+                    <span style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft); text-transform:uppercase; font-weight:800; display:block;">Evaluaciones</span>
+                    <strong style="font-family:var(--mono); font-size:12.5px; font-weight:900; color:var(--ink);">${c.evaluationsGraded}/${c.evaluationsTotal}</strong>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Card Footer -->
+              <div style="border-top:2px solid var(--ink); padding:12px 18px; display:flex; gap:10px; background:var(--paper);">
+                <a
+                  href="/es/app/student/grades"
+                  class="btn btn-secondary btn-sm"
+                  style="flex:1; text-align:center; font-family:var(--mono); font-size:11px; font-weight:900; text-transform:uppercase; border:1.5px solid var(--ink); border-radius:0; text-decoration:none;"
+                >
+                  Ver Calificaciones →
+                </a>
+              </div>
+
+            </div>
+          `;
+        }).join('');
+
+      } catch (err) {
+        console.error('[Hydrate Student Courses] Failed:', err);
+      }
+    }
+
+    const studentCoursesLoad = hydrateStudentCourses();
+    (window as any).SchoolOSApp?.registerPageLoad(studentCoursesLoad);
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => hydrateStudentCourses());
+    }
+  </script>
 
 </AppLayout>

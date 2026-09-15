@@ -1,4 +1,4 @@
-﻿---
+---
 // ============================================================
 // SchoolOS — Modal de Matrícula Integral de Estudiante (MVP)
 // Con Selección de Avatar por Género, Catálogo Completo y Asignación de Salón
@@ -18,6 +18,8 @@ const { id = 'studentRegisterModal', lang = 'es', schoolId } = Astro.props;
 
 <div
   id={id}
+  data-modal-id={id}
+  data-student-register-modal
   class="custom-modal-backdrop student-register-modal"
   style="display:none; position:fixed; inset:0; background:rgba(18, 17, 14, 0.75); z-index:9999; align-items:center; justify-content:center; padding:20px; overflow-y:auto;"
   role="dialog"
@@ -93,7 +95,7 @@ const { id = 'studentRegisterModal', lang = 'es', schoolId } = Astro.props;
                   <button
                     type="button"
                     class="btn btn-secondary btn-sm"
-                    onclick={`document.getElementById('${id}StudentCode').value = 'EST-2026-' + Math.floor(1000 + Math.random() * 9000);`}
+                    onclick={`document.getElementById('${id}StudentCode').value = 'EST-2026-' + Math.floor(1000 + Math.random() * 9000); if (window._updateStudentCredentials) window._updateStudentCredentials();`}
                     style="font-family:var(--mono); font-size:11px; font-weight:800; padding:6px 8px; flex-shrink:0;"
                     title="Generar nuevo código único"
                   >
@@ -188,52 +190,107 @@ const { id = 'studentRegisterModal', lang = 'es', schoolId } = Astro.props;
           </div>
         </div>
 
-        <!-- SECCIÓN 3: ACUDIENTE PRINCIPAL & ACTIVACIÓN PARENTAL -->
+        <!-- SECCIÓN 3: CREDENCIALES INSTITUCIONALES (SIN CORREO EXTERNO) -->
         <div style="background:var(--cream); border:1.5px solid var(--ink); padding:16px; margin-bottom:20px; box-shadow:2px 2px 0 var(--ink);">
-          <div style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; color:var(--rust); margin-bottom:12px; display:flex; align-items:center; gap:6px;">
-            <span>03 ·</span> Acudiente Principal & Contacto de Activación
+          <div style="font-family:var(--mono); font-size:10.5px; font-weight:800; text-transform:uppercase; color:var(--rust); margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+            <span>03 ·</span> Credenciales Institucionales de Acceso (Fácil Recordación)
           </div>
 
-          <div style="display:grid; grid-template-columns: 1.2fr 1fr 1fr; gap:12px; margin-bottom:12px;">
+          <div style="font-size:12px; color:var(--ink-soft); margin-bottom:14px; line-height:1.45;">
+            El estudiante <strong>no necesita correo personal externo</strong>. SchoolOS genera un correo institucional amigable con su nombre y apellido y una clave temporal. El estudiante podrá ingresar usando este correo o su código de matrícula.
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1.4fr 1fr; gap:12px; margin-bottom:14px;">
             <div>
-              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
-                Nombre Acudiente (Opcional)
-              </label>
-              <input type="text" id={`${id}GuardianName`} placeholder="Ej: Patricia Vargas Gómez" style="width:100%; border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-size:12.5px;" />
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
+                <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; text-transform:uppercase;">
+                  Correo Institucional Oficial *
+                </label>
+                <button
+                  type="button"
+                  id={`${id}BtnRegenerateEmail`}
+                  style="background:none; border:none; color:var(--rust); font-family:var(--mono); font-size:10px; font-weight:800; cursor:pointer; text-decoration:underline;"
+                >
+                  Regenerar ⟳
+                </button>
+              </div>
+              <input
+                type="email"
+                id={`${id}GeneratedEmail`}
+                required
+                placeholder="santiago.mendoza@colegio.edu.co"
+                style="width:100%; border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-size:12.5px; font-family:var(--mono); font-weight:700; color:var(--rust);"
+              />
+              <div style="font-size:10.5px; color:var(--ink-soft); margin-top:3px;">
+                Generado automáticamente según el nombre (editable si deseas personalizarlo).
+              </div>
             </div>
 
             <div>
-              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
-                Parentesco
-              </label>
-              <select id={`${id}GuardianRelation`} style="width:100%; border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-size:12px;">
-                <option value="Madre">Madre</option>
-                <option value="Padre">Padre</option>
-                <option value="Tutor">Tutor Legal</option>
-                <option value="Abuelo">Abuelo(a)</option>
-              </select>
-            </div>
-
-            <div>
-              <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
-                Celular / WhatsApp (Opcional)
-              </label>
-              <input type="tel" id={`${id}GuardianPhone`} placeholder="+57 312 456 7890" style="width:100%; border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-size:12.5px; font-family:var(--mono);" />
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
+                <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; text-transform:uppercase;">
+                  Contraseña Temporal Inicial *
+                </label>
+                <button
+                  type="button"
+                  id={`${id}BtnDefaultPass`}
+                  style="background:none; border:none; color:var(--rust); font-family:var(--mono); font-size:10px; font-weight:800; cursor:pointer; text-decoration:underline;"
+                >
+                  Usar Código
+                </button>
+              </div>
+              <input
+                type="text"
+                id={`${id}InitialPassword`}
+                required
+                placeholder="EST-2026-0000"
+                style="width:100%; border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-size:12.5px; font-family:var(--mono); font-weight:700;"
+              />
+              <div style="font-size:10.5px; color:var(--ink-soft); margin-top:3px;">
+                Clave provisional para su primer acceso al portal.
+              </div>
             </div>
           </div>
 
-          <div>
-            <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
-              Correo Electrónico (Opcional para MVP Piloto)
-            </label>
-            <input type="email" id={`${id}GuardianEmail`} placeholder="acudiente@gmail.com" style="width:100%; border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-size:12px; font-family:var(--mono);" />
+          <!-- DATOS FAMILIARES OPCIONALES PARA EXPEDIENTE -->
+          <div style="border-top:1px dashed var(--line); padding-top:12px; margin-top:8px;">
+            <div style="font-family:var(--mono); font-size:10px; font-weight:700; text-transform:uppercase; color:var(--ink-soft); margin-bottom:8px;">
+              Contacto Familiar / Acudiente (Opcional para Expediente Físico)
+            </div>
+            <div style="display:grid; grid-template-columns: 1.2fr 1fr 1fr; gap:12px;">
+              <div>
+                <label style="font-family:var(--mono); font-size:10px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
+                  Nombre Acudiente
+                </label>
+                <input type="text" id={`${id}GuardianName`} placeholder="Ej: Patricia Vargas Gómez" style="width:100%; border:1.5px solid var(--ink); background:var(--paper); padding:6px 10px; font-size:12px;" />
+              </div>
+
+              <div>
+                <label style="font-family:var(--mono); font-size:10px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
+                  Parentesco
+                </label>
+                <select id={`${id}GuardianRelation`} style="width:100%; border:1.5px solid var(--ink); background:var(--paper); padding:6px 10px; font-size:11.5px;">
+                  <option value="Madre">Madre</option>
+                  <option value="Padre">Padre</option>
+                  <option value="Tutor">Tutor Legal</option>
+                  <option value="Abuelo">Abuelo(a)</option>
+                </select>
+              </div>
+
+              <div>
+                <label style="font-family:var(--mono); font-size:10px; font-weight:700; display:block; margin-bottom:4px; text-transform:uppercase;">
+                  Celular / WhatsApp
+                </label>
+                <input type="tel" id={`${id}GuardianPhone`} placeholder="+57 312 456 7890" style="width:100%; border:1.5px solid var(--ink); background:var(--paper); padding:6px 10px; font-size:12px; font-family:var(--mono);" />
+              </div>
+            </div>
           </div>
         </div>
 
         <!-- FOOTER ACTIONS -->
         <div style="display:flex; justify-content:space-between; align-items:center; border-top:1.5px solid var(--line); padding-top:16px;">
           <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">
-            Se descontará 1 plaza del plan institucional y se enviará invitación al acudiente.
+            Se descontará 1 cupo del plan y se activará la credencial institucional de inmediato.
           </div>
 
           <div style="display:flex; gap:10px;">
@@ -241,7 +298,7 @@ const { id = 'studentRegisterModal', lang = 'es', schoolId } = Astro.props;
               Cancelar
             </button>
             <button type="submit" id={`${id}SubmitBtn`} class="btn btn-primary" style="font-weight:800;">
-              Matricular y Enviar Invitación
+              Matricular Estudiante
             </button>
           </div>
         </div>
@@ -268,8 +325,11 @@ const { id = 'studentRegisterModal', lang = 'es', schoolId } = Astro.props;
   }
 
   function getModalId(): string {
-    const modal = document.querySelector('[data-student-register-modal]') as HTMLElement || document.getElementById('StudentRegisterModal');
-    return modal ? modal.id : 'StudentRegisterModal';
+    const modal = (document.querySelector('[data-student-register-modal]') as HTMLElement) ||
+                  (document.querySelector('.student-register-modal') as HTMLElement) ||
+                  document.getElementById('studentRegisterModal') ||
+                  document.getElementById('StudentRegisterModal');
+    return modal ? modal.id : 'studentRegisterModal';
   }
 
   async function hydrateGradeCapacities(targetSchoolId?: string) {
@@ -331,6 +391,56 @@ const { id = 'studentRegisterModal', lang = 'es', schoolId } = Astro.props;
     }
   }
 
+  function getSchoolSlug(): string {
+    try {
+      const user = JSON.parse(localStorage.getItem('schoolos-user') || '{}');
+      if (user.schoolSlug) return user.schoolSlug;
+    } catch (_) {}
+    return (window as any).SchoolOSApp?.currentSchoolSlug || localStorage.getItem('schoolos_tenant_slug') || 'colegio';
+  }
+
+  function getSchoolDomain(): string {
+    const slug = getSchoolSlug().toLowerCase().replace(/[^a-z0-9]/g, '') || 'colegio';
+    return `${slug}.edu.co`;
+  }
+
+  function generateStudentEmailLocalPart(fullName: string): string {
+    const clean = (fullName || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, '')
+      .trim();
+    const parts = clean.split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return 'estudiante';
+    if (parts.length === 1) return parts[0];
+    if (parts.length === 2) return `${parts[0]}.${parts[1]}`;
+    if (parts.length === 3) return `${parts[0]}.${parts[1]}`;
+    return `${parts[0]}.${parts[2] || parts[1]}`;
+  }
+
+  function updateCredentialsPreview(force: boolean = false) {
+    const modalId = getModalId();
+    const nameInput = (document.getElementById(modalId + 'Name') || document.getElementById(modalId + 'StudentName')) as HTMLInputElement;
+    const codeInput = document.getElementById(modalId + 'StudentCode') as HTMLInputElement;
+    const emailInput = document.getElementById(modalId + 'GeneratedEmail') as HTMLInputElement;
+    const passInput = document.getElementById(modalId + 'InitialPassword') as HTMLInputElement;
+
+    const name = (nameInput?.value || '').trim();
+    const code = (codeInput?.value || '').trim();
+    const domain = getSchoolDomain();
+    const localPart = generateStudentEmailLocalPart(name);
+
+    if (emailInput && (force || emailInput.dataset.touched !== 'true')) {
+      emailInput.value = `${localPart}@${domain}`;
+    }
+    if (passInput && (force || (!passInput.value || passInput.dataset.touched !== 'true'))) {
+      passInput.value = code || 'Estudiante2026*';
+    }
+  }
+
+  (window as any)._updateStudentCredentials = (force?: boolean) => updateCredentialsPreview(force ?? false);
+
   (window as any).openStudentRegisterModal = function(customSchoolId?: string) {
     const modalId = getModalId();
     const modal = document.getElementById(modalId);
@@ -338,6 +448,19 @@ const { id = 'studentRegisterModal', lang = 'es', schoolId } = Astro.props;
 
     const schoolInput = document.getElementById(modalId + 'SchoolId') as HTMLInputElement;
     const codeInput = document.getElementById(modalId + 'StudentCode') as HTMLInputElement;
+    const emailInput = document.getElementById(modalId + 'GeneratedEmail') as HTMLInputElement;
+    const passInput = document.getElementById(modalId + 'InitialPassword') as HTMLInputElement;
+    const feedback = document.getElementById(modalId + 'Feedback');
+    const submitBtn = document.getElementById(modalId + 'SubmitBtn') as HTMLButtonElement;
+
+    if (feedback) {
+      feedback.style.display = 'none';
+      feedback.innerHTML = '';
+    }
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Matricular Estudiante';
+    }
 
     const sId = customSchoolId || getActiveTenantSchoolId();
     if (schoolInput) {
@@ -350,23 +473,62 @@ const { id = 'studentRegisterModal', lang = 'es', schoolId } = Astro.props;
       codeInput.value = `EST-${year}-${rand}`;
     }
 
+    if (emailInput) {
+      emailInput.dataset.touched = 'false';
+    }
+
+    if (passInput) {
+      passInput.dataset.touched = 'false';
+    }
+
+    updateCredentialsPreview(true);
     hydrateGradeCapacities(sId);
     modal.style.display = 'flex';
   };
 
-  function generateBeautifulEmail(fullName: string, code: string) {
-    const clean = fullName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9\s]/g, "").trim().split(/\s+/);
-    const base = clean.slice(0, 2).join('.');
-    let shortCode = code.replace(/[^0-9]/g, '').slice(-3);
-    if (!shortCode) shortCode = String(Math.floor(100 + Math.random() * 900));
-    return base + '.' + shortCode + '@schoolos.edu.co';
+  function onReady(fn: () => void) {
+    if (document.readyState !== 'loading') {
+      fn();
+    } else {
+      document.addEventListener('DOMContentLoaded', fn);
+    }
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
+  onReady(() => {
     const modalId = getModalId();
     const form = document.getElementById(modalId + 'Form');
     const modal = document.getElementById(modalId);
     if (!form || !modal) return;
+
+    const nameInput = (document.getElementById(modalId + 'Name') || document.getElementById(modalId + 'StudentName')) as HTMLInputElement;
+    nameInput?.addEventListener('input', () => updateCredentialsPreview(false));
+
+    const codeInput = document.getElementById(modalId + 'StudentCode') as HTMLInputElement;
+    codeInput?.addEventListener('input', () => updateCredentialsPreview(false));
+
+    const emailInput = document.getElementById(modalId + 'GeneratedEmail') as HTMLInputElement;
+    emailInput?.addEventListener('input', () => {
+      emailInput.dataset.touched = 'true';
+    });
+
+    const passInput = document.getElementById(modalId + 'InitialPassword') as HTMLInputElement;
+    passInput?.addEventListener('input', () => {
+      passInput.dataset.touched = 'true';
+    });
+
+    const btnRegenerateEmail = document.getElementById(modalId + 'BtnRegenerateEmail');
+    btnRegenerateEmail?.addEventListener('click', () => {
+      if (emailInput) emailInput.dataset.touched = 'false';
+      updateCredentialsPreview(true);
+    });
+
+    const btnDefaultPass = document.getElementById(modalId + 'BtnDefaultPass');
+    btnDefaultPass?.addEventListener('click', () => {
+      if (passInput && codeInput) {
+        passInput.value = codeInput.value.trim() || 'Estudiante2026*';
+        passInput.dataset.touched = 'false';
+      }
+    });
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -374,53 +536,95 @@ const { id = 'studentRegisterModal', lang = 'es', schoolId } = Astro.props;
       const feedback = document.getElementById(modalId + 'Feedback');
 
       const sId = (document.getElementById(modalId + 'SchoolId') as HTMLInputElement)?.value || getActiveTenantSchoolId();
-      const name = (document.getElementById(modalId + 'StudentName') as HTMLInputElement)?.value.trim();
+      const nameInput = (document.getElementById(modalId + 'Name') || document.getElementById(modalId + 'StudentName')) as HTMLInputElement;
+      const name = nameInput?.value.trim();
       const studentCode = (document.getElementById(modalId + 'StudentCode') as HTMLInputElement)?.value.trim();
       const avatarUrl = (document.getElementById(modalId + 'AvatarUrl') as HTMLInputElement)?.value;
       const gradeLevel = (document.getElementById(modalId + 'Grade') as HTMLSelectElement)?.value;
       const groupAssignment = (document.getElementById(modalId + 'GroupAssignment') as HTMLSelectElement)?.value;
-      const guardianEmail = (document.getElementById(modalId + 'GuardianEmail') as HTMLInputElement)?.value.trim().toLowerCase();
+      const generatedEmail = (document.getElementById(modalId + 'GeneratedEmail') as HTMLInputElement)?.value.trim().toLowerCase();
+      const initialPassword = (document.getElementById(modalId + 'InitialPassword') as HTMLInputElement)?.value.trim() || studentCode;
 
-      if (!name || !studentCode) throw new Error('Nombre y código de matrícula son obligatorios.');
+      const guardianName = (document.getElementById(modalId + 'GuardianName') as HTMLInputElement)?.value.trim();
+      const guardianRelation = (document.getElementById(modalId + 'GuardianRelation') as HTMLSelectElement)?.value;
+      const guardianPhone = (document.getElementById(modalId + 'GuardianPhone') as HTMLInputElement)?.value.trim();
 
-      const studentEmail = guardianEmail || generateBeautifulEmail(name, studentCode);
+      if (!name || !studentCode) {
+        alert('Nombre y código de matrícula son obligatorios.');
+        return;
+      }
+
       const group = (groupAssignment && groupAssignment !== 'auto') ? groupAssignment : (gradeLevel + '-1');
 
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Creando cuenta del estudiante…';
+        submitBtn.textContent = 'Matriculando estudiante…';
       }
 
       try {
-        const defaultPassword = studentCode;
-        const res = await studentService.createStudent({
-          email: studentEmail,
-          password: defaultPassword,
+        const res: any = await studentService.createStudent({
+          email: generatedEmail,
+          password: initialPassword,
           name,
           role: 'student',
           school_id: sId,
           document_id: studentCode,
           specialty: gradeLevel,
           job_title: group,
-          avatar_url: avatarUrl
+          avatar_url: avatarUrl,
+          guardianName,
+          guardianRelation,
+          guardianPhone,
         });
 
         if (feedback) {
-          feedback.style.cssText = 'display:block; background:#E6F4EA; border-bottom:2px solid var(--sage-dark); color:var(--sage-dark); padding:12px 20px; font-family:var(--mono); font-size:12px; font-weight:700;';
-          feedback.innerHTML = '✓ Estudiante matriculado exitosamente.<br/>La contraseña para ingresar es: <strong>' + defaultPassword + '</strong> (Se le pedirá cambiarla).';
+          feedback.style.cssText = 'display:block; background:#E6F4EA; border-bottom:2px solid var(--sage-dark); color:var(--ink); padding:16px 20px; font-size:12.5px;';
+          feedback.innerHTML = `
+            <div style="font-weight:800; color:var(--sage-dark); font-size:14px; margin-bottom:6px;">
+              ✓ Estudiante Matriculado Exitosamente
+            </div>
+            <div style="font-size:12px; margin-bottom:10px; color:var(--ink);">
+              Cuenta oficial generada en SchoolOS (sin despacho de correo externo). Entrega estas credenciales al estudiante o acudiente:
+            </div>
+            <div style="background:#FFFFFF; border:1.5px solid var(--ink); padding:12px 16px; font-family:var(--mono); font-size:12px; margin-bottom:12px; box-shadow:2px 2px 0 var(--ink);">
+              <div><strong>ESTUDIANTE:</strong> ${name}</div>
+              <div style="margin-top:4px;"><strong>CORREO INSTITUCIONAL:</strong> <span style="color:var(--rust); font-weight:800;">${generatedEmail}</span></div>
+              <div style="margin-top:4px;"><strong>CÓDIGO ALTERNO:</strong> <strong>${studentCode}</strong></div>
+              <div style="margin-top:4px;"><strong>CLAVE TEMPORAL:</strong> <strong>${initialPassword}</strong></div>
+            </div>
+            <div style="font-size:11.5px; color:var(--ink-soft); margin-bottom:12px;">
+              * En su primer inicio de sesión, el estudiante accederá con estas credenciales y verá la pantalla oficial para elegir su avatar y fijar su contraseña personal.
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button type="button" class="btn btn-secondary btn-sm" id="${modalId}BtnCopy" style="font-family:var(--mono); font-weight:800; font-size:11px;">
+                📋 Copiar Credenciales
+              </button>
+              <button type="button" class="btn btn-primary btn-sm" id="${modalId}BtnCloseReload" style="font-family:var(--mono); font-weight:800; font-size:11px;">
+                Cerrar y Actualizar Lista ↵
+              </button>
+            </div>
+          `;
+
+          const copyBtn = document.getElementById(`${modalId}BtnCopy`);
+          copyBtn?.addEventListener('click', () => {
+            navigator.clipboard.writeText(`Credenciales de Acceso SchoolOS\nEstudiante: ${name}\nUsuario / Correo: ${generatedEmail}\nCódigo de Acceso: ${studentCode}\nClave Temporal: ${initialPassword}\nPortal: ${window.location.origin}/login`);
+            copyBtn.textContent = 'Copiadas ✓';
+            setTimeout(() => { copyBtn.textContent = '📋 Copiar Credenciales'; }, 3000);
+          });
+
+          const closeBtn = document.getElementById(`${modalId}BtnCloseReload`);
+          closeBtn?.addEventListener('click', () => {
+            modal.style.display = 'none';
+            (form as HTMLFormElement).reset();
+            window.location.reload();
+          });
         }
 
         if (submitBtn) {
           submitBtn.textContent = 'Matriculado ✓';
         }
 
-        window.dispatchEvent(new CustomEvent('student:enrolled', { detail: { ok: true, id: (res as any)?.userId, name } }));
-
-        setTimeout(function() {
-          modal.style.display = 'none';
-          (form as HTMLFormElement).reset();
-          window.location.reload();
-        }, 1200);
+        window.dispatchEvent(new CustomEvent('student:enrolled', { detail: { ok: true, id: res?.userId, name, email: generatedEmail } }));
 
       } catch (err: any) {
         console.error('Error matriculando estudiante:', err);

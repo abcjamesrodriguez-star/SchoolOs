@@ -1,6 +1,18 @@
 import type { APIRoute } from 'astro';
 import { requireAuth } from '../../../lib/apiAuth';
 
+async function resolveSchoolId(auth: any, requestedSchoolId?: string | null): Promise<string | null> {
+  if (auth.user.role === 'school_admin') {
+    return auth.user.school_id;
+  }
+  let target = (requestedSchoolId || auth.user.school_id || '').trim();
+  if (target && !target.includes('-')) {
+    const { data: s } = await auth.admin.from('schools').select('id').eq('slug', target).maybeSingle();
+    if (s?.id) target = s.id;
+  }
+  return target || null;
+}
+
 export const POST: APIRoute = async ({ request }) => {
   try {
     const auth = await requireAuth(request, ['school_admin', 'super_admin']);
@@ -8,14 +20,10 @@ export const POST: APIRoute = async ({ request }) => {
 
     const body = await request.json();
     const { action } = body;
-    const targetSchoolId = body.schoolId || auth.user.school_id;
+    const targetSchoolId = await resolveSchoolId(auth, body.schoolId);
 
     if (!targetSchoolId) {
       return new Response(JSON.stringify({ ok: false, error: 'Falta schoolId' }), { status: 400 });
-    }
-
-    if (auth.user.role === 'school_admin' && targetSchoolId !== auth.user.school_id) {
-      return new Response(JSON.stringify({ ok: false, error: 'No tienes permisos para modificar capacidades de otra institución.' }), { status: 403 });
     }
 
     const supabase = auth.admin;
@@ -61,14 +69,10 @@ export const GET: APIRoute = async ({ request }) => {
     if (!auth.ok) return auth.response;
 
     const url = new URL(request.url);
-    const targetSchoolId = url.searchParams.get('schoolId') || auth.user.school_id;
+    const targetSchoolId = await resolveSchoolId(auth, url.searchParams.get('schoolId'));
 
     if (!targetSchoolId) {
       return new Response(JSON.stringify({ ok: false, error: 'Falta schoolId' }), { status: 400 });
-    }
-
-    if (auth.user.role === 'school_admin' && targetSchoolId !== auth.user.school_id) {
-      return new Response(JSON.stringify({ ok: false, error: 'No tienes permisos para consultar capacidades de otra institución.' }), { status: 403 });
     }
 
     const { data, error } = await auth.admin

@@ -8,6 +8,7 @@ import TeacherRegisterModal from '../../../../../components/app/school-admin/Tea
 import TeacherScheduleModal from '../../../../../components/app/school-admin/TeacherScheduleModal.astro';
 import TeacherSubstituteModal from '../../../../../components/app/school-admin/TeacherSubstituteModal.astro';
 import TeacherDeactivateModal from '../../../../../components/app/school-admin/TeacherDeactivateModal.astro';
+import TeacherResetPasswordModal from '../../../../../components/app/school-admin/TeacherResetPasswordModal.astro';
 
 const lang = 'es';
 ---
@@ -109,6 +110,7 @@ const lang = 'es';
   <TeacherSubstituteModal id="teacherSubstituteModal" lang={lang} teachers={[]} />
   <TeacherRegisterModal id="teacherRegisterModal" lang={lang} />
   <TeacherDeactivateModal id="teacherDeactivateModal" />
+  <TeacherResetPasswordModal id="teacherResetPasswordModal" />
 </AppLayout>
 
 <script>
@@ -141,6 +143,8 @@ const lang = 'es';
 
   function renderLiveTeachers(teachers: any[]) {
     cachedTeachers = teachers || [];
+    (window as any).cachedTeachers = cachedTeachers;
+    console.log('[renderLiveTeachers] Recibidos docentes:', teachers);
     const container = document.getElementById('departmentsContainer');
     if (!container) return;
 
@@ -312,6 +316,16 @@ const lang = 'es';
                         <button
                           type="button"
                           class="btn btn-secondary btn-sm"
+                          onclick="window._openTeacherResetPasswordModal(${idx})"
+                          style="font-size:10.5px; padding:4px 8px; font-weight:800; border-color:var(--ink);"
+                          title="Restablecer contraseña del docente"
+                        >
+                          🔑 Clave
+                        </button>
+
+                        <button
+                          type="button"
+                          class="btn btn-secondary btn-sm"
                           onclick="window._openDeactivateModal(${idx})"
                           style="font-size:10.5px; padding:4px 8px; font-weight:800; color:var(--rust);"
                           title="Gestionar novedad, suspender o dar de baja"
@@ -359,28 +373,29 @@ const lang = 'es';
     }
   };
 
-  (window as any)._editTeacher = function(idx: number) {
-    const teacher = cachedTeachers[idx];
+  (window as any)._editTeacher = function(idxOrId: any) {
+    const teacher = typeof idxOrId === 'number' ? cachedTeachers[idxOrId] : cachedTeachers.find(t => t.id === idxOrId);
     if (teacher && (window as any).openTeacherModal) {
       (window as any).openTeacherModal(teacher);
     }
   };
 
-  (window as any)._openDeactivateModal = function(idx: number) {
-    const teacher = cachedTeachers[idx];
+  (window as any)._openDeactivateModal = function(idxOrId: any) {
+    const teacher = typeof idxOrId === 'number' ? cachedTeachers[idxOrId] : cachedTeachers.find(t => t.id === idxOrId);
     if (teacher && (window as any).openTeacherDeactivateModal) {
       (window as any).openTeacherDeactivateModal(teacher);
     }
   };
 
-  (window as any)._viewTeacherSchedule = function(idx: number) {
-    const teacher = cachedTeachers[idx];
+  (window as any)._viewTeacherSchedule = function(idxOrId: any) {
+    const teacher = typeof idxOrId === 'number' ? cachedTeachers[idxOrId] : cachedTeachers.find(t => t.id === idxOrId);
     if (teacher && (window as any).openTeacherScheduleModal) {
       (window as any).openTeacherScheduleModal(teacher, currentSchoolId);
     }
   };
 
   // ── FILTROS PERFECCIONADOS ────────────────────────────────────
+  let filtersWired = false;
   function wireLiveTeacherFilters() {
     const searchInput = document.getElementById('teacherSearchInput') as HTMLInputElement;
     const filterCap = document.getElementById('filterCapacity') as HTMLSelectElement;
@@ -410,23 +425,52 @@ const lang = 'es';
       });
     }
 
-    searchInput?.addEventListener('input', applyFilters);
-    filterCap?.addEventListener('change', applyFilters);
+    if (!filtersWired) {
+      filtersWired = true;
+      searchInput?.addEventListener('input', applyFilters);
+      filterCap?.addEventListener('change', applyFilters);
+    }
   }
 
   // ── HIDRATACIÓN PRINCIPAL ──────────────────────────────────────
+  let isHydrating = false;
   async function hydrateTeachers() {
+    if (isHydrating) return;
+    isHydrating = true;
     try {
       const context = await schoolAdminTenantService.getTenantContext();
       currentSchoolId = context?.school?.id || context?.school?.slug || '';
-      if (!currentSchoolId) return;
 
-      await loadTeacherHours();
-      const teachers = await schoolAdminTenantService.getTenantUsers('teacher');
-      renderLiveTeachers(teachers);
+      await loadTeacherHours().catch(() => {});
+
+      let teachers = await schoolAdminTenantService.getTenantUsers('teacher');
+      if (!teachers || teachers.length === 0) {
+        const directRes: any = await teacherService.getTeachers(currentSchoolId || undefined);
+        const list = directRes?.data || directRes?.teachers || [];
+        if (list.length > 0) {
+          teachers = list.map((row: any) => ({
+            id: row.id,
+            email: row.email,
+            name: row.name,
+            role: row.role || 'teacher',
+            schoolId: row.school_id || row.schoolId,
+            status: row.status,
+            avatarUrl: row.avatar_url || row.avatarUrl,
+            phone: row.phone,
+            documentId: row.document_id || row.documentId,
+            jobTitle: row.job_title || row.jobTitle,
+            specialty: row.specialty,
+          }));
+        }
+      }
+
+      console.log('[hydrateTeachers] Docentes finales listos para render:', teachers);
+      renderLiveTeachers(teachers || []);
       wireLiveTeacherFilters();
     } catch (error) {
       console.warn('No se pudo hidratar docentes del tenant:', error);
+    } finally {
+      isHydrating = false;
     }
   }
 

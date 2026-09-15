@@ -1,23 +1,31 @@
 import type { APIRoute } from 'astro';
 import { requireAuth } from '../../../lib/apiAuth';
 
+async function resolveSchoolId(auth: any, requestedSchoolId?: string | null): Promise<string | null> {
+  if (auth.user.role === 'school_admin') {
+    return auth.user.school_id;
+  }
+  let target = (requestedSchoolId || auth.user.school_id || '').trim();
+  if (target && !target.includes('-')) {
+    const { data: s } = await auth.admin.from('schools').select('id').eq('slug', target).maybeSingle();
+    if (s?.id) target = s.id;
+  }
+  return target || null;
+}
+
 export const GET: APIRoute = async ({ request }) => {
   try {
     const auth = await requireAuth(request, ['school_admin', 'super_admin']);
     if (!auth.ok) return auth.response;
 
     const url = new URL(request.url);
-    const targetSchoolId = url.searchParams.get('schoolId') || auth.user.school_id;
+    const targetSchoolId = await resolveSchoolId(auth, url.searchParams.get('schoolId'));
     const action = url.searchParams.get('action');
     const teacherId = url.searchParams.get('teacherId');
     const supabase = auth.admin;
 
     if (!targetSchoolId) {
       return new Response(JSON.stringify({ ok: false, error: 'Falta schoolId' }), { status: 400 });
-    }
-
-    if (auth.user.role === 'school_admin' && targetSchoolId !== auth.user.school_id) {
-      return new Response(JSON.stringify({ ok: false, error: 'No tienes permisos para consultar horarios de otra institución.' }), { status: 403 });
     }
 
     // 1. Mapeo de horas por docente
@@ -99,14 +107,10 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     if (action === 'create_class_slot') {
-      const targetSchoolId = body.schoolId || auth.user.school_id;
+      const targetSchoolId = await resolveSchoolId(auth, body.schoolId);
 
       if (!targetSchoolId) {
         return new Response(JSON.stringify({ ok: false, error: 'Falta schoolId' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
-      }
-
-      if (auth.user.role === 'school_admin' && targetSchoolId !== auth.user.school_id) {
-        return new Response(JSON.stringify({ ok: false, error: 'No tienes permisos para programar clases en otra institución.' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
       }
 
       const { subjectId, teacherId, classroom, slotId, dayOfWeek, dayIndex, startTime, endTime, roomLocation } = body;
@@ -166,6 +170,30 @@ export const POST: APIRoute = async ({ request }) => {
         });
 
       if (insErr) throw insErr;
+
+      // Auto-matricular en course_students a todos los estudiantes de este salón
+      if (classroom && targetSchoolId) {
+        try {
+          const { data: salonStudents } = await supabase
+            .from('users')
+            .select('id')
+            .eq('school_id', targetSchoolId)
+            .eq('role', 'student')
+            .eq('job_title', classroom);
+
+          if (salonStudents && salonStudents.length > 0) {
+            const enrollments = salonStudents.map((s: any) => ({
+              course_id: subjectId,
+              student_id: s.id,
+              status: 'enrolled',
+            }));
+            await supabase.from('course_students').upsert(enrollments, { onConflict: 'course_id,student_id' });
+          }
+        } catch (enrErr) {
+          console.warn('[schedule] Error auto-enrolling students for class slot:', enrErr);
+        }
+      }
+
       return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });
     }
 

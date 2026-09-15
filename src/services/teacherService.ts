@@ -1,4 +1,4 @@
-﻿import { apiClient, type ApiResponse } from '../lib/apiClient';
+import { apiClient, type ApiResponse } from '../lib/apiClient';
 
 export interface CreateTeacherPayload {
   email: string;
@@ -99,6 +99,20 @@ export const teacherService = {
       courseId,
     });
   },
+  async assignSingleLabToken(labId: string, courseId: string, studentId: string): Promise<any> {
+    return apiClient.post('/api/teacher/labs', {
+      action: 'assign_single',
+      labId,
+      courseId,
+      studentId,
+    });
+  },
+  async refreshLabToken(tokenId: string): Promise<any> {
+    return apiClient.post('/api/teacher/labs', {
+      action: 'refresh_token',
+      tokenId,
+    });
+  },
   async launchLab(courseId: string, labId: string): Promise<any> {
     return apiClient.post('/api/teacher/labs', {
       action: 'launch',
@@ -108,5 +122,16 @@ export const teacherService = {
   },
   async getTeacherStudents(): Promise<ApiResponse<any[]>> {
     return apiClient.get('/api/teacher/students');
+  },
+  async getCourseStudents(courseId: string): Promise<any> {
+    return apiClient.get(`/api/teacher/labs?action=students&courseId=${encodeURIComponent(courseId)}`);
+  },
+  async downloadLabExcel(courseId: string): Promise<void> {
+    const filename = `Reporte_Laboratorio_Quimica_${new Date().toISOString().slice(0, 10)}.xlsx`;
+    return apiClient.download(`/api/teacher/labs?action=export_excel&courseId=${encodeURIComponent(courseId)}`, filename);
+  },
+  async downloadLabCsv(courseId: string): Promise<void> {
+    const filename = `Reporte_Laboratorio_Quimica_${new Date().toISOString().slice(0, 10)}.csv`;
+    return apiClient.download(`/api/teacher/labs?action=export_csv&courseId=${encodeURIComponent(courseId)}`, filename);
   },
 };

@@ -123,7 +123,11 @@ const lang = 'es';
       renderTable(filtered);
     });
 
-    document.addEventListener('DOMContentLoaded', loadDirectory);
+    if (document.readyState !== 'loading') {
+      loadDirectory();
+    } else {
+      document.addEventListener('DOMContentLoaded', loadDirectory);
+    }
   </script>
 
 </AppLayout>

@@ -1,4 +1,4 @@
-﻿---
+---
 // ============================================================
 // SchoolOS — Modal para Asignar Docente a una Materia Curricular
 // Cero emojis, estilo sobrio institucional
@@ -12,6 +12,8 @@ const { id = 'assignTeacherSubjectModal' } = Astro.props;
 
 <div
   id={id}
+  data-modal-id={id}
+  data-assign-teacher-modal
   class="custom-modal-backdrop"
   style="display:none; position:fixed; inset:0; background:rgba(18, 17, 14, 0.75); z-index:9999; align-items:center; justify-content:center; padding:20px; overflow-y:auto;"
   role="dialog"
@@ -97,8 +99,10 @@ const { id = 'assignTeacherSubjectModal' } = Astro.props;
   }
 
   function getModalId(): string {
-    const modal = document.querySelector('[data-assign-teacher-modal]') as HTMLElement || document.getElementById('AssignTeacherSubjectModal');
-    return modal ? modal.id : 'AssignTeacherSubjectModal';
+    const modal = (document.querySelector('[data-assign-teacher-modal]') as HTMLElement) ||
+                  document.getElementById('assignTeacherSubjectModal') ||
+                  document.getElementById('AssignTeacherSubjectModal');
+    return modal ? modal.id : 'assignTeacherSubjectModal';
   }
 
   let currentSchoolId = '';

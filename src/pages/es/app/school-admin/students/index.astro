@@ -279,6 +279,16 @@ const lang = 'es';
 
               <button
                 type="button"
+                class="btn btn-secondary btn-sm"
+                onclick="window._openStudentCitation(${idx})"
+                style="font-size:10.5px; padding:4px 8px; font-weight:700;"
+                title="Citar Acudiente a Diálogo Formativo"
+              >
+                Citar
+              </button>
+
+              <button
+                type="button"
                 class="btn btn-primary btn-sm"
                 onclick="window._openStudentDetails(${idx})"
                 style="font-size:10.5px; padding:4px 10px; font-weight:800;"
@@ -291,6 +301,13 @@ const lang = 'es';
       `;
     }).join('');
   }
+
+  (window as any)._openStudentCitation = function(idx: number) {
+    const student = cachedStudents[idx];
+    if (student && (window as any).openStudentCitationModal) {
+      (window as any).openStudentCitationModal(student);
+    }
+  };
 
   (window as any)._openStudentDetails = function(idx: number) {
     const student = cachedStudents[idx];

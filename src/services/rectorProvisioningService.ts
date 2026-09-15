@@ -1,11 +1,9 @@
 import { createAdminSupabase } from '../lib/supabase-admin';
-import { createConfirmToken, hashToken, getConfirmUrl } from '../lib/jwtConfirm';
-import { sendConfirmRectorEmail } from '../lib/email';
 
 export interface ProvisionResult {
   userId: string;
   confirmUrl: string;
-  emailSent?: boolean;
+  emailSent: boolean;
 }
 
 export interface RectorProvisioningPayload {
@@ -21,11 +19,89 @@ export interface RectorProvisioningPayload {
   jobTitle?: string;
   specialty?: string | null;
   appointmentDate?: string | null;
+  siteUrl?: string;
+}
+
+function resolveSiteUrl(providedUrl?: string): string {
+  if (providedUrl && providedUrl.startsWith('http')) {
+    return providedUrl.replace(/\/$/, '');
+  }
+  const envUrl = typeof import.meta !== 'undefined' && import.meta.env?.SITE_URL
+    ? (import.meta.env.SITE_URL as string)
+    : (typeof process !== 'undefined' ? process.env.SITE_URL : undefined);
+  return (envUrl || 'http://localhost:4321').replace(/\/$/, '');
 }
 
 /**
- * Servicio de servidor para aprovisionar la cuenta directiva de una institución.
- * Se ejecuta exclusivamente en Node.js (Astro SSR y API Routes).
+ * Genera el enlace criptográfico oficial de Supabase Auth para invitar o recuperar acceso.
+ */
+export async function generateRectorInviteLink(email: string, siteUrl?: string): Promise<string> {
+  const admin = createAdminSupabase();
+  const baseUrl = resolveSiteUrl(siteUrl);
+  const redirectTo = `${baseUrl}/cambiar-password`;
+  const cleanEmail = email.trim().toLowerCase();
+
+  try {
+    const { data: inviteLinkData, error: inviteErr } = await admin.auth.admin.generateLink({
+      type: 'invite',
+      email: cleanEmail,
+      options: { redirectTo },
+    });
+
+    if (!inviteErr && inviteLinkData?.properties?.action_link) {
+      return inviteLinkData.properties.action_link;
+    }
+  } catch (_) {}
+
+  // Fallback si el usuario ya confirmó o existe: generar link de recuperación oficial
+  try {
+    const { data: recoveryData, error: recErr } = await admin.auth.admin.generateLink({
+      type: 'recovery',
+      email: cleanEmail,
+      options: { redirectTo },
+    });
+
+    if (!recErr && recoveryData?.properties?.action_link) {
+      return recoveryData.properties.action_link;
+    }
+  } catch (_) {}
+
+  return `${baseUrl}/cambiar-password`;
+}
+
+/**
+ * Reenvía la invitación oficial por correo a través del motor SMTP nativo de Supabase Cloud.
+ */
+export async function resendRectorInviteEmail(email: string, siteUrl?: string): Promise<{ ok: boolean; error?: string }> {
+  const admin = createAdminSupabase();
+  const baseUrl = resolveSiteUrl(siteUrl);
+  const redirectTo = `${baseUrl}/cambiar-password`;
+  const cleanEmail = email.trim().toLowerCase();
+
+  try {
+    const { error } = await admin.auth.admin.inviteUserByEmail(cleanEmail, {
+      redirectTo,
+    });
+
+    if (error) {
+      // Si ya está registrado, enviar correo de recuperación de contraseña nativo
+      const { error: resetErr } = await admin.auth.resetPasswordForEmail(cleanEmail, {
+        redirectTo,
+      });
+      if (resetErr) {
+        return { ok: false, error: resetErr.message };
+      }
+    }
+
+    return { ok: true };
+  } catch (err: any) {
+    return { ok: false, error: err?.message || 'Error reenviando invitación con Supabase SMTP.' };
+  }
+}
+
+/**
+ * Aprovisiona la cuenta de directivo/rector usando exclusivamente Supabase Auth Nativo.
+ * Despacha el correo de invitación a través del SMTP configurado en el Dashboard de Supabase.
  */
 export async function provisionRectorAccount(payload: RectorProvisioningPayload): Promise<ProvisionResult> {
   if (typeof window !== 'undefined') {
@@ -34,34 +110,44 @@ export async function provisionRectorAccount(payload: RectorProvisioningPayload)
 
   const admin = createAdminSupabase();
   const email = payload.email.trim().toLowerCase();
+  const baseUrl = resolveSiteUrl(payload.siteUrl);
+  const redirectTo = `${baseUrl}/cambiar-password`;
   let targetUserId: string | null = null;
+  let emailSent = false;
 
-  // 1. Buscar si el usuario ya existe en Supabase Auth
+  // 1. Verificar si ya existe en Supabase Auth
+  let existingAuthUser: any = null;
   try {
     const { data: userList } = await admin.auth.admin.listUsers({ perPage: 1000 });
-    const existing = userList?.users?.find(u => (u.email || '').toLowerCase() === email);
-    if (existing) {
-      targetUserId = existing.id;
-    }
+    existingAuthUser = userList?.users?.find((u: any) => (u.email || '').toLowerCase() === email);
   } catch (listErr) {
     console.warn('[rectorProvisioningService] Advertencia consultando listUsers:', listErr);
   }
 
-  // 2. Si no existe en Auth, crearlo administrativamente
-  if (!targetUserId) {
-    const { data: created, error: createErr } = await admin.auth.admin.createUser({
-      email,
-      password: payload.password || 'Rector2026!*',
-      email_confirm: true,
-      user_metadata: {
+  // Si existe en Auth pero NO está confirmado (por ejemplo, pruebas anteriores o borrado previo sin confirmar),
+  // eliminamos el usuario obsoleto para generar una invitación 100% limpia y sin tokens caducados.
+  if (existingAuthUser && !existingAuthUser.confirmed_at) {
+    try {
+      await admin.auth.admin.deleteUser(existingAuthUser.id);
+      existingAuthUser = null;
+    } catch (_) {}
+  }
+
+  // 2. Invitar o re-notificar nativamente con Supabase Auth (despacha correo por Supabase SMTP)
+  if (!existingAuthUser) {
+    // Usuario nuevo o recreado: invitar limpiamente
+    const { data: inviteData, error: inviteErr } = await admin.auth.admin.inviteUserByEmail(email, {
+      data: {
         name: payload.name.trim(),
         role: 'school_admin',
         school_id: payload.schoolId,
+        avatar_url: payload.avatarUrl || null,
       },
+      redirectTo,
     });
 
-    if (createErr) {
-      // Si falló por ya existir, buscarlo en public.users
+    if (inviteErr) {
+      // Si por alguna razón colisiona, buscarlo en public.users
       const { data: existingDbUser } = await admin
         .from('users')
         .select('id')
@@ -71,19 +157,26 @@ export async function provisionRectorAccount(payload: RectorProvisioningPayload)
       if (existingDbUser?.id) {
         targetUserId = existingDbUser.id;
       } else {
-        throw createErr;
+        throw inviteErr;
       }
-    } else if (created.user) {
-      targetUserId = created.user.id;
+    } else if (inviteData?.user) {
+      targetUserId = inviteData.user.id;
+      emailSent = true;
     }
+  } else {
+    // Usuario ya confirmado previamente: enviar correo de reseteo/activación nativo
+    targetUserId = existingAuthUser.id;
+    const resendRes = await resendRectorInviteEmail(email, baseUrl);
+    emailSent = resendRes.ok;
   }
 
   if (!targetUserId) {
     throw new Error('No se pudo crear ni localizar la cuenta Auth del directivo.');
   }
 
-  // 3. Upsert en public.users con permisos y metadatos
-  const profilePayload = {
+  // 3. Upsert en public.users con permisos institucionales
+  // Preservar avatar_url si viene en el payload (el que se subió o seleccionó)
+  const profilePayload: any = {
     id: targetUserId,
     name: payload.name.trim(),
     email,
@@ -95,10 +188,12 @@ export async function provisionRectorAccount(payload: RectorProvisioningPayload)
     job_title: payload.jobTitle || 'Rector General',
     specialty: payload.specialty?.trim() || null,
     appointment_date: payload.appointmentDate || null,
-    avatar_url: payload.avatarUrl || null,
     status: payload.status || 'invited',
     password_reset_required: true,
   };
+  if (payload.avatarUrl) {
+    profilePayload.avatar_url = payload.avatarUrl;
+  }
 
   const { error: upsertError } = await admin
     .from('users')
@@ -121,48 +216,13 @@ export async function provisionRectorAccount(payload: RectorProvisioningPayload)
     console.warn('[rectorProvisioningService] Advertencia actualizando rector en schools:', schoolError);
   }
 
-  // 5. Generar JWT de confirmación y ticket de activación
-  let confirmUrl = '';
-  let emailSent = false;
-  try {
-    const token = createConfirmToken({ userId: targetUserId, email, schoolId: payload.schoolId });
-    const tokenHash = hashToken(token);
-    confirmUrl = getConfirmUrl(token);
-
-    // Guardar ticket en la base de datos (con fallback si el RPC no existe)
-    try {
-      await admin.rpc('create_email_confirm_ticket', { p_user_id: targetUserId, p_token_hash: tokenHash });
-    } catch {
-      await admin.from('email_confirm_tickets').insert({
-        user_id: targetUserId,
-        token_hash: tokenHash,
-        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-      });
-    }
-
-    // 6. Enviar correo de confirmación directamente desde Node.js (Nodemailer / SMTP)
-    try {
-      const { data: school } = await admin
-        .from('schools')
-        .select('name,slogan')
-        .eq('id', payload.schoolId)
-        .maybeSingle();
-
-      const mailRes = await sendConfirmRectorEmail({
-        to: email,
-        rectorName: payload.name.trim(),
-        schoolName: school?.name || 'Institución',
-        schoolSlogan: school?.slogan || undefined,
-        schoolId: payload.schoolId,
-        confirmUrl,
-      });
-
-      emailSent = mailRes.ok;
-    } catch (mailErr) {
-      console.warn('[rectorProvisioningService] Correo no enviado, link generado:', confirmUrl, mailErr);
-    }
-  } catch (jwtErr) {
-    console.warn('[rectorProvisioningService] No se pudo generar ticket JWT:', jwtErr);
+  // 5. Enlace oficial de activación:
+  // IMPORTANTE: Si el correo fue despachado exitosamente por Supabase SMTP (emailSent === true),
+  // NO llamamos a generateLink porque eso sobreescribiría y quemaría el token enviado en el correo.
+  // Solo generamos enlace criptográfico manual como fallback si el envío SMTP no se realizó.
+  let confirmUrl = `${baseUrl}/cambiar-password`;
+  if (!emailSent) {
+    confirmUrl = await generateRectorInviteLink(email, baseUrl);
   }
 
   return { userId: targetUserId, confirmUrl, emailSent };

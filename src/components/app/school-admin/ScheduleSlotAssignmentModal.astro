@@ -1,4 +1,4 @@
-﻿---
+---
 // ============================================================
 // SchoolOS — Modal de Asignación Rápida de Bloque Horario
 // Con verificación visual de disponibilidad de salones
@@ -13,6 +13,8 @@ const { id = 'scheduleSlotAssignmentModal' } = Astro.props;
 
 <div
   id={id}
+  data-modal-id={id}
+  data-schedule-slot-assignment-modal
   class="custom-modal-backdrop"
   style="display:none; position:fixed; inset:0; background:rgba(18, 17, 14, 0.75); z-index:9999; align-items:center; justify-content:center; padding:20px; overflow-y:auto;"
   role="dialog"
@@ -139,8 +141,10 @@ const { id = 'scheduleSlotAssignmentModal' } = Astro.props;
   }
 
   function getModalId(): string {
-    const modal = document.querySelector('[data-schedule-slot-assignment-modal]') as HTMLElement || document.getElementById('ScheduleSlotAssignmentModal');
-    return modal ? modal.id : 'ScheduleSlotAssignmentModal';
+    const modal = (document.querySelector('[data-schedule-slot-assignment-modal]') as HTMLElement) ||
+                  document.getElementById('scheduleSlotAssignmentModal') ||
+                  document.getElementById('ScheduleSlotAssignmentModal');
+    return modal ? modal.id : 'scheduleSlotAssignmentModal';
   }
 
   let currentTeacher: any = null;

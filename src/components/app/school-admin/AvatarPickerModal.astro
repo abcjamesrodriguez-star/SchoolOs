@@ -22,12 +22,63 @@ const womenAvatars = rows.flatMap((r) =>
 );
 ---
 
+<style>
+  .avatar-option-btn {
+    width: 100%;
+    aspect-ratio: 1;
+    border: 2px solid var(--ink);
+    background: #FFFFFF;
+    padding: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.15s ease, border-color 0.15s ease;
+    box-shadow: 2px 2px 0 var(--ink);
+    border-radius: 4px;
+    position: relative;
+  }
+  .avatar-option-btn:hover {
+    transform: translateY(-3px) scale(1.04);
+    border-color: var(--orange-vibrant) !important;
+    box-shadow: 4px 4px 0 var(--orange-vibrant) !important;
+  }
+  .avatar-option-btn:active {
+    transform: translateY(0) scale(0.98);
+  }
+  .avatar-option-btn.selected {
+    border-color: var(--orange-vibrant) !important;
+    box-shadow: 0 0 0 2px var(--ink), 4px 4px 0 var(--orange-vibrant) !important;
+    background: #FFF5EA !important;
+    transform: translateY(-2px) scale(1.05);
+  }
+  .avatar-option-btn.selected::after {
+    content: '✓';
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: var(--orange-vibrant);
+    color: #FFFFFF;
+    font-size: 10px;
+    font-weight: 900;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid var(--ink);
+    box-shadow: 1px 1px 0 var(--ink);
+  }
+</style>
+
 <div
   id={id}
   class="custom-modal-backdrop avatar-picker-modal"
-  style="display:none; position:fixed; inset:0; background:rgba(18, 17, 14, 0.75); z-index:10050; align-items:center; justify-content:center; padding:20px; overflow-y:auto;"
+  style="display:none; position:fixed; inset:0; background:rgba(18, 17, 14, 0.75); z-index:10050; align-items:center; justify-content:center; padding:20px; overflow-y:auto; backdrop-filter:blur(2px);"
   role="dialog"
   aria-modal="true"
+  onclick="if (event.target === this) this.style.display='none';"
 >
   <div class="panel" style="width:100%; max-width:540px; background:var(--paper); border:2px solid var(--ink); box-shadow:8px 8px 0 rgba(18, 17, 14, 0.4); max-height:90vh; display:flex; flex-direction:column; overflow:hidden;">
     
@@ -38,7 +89,7 @@ const womenAvatars = rows.flatMap((r) =>
           GALERÍA OFICIAL DE AVATARES
         </div>
         <h3 style="font-family:var(--serif); font-size:17px; margin:2px 0 0; font-weight:700; color:var(--ink);">
-          Selecciona un Avatar Institucional
+          Selecciona tu Avatar Institucional
         </h3>
       </div>
 
@@ -75,11 +126,12 @@ const womenAvatars = rows.flatMap((r) =>
             type="button"
             class="avatar-option-btn"
             data-url={url}
-            onclick={`window.selectAvatarOption && window.selectAvatarOption('${id}', '${url}')`}
-            style="width:100%; aspect-ratio:1; border:2px solid var(--ink); background:#FFFFFF; padding:4px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform 0.1s ease, box-shadow 0.1s ease; box-shadow:2px 2px 0 var(--ink);"
-            title={`Avatar Masculino #${idx + 1}`}
+            onclick={`window.selectAvatarOption && window.selectAvatarOption('${id}', '${url}', false)`}
+            ondblclick={`window.selectAvatarOption && window.selectAvatarOption('${id}', '${url}', true)`}
+            style="width:100%; aspect-ratio:1; border:2px solid var(--ink); background:#FFFFFF; padding:4px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:2px 2px 0 var(--ink);"
+            title={`Avatar Masculino #${idx + 1} (Doble clic para elegir directo)`}
           >
-            <img src={url} alt={`Avatar #${idx + 1}`} style="width:100%; height:100%; object-fit:contain;" loading="lazy" />
+            <img src={url} alt={`Avatar #${idx + 1}`} style="width:100%; height:100%; object-fit:contain; pointer-events:none;" loading="lazy" />
           </button>
         ))}
       </div>
@@ -91,30 +143,53 @@ const womenAvatars = rows.flatMap((r) =>
             type="button"
             class="avatar-option-btn"
             data-url={url}
-            onclick={`window.selectAvatarOption && window.selectAvatarOption('${id}', '${url}')`}
-            style="width:100%; aspect-ratio:1; border:2px solid var(--ink); background:#FFFFFF; padding:4px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform 0.1s ease, box-shadow 0.1s ease; box-shadow:2px 2px 0 var(--ink);"
-            title={`Avatar Femenino #${idx + 1}`}
+            onclick={`window.selectAvatarOption && window.selectAvatarOption('${id}', '${url}', false)`}
+            ondblclick={`window.selectAvatarOption && window.selectAvatarOption('${id}', '${url}', true)`}
+            style="width:100%; aspect-ratio:1; border:2px solid var(--ink); background:#FFFFFF; padding:4px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:2px 2px 0 var(--ink);"
+            title={`Avatar Femenino #${idx + 1} (Doble clic para elegir directo)`}
           >
-            <img src={url} alt={`Avatar #${idx + 1}`} style="width:100%; height:100%; object-fit:contain;" loading="lazy" />
+            <img src={url} alt={`Avatar #${idx + 1}`} style="width:100%; height:100%; object-fit:contain; pointer-events:none;" loading="lazy" />
           </button>
         ))}
       </div>
 
     </div>
 
-    <!-- FOOTER -->
-    <div style="padding:12px 20px; background:var(--cream); border-top:2px solid var(--ink); display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
-      <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">
-        Haz clic en cualquier avatar para seleccionarlo.
-      </span>
-      <button
-        type="button"
-        class="btn btn-secondary btn-sm"
-        onclick={`document.getElementById('${id}').style.display='none';`}
-        style="font-size:11px; font-weight:700;"
-      >
-        Cerrar
-      </button>
+    <!-- FOOTER CON BOTÓN 'USAR AVATAR' -->
+    <div style="padding:14px 20px; background:var(--cream); border-top:2px solid var(--ink); display:flex; justify-content:space-between; align-items:center; flex-shrink:0; gap:12px; flex-wrap:wrap;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div id={`${id}-selected-preview-box`} style="width:38px; height:38px; border:2px solid var(--ink); border-radius:50%; background:#FFFFFF; overflow:hidden; display:flex; align-items:center; justify-content:center; box-shadow:2px 2px 0 var(--ink);">
+          <img id={`${id}-selected-preview-thumb`} src="/avatars/men/fila-1-columna-1.png" alt="Avatar Seleccionado" style="width:100%; height:100%; object-fit:contain;" />
+        </div>
+        <div>
+          <span id={`${id}-selected-status-label`} style="display:block; font-family:var(--mono); font-size:11px; font-weight:700; color:var(--ink);">
+            Avatar seleccionado
+          </span>
+          <span style="display:block; font-size:10px; color:var(--ink-soft);">
+            Haz clic en Usar Avatar para confirmar
+          </span>
+        </div>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:8px;">
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          onclick={`document.getElementById('${id}').style.display='none';`}
+          style="font-size:11px; font-weight:700; padding:8px 14px;"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          id={`${id}-btn-use-avatar`}
+          class="btn btn-sm"
+          onclick={`window.confirmAvatarSelection && window.confirmAvatarSelection('${id}')`}
+          style="font-size:11.5px; font-weight:800; padding:8px 18px; background:var(--ink); color:var(--cream); border:2px solid var(--ink); box-shadow:3px 3px 0 var(--ink); cursor:pointer; text-transform:uppercase; letter-spacing:0.04em;"
+        >
+          ✓ Usar Avatar
+        </button>
+      </div>
     </div>
 
   </div>
@@ -123,6 +198,7 @@ const womenAvatars = rows.flatMap((r) =>
 <script is:inline>
   window._avatarPickerTargetInput = null;
   window._avatarPickerTargetPreview = null;
+  window._avatarPickerSelectedUrl = null;
 
   window.openAvatarPicker = function(modalId, currentGender, inputElementId, previewElementId) {
     var modal = document.getElementById(modalId || 'avatarPickerModal');
@@ -131,9 +207,38 @@ const womenAvatars = rows.flatMap((r) =>
     window._avatarPickerTargetInput = inputElementId;
     window._avatarPickerTargetPreview = previewElementId;
 
-    if (currentGender) {
-      window.switchAvatarGender(modalId || 'avatarPickerModal', currentGender === 'Mujer' || currentGender === 'women' ? 'women' : 'men');
+    // Detectar si ya hay un avatar actual
+    var currentVal = null;
+    if (inputElementId) {
+      var inp = document.getElementById(inputElementId);
+      if (inp && inp.value) currentVal = inp.value;
     }
+    if (!currentVal && previewElementId) {
+      var prev = document.getElementById(previewElementId);
+      if (prev) {
+        if (prev.tagName === 'IMG' && prev.src) {
+          try {
+            var urlObj = new URL(prev.src, window.location.origin);
+            currentVal = urlObj.pathname;
+          } catch (_) {
+            currentVal = prev.src;
+          }
+        }
+      }
+    }
+
+    // Auto-seleccionar tab de género
+    var genderToOpen = (currentGender === 'Mujer' || currentGender === 'women') ? 'women' : 'men';
+    if (currentVal && currentVal.indexOf('/women/') !== -1) {
+      genderToOpen = 'women';
+    } else if (currentVal && currentVal.indexOf('/men/') !== -1) {
+      genderToOpen = 'men';
+    }
+    window.switchAvatarGender(modalId || 'avatarPickerModal', genderToOpen);
+
+    // Marcar como seleccionado el avatar actual
+    var activeUrl = currentVal || (genderToOpen === 'women' ? '/avatars/women/fila-1-columna-1.png' : '/avatars/men/fila-1-columna-1.png');
+    window.selectAvatarOption(modalId || 'avatarPickerModal', activeUrl, false);
 
     modal.style.display = 'flex';
   };
@@ -163,10 +268,44 @@ const womenAvatars = rows.flatMap((r) =>
     }
   };
 
-  window.selectAvatarOption = function(modalId, avatarUrl) {
+  window.selectAvatarOption = function(modalId, avatarUrl, andConfirm) {
+    window._avatarPickerSelectedUrl = avatarUrl;
+
+    var modal = document.getElementById(modalId);
+    if (modal) {
+      modal.setAttribute('data-selected-url', avatarUrl);
+      var allBtns = modal.querySelectorAll('.avatar-option-btn');
+      for (var i = 0; i < allBtns.length; i++) {
+        var btn = allBtns[i];
+        if (btn.getAttribute('data-url') === avatarUrl) {
+          btn.classList.add('selected');
+        } else {
+          btn.classList.remove('selected');
+        }
+      }
+
+      var thumb = document.getElementById(modalId + '-selected-preview-thumb');
+      if (thumb) thumb.src = avatarUrl;
+      var lbl = document.getElementById(modalId + '-selected-status-label');
+      if (lbl) lbl.textContent = 'Avatar seleccionado';
+    }
+
+    if (andConfirm === true) {
+      window.confirmAvatarSelection(modalId);
+    }
+  };
+
+  window.confirmAvatarSelection = function(modalId) {
+    var modal = document.getElementById(modalId);
+    var avatarUrl = window._avatarPickerSelectedUrl || (modal ? modal.getAttribute('data-selected-url') : null);
+    if (!avatarUrl) return;
+
     if (window._avatarPickerTargetInput) {
       var inputEl = document.getElementById(window._avatarPickerTargetInput);
-      if (inputEl) inputEl.value = avatarUrl;
+      if (inputEl) {
+        inputEl.value = avatarUrl;
+        inputEl.dispatchEvent(new Event('change', { bubbles: true }));
+      }
     }
 
     if (window._avatarPickerTargetPreview) {
@@ -186,7 +325,18 @@ const womenAvatars = rows.flatMap((r) =>
       detail: { modalId: modalId, avatarUrl: avatarUrl }
     }));
 
-    var modal = document.getElementById(modalId);
     if (modal) modal.style.display = 'none';
   };
+
+  if (!window._avatarPickerEscapeBound) {
+    window._avatarPickerEscapeBound = true;
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        var openModals = document.querySelectorAll('.avatar-picker-modal');
+        for (var i = 0; i < openModals.length; i++) {
+          openModals[i].style.display = 'none';
+        }
+      }
+    });
+  }
 </script>

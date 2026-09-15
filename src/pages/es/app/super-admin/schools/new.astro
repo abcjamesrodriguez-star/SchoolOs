@@ -519,8 +519,8 @@ const lang = 'es';
           <div id="step-item-4" style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1.5px solid var(--line); background: var(--paper); opacity: 0.6; transition: all 0.2s ease;">
             <div id="step-icon-4" style="width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--ink); background: var(--cream); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800;">4</div>
             <div style="flex: 1;">
-              <div style="font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--ink);">4. Seguridad Criptográfica & Correo JWT</div>
-              <div id="step-desc-4" style="font-size: 11.5px; color: var(--ink-soft);">Firmando ticket de 24h y despachando correo de activación...</div>
+              <div style="font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--ink);">4. Invitación Oficial vía Supabase SMTP</div>
+              <div id="step-desc-4" style="font-size: 11.5px; color: var(--ink-soft);">Despachando invitación segura por correo y preparando credenciales...</div>
             </div>
             <span id="step-spin-4" style="font-size: 14px;">⏱</span>
           </div>
@@ -563,12 +563,12 @@ const lang = 'es';
           </div>
         </div>
 
-        <!-- BANNER DE CORREO JWT -->
+        <!-- BANNER DE CORREO SUPABASE SMTP -->
         <div id="success-jwt-banner" style="background: #E6F4EA; border: 1.5px solid var(--sage-dark); padding: 12px 14px; margin-bottom: 16px;">
           <div style="display: flex; align-items: flex-start; gap: 10px;">
             <span style="font-size: 18px;">✉️</span>
             <div id="success-jwt-text" style="font-size: 12.5px; color: #1B4D21; line-height: 1.45;">
-              Se ha enviado el correo con el <strong>enlace de confirmación JWT (24 horas)</strong>. El directivo podrá confirmar su cédula y teléfono, y autoasignar su contraseña institucional.
+              Se ha enviado la invitación oficial por correo vía <strong>Supabase SMTP</strong>. El directivo podrá acceder al enlace para definir su contraseña y activar su cuenta.
             </div>
           </div>
         </div>
@@ -616,7 +616,19 @@ const lang = 'es';
 
   <!-- SCRIPT DEL WIZARD (VITE BUNDLED) -->
   <script>
-    const fetchAuth = (window as any).fetchAuth;
+    import { fetchAuth as clientFetchAuth } from '../../../../../lib/apiClient';
+
+    const fetchAuth = async (url: string, options: RequestInit = {}): Promise<Response> => {
+      if (typeof clientFetchAuth === 'function') {
+        return clientFetchAuth(url, options);
+      }
+      if (typeof (window as any).fetchAuth === 'function') {
+        return (window as any).fetchAuth(url, options);
+      }
+      return fetch(url, options);
+    };
+
+    (window as any).fetchAuth = fetchAuth;
 
     let currentStep = 1;
     let selectedLogoFile = null;
@@ -1020,9 +1032,9 @@ const lang = 'es';
 
         const jwtText = document.getElementById('success-jwt-text');
         if (rectorData?.emailSent) {
-          jwtText.innerHTML = `Correo institucional despachado con éxito a <strong>${inputRectorEmail.value.trim()}</strong> con el enlace de confirmación JWT de 24 horas.`;
+          jwtText.innerHTML = `Invitación oficial despachada con éxito a <strong>${inputRectorEmail.value.trim()}</strong> vía <strong>Supabase SMTP</strong>.`;
         } else {
-          jwtText.innerHTML = `Directivo registrado en estado <strong>Invitación Pendiente</strong>. El enlace JWT de activación se encuentra listo para su uso.`;
+          jwtText.innerHTML = `Directivo registrado en estado <strong>Invitación Pendiente</strong>. El enlace oficial de activación de Supabase se encuentra listo para su uso.`;
         }
 
         if (rectorData?.confirmUrl) {
@@ -1224,12 +1236,12 @@ const lang = 'es';
 
         updateStepUI(3, 'done', `Perfil directivo configurado en estado Invitado.`);
 
-        // FASE 4: SEGURIDAD CRIPTOGRÁFICA & CORREO JWT
-        updateStepUI(4, 'active', `Despachando correo institucional a ${inputRectorEmail.value.trim()}...`);
+        // FASE 4: INVITACIÓN OFICIAL VÍA SUPABASE SMTP
+        updateStepUI(4, 'active', `Despachando invitación oficial por correo a ${inputRectorEmail.value.trim()}...`);
         setProvProgress(90);
 
         await new Promise(resolve => setTimeout(resolve, 400));
-        updateStepUI(4, 'done', rectorData?.emailSent ? `Correo JWT enviado a ${inputRectorEmail.value.trim()}.` : `Ticket JWT de 24h generado.`);
+        updateStepUI(4, 'done', rectorData?.emailSent ? `Invitación oficial enviada vía Supabase SMTP a ${inputRectorEmail.value.trim()}.` : `Enlace oficial de activación generado.`);
 
         // MOSTRAR VISTA DE ÉXITO
         showProvSuccess(newSchool, rectorData);

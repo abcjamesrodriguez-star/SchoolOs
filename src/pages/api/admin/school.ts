@@ -136,6 +136,18 @@ async function purgeSchoolRecord(supabase: any, schoolId: string, actor: any) {
       await supabase.auth.admin.deleteUser(uid);
     } catch (_) {}
   }
+  if (allUserEmails.length > 0) {
+    try {
+      const { data: userList } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+      const lowerEmails = new Set(allUserEmails.map((e: string) => (e || '').toLowerCase()));
+      const matching = userList?.users?.filter((u: any) => u.email && lowerEmails.has(u.email.toLowerCase())) || [];
+      for (const mu of matching) {
+        try {
+          await supabase.auth.admin.deleteUser(mu.id);
+        } catch (_) {}
+      }
+    } catch (_) {}
+  }
 
   // 6. Eliminar registro de escuela
   const { error: delSchoolErr } = await supabase.from('schools').delete().eq('id', realSchoolId);

@@ -1,182 +1,300 @@
 ---
 // ============================================================
 // SchoolOS — Panel Estudiante: Boletín de Notas
-// Fase 4 | Mateo Gómez
+// Diseño Brutalista Editorial Oficial (Vibrant Brutalism)
+// Conectado en Vivo con /api/student/grades
 // ============================================================
 import AppLayout from '../../../../layouts/AppLayout.astro';
-import {
-  getStudentGrades,
-  getStudentGeneralAverage,
-  getEvaluationHistory,
-  getStudentProfile,
-} from '../../../../data/app/mock-student';
 
 const lang = 'es';
-const student = getStudentProfile();
-const grades = getStudentGrades();
-const history = getEvaluationHistory();
-const generalAverage = getStudentGeneralAverage();
-
-const statusLabel: Record<string, string> = {
-  passing: 'APROBADO',
-  warning: 'EN RIESGO',
-  failing: 'REPROBADO',
-};
-const statusColor: Record<string, string> = {
-  passing: '#4A7C59',
-  warning: '#C8860A',
-  failing: 'var(--rust)',
-};
-const statusBg: Record<string, string> = {
-  passing: '#E8F5E9',
-  warning: '#FFF8E1',
-  failing: '#FFF0EE',
-};
 ---
 
 <AppLayout
-  title="Boletín de Notas — Mateo Gómez"
+  title="Boletín de Notas"
   pageTitle="Boletín de Calificaciones"
   activeSection="grades"
   role="student"
-  schoolName="Colegio Norte"
+  schoolName="SchoolOS"
   lang={lang}
   activeRoute="/app/student/grades"
   breadcrumbs={[
-    { label: 'Colegio Norte' },
+    { label: 'Estudiante' },
     { label: 'Panel Estudiante', href: `/${lang}/app/student` },
     { label: 'Boletín de Notas' },
   ]}
 >
 
-  <!-- HEADER OFICIAL DEL BOLETÍN -->
-  <div style="background:var(--paper); border:2px solid var(--ink); border-radius:8px; padding:20px 24px; margin-bottom:24px; box-shadow:4px 4px 0 rgba(18,17,14,0.08);">
+  <!-- HEADER INSTITUCIONAL DEL BOLETÍN (BRUTALISTA) -->
+  <div style="background:var(--paper); border:2px solid var(--ink); padding:20px 24px; margin-bottom:28px; box-shadow:4px 4px 0 var(--ink);">
     <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px;">
       <div>
-        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); font-weight:700; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:4px;">
-          Reporte Académico Oficial · Periodo 1 · 2026
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+          <span class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-weight:900; font-size:10px; padding:2px 6px; border-radius:0;">
+            REPORTE OFICIAL
+          </span>
+          <span style="font-family:var(--mono); font-size:11px; font-weight:700; color:var(--ink-soft); text-transform:uppercase;">
+            PERIODO ACADÉMICO VIGENTE
+          </span>
         </div>
-        <h1 style="font-family:var(--serif); font-size:22px; font-weight:900; margin:0 0 4px 0;">
-          {student.name}
+        <h1 id="grades-student-name" style="font-family:var(--sans); font-size:26px; font-weight:900; text-transform:uppercase; letter-spacing:-0.03em; margin:0 0 4px 0; color:var(--ink);">
+          ESTUDIANTE
         </h1>
-        <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">
-          {student.grade} · Grupo {student.groupCode} · {student.schoolName}
+        <div id="grades-student-context" style="font-family:var(--mono); font-size:12px; color:var(--ink-soft); font-weight:700;">
+          Sincronizando información académica...
         </div>
       </div>
       <div style="text-align:right;">
-        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); font-weight:700; text-transform:uppercase;">Promedio General</div>
-        <div style="font-family:var(--serif); font-size:42px; font-weight:900; color:var(--ink); line-height:1;">{generalAverage.toFixed(1)}</div>
-        <div style="font-family:var(--mono); font-size:11px; color:#4A7C59; font-weight:700;">/ 10.0 · EXCELENTE</div>
+        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); font-weight:800; text-transform:uppercase; letter-spacing:0.06em;">PROMEDIO PONDERADO</div>
+        <div id="grades-general-average" style="font-family:var(--mono); font-size:44px; font-weight:900; color:var(--ink); line-height:1; margin:4px 0;">
+          --
+        </div>
+        <div id="grades-average-badge" style="font-family:var(--mono); font-size:11px; color:#4A7C59; font-weight:900; text-transform:uppercase;">
+          / 10.0 · EN PROGRESO
+        </div>
       </div>
     </div>
   </div>
 
-  <div style="display:grid; grid-template-columns: 1fr 340px; gap:24px;">
+  <div class="dashboard-grid" style="margin-bottom:32px;">
 
-    <!-- TABLA DE NOTAS -->
-    <div>
-      <div style="font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink); margin-bottom:12px; letter-spacing:0.06em;">
-        CALIFICACIONES POR MATERIA
-      </div>
-      <div style="background:var(--paper); border:2px solid var(--ink); border-radius:8px; overflow:hidden; box-shadow:4px 4px 0 rgba(18,17,14,0.07);">
-        <!-- Table Header -->
-        <div style="display:grid; grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr; gap:0; background:var(--cream); border-bottom:2px solid var(--ink); padding:10px 18px;">
-          <div style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--ink-soft); text-transform:uppercase;">Materia</div>
-          <div style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--ink-soft); text-transform:uppercase;">Docente</div>
-          <div style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--ink-soft); text-transform:uppercase; text-align:center;">Evaluaciones</div>
-          <div style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--ink-soft); text-transform:uppercase; text-align:center;">Promedio</div>
-          <div style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--ink-soft); text-transform:uppercase; text-align:center;">Estado</div>
+    <!-- MAIN CANVAS: TABLA DE CALIFICACIONES -->
+    <div class="main-canvas">
+      
+      <div class="panel" style="border:2px solid var(--ink); box-shadow:4px 4px 0 var(--ink);">
+        <div class="panel-header" style="background:var(--cream); border-bottom:2px solid var(--ink); padding:14px 20px;">
+          <h2 style="font-family:var(--mono); font-size:12px; font-weight:900; text-transform:uppercase; letter-spacing:0.08em; margin:0; color:var(--ink);">
+            PLANILLA DE NOTAS POR ASIGNATURA
+          </h2>
         </div>
-        <!-- Table Rows -->
-        {grades.map((g, i) => (
-          <div style={`display:grid; grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr; gap:0; padding:14px 18px; border-bottom:${i < grades.length - 1 ? '1px solid var(--line)' : 'none'}; align-items:center;`}>
-            <div>
-              <div style="font-weight:700; font-size:13px; color:var(--ink);">{g.courseName}</div>
-              <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);">{g.period}</div>
+
+        <div style="overflow-x:auto;">
+          <!-- Table Header -->
+          <div style="display:grid; grid-template-columns: 2fr 1.3fr 1fr 1fr 1.2fr; gap:0; background:var(--ink); color:#FFFFFF; border-bottom:2px solid var(--ink); padding:10px 18px;">
+            <div style="font-family:var(--mono); font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:0.06em;">Asignatura</div>
+            <div style="font-family:var(--mono); font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:0.06em;">Departamento</div>
+            <div style="font-family:var(--mono); font-size:10px; font-weight:900; text-transform:uppercase; text-align:center; letter-spacing:0.06em;">Actividades</div>
+            <div style="font-family:var(--mono); font-size:10px; font-weight:900; text-transform:uppercase; text-align:center; letter-spacing:0.06em;">Promedio</div>
+            <div style="font-family:var(--mono); font-size:10px; font-weight:900; text-transform:uppercase; text-align:center; letter-spacing:0.06em;">Estado</div>
+          </div>
+
+          <!-- Table Rows Container -->
+          <div id="grades-table-body">
+            <div style="padding:28px; text-align:center; color:var(--ink-soft); font-family:var(--mono); font-size:12px;">
+              Sincronizando calificaciones oficiales...
             </div>
-            <div style="font-size:12px; color:var(--ink-soft);">{g.teacherName}</div>
-            <div style="text-align:center; font-family:var(--mono); font-size:12px; color:var(--ink);">
-              {g.evaluationsCompleted}/{g.evaluationsTotal}
+          </div>
+
+          <!-- Totals Row -->
+          <div style="display:grid; grid-template-columns: 2fr 1.3fr 1fr 1fr 1.2fr; gap:0; padding:14px 18px; background:var(--cream); border-top:2px solid var(--ink); align-items:center;">
+            <div style="font-family:var(--mono); font-size:11px; font-weight:900; text-transform:uppercase; color:var(--ink); grid-column: 1 / 4; letter-spacing:0.06em;">
+              PROMEDIO GENERAL ACUMULADO
             </div>
-            <div style={`text-align:center; font-family:var(--mono); font-size:18px; font-weight:900; color:${statusColor[g.status]};`}>
-              {g.currentAverage.toFixed(1)}
+            <div id="grades-total-score" style="text-align:center; font-family:var(--mono); font-size:22px; font-weight:900; color:var(--ink);">
+              --
             </div>
             <div style="text-align:center;">
-              <span style={`font-family:var(--mono); font-size:9px; font-weight:800; padding:3px 7px; border-radius:3px; background:${statusBg[g.status]}; color:${statusColor[g.status]};`}>
-                {statusLabel[g.status]}
+              <span id="grades-total-label" style="font-family:var(--mono); font-size:9.5px; font-weight:900; padding:3px 8px; border:1.5px solid var(--ink); background:#E8F5E9; color:#4A7C59;">
+                EN CURSO
               </span>
             </div>
           </div>
-        ))}
-        <!-- Totals Row -->
-        <div style="display:grid; grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr; gap:0; padding:12px 18px; background:var(--cream); border-top:2px solid var(--ink); align-items:center;">
-          <div style="font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink); grid-column: 1 / 4;">PROMEDIO GENERAL DEL PERIODO</div>
-          <div style="text-align:center; font-family:var(--mono); font-size:20px; font-weight:900; color:var(--ink);">{generalAverage.toFixed(1)}</div>
-          <div style="text-align:center;">
-            <span style="font-family:var(--mono); font-size:9px; font-weight:800; padding:3px 7px; border-radius:3px; background:#E8F5E9; color:#4A7C59;">EXCELENTE</span>
-          </div>
         </div>
       </div>
+
     </div>
 
-    <!-- COLUMNA DERECHA: HISTORIAL -->
-    <div style="display:flex; flex-direction:column; gap:20px;">
+    <!-- INTEL RAIL: HISTORIAL Y ESCALA -->
+    <div class="intel-rail">
 
-      <!-- HISTORIAL DE EVALUACIONES -->
-      <div>
-        <div style="font-family:var(--mono); font-size:10px; font-weight:800; text-transform:uppercase; color:var(--ink); margin-bottom:12px; letter-spacing:0.06em;">
-          HISTORIAL DE EVALUACIONES
+      <!-- ACTIVIDADES RECIENTES -->
+      <div class="panel" style="border:2px solid var(--ink); box-shadow:4px 4px 0 rgba(18, 17, 14, 0.08);">
+        <div class="panel-header" style="background:var(--ink); color:#FFFFFF; padding:12px 16px;">
+          <h2 style="font-family:var(--mono); font-size:11px; font-weight:900; letter-spacing:0.08em; text-transform:uppercase; color:#FFFFFF; margin:0;">
+            Detalle de Evaluaciones
+          </h2>
         </div>
-        <div style="background:var(--paper); border:2px solid var(--ink); border-radius:8px; overflow:hidden; box-shadow:4px 4px 0 rgba(18,17,14,0.07);">
-          {history.length > 0 ? history.map((att, i) => (
-            <div style={`padding:14px 16px; border-bottom:${i < history.length - 1 ? '1px solid var(--line)' : 'none'};`}>
-              <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
-                <div style="flex:1;">
-                  <div style="font-weight:700; font-size:12.5px; color:var(--ink); line-height:1.3;">{att.evaluationTitle}</div>
-                  <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); margin-top:2px;">{att.courseName}</div>
-                  <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);">Intento {att.attemptNumber} · {att.timeSpentMinutes} min</div>
-                </div>
-                <div style="text-align:right;">
-                  <div style={`font-family:var(--mono); font-size:18px; font-weight:900; color:${att.passed ? '#4A7C59' : 'var(--rust)'};`}>{att.score}</div>
-                  <div style="font-family:var(--mono); font-size:9px; color:var(--ink-soft);">/ 100</div>
-                  <span style={`font-family:var(--mono); font-size:8.5px; font-weight:800; padding:2px 5px; border-radius:2px; background:${att.passed ? '#E8F5E9' : '#FFF0EE'}; color:${att.passed ? '#4A7C59' : 'var(--rust)'};`}>
-                    {att.passed ? 'APROBADO' : 'REPROBADO'}
-                  </span>
-                </div>
-              </div>
-            </div>
-          )) : (
-            <div style="padding:20px; text-align:center; color:var(--ink-soft); font-size:13px;">
-              Sin historial de evaluaciones aún.
-            </div>
-          )}
+        <div id="grades-evaluations-feed" style="background:var(--paper);">
+          <div style="padding:20px; text-align:center; color:var(--ink-soft); font-family:var(--mono); font-size:12px;">
+            Cargando actividades...
+          </div>
         </div>
       </div>
 
-      <!-- LEYENDA -->
-      <div style="background:var(--paper); border:2px solid var(--line); border-radius:8px; padding:16px;">
-        <div style="font-family:var(--mono); font-size:10px; font-weight:800; color:var(--ink); margin-bottom:10px; text-transform:uppercase;">Escala de Calificación</div>
-        <div style="display:flex; flex-direction:column; gap:8px; font-size:12px;">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="color:var(--ink);">Excelente</span>
-            <span style="font-family:var(--mono); font-weight:800; color:#4A7C59;">9.0 – 10.0</span>
+      <!-- ESCALA INSTITUCIONAL -->
+      <div class="panel" style="border:2px solid var(--ink); background:var(--paper); padding:16px; box-shadow:4px 4px 0 rgba(18, 17, 14, 0.08);">
+        <div style="font-family:var(--mono); font-size:10.5px; font-weight:900; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink); margin-bottom:12px; border-bottom:1.5px solid var(--ink); padding-bottom:6px;">
+          ESCALA DE VALORACIÓN
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px; font-size:12px; font-family:var(--mono);">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--line); padding-bottom:4px;">
+            <span style="font-weight:700; color:var(--ink);">Excelente</span>
+            <span style="font-weight:900; color:#4A7C59;">9.0 – 10.0</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--line); padding-bottom:4px;">
+            <span style="font-weight:700; color:var(--ink);">Sobresaliente</span>
+            <span style="font-weight:900; color:#4A7C59;">8.0 – 8.9</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--line); padding-bottom:4px;">
+            <span style="font-weight:700; color:var(--ink);">Aceptable</span>
+            <span style="font-weight:900; color:#C8860A;">6.0 – 7.9</span>
           </div>
           <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="color:var(--ink);">Sobresaliente</span>
-            <span style="font-family:var(--mono); font-weight:800; color:#4A7C59;">8.0 – 8.9</span>
-          </div>
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="color:var(--ink);">Aceptable</span>
-            <span style="font-family:var(--mono); font-weight:800; color:#C8860A;">6.0 – 7.9</span>
-          </div>
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="color:var(--ink);">Insuficiente</span>
-            <span style="font-family:var(--mono); font-weight:800; color:var(--rust);">0 – 5.9</span>
+            <span style="font-weight:700; color:var(--ink);">Insuficiente</span>
+            <span style="font-weight:900; color:var(--rust);">0.0 – 5.9</span>
           </div>
         </div>
       </div>
+
     </div>
 
   </div>
+
+  <!-- SCRIPT DE HIDRATACIÓN DINÁMICA -->
+  <script>
+    import { fetchAuth } from '../../../../lib/apiClient';
+
+    async function hydrateGrades() {
+      try {
+        const [dashRes, gradesRes] = await Promise.all([
+          fetchAuth('/api/student/dashboard'),
+          fetchAuth('/api/student/grades'),
+        ]);
+
+        const [dashJson, gradesJson] = await Promise.all([
+          dashRes.json().catch(() => null),
+          gradesRes.json().catch(() => null),
+        ]);
+
+        const profile = dashJson?.data?.profile || {};
+        const gradesData = gradesJson?.data || {};
+        const courses = gradesData.courses || [];
+        const genAvg = gradesData.generalAverage || 0;
+
+        // 1. Header
+        const nameEl = document.getElementById('grades-student-name');
+        if (nameEl && profile.name) nameEl.textContent = profile.name.toUpperCase();
+
+        const contextEl = document.getElementById('grades-student-context');
+        if (contextEl) {
+          contextEl.textContent = `SALÓN ${profile.classroom || 'GENERAL'} · GRADO ${profile.grade || ''} · ${profile.schoolName || 'INSTITUCIÓN'}`.toUpperCase();
+        }
+
+        const avgEl = document.getElementById('grades-general-average');
+        if (avgEl) avgEl.textContent = genAvg > 0 ? genAvg.toFixed(1) : '--';
+
+        const badgeEl = document.getElementById('grades-average-badge');
+        if (badgeEl) {
+          const label = gradesData.averageLabel || 'EN PROCESO';
+          badgeEl.textContent = `/ 10.0 · ${label.toUpperCase()}`;
+        }
+
+        const totalScoreEl = document.getElementById('grades-total-score');
+        if (totalScoreEl) totalScoreEl.textContent = genAvg > 0 ? genAvg.toFixed(1) : '--';
+
+        const totalLabelEl = document.getElementById('grades-total-label');
+        if (totalLabelEl) totalLabelEl.textContent = (gradesData.averageLabel || 'EN PROCESO').toUpperCase();
+
+        // 2. Tabla de Materias
+        const tableBody = document.getElementById('grades-table-body');
+        if (tableBody) {
+          if (courses.length === 0) {
+            tableBody.innerHTML = `
+              <div style="padding:32px; text-align:center; color:var(--ink-soft); font-family:var(--mono); font-size:12.5px;">
+                No tienes asignaturas matriculadas actualmente.
+              </div>
+            `;
+          } else {
+            tableBody.innerHTML = courses.map((c: any, idx: number) => {
+              const avgText = c.hasGrades ? c.currentAverage.toFixed(1) : '--';
+              const avgColor = c.hasGrades
+                ? (c.currentAverage >= 8 ? '#4A7C59' : c.currentAverage >= 6 ? '#C8860A' : 'var(--rust)')
+                : 'var(--ink-soft)';
+              const status = c.status === 'passing' ? 'APROBADO' : c.status === 'failing' ? 'REPROBADO' : 'EN PROCESO';
+              const statusBg = c.status === 'passing' ? '#E8F5E9' : c.status === 'failing' ? '#FFF0EE' : 'var(--cream)';
+              const statusColor = c.status === 'passing' ? '#2E7D32' : c.status === 'failing' ? 'var(--rust)' : 'var(--ink-soft)';
+
+              return `
+                <div style="display:grid; grid-template-columns: 2fr 1.3fr 1fr 1fr 1.2fr; gap:0; padding:14px 18px; border-bottom:${idx < courses.length - 1 ? '1px solid var(--line-strong)' : 'none'}; align-items:center; background:${idx % 2 === 0 ? 'var(--paper)' : '#FAF8F4'};">
+                  <div>
+                    <div style="font-family:var(--sans); font-weight:800; font-size:13.5px; text-transform:uppercase; color:var(--ink);">${c.courseName}</div>
+                    <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);">PERIODO 1</div>
+                  </div>
+                  <div style="font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);">${c.subject}</div>
+                  <div style="text-align:center; font-family:var(--mono); font-size:12.5px; font-weight:700; color:var(--ink);">
+                    ${c.evaluationsCompleted}/${c.evaluationsTotal}
+                  </div>
+                  <div style="text-align:center; font-family:var(--mono); font-size:19px; font-weight:900; color:${avgColor};">
+                    ${avgText}
+                  </div>
+                  <div style="text-align:center;">
+                    <span style="font-family:var(--mono); font-size:9px; font-weight:900; padding:3px 7px; border:1px solid var(--ink); background:${statusBg}; color:${statusColor};">
+                      ${status}
+                    </span>
+                  </div>
+                </div>
+              `;
+            }).join('');
+          }
+        }
+
+        // 3. Feed de Evaluaciones (derecha)
+        const feedEl = document.getElementById('grades-evaluations-feed');
+        if (feedEl) {
+          const allEvals: any[] = [];
+          courses.forEach((c: any) => {
+            (c.evaluations || []).forEach((ev: any) => {
+              allEvals.push({
+                ...ev,
+                courseName: c.courseName,
+              });
+            });
+          });
+
+          if (allEvals.length === 0) {
+            feedEl.innerHTML = `
+              <div style="padding:24px; text-align:center; color:var(--ink-soft); font-family:var(--mono); font-size:12px;">
+                No hay actividades registradas en tus asignaturas.
+              </div>
+            `;
+          } else {
+            feedEl.innerHTML = allEvals.map((ev: any, i: number) => {
+              const hasScore = ev.hasScore;
+              const scoreText = hasScore ? `${ev.score} / ${ev.maxScore}` : 'Pendiente';
+              const scoreColor = hasScore ? (ev.score >= (ev.maxScore * 0.6) ? '#4A7C59' : 'var(--rust)') : 'var(--ink-soft)';
+              const badgeBg = hasScore ? (ev.score >= (ev.maxScore * 0.6) ? '#E8F5E9' : '#FFF0EE') : 'var(--cream)';
+
+              return `
+                <div style="padding:14px 16px; border-bottom:${i < allEvals.length - 1 ? '1px solid var(--line)' : 'none'};">
+                  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                    <div style="flex:1;">
+                      <div style="font-family:var(--sans); font-weight:800; font-size:13px; text-transform:uppercase; color:var(--ink); line-height:1.2;">${ev.title}</div>
+                      <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); margin-top:3px;">${ev.courseName}</div>
+                      ${ev.feedback ? `<div style="font-size:11.5px; color:var(--ink); background:var(--cream); padding:6px 10px; border-left:2.5px solid var(--rust); margin-top:6px; font-family:var(--sans);">"${ev.feedback}"</div>` : ''}
+                    </div>
+                    <div style="text-align:right;">
+                      <div style="font-family:var(--mono); font-size:16px; font-weight:900; color:${scoreColor};">${scoreText}</div>
+                      <span style="font-family:var(--mono); font-size:8.5px; font-weight:900; padding:2px 5px; border:1px solid var(--ink); background:${badgeBg}; color:${scoreColor};">
+                        ${hasScore ? (ev.score >= (ev.maxScore * 0.6) ? 'CALIFICADO' : 'INSUFICIENTE') : 'SIN CALIFICAR'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('');
+          }
+        }
+
+      } catch (err) {
+        console.error('[Hydrate Grades] Failed:', err);
+      }
+    }
+
+    const gradesLoad = hydrateGrades();
+    (window as any).SchoolOSApp?.registerPageLoad(gradesLoad);
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => hydrateGrades());
+    }
+  </script>
 
 </AppLayout>

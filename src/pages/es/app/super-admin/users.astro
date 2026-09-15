@@ -159,25 +159,24 @@ const passwordTicketsJson = JSON.stringify(passwordTickets);
                 <td class="cell-actions">
                   <div style="display:flex; justify-content:flex-end; gap:6px; flex-wrap:wrap; align-items:center;">
                     {isRector && (
-                      <>
-                        <button
-                          class="btn btn-secondary btn-sm"
-                          onclick={`window.openPasswordTicketModal && window.openPasswordTicketModal('${u.id}')`}
-                          type="button"
-                          title="Gestionar Clave"
-                        >
-                          Clave
-                        </button>
-                        <button
-                          class="btn btn-secondary btn-sm"
-                          onclick={`window.openRectorModal && window.openRectorModal('${u.id}', '${u.schoolId || ''}')`}
-                          type="button"
-                          title="Editar Directivo"
-                        >
-                          Editar →
-                        </button>
-                      </>
+                      <button
+                        class="btn btn-secondary btn-sm"
+                        onclick={`window.openRectorModal && window.openRectorModal('${u.id}', '${u.schoolId || ''}')`}
+                        type="button"
+                        title="Editar Directivo"
+                      >
+                        Editar →
+                      </button>
                     )}
+                    <button
+                      class="btn btn-secondary btn-sm"
+                      onclick={`window.openDirectResetPasswordModal && window.openDirectResetPasswordModal('${u.id}')`}
+                      type="button"
+                      title="Cambiar Contraseña Directa"
+                      style="border-color:var(--ink); font-weight:700;"
+                    >
+                      🔑 Clave
+                    </button>
                     {!isSuper && (
                       <button
                         class="btn btn-danger btn-sm"
@@ -438,7 +437,8 @@ const passwordTicketsJson = JSON.stringify(passwordTickets);
 </div>
 
 <!-- ============================================================ -->
-<!-- MODAL: TICKET DE CAMBIO DE CONTRASEÑA                       -->
+<!-- ============================================================ -->
+<!-- MODAL: CAMBIO DIRECTO DE CONTRASEÑA (SUPER ADMIN CONTROL)    -->
 <!-- ============================================================ -->
 <div
   id="password-ticket-modal-overlay"
@@ -449,51 +449,123 @@ const passwordTicketsJson = JSON.stringify(passwordTickets);
 >
   <div
     id="password-ticket-modal-panel"
-    style="background:var(--paper); border:2px solid var(--ink); width:min(560px, 100%); box-shadow:8px 8px 0 rgba(18, 17, 14, 0.25); opacity:0; transform:scale(0.96); transition:opacity 0.22s ease, transform 0.22s ease;"
+    style="background:var(--paper); border:2px solid var(--ink); width:min(560px, 100%); box-shadow:8px 8px 0 var(--ink); opacity:0; transform:scale(0.96); transition:opacity 0.22s ease, transform 0.22s ease;"
   >
-    <div style="border-bottom:1px solid var(--line); padding:18px 22px; display:flex; align-items:center; justify-content:space-between;">
+    <!-- MODAL HEADER -->
+    <div style="border-bottom:2px solid var(--ink); padding:16px 22px; display:flex; align-items:center; justify-content:space-between; background:var(--cream);">
       <div>
-        <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:2px;">Seguridad de cuenta</div>
-        <h2 id="password-ticket-modal-title" style="font-family:var(--serif); font-size:19px; font-weight:700; color:var(--ink); margin:0;">Ticket de cambio de contraseña</h2>
+        <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--rust); font-weight:800; margin-bottom:2px;">Seguridad Institucional · Control Total</div>
+        <h2 id="password-ticket-modal-title" style="font-family:var(--serif); font-size:19px; font-weight:800; color:var(--ink); margin:0;">Restablecer Contraseña</h2>
       </div>
-      <button type="button" onclick="window.closePasswordTicketModal && window.closePasswordTicketModal()" style="width:32px; height:32px; border:1px solid var(--ink); background:transparent; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center;">✕</button>
+      <button
+        type="button"
+        onclick="window.closePasswordTicketModal && window.closePasswordTicketModal()"
+        style="width:32px; height:32px; border:2px solid var(--ink); background:var(--paper); cursor:pointer; font-size:16px; font-weight:800; display:flex; align-items:center; justify-content:center; color:var(--ink); box-shadow:2px 2px 0 var(--ink);"
+        aria-label="Cerrar modal"
+      >✕</button>
     </div>
 
-    <form id="password-ticket-form" style="padding:22px; display:flex; flex-direction:column; gap:16px;">
+    <!-- MODAL FORM -->
+    <form id="password-ticket-form" style="padding:22px; display:flex; flex-direction:column; gap:16px; background:var(--paper);">
       <input type="hidden" id="password-ticket-user-id" />
 
-      <div style="background:var(--cream); border:1px solid var(--line-strong); padding:14px 16px;">
-        <div style="font-family:var(--mono); font-size:10px; text-transform:uppercase; color:var(--ink-soft);">Usuario rector</div>
-        <div id="password-ticket-user-label" style="font-weight:800; margin-top:4px;">-</div>
-        <div style="font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:4px;">
-          No se muestran contraseñas antiguas. Este flujo deja auditoría y prepara el cambio seguro.
+      <!-- TARJETA DEL USUARIO OBJETIVO -->
+      <div style="background:var(--cream); border:1.5px solid var(--ink); padding:14px 16px; box-shadow:3px 3px 0 var(--ink);">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+          <div>
+            <div style="font-family:var(--mono); font-size:10px; text-transform:uppercase; color:var(--ink-soft); font-weight:700;">Usuario Seleccionado</div>
+            <div id="password-ticket-user-label" style="font-weight:800; font-size:14px; color:var(--ink); margin-top:2px;">-</div>
+            <div id="password-ticket-user-sub" style="font-family:var(--mono); font-size:11.5px; color:var(--rust); font-weight:700; margin-top:2px;">-</div>
+          </div>
+          <span id="password-ticket-role-badge" class="plan-tag" style="background:var(--ink); color:#FFFFFF; border-color:var(--ink); font-weight:800; font-size:10px; white-space:nowrap;">
+            ROL
+          </span>
+        </div>
+        <div style="font-size:11.5px; color:var(--ink); margin-top:10px; line-height:1.45; padding-top:8px; border-top:1px dashed var(--line-strong);">
+          🛡️ <strong>Sin pérdida de datos:</strong> La clave se actualiza directamente en el sistema de autenticación (Supabase Auth). Los cursos, materias, notas y clases creados por este usuario se conservan intactos.
         </div>
       </div>
 
+      <!-- CAMPO: NUEVA CONTRASEÑA DIRECTA -->
       <div class="form-field" style="margin-bottom:0;">
-        <label>Método solicitado</label>
-        <select id="password-ticket-method">
-          <option value="temporary_password">Contraseña temporal</option>
-          <option value="recovery_link">Enlace de recuperación</option>
-          <option value="manual_support">Soporte manual</option>
-        </select>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <label style="font-family:var(--mono); font-size:11px; font-weight:800; color:var(--ink); text-transform:uppercase; margin:0;">
+            Nueva Contraseña *
+          </label>
+          <span style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft);">Mínimo 6 caracteres</span>
+        </div>
+        
+        <div style="display:flex; gap:8px; align-items:stretch;">
+          <input
+            id="password-direct-new-input"
+            type="text"
+            required
+            minlength="6"
+            placeholder="Escribe o genera una clave..."
+            style="flex:1; border:1.5px solid var(--ink); background:#FFFFFF; padding:9px 12px; font-family:var(--mono); font-size:13px; font-weight:700; color:var(--ink);"
+          />
+          <button
+            type="button"
+            id="password-direct-btn-generate"
+            class="btn btn-secondary"
+            style="font-size:11px; padding:0 12px; font-weight:800; white-space:nowrap; border:1.5px solid var(--ink); background:var(--cream); box-shadow:2px 2px 0 var(--ink); cursor:pointer;"
+            title="Generar contraseña aleatoria segura"
+          >
+            🎲 Generar
+          </button>
+          <button
+            type="button"
+            id="password-direct-btn-copy"
+            class="btn btn-secondary"
+            style="font-size:11px; padding:0 12px; font-weight:800; white-space:nowrap; border:1.5px solid var(--ink); background:var(--cream); box-shadow:2px 2px 0 var(--ink); cursor:pointer;"
+            title="Copiar contraseña al portapapeles"
+          >
+            📋 Copiar
+          </button>
+        </div>
       </div>
 
-      <div class="form-field" style="margin-bottom:0;">
-        <label>Motivo del cambio</label>
-        <textarea id="password-ticket-reason" rows="4" required placeholder="Ej. Rector solicita restablecimiento por pérdida de acceso."></textarea>
+      <!-- OPCIÓN: EXIGIR CAMBIO EN EL SIGUIENTE INICIO -->
+      <div>
+        <label style="display:flex; align-items:flex-start; gap:8px; font-family:var(--sans); font-size:12px; color:var(--ink); cursor:pointer; font-weight:600;">
+          <input id="password-ticket-require-change" type="checkbox" style="accent-color:var(--rust); margin-top:2px;" />
+          <span>Exigir al usuario cambiar esta contraseña la próxima vez que inicie sesión.</span>
+        </label>
       </div>
 
-      <label style="display:flex; align-items:flex-start; gap:10px; font-family:var(--mono); font-size:11.5px; color:var(--ink);">
-        <input id="password-ticket-second-approval" type="checkbox" style="margin-top:2px;" />
-        Requerir segunda aprobación antes de ejecutar el cambio.
-      </label>
+      <!-- CAMPO: MOTIVO AUDITORÍA -->
+      <div class="form-field" style="margin-bottom:0;">
+        <label style="font-family:var(--mono); font-size:10.5px; font-weight:700; color:var(--ink-soft); text-transform:uppercase;">
+          Motivo / Justificación (Registro de Auditoría)
+        </label>
+        <input
+          id="password-ticket-reason"
+          type="text"
+          placeholder="Ej. Docente olvidó su contraseña y solicita restablecimiento urgente."
+          style="border:1.5px solid var(--ink); background:var(--paper); padding:8px 10px; font-family:var(--sans); font-size:12px;"
+        />
+      </div>
 
-      <div id="password-ticket-feedback" style="display:none; padding:10px 14px; font-family:var(--mono); font-size:12px; font-weight:600;"></div>
+      <!-- CAJA DE FEEDBACK -->
+      <div id="password-ticket-feedback" style="display:none; padding:12px 14px; font-family:var(--mono); font-size:12px; font-weight:600; border:1.5px solid var(--ink); box-shadow:3px 3px 0 var(--ink);"></div>
 
+      <!-- BOTONES DE ACCIÓN -->
       <div style="display:flex; gap:10px; justify-content:flex-end; padding-top:14px; border-top:1px solid var(--line);">
-        <button type="button" class="btn btn-secondary" onclick="window.closePasswordTicketModal && window.closePasswordTicketModal()">Cancelar</button>
-        <button id="password-ticket-submit-btn" type="submit" class="btn btn-primary">Crear Ticket</button>
+        <button
+          type="button"
+          class="btn btn-secondary"
+          onclick="window.closePasswordTicketModal && window.closePasswordTicketModal()"
+        >
+          Cancelar
+        </button>
+        <button
+          id="password-ticket-submit-btn"
+          type="submit"
+          class="btn btn-primary"
+          style="background:var(--rust); border-color:var(--ink); color:#FFFFFF; font-weight:800; box-shadow:3px 3px 0 var(--ink);"
+        >
+          🔑 Guardar y Aplicar Clave Inmediatamente
+        </button>
       </div>
     </form>
   </div>
@@ -509,34 +581,73 @@ window.PASSWORD_TICKETS = JSON.parse(passwordTicketsJson || '[]');
 window._selectedRectorAvatarFile = null;
 
 // ============================================================
-// MODAL: TICKET DE CONTRASEÑA
+// MODAL: RESTABLECIMIENTO DIRECTO DE CONTRASEÑA
 // ============================================================
-window.openPasswordTicketModal = function(userId) {
+function generateSecurePassword() {
+  const words = ['Profe', 'Educa', 'Clase', 'Colegio', 'Saber', 'Futuro'];
+  const prefix = words[Math.floor(Math.random() * words.length)];
+  const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+  let rand = '';
+  for (let i = 0; i < 4; i++) {
+    rand += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return `${prefix}!2026#${rand}`;
+}
+
+window.openDirectResetPasswordModal = function(userId) {
   const user = window.USERS.find(u => u.id === userId);
   if (!user) return;
 
-  document.getElementById('password-ticket-user-id').value = user.id;
-  document.getElementById('password-ticket-user-label').textContent = `${user.name || 'Rector'} · ${user.email}`;
-  document.getElementById('password-ticket-reason').value = '';
-  document.getElementById('password-ticket-method').value = 'temporary_password';
-  document.getElementById('password-ticket-second-approval').checked = false;
-
+  const idInput = document.getElementById('password-ticket-user-id');
+  const userLabel = document.getElementById('password-ticket-user-label');
+  const userSub = document.getElementById('password-ticket-user-sub');
+  const roleBadge = document.getElementById('password-ticket-role-badge');
+  const passInput = document.getElementById('password-direct-new-input');
+  const reasonInput = document.getElementById('password-ticket-reason');
+  const reqCheck = document.getElementById('password-ticket-require-change');
   const fb = document.getElementById('password-ticket-feedback');
-  fb.style.display = 'none';
-  fb.textContent = '';
-
   const submitBtn = document.getElementById('password-ticket-submit-btn');
-  submitBtn.disabled = false;
-  submitBtn.textContent = 'Crear Ticket';
+
+  if (idInput) idInput.value = user.id;
+  if (userLabel) userLabel.textContent = `${user.name || 'Usuario'} · ${user.email}`;
+  if (userSub) userSub.textContent = `Institución: ${user.schoolName || 'Sistema Central'} · Teléfono: ${user.phone || 'N/A'}`;
+  
+  if (roleBadge) {
+    const roleText = user.role === 'super_admin' ? 'SUPER ADMIN' 
+      : user.role === 'school_admin' ? (user.jobTitle || 'RECTOR')
+      : user.role === 'teacher' ? (user.specialty || 'DOCENTE')
+      : user.role === 'student' ? 'ESTUDIANTE'
+      : user.role.toUpperCase();
+    roleBadge.textContent = roleText;
+  }
+
+  if (passInput) passInput.value = generateSecurePassword();
+  if (reasonInput) reasonInput.value = 'Restablecimiento directo por administración.';
+  if (reqCheck) reqCheck.checked = false;
+
+  if (fb) {
+    fb.style.display = 'none';
+    fb.textContent = '';
+  }
+
+  if (submitBtn) {
+    submitBtn.disabled = false;
+    submitBtn.textContent = '🔑 Guardar y Aplicar Clave Inmediatamente';
+  }
 
   const overlay = document.getElementById('password-ticket-modal-overlay');
   const panel = document.getElementById('password-ticket-modal-panel');
-  overlay.style.display = 'flex';
-  panel.getBoundingClientRect();
-  panel.style.opacity = '1';
-  panel.style.transform = 'scale(1)';
-  document.getElementById('password-ticket-reason').focus();
+  if (overlay && panel) {
+    overlay.style.display = 'flex';
+    panel.getBoundingClientRect();
+    panel.style.opacity = '1';
+    panel.style.transform = 'scale(1)';
+  }
+
+  if (passInput) passInput.focus();
 };
+
+window.openPasswordTicketModal = window.openDirectResetPasswordModal;
 
 window.closePasswordTicketModal = function() {
   const overlay = document.getElementById('password-ticket-modal-overlay');
@@ -551,19 +662,24 @@ window.closePasswordTicketModal = function() {
 };
 
 window.executePasswordResetTicket = async function(ticketId, targetEmail) {
-  const newPassword = window.prompt(`Nueva contraseña temporal para ${targetEmail || 'el rector'}:`);
-  if (!newPassword) return;
-
-  if (newPassword.length < 8) {
-    window.alert('La contraseña debe tener mínimo 8 caracteres.');
+  const ticket = (window.PASSWORD_TICKETS || []).find(t => t.id === ticketId);
+  if (ticket && ticket.targetUserId) {
+    window.openDirectResetPasswordModal(ticket.targetUserId);
     return;
   }
 
-  const confirmed = window.confirm('Esto cambiará la contraseña real del rector en Supabase Auth. ¿Continuar?');
+  const newPassword = window.prompt(`Nueva contraseña temporal para ${targetEmail || 'el usuario'}:`, generateSecurePassword());
+  if (!newPassword) return;
+
+  if (newPassword.length < 6) {
+    window.alert('La contraseña debe tener mínimo 6 caracteres.');
+    return;
+  }
+
+  const confirmed = window.confirm(`Esto cambiará la contraseña real de ${targetEmail} en Supabase Auth inmediatamente. ¿Continuar?`);
   if (!confirmed) return;
 
   try {
-    // ✅ Via API segura — no directo desde el browser
     const res = await window.fetchAuth('/api/admin/password-tickets', {
       method: 'POST',
       body: JSON.stringify({ action: 'execute_ticket', ticketId, newPassword }),
@@ -571,11 +687,11 @@ window.executePasswordResetTicket = async function(ticketId, targetEmail) {
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || 'Error desconocido');
 
-    window.alert('Contraseña actualizada. Ahora prueba cerrar sesión e ingresar como rector con la nueva clave temporal.');
+    window.alert(`✓ Contraseña actualizada exitosamente en Supabase Auth.\nNueva contraseña: ${newPassword}`);
     window.location.reload();
   } catch (err) {
     console.error('Error ejecutando cambio de contraseña:', err);
-    window.alert('No fue posible cambiar la contraseña. Revisa que la Edge Function esté desplegada y que estés como Super Admin.');
+    window.alert('No fue posible cambiar la contraseña: ' + (err.message || 'Error del servidor'));
   }
 };
 
@@ -1030,6 +1146,32 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Generador y Copiado de Clave en Modal Directo
+  const btnGenPassDirect = document.getElementById('password-direct-btn-generate');
+  if (btnGenPassDirect) {
+    btnGenPassDirect.addEventListener('click', () => {
+      const passInput = document.getElementById('password-direct-new-input');
+      if (passInput) passInput.value = generateSecurePassword();
+    });
+  }
+
+  const btnCopyPassDirect = document.getElementById('password-direct-btn-copy');
+  if (btnCopyPassDirect) {
+    btnCopyPassDirect.addEventListener('click', async () => {
+      const passInput = document.getElementById('password-direct-new-input');
+      if (!passInput || !passInput.value) return;
+      try {
+        await navigator.clipboard.writeText(passInput.value);
+        const orig = btnCopyPassDirect.textContent;
+        btnCopyPassDirect.textContent = '✓ Copiada';
+        setTimeout(() => { btnCopyPassDirect.textContent = orig; }, 1800);
+      } catch (err) {
+        passInput.select();
+        document.execCommand('copy');
+      }
+    });
+  }
+
   const passwordTicketForm = document.getElementById('password-ticket-form');
   if (passwordTicketForm) {
     passwordTicketForm.addEventListener('submit', async e => {
@@ -1037,44 +1179,70 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const submitBtn = document.getElementById('password-ticket-submit-btn');
       const fb = document.getElementById('password-ticket-feedback');
-      const targetUserId = document.getElementById('password-ticket-user-id').value;
-      const reason = document.getElementById('password-ticket-reason').value.trim();
-      const resetMethod = document.getElementById('password-ticket-method').value;
-      const requiresSecondApproval = document.getElementById('password-ticket-second-approval').checked;
+      const targetUserId = document.getElementById('password-ticket-user-id')?.value;
+      const newPassword = document.getElementById('password-direct-new-input')?.value?.trim();
+      const requireChangeOnNextLogin = document.getElementById('password-ticket-require-change')?.checked ?? true;
+      const reason = document.getElementById('password-ticket-reason')?.value?.trim() || 'Restablecimiento directo de acceso.';
 
-      if (!targetUserId || !reason) {
+      if (!targetUserId) {
         fb.style.cssText = 'display:block; padding:10px 14px; background:#FEE2E2; border:1px solid var(--danger); color:var(--danger); font-family:var(--mono); font-size:12px; font-weight:600;';
-        fb.textContent = 'Escribe el motivo del cambio para dejar la auditoría completa.';
+        fb.textContent = 'Error: no se especificó el usuario a restablecer.';
+        return;
+      }
+
+      if (!newPassword || newPassword.length < 6) {
+        fb.style.cssText = 'display:block; padding:10px 14px; background:#FEE2E2; border:1px solid var(--danger); color:var(--danger); font-family:var(--mono); font-size:12px; font-weight:600;';
+        fb.textContent = 'La nueva contraseña debe tener al menos 6 caracteres.';
         return;
       }
 
       try {
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Creando ticket...';
+        submitBtn.textContent = 'Actualizando en Supabase Auth…';
         fb.style.display = 'none';
 
-        // ✅ Via API segura — no directo desde el browser
-        const res = await window.fetchAuth('/api/admin/password-tickets', {
+        const res = await window.fetchAuth('/api/admin/reset-password', {
           method: 'POST',
-          body: JSON.stringify({ action: 'create_ticket', targetUserId, reason, resetMethod, requiresSecondApproval }),
+          body: JSON.stringify({
+            userId: targetUserId,
+            newPassword,
+            requireChangeOnNextLogin,
+            reason,
+          }),
         });
         const data = await res.json();
-        if (!data.ok) throw new Error(data.error || 'Error desconocido');
+        if (!data.ok) throw new Error(data.error || 'Error restableciendo la contraseña');
 
-        fb.style.cssText = 'display:block; padding:10px 14px; background:#E6F4EA; border:1px solid var(--sage-dark); color:var(--sage-dark); font-family:var(--mono); font-size:12px; font-weight:600;';
-        fb.textContent = 'Ticket creado correctamente. El cambio efectivo se ejecuta desde el flujo seguro de servidor.';
-        submitBtn.textContent = 'Ticket creado';
+        // Intentar copiar al portapapeles automáticamente
+        try {
+          await navigator.clipboard.writeText(newPassword);
+        } catch (_) {}
+
+        fb.style.cssText = 'display:block; padding:12px 14px; background:#E6F4EA; border:1.5px solid var(--ink); color:var(--ink); font-family:var(--sans); font-size:12.5px; line-height:1.45; box-shadow:3px 3px 0 var(--ink); margin-bottom:8px;';
+        fb.innerHTML = `
+          <div style="font-weight:800; font-size:13px; color:#137333; margin-bottom:4px;">
+            ✓ ¡Contraseña Actualizada con Éxito en Supabase Auth!
+          </div>
+          <div style="margin-bottom:6px; color:var(--ink-soft); font-size:11.5px;">
+            Acceso habilitado inmediatamente. Todos sus cursos, notas y datos siguen 100% intactos.
+          </div>
+          <div style="background:#FFFFFF; border:1px solid var(--ink); padding:6px 10px; font-family:var(--mono); font-size:12.5px; font-weight:800; color:var(--rust); display:flex; justify-content:space-between; align-items:center;">
+            <span>Clave: ${newPassword}</span>
+            <span style="font-size:10px; color:#137333; font-weight:700;">✓ Copiada al portapapeles</span>
+          </div>
+        `;
+        submitBtn.textContent = '✓ Contraseña Guardada';
 
         setTimeout(() => {
           window.closePasswordTicketModal();
           window.location.reload();
-        }, 1000);
+        }, 2200);
       } catch (err) {
-        console.error('Error creando ticket de contraseña:', err);
+        console.error('Error restableciendo contraseña:', err);
         fb.style.cssText = 'display:block; padding:10px 14px; background:#FEE2E2; border:1px solid var(--danger); color:var(--danger); font-family:var(--mono); font-size:12px; font-weight:600;';
-        fb.textContent = 'No fue posible crear el ticket. Verifica que estés como Super Admin y que la migración 06 esté aplicada.';
+        fb.textContent = 'No fue posible restablecer la clave: ' + (err.message || 'Error de conexión');
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Crear Ticket';
+        submitBtn.textContent = '🔑 Guardar y Aplicar Clave Inmediatamente';
       }
     });
   }

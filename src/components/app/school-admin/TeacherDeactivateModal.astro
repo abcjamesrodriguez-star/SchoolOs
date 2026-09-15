@@ -1,4 +1,4 @@
-﻿---
+---
 // ============================================================
 // SchoolOS — Modal de Gestión de Novedades & Baja Docente
 // Opciones: Suspensión Temporal (Licencia) o Desvinculación Definitiva
@@ -13,6 +13,8 @@ const { id = 'teacherDeactivateModal' } = Astro.props;
 
 <div
   id={id}
+  data-modal-id={id}
+  data-teacher-deactivate-modal
   class="custom-modal-backdrop"
   style="display:none; position:fixed; inset:0; background:rgba(18, 17, 14, 0.75); z-index:9999; align-items:center; justify-content:center; padding:20px; overflow-y:auto;"
   role="dialog"
@@ -125,7 +127,9 @@ const { id = 'teacherDeactivateModal' } = Astro.props;
 
   (window as any).openTeacherDeactivateModal = function(teacherData: any) {
     if (!teacherData) return;
-    const modal = document.querySelector('[data-teacher-deactivate-modal]') as HTMLElement || document.getElementById('TeacherDeactivateModal');
+    const modal = (document.querySelector('[data-teacher-deactivate-modal]') as HTMLElement) ||
+                  document.getElementById('teacherDeactivateModal') ||
+                  document.getElementById('TeacherDeactivateModal');
     if (!modal) return;
     const modalId = modal.id;
 
