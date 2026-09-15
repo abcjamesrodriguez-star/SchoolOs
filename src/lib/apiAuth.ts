@@ -228,3 +228,42 @@ export async function requireAuth(
     };
   }
 }
+
+/**
+ * Resuelve la URL pública canónica de la plataforma.
+ * Prioriza la variable de producción SITE_URL o VERCEL_URL, evitando redirigir a localhost en correos.
+ */
+export function getPublicSiteUrl(request?: Request): string {
+  const envUrl = (typeof import.meta !== 'undefined' && import.meta.env?.SITE_URL)
+    ? (import.meta.env.SITE_URL as string)
+    : (typeof process !== 'undefined' ? process.env.SITE_URL : undefined);
+
+  if (envUrl && envUrl.startsWith('http') && !envUrl.includes('localhost')) {
+    return envUrl.replace(/\/$/, '');
+  }
+
+  if (typeof process !== 'undefined' && process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL.replace(/\/$/, '')}`;
+  }
+
+  if (request) {
+    const fHost = request.headers.get('x-forwarded-host');
+    const fProto = request.headers.get('x-forwarded-proto') || 'https';
+    if (fHost && !fHost.includes('localhost')) {
+      return `${fProto}://${fHost}`.replace(/\/$/, '');
+    }
+    try {
+      const origin = new URL(request.url).origin;
+      if (!origin.includes('localhost')) {
+        return origin.replace(/\/$/, '');
+      }
+    } catch (_) {}
+  }
+
+  if (envUrl && envUrl.startsWith('http')) {
+    return envUrl.replace(/\/$/, '');
+  }
+
+  return 'https://school-os-pi-jet.vercel.app';
+}
+

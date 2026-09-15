@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { requireAuth } from '../../../lib/apiAuth';
+import { requireAuth, getPublicSiteUrl } from '../../../lib/apiAuth';
 import {
   provisionRectorAccount,
   generateRectorInviteLink,
@@ -17,7 +17,7 @@ export const POST: APIRoute = async ({ request }) => {
     if (!auth.ok) return auth.response;
 
     const body = await request.json();
-    const siteUrl = new URL(request.url).origin;
+    const siteUrl = getPublicSiteUrl(request);
 
     // Acción 1: Generar enlace criptográfico oficial de Supabase Auth ("Copiar Link")
     if (body.action === 'generate_link') {

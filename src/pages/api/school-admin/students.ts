@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { requireAuth } from '../../../lib/apiAuth';
+import { requireAuth, getPublicSiteUrl } from '../../../lib/apiAuth';
 
 async function provisionStudentUser(supabase: any, email: string, name: string, schoolId: string, siteUrl: string): Promise<string> {
   const normalizedEmail = email.trim().toLowerCase();
@@ -163,7 +163,7 @@ export const POST: APIRoute = async ({ request }) => {
         return new Response(JSON.stringify({ ok: false, error: 'Faltan campos obligatorios.' }), { status: 400 });
       }
 
-      const siteUrl = new URL(request.url).origin;
+      const siteUrl = getPublicSiteUrl(request);
       await provisionStudentUser(supabase, email, name || 'Estudiante', targetSchoolId, siteUrl);
       return new Response(JSON.stringify({ ok: true, message: 'Invitación oficial reenviada vía Supabase SMTP.' }), { status: 200 });
     }

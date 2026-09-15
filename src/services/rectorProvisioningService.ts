@@ -1,4 +1,5 @@
 import { createAdminSupabase } from '../lib/supabase-admin';
+import { getPublicSiteUrl } from '../lib/apiAuth';
 
 export interface ProvisionResult {
   userId: string;
@@ -23,14 +24,12 @@ export interface RectorProvisioningPayload {
 }
 
 function resolveSiteUrl(providedUrl?: string): string {
-  if (providedUrl && providedUrl.startsWith('http')) {
+  if (providedUrl && providedUrl.startsWith('http') && !providedUrl.includes('localhost')) {
     return providedUrl.replace(/\/$/, '');
   }
-  const envUrl = typeof import.meta !== 'undefined' && import.meta.env?.SITE_URL
-    ? (import.meta.env.SITE_URL as string)
-    : (typeof process !== 'undefined' ? process.env.SITE_URL : undefined);
-  return (envUrl || 'http://localhost:4321').replace(/\/$/, '');
+  return getPublicSiteUrl();
 }
+
 
 /**
  * Genera el enlace criptográfico oficial de Supabase Auth para invitar o recuperar acceso.

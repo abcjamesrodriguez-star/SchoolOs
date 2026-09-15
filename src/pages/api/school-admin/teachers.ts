@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { requireAuth } from '../../../lib/apiAuth';
+import { requireAuth, getPublicSiteUrl } from '../../../lib/apiAuth';
 
 function json(data: any, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -131,7 +131,7 @@ export const POST: APIRoute = async ({ request }) => {
         return json({ ok: false, error: 'Faltan campos obligatorios.' }, 400);
       }
 
-      const siteUrl = new URL(request.url).origin;
+      const siteUrl = getPublicSiteUrl(request);
       await provisionTeacherUser(supabase, email, name || 'Docente', targetSchoolId, siteUrl);
       return json({ ok: true, message: 'Invitación oficial reenviada vía Supabase SMTP.' }, 200);
     }
@@ -213,7 +213,7 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // Aprovisionar nativamente en Supabase Auth con invitación oficial
-    const siteUrl = new URL(request.url).origin;
+    const siteUrl = getPublicSiteUrl(request);
     const targetUserId = await provisionTeacherUser(supabase, email, name, targetSchoolId, siteUrl, avatarUrl);
 
     // Guardar perfil docente en public.users
