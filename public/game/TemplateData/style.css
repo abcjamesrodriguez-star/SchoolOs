@@ -1,16 +1,214 @@
-body { padding: 0; margin: 0 }
-#unity-container { position: absolute }
-#unity-container.unity-desktop { left: 50%; top: 50%; transform: translate(-50%, -50%) }
-#unity-container.unity-mobile { position: fixed; width: 100%; height: 100% }
-#unity-canvas { background: #231F20 }
-.unity-mobile #unity-canvas { width: 100%; height: 100% }
-#unity-loading-bar { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: none }
-#unity-logo { width: 154px; height: 130px; background: url('unity-logo-dark.png') no-repeat center }
-#unity-progress-bar-empty { width: 141px; height: 18px; margin-top: 10px; margin-left: 6.5px; background: url('progress-bar-empty-dark.png') no-repeat center }
-#unity-progress-bar-full { width: 0%; height: 18px; margin-top: 10px; background: url('progress-bar-full-dark.png') no-repeat center }
-#unity-footer { position: relative }
-.unity-mobile #unity-footer { display: none }
-#unity-logo-title-footer { float:left; width: 102px; height: 38px; background: url('unity-logo-title-footer.png') no-repeat center }
-#unity-build-title { float: right; margin-right: 10px; line-height: 38px; font-family: arial; font-size: 18px }
-#unity-fullscreen-button { cursor:pointer; float: right; width: 38px; height: 38px; background: url('fullscreen-button.png') no-repeat center }
-#unity-warning { position: absolute; left: 50%; top: 5%; transform: translate(-50%); background: white; padding: 10px; display: none }
+/* ============================================================
+   SchoolOS — Estilos de Integración Unity WebGL
+   Diseño Editorial Brutalista Oficial
+   ============================================================ */
+html, body {
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #12110E;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  user-select: none;
+}
+
+#unity-container {
+  position: absolute;
+}
+
+#unity-container.unity-desktop {
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #12110E;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+#unity-container.unity-mobile {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+}
+
+#unity-canvas {
+  background: #181714;
+  display: block;
+}
+
+.unity-mobile #unity-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+/* ── PANTALLA DE CARGA BRUTALISTA ────────────────────────── */
+#unity-loading-bar {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: none;
+  background: #F4EFE6;
+  border: 2px solid #12110E;
+  box-shadow: 4px 4px 0 #12110E;
+  padding: 24px 32px;
+  text-align: center;
+  z-index: 30;
+  min-width: 240px;
+}
+
+.loading-title {
+  font-family: 'IBM Plex Mono', monospace, sans-serif;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #12110E;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+#unity-progress-bar-empty {
+  width: 100%;
+  height: 16px;
+  background: #FDFCF9;
+  border: 1.5px solid #12110E;
+  overflow: hidden;
+  box-shadow: inset 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+#unity-progress-bar-full {
+  width: 0%;
+  height: 100%;
+  background: #F25C2B;
+  transition: width 0.15s ease;
+}
+
+/* ── FOOTER ELEGANTE Y EMBELLECIDO (SCHOOLOS BRUTALIST) ──── */
+#unity-footer {
+  width: 100%;
+  height: 42px;
+  background: #F4EFE6;
+  border-top: 2px solid #12110E;
+  border-bottom: 2px solid #12110E;
+  border-left: 2px solid #12110E;
+  border-right: 2px solid #12110E;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+
+.unity-mobile #unity-footer {
+  display: none;
+}
+
+.footer-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.footer-badge {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #12110E;
+  background: #FDFCF9;
+  border: 1.5px solid #12110E;
+  box-shadow: 1.5px 1.5px 0 #12110E;
+  padding: 3px 8px;
+}
+
+.footer-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #15803D;
+  background: #DCFCE7;
+  border: 1px solid #12110E;
+  padding: 2.5px 8px;
+}
+
+.footer-dot {
+  width: 6px;
+  height: 6px;
+  background: #15803D;
+  border-radius: 50%;
+  animation: pulse 1.6s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.8); }
+}
+
+#unity-build-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 800;
+  color: #4A473E;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+#unity-fullscreen-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #12110E;
+  color: #FFFFFF;
+  border: 1.5px solid #12110E;
+  box-shadow: 2px 2px 0 #12110E;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  cursor: pointer;
+  border-radius: 0;
+  transition: all 0.12s ease;
+  line-height: 1;
+}
+
+#unity-fullscreen-button:hover {
+  background: #F25C2B;
+  color: #FFFFFF;
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 #12110E;
+}
+
+#unity-fullscreen-button:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 #12110E;
+}
+
+#unity-warning {
+  position: absolute;
+  left: 50%;
+  top: 5%;
+  transform: translate(-50%);
+  background: #FEF3C7;
+  border: 1.5px solid #12110E;
+  box-shadow: 3px 3px 0 #12110E;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: #92400E;
+  padding: 8px 16px;
+  display: none;
+  z-index: 40;
+}
