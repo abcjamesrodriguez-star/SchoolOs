@@ -187,39 +187,41 @@ import '../styles/tokens.css';
         color: #FFFFFF;
       }
 
-      /* ── CONTENEDOR COCKPIT 3 COLUMNAS PROPORCIONAL ─────────────────── */
+      /* ── CONTENEDOR COCKPIT 3 COLUMNAS PROPORCIONAL & EXPANDIDO ───── */
       .lab-cockpit {
-        max-width: 1680px;
-        width: 100%;
-        margin: 18px auto;
-        padding: 0 20px 32px;
+        width: calc(100% - 32px);
+        max-width: 1920px;
+        margin: 14px auto 24px;
+        padding: 0 8px;
         display: grid;
-        grid-template-columns: 320px 980px 320px;
-        gap: 18px;
+        grid-template-columns: 320px 1fr 320px;
+        gap: 16px;
         align-items: stretch; /* TODAS LAS COLUMNAS MIDEN EXACTAMENTE LO MISMO */
         justify-content: center;
       }
 
-      @media (max-width: 1680px) {
+      @media (max-width: 1600px) {
         .lab-cockpit {
-          grid-template-columns: 300px minmax(780px, 940px) 300px;
+          grid-template-columns: 300px 1fr 300px;
           gap: 14px;
-          padding: 0 16px 28px;
+          width: calc(100% - 24px);
         }
       }
 
-      @media (max-width: 1440px) {
+      @media (max-width: 1360px) {
         .lab-cockpit {
-          grid-template-columns: 280px minmax(680px, 1fr) 280px;
+          grid-template-columns: 280px 1fr 280px;
           gap: 12px;
+          width: calc(100% - 16px);
         }
       }
 
-      @media (max-width: 1240px) {
+      @media (max-width: 1180px) {
         .lab-cockpit {
           grid-template-columns: 1fr;
-          max-width: 980px;
-          align-items: start;
+          max-width: 1000px;
+          width: calc(100% - 24px);
+          gap: 18px;
         }
         .lab-nav {
           flex-direction: column;
@@ -468,7 +470,8 @@ import '../styles/tokens.css';
       .viewport-wrapper {
         position: relative;
         width: 100%;
-        height: 644px; /* Canvas 600px + Footer 42px + 2px borde */
+        height: 660px;
+        min-height: 620px;
         background: #12110E;
         display: flex;
         align-items: center;
@@ -655,8 +658,8 @@ import '../styles/tokens.css';
             <p class="academic-text">
               Tus experimentos en el simulador se evalúan y asientan en tu boletín estudiantil de SchoolOS.
             </p>
-            <a href="/game/index.html" target="_blank" class="raw-mode-link">
-              Abrir en pantalla completa ↗
+            <a href="javascript:void(0)" class="raw-mode-link" id="linkExpandSim" title="Maximizar simulación">
+              ⛶ Pantalla completa nativa ↗
             </a>
           </div>
         </div>
@@ -665,18 +668,65 @@ import '../styles/tokens.css';
     </main>
 
     <script>
-      // 1. Pantalla completa nativa
+      // 1. Pantalla completa nativa directa de Unity (sin doble clic)
       const btnFullscreen = document.getElementById('btnFullscreen');
-      const viewportContainer = document.getElementById('labViewportContainer');
+      const unityIframe = document.getElementById('unityIframe') as HTMLIFrameElement;
+      const linkExpandSim = document.getElementById('linkExpandSim');
+
+      function triggerUnityNativeFullscreen() {
+        if (!unityIframe) return;
+
+        try {
+          const win = unityIframe.contentWindow as any;
+
+          // Si ya está en pantalla completa, salir limpiamente
+          if (document.fullscreenElement) {
+            document.exitFullscreen?.();
+            return;
+          }
+          if (win?.document?.fullscreenElement) {
+            win.document.exitFullscreen?.();
+            return;
+          }
+
+          // Método 1: Función helper expuesta en el iframe
+          if (win && typeof win.triggerUnityFullscreen === 'function') {
+            win.triggerUnityFullscreen();
+            return;
+          }
+
+          // Método 2: Invocación directa a unityInstance.SetFullscreen(1)
+          if (win?.unityInstance && typeof win.unityInstance.SetFullscreen === 'function') {
+            win.unityInstance.SetFullscreen(1);
+            return;
+          }
+
+          // Método 3: Clic directo sincrónico sobre el botón de Unity del iframe
+          const innerDoc = unityIframe.contentDocument || win?.document;
+          const innerBtn = innerDoc?.getElementById('unity-fullscreen-button');
+          if (innerBtn) {
+            innerBtn.click();
+            return;
+          }
+        } catch (err) {
+          console.warn('Acceso directo a iframe no disponible, usando postMessage:', err);
+        }
+
+        // Método 4: Fallback con postMessage hacia el iframe
+        try {
+          unityIframe.contentWindow?.postMessage({ type: 'UNITY_FULLSCREEN' }, '*');
+        } catch (e) {
+          console.warn('postMessage falló:', e);
+        }
+      }
 
       btnFullscreen?.addEventListener('click', () => {
-        if (!document.fullscreenElement) {
-          viewportContainer?.requestFullscreen?.().catch((err) => {
-            console.warn('Error solicitando pantalla completa:', err);
-          });
-        } else {
-          document.exitFullscreen?.();
-        }
+        triggerUnityNativeFullscreen();
+      });
+
+      linkExpandSim?.addEventListener('click', (e) => {
+        e.preventDefault();
+        triggerUnityNativeFullscreen();
       });
 
       // 2. Reiniciar simulador

@@ -87,11 +87,30 @@
         document.querySelector("#unity-container").className = "unity-mobile";
         canvas.className = "unity-mobile";
       } else {
-        canvas.style.width = "960px";
-        canvas.style.height = "600px";
+        canvas.style.width = "100%";
+        canvas.style.height = "calc(100% - 42px)";
       }
 
       document.querySelector("#unity-loading-bar").style.display = "block";
+
+      window.triggerUnityFullscreen = function() {
+        if (window.unityInstance) {
+          window.unityInstance.SetFullscreen(1);
+        } else {
+          var btn = document.querySelector("#unity-fullscreen-button");
+          if (btn) btn.click();
+        }
+      };
+
+      window.addEventListener("message", function(event) {
+        if (event.data && event.data.type === "UNITY_FULLSCREEN") {
+          window.triggerUnityFullscreen();
+        } else if (event.data && event.data.type === "UNITY_EXIT_FULLSCREEN") {
+          if (window.unityInstance) {
+            window.unityInstance.SetFullscreen(0);
+          }
+        }
+      });
 
       var script = document.createElement("script");
       script.src = loaderUrl;
@@ -99,6 +118,7 @@
         createUnityInstance(canvas, config, (progress) => {
           document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
         }).then((unityInstance) => {
+          window.unityInstance = unityInstance;
           document.querySelector("#unity-loading-bar").style.display = "none";
           document.querySelector("#unity-fullscreen-button").onclick = () => {
             unityInstance.SetFullscreen(1);
