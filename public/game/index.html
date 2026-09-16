@@ -27,7 +27,7 @@
       
       <div id="unity-warning"></div>
       
-      <!-- Footer embellecido estilo SchoolOS -->
+      <!-- Footer brutalista oficial SchoolOS -->
       <div id="unity-footer">
         <div class="footer-left">
           <span class="footer-badge">🧪 LABORATORIO DE QUÍMICA</span>
@@ -36,7 +36,7 @@
         
         <div id="unity-build-title">SchoolOS · Simulación 3D</div>
         
-        <button type="button" id="unity-fullscreen-button" title="Maximizar Simulación">
+        <button type="button" id="unity-fullscreen-button" title="Pantalla Completa">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
           Pantalla Completa
         </button>
@@ -124,6 +124,7 @@
             unityInstance.SetFullscreen(1);
           };
         }).catch((message) => {
+          console.error("Error cargando Unity:", message);
           alert(message);
         });
       };

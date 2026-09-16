@@ -511,10 +511,6 @@ import '../styles/tokens.css';
         <button type="button" class="btn-action" id="btnReloadLab" title="Reiniciar Simulación">
           🔄 Reiniciar
         </button>
-
-        <button type="button" class="btn-action btn-fullscreen" id="btnFullscreen" title="Pantalla Completa">
-          ⛶ Pantalla Completa
-        </button>
       </div>
     </header>
 
@@ -658,8 +654,8 @@ import '../styles/tokens.css';
             <p class="academic-text">
               Tus experimentos en el simulador se evalúan y asientan en tu boletín estudiantil de SchoolOS.
             </p>
-            <a href="javascript:void(0)" class="raw-mode-link" id="linkExpandSim" title="Maximizar simulación">
-              ⛶ Pantalla completa nativa ↗
+            <a href="/game/index.html" target="_blank" class="raw-mode-link">
+              Abrir simulación en pestaña nueva ↗
             </a>
           </div>
         </div>
@@ -668,68 +664,7 @@ import '../styles/tokens.css';
     </main>
 
     <script>
-      // 1. Pantalla completa nativa directa de Unity (sin doble clic)
-      const btnFullscreen = document.getElementById('btnFullscreen');
-      const unityIframe = document.getElementById('unityIframe') as HTMLIFrameElement;
-      const linkExpandSim = document.getElementById('linkExpandSim');
-
-      function triggerUnityNativeFullscreen() {
-        if (!unityIframe) return;
-
-        try {
-          const win = unityIframe.contentWindow as any;
-
-          // Si ya está en pantalla completa, salir limpiamente
-          if (document.fullscreenElement) {
-            document.exitFullscreen?.();
-            return;
-          }
-          if (win?.document?.fullscreenElement) {
-            win.document.exitFullscreen?.();
-            return;
-          }
-
-          // Método 1: Función helper expuesta en el iframe
-          if (win && typeof win.triggerUnityFullscreen === 'function') {
-            win.triggerUnityFullscreen();
-            return;
-          }
-
-          // Método 2: Invocación directa a unityInstance.SetFullscreen(1)
-          if (win?.unityInstance && typeof win.unityInstance.SetFullscreen === 'function') {
-            win.unityInstance.SetFullscreen(1);
-            return;
-          }
-
-          // Método 3: Clic directo sincrónico sobre el botón de Unity del iframe
-          const innerDoc = unityIframe.contentDocument || win?.document;
-          const innerBtn = innerDoc?.getElementById('unity-fullscreen-button');
-          if (innerBtn) {
-            innerBtn.click();
-            return;
-          }
-        } catch (err) {
-          console.warn('Acceso directo a iframe no disponible, usando postMessage:', err);
-        }
-
-        // Método 4: Fallback con postMessage hacia el iframe
-        try {
-          unityIframe.contentWindow?.postMessage({ type: 'UNITY_FULLSCREEN' }, '*');
-        } catch (e) {
-          console.warn('postMessage falló:', e);
-        }
-      }
-
-      btnFullscreen?.addEventListener('click', () => {
-        triggerUnityNativeFullscreen();
-      });
-
-      linkExpandSim?.addEventListener('click', (e) => {
-        e.preventDefault();
-        triggerUnityNativeFullscreen();
-      });
-
-      // 2. Reiniciar simulador
+      // 1. Reiniciar simulador
       const btnReloadLab = document.getElementById('btnReloadLab');
       const unityIframe = document.getElementById('unityIframe') as HTMLIFrameElement;
 
