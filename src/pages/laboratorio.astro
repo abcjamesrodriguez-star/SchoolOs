@@ -1,6 +1,7 @@
 ---
 // ============================================================
-// SchoolOS — Laboratorio Virtual 3D (Simulador Unity WebGL)
+// SchoolOS — Laboratorio de Química (Simulador WebGL)
+// Diseño Editorial Brutalista Oficial (Vibrant Brutalism)
 // ============================================================
 import '../styles/tokens.css';
 ---
@@ -10,27 +11,26 @@ import '../styles/tokens.css';
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Laboratorio Virtual de Ciencias 3D — SchoolOS</title>
+    <title>Laboratorio de Química — SchoolOS</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
 
     <style>
       :root {
-        --lab-bg: #0E1013;
-        --lab-card: #15181E;
-        --lab-card-border: #232833;
-        --lab-text: #E5E9F0;
-        --lab-text-dim: #8892B0;
-        --lab-accent: #FF5A1F;
-        --lab-accent-glow: rgba(255, 90, 31, 0.25);
-        --lab-green: #10B981;
+        --cream: #F4EFE6;
+        --paper: #FDFCF9;
+        --ink: #12110E;
+        --ink-soft: #4A473E;
+        --orange-vibrant: #F25C2B;
+        --green-vibrant: #15803D;
+        --green-bg: #DCFCE7;
       }
 
       * {
@@ -40,37 +40,36 @@ import '../styles/tokens.css';
       }
 
       body {
-        background-color: var(--lab-bg);
-        color: var(--lab-text);
+        background-color: var(--cream);
+        color: var(--ink);
         font-family: var(--sans);
         min-height: 100vh;
         display: flex;
         flex-direction: column;
-        background-image: 
-          radial-gradient(circle at 50% 0%, rgba(255, 90, 31, 0.08) 0%, transparent 60%),
-          linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-        background-size: 100% 100%, 32px 32px, 32px 32px;
+        background-image:
+          linear-gradient(rgba(18, 17, 14, 0.035) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(18, 17, 14, 0.035) 1px, transparent 1px);
+        background-size: 24px 24px;
       }
 
-      /* ── TOP NAVIGATION BAR ─────────────────────────────────────── */
+      /* ── BARRA SUPERIOR EDITORIAL BRUTALISTA ────────────────────────── */
       .lab-nav {
-        background: rgba(21, 24, 30, 0.85);
-        backdrop-filter: blur(12px);
-        border-bottom: 1.5px solid var(--lab-card-border);
-        padding: 12px 24px;
+        background: var(--paper);
+        border-bottom: 2px solid var(--ink);
+        padding: 14px 28px;
         display: flex;
         align-items: center;
         justify-content: space-between;
         position: sticky;
         top: 0;
         z-index: 50;
+        box-shadow: 0 4px 0 rgba(18, 17, 14, 0.06);
       }
 
       .nav-left {
         display: flex;
         align-items: center;
-        gap: 16px;
+        gap: 20px;
       }
 
       .btn-back {
@@ -79,136 +78,194 @@ import '../styles/tokens.css';
         gap: 6px;
         font-family: var(--mono);
         font-size: 11px;
-        font-weight: 700;
+        font-weight: 800;
         letter-spacing: 0.04em;
         text-transform: uppercase;
-        color: var(--lab-text);
-        background: #1B1F27;
-        border: 1px solid var(--lab-card-border);
-        padding: 7px 12px;
+        color: var(--ink);
+        background: var(--cream);
+        border: 2px solid var(--ink);
+        box-shadow: 2.5px 2.5px 0 var(--ink);
+        padding: 8px 14px;
         text-decoration: none;
-        border-radius: 4px;
-        transition: all 0.15s ease;
+        cursor: pointer;
+        transition: all 0.12s ease;
       }
 
       .btn-back:hover {
-        background: var(--lab-accent);
-        border-color: var(--lab-accent);
+        background: var(--orange-vibrant);
         color: #FFFFFF;
-        box-shadow: 0 0 12px var(--lab-accent-glow);
+        transform: translate(-1px, -1px);
+        box-shadow: 3.5px 3.5px 0 var(--ink);
+      }
+
+      .btn-back:active {
+        transform: translate(2px, 2px);
+        box-shadow: 1px 1px 0 var(--ink);
       }
 
       .lab-title-box h1 {
         font-family: var(--serif);
-        font-size: 17px;
-        font-weight: 700;
-        color: #FFFFFF;
-        line-height: 1.2;
-      }
-
-      .lab-status-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-family: var(--mono);
-        font-size: 9.5px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: var(--lab-green);
-        background: rgba(16, 185, 129, 0.1);
-        border: 1px solid rgba(16, 185, 129, 0.3);
-        padding: 3px 8px;
-        border-radius: 999px;
-      }
-
-      .pulse-dot {
-        width: 6px;
-        height: 6px;
-        background: var(--lab-green);
-        border-radius: 50%;
-        box-shadow: 0 0 6px var(--lab-green);
-        animation: pulse 1.8s infinite;
-      }
-
-      @keyframes pulse {
-        0%, 100% { opacity: 1; transform: scale(1); }
-        50% { opacity: 0.4; transform: scale(0.85); }
+        font-size: 22px;
+        font-weight: 800;
+        color: var(--ink);
+        letter-spacing: -0.02em;
+        margin: 0;
       }
 
       .nav-actions {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
+      }
+
+      .lab-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--green-vibrant);
+        background: var(--green-bg);
+        border: 1.5px solid var(--ink);
+        box-shadow: 2px 2px 0 var(--ink);
+        padding: 6px 12px;
+      }
+
+      .pulse-dot {
+        width: 7px;
+        height: 7px;
+        background: var(--green-vibrant);
+        border-radius: 50%;
+        animation: pulse 1.6s infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.4; transform: scale(0.8); }
       }
 
       .btn-action {
-        background: #1B1F27;
-        border: 1px solid var(--lab-card-border);
-        color: var(--lab-text);
+        background: var(--paper);
+        border: 2px solid var(--ink);
+        box-shadow: 2.5px 2.5px 0 var(--ink);
+        color: var(--ink);
         font-family: var(--mono);
         font-size: 11px;
-        font-weight: 700;
-        padding: 7px 13px;
-        border-radius: 4px;
+        font-weight: 800;
+        text-transform: uppercase;
+        padding: 8px 14px;
         cursor: pointer;
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        transition: all 0.15s ease;
+        transition: all 0.12s ease;
       }
 
       .btn-action:hover {
-        background: var(--lab-card-border);
-        border-color: #3A4252;
+        background: var(--cream);
+        transform: translate(-1px, -1px);
+        box-shadow: 3.5px 3.5px 0 var(--ink);
+      }
+
+      .btn-action:active {
+        transform: translate(2px, 2px);
+        box-shadow: 1px 1px 0 var(--ink);
+      }
+
+      .btn-fullscreen {
+        background: var(--ink);
         color: #FFFFFF;
       }
 
-      /* ── CONTENEDOR PRINCIPAL ───────────────────────────────────── */
-      .main-container {
-        flex: 1;
-        width: 100%;
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 24px 20px 40px;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
+      .btn-fullscreen:hover {
+        background: var(--orange-vibrant);
+        color: #FFFFFF;
       }
 
-      /* ── MARCO DEL VISOR 3D (VIEWPORT) ──────────────────────────── */
+      /* ── CONTENEDOR PRINCIPAL ───────────────────────────────────────── */
+      .main-container {
+        max-width: 1240px;
+        width: 100%;
+        margin: 28px auto;
+        padding: 0 20px 48px;
+        display: flex;
+        flex-direction: column;
+        gap: 26px;
+      }
+
+      /* ── MARCO DE LA ESTACIÓN DE SIMULACIÓN (ESTILO BRUTALISTA) ─────── */
       .viewport-frame {
-        background: #000000;
-        border: 2px solid var(--lab-card-border);
-        border-radius: 6px;
+        background: #181714;
+        border: 2.5px solid var(--ink);
+        box-shadow: 6px 6px 0 var(--ink);
         overflow: hidden;
-        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
-        position: relative;
         display: flex;
         flex-direction: column;
       }
 
       .viewport-header {
-        background: #171A21;
-        border-bottom: 1px solid var(--lab-card-border);
-        padding: 8px 14px;
+        background: var(--cream);
+        border-bottom: 2.5px solid var(--ink);
+        padding: 9px 16px;
         display: flex;
-        justify-content: space-between;
         align-items: center;
+        justify-content: space-between;
         font-family: var(--mono);
-        font-size: 10px;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        color: var(--lab-text-dim);
+        font-size: 11px;
+        font-weight: 800;
+        color: var(--ink);
+        letter-spacing: 0.05em;
       }
+
+      .window-dots {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .dot {
+        width: 10px;
+        height: 10px;
+        border: 1.5px solid var(--ink);
+        border-radius: 0;
+      }
+      .dot.red { background: #FF5C5C; }
+      .dot.yellow { background: #FFBD2E; }
+      .dot.green { background: #27C93F; }
 
       .viewport-wrapper {
         position: relative;
         width: 100%;
-        aspect-ratio: 16 / 10;
-        max-height: 700px;
-        min-height: 500px;
-        background: #000000;
+        height: 640px;
+        background: #12110E;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      @media (max-width: 1024px) {
+        .viewport-wrapper {
+          height: 520px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .viewport-wrapper {
+          height: 420px;
+        }
+        .lab-nav {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 12px;
+          padding: 14px 18px;
+        }
+        .nav-actions {
+          width: 100%;
+          justify-content: space-between;
+        }
       }
 
       .viewport-iframe {
@@ -216,56 +273,58 @@ import '../styles/tokens.css';
         height: 100%;
         border: none;
         display: block;
+        background: #12110E;
       }
 
-      /* ── PANEL DE INFORMACIÓN INFERIOR ─────────────────────────── */
+      /* ── GRID DE INFORMACIÓN (TARJETAS BRUTALISTAS) ─────────────────── */
       .info-grid {
         display: grid;
-        grid-template-columns: 1.2fr 1fr 1fr;
-        gap: 16px;
-      }
-
-      @media (max-width: 900px) {
-        .info-grid {
-          grid-template-columns: 1fr;
-        }
-        .viewport-wrapper {
-          aspect-ratio: 16 / 10;
-          min-height: 380px;
-        }
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 22px;
       }
 
       .info-card {
-        background: var(--lab-card);
-        border: 1px solid var(--lab-card-border);
-        border-radius: 6px;
-        padding: 16px 18px;
+        background: var(--paper);
+        border: 2px solid var(--ink);
+        box-shadow: 4px 4px 0 var(--ink);
+        padding: 22px;
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 16px;
       }
+
+      .card-tag {
+        align-self: flex-start;
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 3px 8px;
+        border: 1.5px solid var(--ink);
+        box-shadow: 1.5px 1.5px 0 var(--ink);
+      }
+      .tag-orange { background: #FFE8DF; color: #C23A0B; }
+      .tag-green { background: #E4F5E6; color: #15803D; }
+      .tag-yellow { background: #FEF3C7; color: #B45309; }
 
       .info-card h3 {
-        font-family: var(--mono);
-        font-size: 11px;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: var(--lab-accent);
-        display: flex;
-        align-items: center;
-        gap: 8px;
+        font-family: var(--serif);
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--ink);
+        margin: 0;
       }
 
+      /* Tabla de controles */
       .controls-table {
         width: 100%;
-        font-size: 12px;
-        line-height: 1.5;
         border-collapse: collapse;
+        font-size: 12.5px;
       }
 
       .controls-table tr {
-        border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+        border-bottom: 1px solid var(--line, #E5E0D5);
       }
 
       .controls-table tr:last-child {
@@ -273,83 +332,108 @@ import '../styles/tokens.css';
       }
 
       .controls-table td {
-        padding: 6px 0;
+        padding: 9px 4px;
+        color: var(--ink-soft);
       }
 
       .key-pill {
         display: inline-block;
         font-family: var(--mono);
-        font-size: 10px;
-        font-weight: 700;
-        background: #252B38;
-        border: 1px solid #3A4252;
-        color: #FFFFFF;
-        padding: 2px 6px;
-        border-radius: 3px;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        font-size: 11px;
+        font-weight: 800;
+        background: var(--cream);
+        color: var(--ink);
+        border: 1.5px solid var(--ink);
+        box-shadow: 1.5px 1.5px 0 var(--ink);
+        padding: 2px 7px;
+        margin-right: 4px;
+        line-height: 1.2;
       }
 
+      /* Lista de objetivos */
       .mission-list {
         list-style: none;
         display: flex;
         flex-direction: column;
-        gap: 8px;
-        font-size: 12px;
+        gap: 12px;
+        font-size: 12.5px;
+        color: var(--ink-soft);
       }
 
       .mission-list li {
         display: flex;
         align-items: flex-start;
-        gap: 8px;
-        line-height: 1.4;
-      }
-
-      .mission-list li span.bullet {
-        color: var(--lab-accent);
-        font-weight: bold;
-      }
-
-      .sync-box {
-        background: rgba(255, 90, 31, 0.06);
-        border: 1px solid rgba(255, 90, 31, 0.2);
-        padding: 12px;
-        border-radius: 4px;
-        font-size: 11.5px;
+        gap: 10px;
         line-height: 1.45;
-        color: #D1D5DB;
+      }
+
+      .mission-number {
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 800;
+        color: var(--ink);
+        background: var(--cream);
+        border: 1.5px solid var(--ink);
+        box-shadow: 1.5px 1.5px 0 var(--ink);
+        padding: 1px 5px;
+        flex-shrink: 0;
+      }
+
+      /* Caja de sincronización */
+      .sync-box {
+        background: var(--cream);
+        border: 1.5px solid var(--ink);
+        box-shadow: 2.5px 2.5px 0 var(--ink);
+        padding: 14px;
+        font-size: 12px;
+        line-height: 1.5;
+        color: var(--ink-soft);
       }
 
       .sync-box strong {
-        color: #FFFFFF;
+        color: var(--ink);
+        font-size: 12.5px;
+      }
+
+      .open-raw-link {
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 800;
+        color: var(--orange-vibrant);
+        text-decoration: underline;
+        margin-top: auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .open-raw-link:hover {
+        color: var(--ink);
       }
     </style>
   </head>
   <body>
-    <!-- TOP NAVIGATION BAR -->
+    <!-- BARRA SUPERIOR EDITORIAL -->
     <header class="lab-nav">
       <div class="nav-left">
         <a href="/es/app/student" class="btn-back" id="btnBackPortal">
-          ← Portal Estudiante
+          ← Volver al Portal
         </a>
         <div class="lab-title-box">
-          <div style="font-family:var(--mono); font-size:10px; color:var(--lab-accent); font-weight:700; letter-spacing:0.06em; text-transform:uppercase;">
-            SchoolOS · Entorno de Simulación
-          </div>
-          <h1>Laboratorio de Química & Hidrocarburos</h1>
+          <h1>Laboratorio de Química</h1>
         </div>
       </div>
 
       <div class="nav-actions">
         <div class="lab-status-badge">
           <div class="pulse-dot"></div>
-          <span>WebGL 3D Activo</span>
+          <span>Simulación 3D Activa</span>
         </div>
 
         <button type="button" class="btn-action" id="btnReloadLab" title="Reiniciar Simulación">
           🔄 Reiniciar
         </button>
 
-        <button type="button" class="btn-action" id="btnFullscreen" title="Pantalla Completa">
+        <button type="button" class="btn-action btn-fullscreen" id="btnFullscreen" title="Pantalla Completa">
           ⛶ Pantalla Completa
         </button>
       </div>
@@ -357,15 +441,19 @@ import '../styles/tokens.css';
 
     <!-- CUERPO PRINCIPAL -->
     <main class="main-container">
-      <!-- MARCO DEL VISOR 3D (UNITY) -->
+      <!-- MARCO WORKSTATION DEL VISOR 3D (UNITY) -->
       <section class="viewport-frame" id="labViewportContainer">
         <div class="viewport-header">
-          <div style="display:flex; align-items:center; gap:8px;">
-            <span style="color:var(--lab-accent);">●</span>
-            <span>SIMULADOR EN LÍNEA // RESOLUCIÓN NATIVA HIGH-DPI</span>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div class="window-dots">
+              <span class="dot red"></span>
+              <span class="dot yellow"></span>
+              <span class="dot green"></span>
+            </div>
+            <span>ESTACIÓN DE SIMULACIÓN CIENTÍFICA</span>
           </div>
           <div>
-            <span>SERVIDOR: SCHOOLOS CLOUD // VERSIÓN 0.1.0</span>
+            <span>ALTA RESOLUCIÓN // 60 FPS</span>
           </div>
         </div>
 
@@ -380,15 +468,18 @@ import '../styles/tokens.css';
         </div>
       </section>
 
-      <!-- PANELES DE INFORMACIÓN Y GUÍA DE CONTROLES -->
+      <!-- PANELES EDITORIALES DE APOYO -->
       <section class="info-grid">
         <!-- Tarjeta 1: Controles -->
         <article class="info-card">
-          <h3>🎮 Controles de Simulación</h3>
+          <span class="card-tag tag-orange">MANDOS Y NAVEGACIÓN</span>
+          <h3>🎮 Guía de Controles</h3>
           <table class="controls-table">
             <tbody>
               <tr>
-                <td style="width:110px;"><span class="key-pill">W</span> <span class="key-pill">A</span> <span class="key-pill">S</span> <span class="key-pill">D</span></td>
+                <td style="width:125px;">
+                  <span class="key-pill">W</span><span class="key-pill">A</span><span class="key-pill">S</span><span class="key-pill">D</span>
+                </td>
                 <td>Desplazarse por el laboratorio escolar</td>
               </tr>
               <tr>
@@ -397,15 +488,15 @@ import '../styles/tokens.css';
               </tr>
               <tr>
                 <td><span class="key-pill">Clic Izq</span> / <span class="key-pill">E</span></td>
-                <td>Tomar reactivos, abrir mecheros y pipetear</td>
+                <td>Tomar reactivos, manipular matraces y pipetas</td>
               </tr>
               <tr>
                 <td><span class="key-pill">Espacio</span></td>
-                <td>Saltar obstáculos / interactuar</td>
+                <td>Saltar obstáculos o acción especial</td>
               </tr>
               <tr>
                 <td><span class="key-pill">Esc</span></td>
-                <td>Liberar cursor del ratón</td>
+                <td>Liberar cursor del ratón de la ventana 3D</td>
               </tr>
             </tbody>
           </table>
@@ -413,36 +504,37 @@ import '../styles/tokens.css';
 
         <!-- Tarjeta 2: Objetivos de la Práctica -->
         <article class="info-card">
+          <span class="card-tag tag-green">OBJETIVOS DE APRENDIZAJE</span>
           <h3>📋 Objetivos de la Práctica</h3>
           <ul class="mission-list">
             <li>
-              <span class="bullet">01.</span>
-              <span>Identificar los reactivos orgánicos y preparar la muestra para ensayo.</span>
+              <span class="mission-number">01</span>
+              <span>Reconocer el instrumental de laboratorio y preparar los reactivos para el ensayo químico.</span>
             </li>
             <li>
-              <span class="bullet">02.</span>
-              <span>Comprobar la reacción exotérmica bajo el protocolo de bioseguridad.</span>
+              <span class="mission-number">02</span>
+              <span>Comprobar las fases de la reacción respetando los protocolos institucionales de bioseguridad.</span>
             </li>
             <li>
-              <span class="bullet">03.</span>
-              <span>Registrar observaciones y asentar misiones evaluadas.</span>
+              <span class="mission-number">03</span>
+              <span>Finalizar los experimentos para consolidar la nota académica en el sistema.</span>
             </li>
           </ul>
         </article>
 
         <!-- Tarjeta 3: Sincronización Institucional -->
         <article class="info-card">
-          <h3>⚡ Calificación & Token</h3>
+          <span class="card-tag tag-yellow">EVALUACIÓN Y PROGRESO</span>
+          <h3>⚡ Calificación y Avance</h3>
           <div class="sync-box">
             <strong>Sincronización en Tiempo Real:</strong>
             <p style="margin-top:6px;">
-              Tus acciones en este simulador se registran en tu cuenta estudiantil. Al finalizar los experimentos, las misiones aprobadas se consolidan en tu boletín de notas.
+              Cada experimento y prueba que concluyas en esta simulación se sincroniza de forma segura con tu cuenta de estudiante.
             </p>
           </div>
-          <div style="font-family:var(--mono); font-size:10px; color:var(--lab-text-dim); margin-top:auto;">
-            ¿Prefieres pantalla completa sin marco? 
-            <a href="/game/index.html" target="_blank" style="color:var(--lab-accent); text-decoration:underline;">Abrir vista pura →</a>
-          </div>
+          <a href="/game/index.html" target="_blank" class="open-raw-link">
+            Abrir simulador en pantalla pura →
+          </a>
         </article>
       </section>
     </main>
@@ -476,14 +568,16 @@ import '../styles/tokens.css';
         }
       });
 
-      // 3. Adaptar enlace de retorno según sesión
+      // 3. Adaptar enlace de retorno según rol o sesión activa
       try {
         const rawUser = localStorage.getItem('schoolos-user');
-        if (!rawUser) {
+        if (rawUser) {
+          const user = JSON.parse(rawUser);
           const backBtn = document.getElementById('btnBackPortal');
-          if (backBtn) {
-            backBtn.textContent = '← Ir al Inicio';
-            backBtn.setAttribute('href', '/login');
+          if (backBtn && user.role) {
+            if (user.role === 'teacher') backBtn.setAttribute('href', '/es/app/teacher');
+            else if (user.role === 'school_admin') backBtn.setAttribute('href', '/es/app/school-admin');
+            else if (user.role === 'student') backBtn.setAttribute('href', '/es/app/student');
           }
         }
       } catch (_) {}
