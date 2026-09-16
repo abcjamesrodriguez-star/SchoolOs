@@ -1,6 +1,7 @@
 ---
 // ============================================================
 // SchoolOS — Laboratorio de Química (Simulador WebGL)
+// Layout Cockpit 3 Columnas: Controles (Izq) | Simulador (Centro) | Práctica (Der)
 // Diseño Editorial Brutalista Oficial (Vibrant Brutalism)
 // ============================================================
 import '../styles/tokens.css';
@@ -18,7 +19,7 @@ import '../styles/tokens.css';
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
 
@@ -31,6 +32,7 @@ import '../styles/tokens.css';
         --orange-vibrant: #F25C2B;
         --green-vibrant: #15803D;
         --green-bg: #DCFCE7;
+        --line: #E5E0D5;
       }
 
       * {
@@ -56,7 +58,7 @@ import '../styles/tokens.css';
       .lab-nav {
         background: var(--paper);
         border-bottom: 2px solid var(--ink);
-        padding: 14px 28px;
+        padding: 12px 28px;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -85,7 +87,7 @@ import '../styles/tokens.css';
         background: var(--cream);
         border: 2px solid var(--ink);
         box-shadow: 2.5px 2.5px 0 var(--ink);
-        padding: 8px 14px;
+        padding: 7px 13px;
         text-decoration: none;
         cursor: pointer;
         transition: all 0.12s ease;
@@ -156,7 +158,7 @@ import '../styles/tokens.css';
         font-size: 11px;
         font-weight: 800;
         text-transform: uppercase;
-        padding: 8px 14px;
+        padding: 7px 13px;
         cursor: pointer;
         display: inline-flex;
         align-items: center;
@@ -185,78 +187,38 @@ import '../styles/tokens.css';
         color: #FFFFFF;
       }
 
-      /* ── CONTENEDOR PRINCIPAL ───────────────────────────────────────── */
-      .main-container {
-        max-width: 1240px;
+      /* ── CONTENEDOR COCKPIT 3 COLUMNAS ───────────────────────────────── */
+      .lab-cockpit {
+        max-width: 1720px;
         width: 100%;
-        margin: 28px auto;
-        padding: 0 20px 48px;
-        display: flex;
-        flex-direction: column;
-        gap: 26px;
-      }
-
-      /* ── MARCO DE LA ESTACIÓN DE SIMULACIÓN (ESTILO BRUTALISTA) ─────── */
-      .viewport-frame {
-        background: #181714;
-        border: 2.5px solid var(--ink);
-        box-shadow: 6px 6px 0 var(--ink);
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-      }
-
-      .viewport-header {
-        background: var(--cream);
-        border-bottom: 2.5px solid var(--ink);
-        padding: 9px 16px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        font-family: var(--mono);
-        font-size: 11px;
-        font-weight: 800;
-        color: var(--ink);
-        letter-spacing: 0.05em;
-      }
-
-      .window-dots {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-      }
-
-      .dot {
-        width: 10px;
-        height: 10px;
-        border: 1.5px solid var(--ink);
-        border-radius: 0;
-      }
-      .dot.red { background: #FF5C5C; }
-      .dot.yellow { background: #FFBD2E; }
-      .dot.green { background: #27C93F; }
-
-      .viewport-wrapper {
-        position: relative;
-        width: 100%;
-        height: 660px;
-        background: #12110E;
-        display: flex;
-        align-items: center;
+        margin: 20px auto;
+        padding: 0 20px 32px;
+        display: grid;
+        grid-template-columns: 340px minmax(880px, 980px) 340px;
+        gap: 20px;
+        align-items: start;
         justify-content: center;
-        overflow: hidden;
       }
 
-
-      @media (max-width: 1024px) {
-        .viewport-wrapper {
-          height: 520px;
+      @media (max-width: 1680px) {
+        .lab-cockpit {
+          grid-template-columns: 310px minmax(820px, 1fr) 310px;
+          gap: 16px;
+          padding: 0 16px 28px;
         }
       }
 
-      @media (max-width: 768px) {
-        .viewport-wrapper {
-          height: 420px;
+      @media (max-width: 1480px) {
+        .lab-cockpit {
+          grid-template-columns: 290px minmax(720px, 1fr) 290px;
+          gap: 14px;
+        }
+      }
+
+      @media (max-width: 1240px) {
+        .lab-cockpit {
+          grid-template-columns: 1fr;
+          max-width: 980px;
         }
         .lab-nav {
           flex-direction: column;
@@ -270,41 +232,39 @@ import '../styles/tokens.css';
         }
       }
 
-      .viewport-iframe {
-        width: 100%;
-        height: 100%;
-        border: none;
-        display: block;
-        background: #12110E;
-        overflow: hidden;
-      }
-
-
-      /* ── GRID DE INFORMACIÓN (TARJETAS BRUTALISTAS) ─────────────────── */
-      .info-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-        gap: 22px;
+      /* ── COLUMNAS LATERALES (TARJETAS BRUTALISTAS) ──────────────────── */
+      .side-column {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
       }
 
       .info-card {
         background: var(--paper);
         border: 2px solid var(--ink);
         box-shadow: 4px 4px 0 var(--ink);
-        padding: 22px;
+        padding: 18px;
         display: flex;
         flex-direction: column;
-        gap: 16px;
+        gap: 14px;
+      }
+
+      .card-header-box {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        border-bottom: 1.5px solid var(--ink);
+        padding-bottom: 12px;
       }
 
       .card-tag {
         align-self: flex-start;
         font-family: var(--mono);
-        font-size: 10px;
+        font-size: 9.5px;
         font-weight: 800;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        padding: 3px 8px;
+        padding: 2.5px 7px;
         border: 1.5px solid var(--ink);
         box-shadow: 1.5px 1.5px 0 var(--ink);
       }
@@ -314,53 +274,81 @@ import '../styles/tokens.css';
 
       .info-card h3 {
         font-family: var(--serif);
-        font-size: 18px;
+        font-size: 17px;
         font-weight: 700;
         color: var(--ink);
         margin: 0;
+        line-height: 1.25;
       }
 
-      /* Tabla de controles */
+      /* ── TABLA DE CONTROLES RÁPIDOS DE DECANTACIÓN ───────────────────── */
       .controls-table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 12.5px;
       }
 
-      .controls-table tr {
-        border-bottom: 1px solid var(--line, #E5E0D5);
+      .control-row {
+        border-bottom: 1px solid var(--line);
+        padding: 10px 0;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
       }
 
-      .controls-table tr:last-child {
+      .control-row:last-child {
         border-bottom: none;
+        padding-bottom: 0;
       }
 
-      .controls-table td {
-        padding: 9px 4px;
-        color: var(--ink-soft);
+      .control-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .action-name {
+        font-size: 12.5px;
+        font-weight: 700;
+        color: var(--ink);
       }
 
       .key-pill {
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         font-family: var(--mono);
-        font-size: 11px;
+        font-size: 10.5px;
         font-weight: 800;
         background: var(--cream);
         color: var(--ink);
         border: 1.5px solid var(--ink);
         box-shadow: 1.5px 1.5px 0 var(--ink);
         padding: 2px 7px;
-        margin-right: 4px;
         line-height: 1.2;
+        white-space: nowrap;
+        flex-shrink: 0;
       }
 
-      /* Lista de objetivos */
+      .key-pill.pill-orange {
+        background: #FFECE5;
+        color: #C23A0B;
+        border-color: #12110E;
+      }
+
+      .action-desc {
+        font-size: 11.5px;
+        color: var(--ink-soft);
+        line-height: 1.4;
+      }
+
+      /* ── LISTA DE OBJETIVOS PEDAGÓGICOS ──────────────────────────────── */
       .mission-list {
         list-style: none;
         display: flex;
         flex-direction: column;
         gap: 12px;
-        font-size: 12.5px;
+        font-size: 12px;
         color: var(--ink-soft);
       }
 
@@ -373,13 +361,13 @@ import '../styles/tokens.css';
 
       .mission-number {
         font-family: var(--mono);
-        font-size: 10.5px;
+        font-size: 10px;
         font-weight: 800;
         color: var(--ink);
         background: var(--cream);
         border: 1.5px solid var(--ink);
         box-shadow: 1.5px 1.5px 0 var(--ink);
-        padding: 1px 5px;
+        padding: 2px 5px;
         flex-shrink: 0;
       }
 
@@ -387,16 +375,16 @@ import '../styles/tokens.css';
       .sync-box {
         background: var(--cream);
         border: 1.5px solid var(--ink);
-        box-shadow: 2.5px 2.5px 0 var(--ink);
-        padding: 14px;
-        font-size: 12px;
-        line-height: 1.5;
+        box-shadow: 2px 2px 0 var(--ink);
+        padding: 12px;
+        font-size: 11.5px;
+        line-height: 1.45;
         color: var(--ink-soft);
       }
 
       .sync-box strong {
         color: var(--ink);
-        font-size: 12.5px;
+        font-size: 12px;
       }
 
       .open-raw-link {
@@ -405,13 +393,74 @@ import '../styles/tokens.css';
         font-weight: 800;
         color: var(--orange-vibrant);
         text-decoration: underline;
-        margin-top: auto;
+        margin-top: 4px;
         display: inline-flex;
         align-items: center;
         gap: 4px;
       }
       .open-raw-link:hover {
         color: var(--ink);
+      }
+
+      /* ── MARCO CENTRAL DEL VISOR 3D ─────────────────────────────────── */
+      .viewport-frame {
+        background: #181714;
+        border: 2.5px solid var(--ink);
+        box-shadow: 6px 6px 0 var(--ink);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .viewport-header {
+        background: var(--cream);
+        border-bottom: 2.5px solid var(--ink);
+        padding: 8px 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 800;
+        color: var(--ink);
+        letter-spacing: 0.05em;
+      }
+
+      .window-dots {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .dot {
+        width: 9px;
+        height: 9px;
+        border: 1.5px solid var(--ink);
+        border-radius: 0;
+      }
+      .dot.red { background: #FF5C5C; }
+      .dot.yellow { background: #FFBD2E; }
+      .dot.green { background: #27C93F; }
+
+      .viewport-wrapper {
+        position: relative;
+        width: 100%;
+        height: 650px;
+        background: #12110E;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+
+      .viewport-iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+        display: block;
+        background: #12110E;
+        overflow: hidden;
       }
     </style>
   </head>
@@ -443,9 +492,85 @@ import '../styles/tokens.css';
       </div>
     </header>
 
-    <!-- CUERPO PRINCIPAL -->
-    <main class="main-container">
-      <!-- MARCO WORKSTATION DEL VISOR 3D (UNITY) -->
+    <!-- COCKPIT 3 COLUMNAS: LATERAL IZQUIERDO | SIMULADOR | LATERAL DERECHO -->
+    <main class="lab-cockpit">
+      
+      <!-- ── COLUMNA IZQUIERDA: CONTROLES DE DECANTACIÓN ────────────── -->
+      <aside class="side-column">
+        <article class="info-card">
+          <div class="card-header-box">
+            <span class="card-tag tag-orange">PRÁCTICA · DECANTACIÓN</span>
+            <h3>🎮 Controles de Simulación</h3>
+          </div>
+
+          <div class="controls-table">
+            <!-- Control 1 -->
+            <div class="control-row">
+              <div class="control-header">
+                <span class="action-name">Tomar / Arrastrar</span>
+                <span class="key-pill">Clic Izq sostenido</span>
+              </div>
+              <div class="action-desc">Mueve el vaso o matraz libremente sobre la mesa (plano horizontal).</div>
+            </div>
+
+            <!-- Control 2 -->
+            <div class="control-row">
+              <div class="control-header">
+                <span class="action-name">Soltar objeto</span>
+                <span class="key-pill">Soltar Clic Izq</span>
+              </div>
+              <div class="action-desc">Deja el objeto en la mesa. Si lo sueltas bajo el embudo, queda alineado.</div>
+            </div>
+
+            <!-- Control 3 -->
+            <div class="control-row">
+              <div class="control-header">
+                <span class="action-name">Rotar recipiente</span>
+                <span class="key-pill">Tecla R</span>
+              </div>
+              <div class="action-desc">Rota el objeto sostenido 90° en sentido horario.</div>
+            </div>
+
+            <!-- Control 4 -->
+            <div class="control-row">
+              <div class="control-header">
+                <span class="action-name">Rotar al revés</span>
+                <span class="key-pill">Tecla T</span>
+              </div>
+              <div class="action-desc">Rota el objeto sostenido 90° en sentido anti-horario.</div>
+            </div>
+
+            <!-- Control 5 -->
+            <div class="control-row">
+              <div class="control-header">
+                <span class="action-name">Llave de Paso</span>
+                <span class="key-pill">Clic en Llave</span>
+              </div>
+              <div class="action-desc">Abre la válvula física del embudo para drenar; otro clic la cierra.</div>
+            </div>
+
+            <!-- Control 6 -->
+            <div class="control-row">
+              <div class="control-header">
+                <span class="action-name">Drenado Agua</span>
+                <span class="key-pill pill-orange">Tecla Q</span>
+              </div>
+              <div class="action-desc">Drena automáticamente la fase densa inferior (Agua) hacia el vaso receptor debajo.</div>
+            </div>
+
+            <!-- Control 7 -->
+            <div class="control-row">
+              <div class="control-header">
+                <span class="action-name">Drenado Aceite</span>
+                <span class="key-pill pill-orange">Tecla E</span>
+              </div>
+              <div class="action-desc">Fuerza la salida de la fase superior (Aceite) hacia el vaso receptor.</div>
+            </div>
+          </div>
+        </article>
+      </aside>
+
+      <!-- ── COLUMNA CENTRAL: MARCO DEL SIMULADOR 3D ────────────────── -->
       <section class="viewport-frame" id="labViewportContainer">
         <div class="viewport-header">
           <div style="display:flex; align-items:center; gap:10px;">
@@ -472,75 +597,55 @@ import '../styles/tokens.css';
         </div>
       </section>
 
-      <!-- PANELES EDITORIALES DE APOYO -->
-      <section class="info-grid">
-        <!-- Tarjeta 1: Controles -->
+      <!-- ── COLUMNA DERECHA: GUÍA PEDAGÓGICA Y EVALUACIÓN ──────────── -->
+      <aside class="side-column">
+        <!-- Tarjeta: Objetivos de la Práctica -->
         <article class="info-card">
-          <span class="card-tag tag-orange">MANDOS Y NAVEGACIÓN</span>
-          <h3>🎮 Guía de Controles</h3>
-          <table class="controls-table">
-            <tbody>
-              <tr>
-                <td style="width:125px;">
-                  <span class="key-pill">W</span><span class="key-pill">A</span><span class="key-pill">S</span><span class="key-pill">D</span>
-                </td>
-                <td>Desplazarse por el laboratorio escolar</td>
-              </tr>
-              <tr>
-                <td><span class="key-pill">Mouse</span></td>
-                <td>Mirar alrededor e inspeccionar el instrumental</td>
-              </tr>
-              <tr>
-                <td><span class="key-pill">Clic Izq</span> / <span class="key-pill">E</span></td>
-                <td>Tomar reactivos, manipular matraces y pipetas</td>
-              </tr>
-              <tr>
-                <td><span class="key-pill">Espacio</span></td>
-                <td>Saltar obstáculos o acción especial</td>
-              </tr>
-              <tr>
-                <td><span class="key-pill">Esc</span></td>
-                <td>Liberar cursor del ratón de la ventana 3D</td>
-              </tr>
-            </tbody>
-          </table>
-        </article>
+          <div class="card-header-box">
+            <span class="card-tag tag-green">OBJETIVOS DE APRENDIZAJE</span>
+            <h3>📋 Práctica: Decantación</h3>
+          </div>
 
-        <!-- Tarjeta 2: Objetivos de la Práctica -->
-        <article class="info-card">
-          <span class="card-tag tag-green">OBJETIVOS DE APRENDIZAJE</span>
-          <h3>📋 Objetivos de la Práctica</h3>
           <ul class="mission-list">
             <li>
               <span class="mission-number">01</span>
-              <span>Reconocer el instrumental de laboratorio y preparar los reactivos para el ensayo químico.</span>
+              <span><strong>Separación de Fases:</strong> Comprobar la inmiscibilidad entre agua y aceite por diferencia de densidades.</span>
             </li>
             <li>
               <span class="mission-number">02</span>
-              <span>Comprobar las fases de la reacción respetando los protocolos institucionales de bioseguridad.</span>
+              <span><strong>Alineación del Vaso:</strong> Posicionar el vaso receptor directamente debajo del vástago del embudo.</span>
             </li>
             <li>
               <span class="mission-number">03</span>
-              <span>Finalizar los experimentos para consolidar la nota académica en el sistema.</span>
+              <span><strong>Drenado de Fase Acuosa:</strong> Operar la llave o pulsar [Q] hasta que la interfaz de separación toque la válvula.</span>
+            </li>
+            <li>
+              <span class="mission-number">04</span>
+              <span><strong>Recolección del Aceite:</strong> Sustituir el vaso receptor y drenar la fase oleosa superior con [E].</span>
             </li>
           </ul>
         </article>
 
-        <!-- Tarjeta 3: Sincronización Institucional -->
+        <!-- Tarjeta: Sincronización Institucional -->
         <article class="info-card">
-          <span class="card-tag tag-yellow">EVALUACIÓN Y PROGRESO</span>
-          <h3>⚡ Calificación y Avance</h3>
+          <div class="card-header-box">
+            <span class="card-tag tag-yellow">EVALUACIÓN Y NOTAS</span>
+            <h3>⚡ Registro Académico</h3>
+          </div>
+
           <div class="sync-box">
             <strong>Sincronización en Tiempo Real:</strong>
-            <p style="margin-top:6px;">
-              Cada experimento y prueba que concluyas en esta simulación se sincroniza de forma segura con tu cuenta de estudiante.
+            <p style="margin-top:5px;">
+              Cada práctica evaluada asienta automáticamente los logros en tu boletín estudiantil de SchoolOS.
             </p>
           </div>
+
           <a href="/game/index.html" target="_blank" class="open-raw-link">
-            Abrir simulador en pantalla pura →
+            Abrir simulador en pantalla pura ↗
           </a>
         </article>
-      </section>
+      </aside>
+
     </main>
 
     <script>
