@@ -467,6 +467,17 @@ const isChemistryCourse = Boolean(
 
           <!-- Body: Dos Paneles Distribuidos -->
           <div style="padding:22px; overflow-y:auto;">
+            <!-- Selector de Historial de Intentos -->
+            <div id="modalReportHistoryBar" style="display:none; background:#FFF; border:1.5px solid var(--ink); padding:10px 14px; margin-bottom:18px; box-shadow:2px 2px 0 var(--ink);">
+              <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                  <span style="font-family:var(--mono); font-size:11px; font-weight:900; color:var(--rust);">📜 HISTORIAL DE INTENTOS:</span>
+                  <div id="modalReportHistoryButtons" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
+                </div>
+                <span id="modalReportHistorySummary" style="font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); font-weight:800;"></span>
+              </div>
+            </div>
+
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(440px, 1fr)); gap:20px; align-items:start;">
               
               <!-- PANEL 1 (IZQUIERDA): RENDIMIENTO TÉCNICO EN UNITY -->
@@ -1029,6 +1040,11 @@ const isChemistryCourse = Boolean(
         const displayTotalTasks = totalTasks > 0 ? totalTasks : (parsedFeedback?.missions?.length || 0);
         const missionsSubtitle = displayTotalTasks > 0 ? `${tasksCompleted}/${displayTotalTasks} misiones` : `${tasksCompleted} misiones`;
 
+        const hasMultipleAttempts = (token.totalAttempts && token.totalAttempts > 1) || (token.attemptHistory && token.attemptHistory.length > 1);
+        const attemptBadge = hasMultipleAttempts
+          ? `<div style="margin-top:4px;"><span style="font-family:var(--mono); font-size:9.5px; font-weight:900; background:#FFF1E6; color:var(--rust); border:1px solid var(--rust); padding:2px 6px; border-radius:3px; display:inline-block;">📜 Intento #${token.totalAttempts || token.attemptHistory?.length} (${token.attemptHistory?.length || 1} registros)</span></div>`
+          : '';
+
         const scoreDisplay = isDone
           ? `
             <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
@@ -1050,12 +1066,13 @@ const isChemistryCourse = Boolean(
           `;
 
         const statusBadge = isDone
-          ? '<span style="background:#E5EFE0; color:#2E5E1E; border:1.5px solid #A8C99B; padding:4px 8px; font-size:10.5px; border-radius:4px; font-weight:800; font-family:var(--mono); display:inline-block;">✓ COMPLETADO</span><div style="font-size:9px; color:#2E5E1E; font-family:var(--mono); margin-top:3px; font-weight:800;">🔒 TOKEN CONSUMIDO</div>'
+          ? `<span style="background:#E5EFE0; color:#2E5E1E; border:1.5px solid #A8C99B; padding:4px 8px; font-size:10.5px; border-radius:4px; font-weight:800; font-family:var(--mono); display:inline-block;">✓ COMPLETADO</span><div style="font-size:9px; color:#2E5E1E; font-family:var(--mono); margin-top:3px; font-weight:800;">🔒 TOKEN CONSUMIDO</div>${attemptBadge}`
           : token.status === 'in_progress'
-          ? '<span style="background:#FFF3E0; color:#E64A19; border:1.5px solid #FF5722; padding:4px 8px; font-size:10.5px; border-radius:4px; font-weight:800; font-family:var(--mono); display:inline-block;">🎮 EN PARTIDA</span>'
+          ? `<span style="background:#FFF3E0; color:#E64A19; border:1.5px solid #FF5722; padding:4px 8px; font-size:10.5px; border-radius:4px; font-weight:800; font-family:var(--mono); display:inline-block;">🎮 EN PARTIDA</span>${attemptBadge}`
           : `
             <span style="background:var(--cream); color:var(--ink); border:1.5px solid var(--ink); padding:4px 8px; font-size:10.5px; border-radius:4px; font-weight:800; font-family:var(--mono); display:inline-block;">⏳ PENDIENTE</span>
             <div style="font-size:9px; color:var(--ink-soft); margin-top:4px; font-family:var(--mono); line-height:1.2;">Esperando que el alumno ingrese</div>
+            ${attemptBadge}
           `;
 
         const refreshBtnStyle = isDone
@@ -1293,170 +1310,226 @@ const isChemistryCourse = Boolean(
     const nameEl = document.getElementById('modalReportStudentName');
     if (nameEl) nameEl.textContent = `${token.student?.name || 'Estudiante'} · ${token.lab?.name || 'Simulador'}`;
 
-    let parsedFeedback: any = {};
-    try {
-      if (token.feedback_text && typeof token.feedback_text === 'string' && token.feedback_text.startsWith('{')) {
-        parsedFeedback = JSON.parse(token.feedback_text);
+    const historyBar = document.getElementById('modalReportHistoryBar');
+    const historyButtons = document.getElementById('modalReportHistoryButtons');
+    const historySummary = document.getElementById('modalReportHistorySummary');
+
+    const history = (Array.isArray(token.attemptHistory) && token.attemptHistory.length > 0)
+      ? token.attemptHistory
+      : [];
+
+    function renderAttemptDetails(dataObj: any, activeAttemptNum: number) {
+      let parsedFeedback: any = {};
+      try {
+        if (dataObj.feedback && typeof dataObj.feedback === 'object') {
+          parsedFeedback = dataObj.feedback;
+        } else if (dataObj.feedback_text && typeof dataObj.feedback_text === 'string' && dataObj.feedback_text.startsWith('{')) {
+          parsedFeedback = JSON.parse(dataObj.feedback_text);
+        }
+      } catch (_) {}
+
+      const feedbackMissions = Array.isArray(parsedFeedback.missions) ? parsedFeedback.missions : [];
+      
+      function isMissionPassed(m: any): boolean {
+        if (m === true) return true;
+        if (m === false) return false;
+        if (!m) return false;
+        if (typeof m.passed === 'boolean') return m.passed;
+        if (typeof m.pass === 'boolean') return m.pass;
+        if (typeof m.success === 'boolean') return m.success;
+        if (typeof m.completed === 'boolean') return m.completed;
+        const raw = String(m.passed ?? m.pass ?? m.status ?? m.result ?? m.state ?? m.value ?? '').toLowerCase().trim();
+        return raw === 'pass' || raw === 'passed' || raw === 'true' || raw === 'ok' || raw === 'aprobado' || raw === 'success' || raw === '1';
       }
-    } catch (_) {}
 
-    const feedbackMissions = Array.isArray(parsedFeedback.missions) ? parsedFeedback.missions : [];
-    
-    function isMissionPassed(m: any): boolean {
-      if (m === true) return true;
-      if (m === false) return false;
-      if (!m) return false;
-      if (typeof m.passed === 'boolean') return m.passed;
-      if (typeof m.pass === 'boolean') return m.pass;
-      if (typeof m.success === 'boolean') return m.success;
-      if (typeof m.completed === 'boolean') return m.completed;
-      const raw = String(m.passed ?? m.pass ?? m.status ?? m.result ?? m.state ?? m.value ?? '').toLowerCase().trim();
-      return raw === 'pass' || raw === 'passed' || raw === 'true' || raw === 'ok' || raw === 'aprobado' || raw === 'success' || raw === '1';
-    }
+      const tasksCompleted = (dataObj.tasks_completed !== undefined && dataObj.tasks_completed !== null)
+        ? dataObj.tasks_completed
+        : (dataObj.tasksCompleted !== undefined ? dataObj.tasksCompleted : feedbackMissions.filter(isMissionPassed).length);
 
-    const tasksCompleted = (token.tasks_completed !== undefined && token.tasks_completed !== null)
-      ? token.tasks_completed
-      : feedbackMissions.filter(isMissionPassed).length;
+      const tasksMissing = (dataObj.tasks_missing !== undefined && dataObj.tasks_missing !== null)
+        ? dataObj.tasks_missing
+        : (dataObj.tasksMissing !== undefined ? dataObj.tasksMissing : (feedbackMissions.length > 0 ? feedbackMissions.length - tasksCompleted : 0));
 
-    const tasksMissing = (token.tasks_missing !== undefined && token.tasks_missing !== null)
-      ? token.tasks_missing
-      : (feedbackMissions.length > 0 ? feedbackMissions.length - tasksCompleted : 0);
+      const totalTasks = (tasksCompleted + tasksMissing) > 0
+        ? (tasksCompleted + tasksMissing)
+        : (feedbackMissions.length > 0 ? feedbackMissions.length : 5);
 
-    const totalTasks = (tasksCompleted + tasksMissing) > 0
-      ? (tasksCompleted + tasksMissing)
-      : (feedbackMissions.length > 0 ? feedbackMissions.length : 5);
+      const percentage = (dataObj.percentage !== undefined && dataObj.percentage !== null)
+        ? dataObj.percentage
+        : (parsedFeedback.percentage !== undefined ? parsedFeedback.percentage : (totalTasks > 0 ? Math.round((tasksCompleted / totalTasks) * 100) : 0));
 
-    const percentage = (parsedFeedback.percentage !== undefined && parsedFeedback.percentage !== null)
-      ? parsedFeedback.percentage
-      : (totalTasks > 0 ? Math.round((tasksCompleted / totalTasks) * 100) : 0);
+      const isDone = dataObj.status === 'completed' || Boolean(parsedFeedback.survey?.submittedAt);
 
-    const isDone = token.status === 'completed' || Boolean(parsedFeedback.survey?.submittedAt);
+      const score = (dataObj.score !== undefined && dataObj.score !== null)
+        ? dataObj.score
+        : (parsedFeedback.score !== undefined ? parsedFeedback.score : (totalTasks > 0 ? Number(((tasksCompleted / totalTasks) * 10).toFixed(1)) : (isDone ? 0.0 : '--')));
 
-    const score = (parsedFeedback.score !== undefined && parsedFeedback.score !== null)
-      ? parsedFeedback.score
-      : (totalTasks > 0 ? Number(((tasksCompleted / totalTasks) * 10).toFixed(1)) : (isDone ? 0.0 : '--'));
+      const seconds = dataObj.time_spent_seconds ?? dataObj.timeSpentSeconds ?? parsedFeedback.timeSpentSeconds ?? 0;
+      const formattedTime = seconds ? `${Math.floor(seconds / 60)}m ${seconds % 60}s` : '-';
 
-    const formattedTime = token.time_spent_seconds ? `${Math.floor(token.time_spent_seconds / 60)}m ${token.time_spent_seconds % 60}s` : '-';
+      const scoreEl = document.getElementById('modalReportScore');
+      if (scoreEl) scoreEl.textContent = `${score} / 10`;
 
-    const scoreEl = document.getElementById('modalReportScore');
-    if (scoreEl) scoreEl.textContent = `${score} / 10`;
+      const percEl = document.getElementById('modalReportPercentage');
+      if (percEl) percEl.textContent = `${percentage}%`;
 
-    const percEl = document.getElementById('modalReportPercentage');
-    if (percEl) percEl.textContent = `${percentage}%`;
+      const timeEl = document.getElementById('modalReportTime');
+      if (timeEl) timeEl.textContent = formattedTime;
 
-    const timeEl = document.getElementById('modalReportTime');
-    if (timeEl) timeEl.textContent = formattedTime;
+      const modeEl = document.getElementById('modalReportMode');
+      const effectiveDevice = (
+        parsedFeedback.survey?.deviceUsed ||
+        parsedFeedback.device ||
+        parsedFeedback.playMode ||
+        dataObj.play_mode ||
+        dataObj.playMode ||
+        'PC'
+      ).toUpperCase();
 
-    const modeEl = document.getElementById('modalReportMode');
-    const effectiveDevice = (
-      parsedFeedback.survey?.deviceUsed ||
-      parsedFeedback.device ||
-      parsedFeedback.playMode ||
-      token.play_mode ||
-      'PC'
-    ).toUpperCase();
+      if (modeEl) {
+        modeEl.textContent = effectiveDevice === 'AMBOS'
+          ? '🔄 AMBOS (PC + VR)'
+          : effectiveDevice === 'VR'
+          ? '🥽 VISOR VR'
+          : '🖥️ COMPUTADOR (PC)';
+      }
 
-    if (modeEl) {
-      modeEl.textContent = effectiveDevice === 'AMBOS'
-        ? '🔄 AMBOS (PC + VR)'
-        : effectiveDevice === 'VR'
-        ? '🥽 VISOR VR'
-        : '🖥️ COMPUTADOR (PC)';
-    }
-
-    // Misiones Unity (Componente dinámico según el experimento ejecutado)
-    const missionsList = document.getElementById('modalReportMissionsList');
-    if (missionsList) {
-      if (feedbackMissions.length === 0) {
-        missionsList.innerHTML = `
-          <div style="text-align:center; padding:18px 14px; color:var(--ink-soft); font-family:var(--mono); font-size:11.5px; background:var(--cream); border:1.5px dashed var(--ink); border-radius:4px;">
-            ${isDone
-              ? 'Práctica finalizada. No se registraron misiones individuales en la entrega de este simulador.'
-              : 'Simulación pendiente de ejecución en Unity. Las misiones evaluadas se registrarán dinámicamente al finalizar la práctica.'}
-          </div>
-        `;
-      } else {
-        missionsList.innerHTML = feedbackMissions.map((m: any, idx: number) => {
-          const passed = isMissionPassed(m);
-          const title = m.mission || m.name || m.title || m.description || `Misión ${idx + 1}`;
-          return `
-            <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:${passed ? '#E8F5E9' : '#FFF0EE'}; border:1.5px solid var(--ink); border-radius:4px; box-shadow:1.5px 1.5px 0 var(--ink);">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span style="font-size:14px;">${passed ? '✅' : '❌'}</span>
-                <span style="font-size:12.5px; font-weight:700; color:var(--ink);">${title}</span>
-              </div>
-              <span style="font-family:var(--mono); font-size:10px; font-weight:900; color:${passed ? '#2E7D32' : 'var(--rust)'}; background:${passed ? '#C8E6C9' : '#FFCDD2'}; border:1px solid ${passed ? '#2E7D32' : 'var(--rust)'}; padding:2px 8px; border-radius:3px;">
-                ${passed ? '✓ SUPERADA' : '✗ NO SUPERADA'}
-              </span>
+      // Misiones Unity
+      const missionsList = document.getElementById('modalReportMissionsList');
+      if (missionsList) {
+        if (feedbackMissions.length === 0) {
+          missionsList.innerHTML = `
+            <div style="text-align:center; padding:18px 14px; color:var(--ink-soft); font-family:var(--mono); font-size:11.5px; background:var(--cream); border:1.5px dashed var(--ink); border-radius:4px;">
+              ${isDone
+                ? 'Práctica finalizada. No se registraron misiones individuales en la entrega de este simulador.'
+                : 'Simulación pendiente de ejecución en Unity. Las misiones evaluadas se registrarán dinámicamente al finalizar la práctica.'}
             </div>
           `;
-        }).join('');
+        } else {
+          missionsList.innerHTML = feedbackMissions.map((m: any, idx: number) => {
+            const passed = isMissionPassed(m);
+            const title = m.mission || m.name || m.title || m.description || `Misión ${idx + 1}`;
+            return `
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:${passed ? '#E8F5E9' : '#FFF0EE'}; border:1.5px solid var(--ink); border-radius:4px; box-shadow:1.5px 1.5px 0 var(--ink);">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:14px;">${passed ? '✅' : '❌'}</span>
+                  <span style="font-size:12.5px; font-weight:700; color:var(--ink);">${title}</span>
+                </div>
+                <span style="font-family:var(--mono); font-size:10px; font-weight:900; color:${passed ? '#2E7D32' : 'var(--rust)'}; background:${passed ? '#C8E6C9' : '#FFCDD2'}; border:1px solid ${passed ? '#2E7D32' : 'var(--rust)'}; padding:2px 8px; border-radius:3px;">
+                  ${passed ? '✓ SUPERADA' : '✗ NO SUPERADA'}
+                </span>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+
+      // Encuesta
+      const surveyBody = document.getElementById('modalReportSurveyBody');
+      if (surveyBody) {
+        const survey = parsedFeedback.survey;
+        if (survey && survey.submittedAt) {
+          const renderStars = (rating: number) => {
+            const full = '★'.repeat(rating || 0);
+            const empty = '☆'.repeat(Math.max(0, 5 - (rating || 0)));
+            return `<span style="color:var(--orange-vibrant); font-size:15px; letter-spacing:2px;">${full}${empty}</span> (${rating || 0}/5)`;
+          };
+
+          const reportedDev = (survey.deviceUsed || effectiveDevice).toUpperCase();
+          const devLabel = reportedDev === 'AMBOS' ? '🔄 AMBOS (PC + VR)' : reportedDev === 'VR' ? '🥽 REALIDAD VIRTUAL' : '🖥️ COMPUTADOR (PC)';
+
+          surveyBody.innerHTML = `
+            <div style="background:#FFF1E6; border:1.5px solid var(--ink); padding:8px 12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-family:var(--mono); font-size:10px; font-weight:900; color:var(--rust); text-transform:uppercase;">Plataforma Evaluada por el Alumno:</span>
+              <span style="font-family:var(--mono); font-size:11px; font-weight:900; color:var(--ink);">${devLabel}</span>
+            </div>
+
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px;">
+              <div style="background:var(--paper); border:1px solid var(--ink); padding:10px 12px;">
+                <div style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--ink-soft); text-transform:uppercase;">Comprensión del Tema</div>
+                <div style="margin-top:4px; font-weight:800; font-size:12.5px; color:var(--ink);">${renderStars(survey.understandingScore)}</div>
+              </div>
+
+              <div style="background:var(--paper); border:1px solid var(--ink); padding:10px 12px;">
+                <div style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--ink-soft); text-transform:uppercase;">Usabilidad de la App</div>
+                <div style="margin-top:4px; font-weight:800; font-size:12.5px; color:var(--ink);">${renderStars(survey.usabilityScore)}</div>
+              </div>
+
+              <div style="background:var(--paper); border:1px solid var(--ink); padding:10px 12px;">
+                <div style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--ink-soft); text-transform:uppercase;">Motivación Generada</div>
+                <div style="margin-top:4px; font-weight:800; font-size:12.5px; color:var(--ink);">${renderStars(survey.motivationScore)}</div>
+              </div>
+            </div>
+
+            <div style="background:var(--cream); border:1.5px solid var(--ink); padding:12px; margin-top:4px;">
+              <div style="font-family:var(--mono); font-size:10px; font-weight:900; color:var(--rust); text-transform:uppercase;">Misión que requirió mayor esfuerzo:</div>
+              <div style="font-size:12.5px; color:var(--ink); font-weight:700; margin-top:4px; font-style:italic;">
+                "${survey.challengingMission || 'Ninguna en particular, proceso fluido.'}"
+              </div>
+            </div>
+
+            <div style="background:var(--cream); border:1.5px solid var(--ink); padding:12px;">
+              <div style="font-family:var(--mono); font-size:10px; font-weight:900; color:var(--rust); text-transform:uppercase;">Sugerencias y Feedback del Estudiante:</div>
+              <div style="font-size:12.5px; color:var(--ink); font-weight:700; margin-top:4px; font-style:italic;">
+                "${survey.suggestions || 'Sin sugerencias adicionales reportadas.'}"
+              </div>
+            </div>
+
+            <div style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft); text-align:right;">
+              ✓ Encuesta registrada el: ${new Date(survey.submittedAt).toLocaleString('es-CO')}
+            </div>
+          `;
+        } else {
+          surveyBody.innerHTML = `
+            <div style="text-align:center; padding:18px; color:var(--ink-soft); font-family:var(--mono); font-size:12px; background:var(--cream); border:1px dashed var(--ink);">
+              ⏳ El estudiante completó la simulación técnica, pero aún no ha enviado la encuesta de investigación pedagógica desde su portal.
+            </div>
+          `;
+        }
       }
     }
 
-    // Encuesta de Investigación
-    const surveyBody = document.getElementById('modalReportSurveyBody');
-    if (surveyBody) {
-      const survey = parsedFeedback.survey;
-      if (survey && survey.submittedAt) {
-        const renderStars = (rating: number) => {
-          const full = '★'.repeat(rating || 0);
-          const empty = '☆'.repeat(Math.max(0, 5 - (rating || 0)));
-          return `<span style="color:var(--orange-vibrant); font-size:15px; letter-spacing:2px;">${full}${empty}</span> (${rating || 0}/5)`;
-        };
-
-        const reportedDev = (survey.deviceUsed || effectiveDevice).toUpperCase();
-        const devLabel = reportedDev === 'AMBOS' ? '🔄 AMBOS (PC + VR)' : reportedDev === 'VR' ? '🥽 REALIDAD VIRTUAL' : '🖥️ COMPUTADOR (PC)';
-
-        surveyBody.innerHTML = `
-          <div style="background:#FFF1E6; border:1.5px solid var(--ink); padding:8px 12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-family:var(--mono); font-size:10px; font-weight:900; color:var(--rust); text-transform:uppercase;">Plataforma Evaluada por el Alumno:</span>
-            <span style="font-family:var(--mono); font-size:11px; font-weight:900; color:var(--ink);">${devLabel}</span>
-          </div>
-
-          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px;">
-            <div style="background:var(--paper); border:1px solid var(--ink); padding:10px 12px;">
-              <div style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--ink-soft); text-transform:uppercase;">Comprensión del Tema</div>
-              <div style="margin-top:4px; font-weight:800; font-size:12.5px; color:var(--ink);">${renderStars(survey.understandingScore)}</div>
-            </div>
-
-            <div style="background:var(--paper); border:1px solid var(--ink); padding:10px 12px;">
-              <div style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--ink-soft); text-transform:uppercase;">Usabilidad de la App</div>
-              <div style="margin-top:4px; font-weight:800; font-size:12.5px; color:var(--ink);">${renderStars(survey.usabilityScore)}</div>
-            </div>
-
-            <div style="background:var(--paper); border:1px solid var(--ink); padding:10px 12px;">
-              <div style="font-family:var(--mono); font-size:9.5px; font-weight:800; color:var(--ink-soft); text-transform:uppercase;">Motivación Generada</div>
-              <div style="margin-top:4px; font-weight:800; font-size:12.5px; color:var(--ink);">${renderStars(survey.motivationScore)}</div>
-            </div>
-          </div>
-
-          <div style="background:var(--cream); border:1.5px solid var(--ink); padding:12px; margin-top:4px;">
-            <div style="font-family:var(--mono); font-size:10px; font-weight:900; color:var(--rust); text-transform:uppercase;">Misión que requirió mayor esfuerzo:</div>
-            <div style="font-size:12.5px; color:var(--ink); font-weight:700; margin-top:4px; font-style:italic;">
-              "${survey.challengingMission || 'Ninguna en particular, proceso fluido.'}"
-            </div>
-          </div>
-
-          <div style="background:var(--cream); border:1.5px solid var(--ink); padding:12px;">
-            <div style="font-family:var(--mono); font-size:10px; font-weight:900; color:var(--rust); text-transform:uppercase;">Sugerencias y Feedback del Estudiante:</div>
-            <div style="font-size:12.5px; color:var(--ink); font-weight:700; margin-top:4px; font-style:italic;">
-              "${survey.suggestions || 'Sin sugerencias adicionales reportadas.'}"
-            </div>
-          </div>
-
-          <div style="font-family:var(--mono); font-size:9.5px; color:var(--ink-soft); text-align:right;">
-            ✓ Encuesta registrada el: ${new Date(survey.submittedAt).toLocaleString('es-CO')}
-          </div>
-        `;
-      } else {
-        surveyBody.innerHTML = `
-          <div style="text-align:center; padding:18px; color:var(--ink-soft); font-family:var(--mono); font-size:12px; background:var(--cream); border:1px dashed var(--ink);">
-            ⏳ El estudiante completó la simulación técnica, pero aún no ha enviado la encuesta de investigación pedagógica desde su portal.
-          </div>
-        `;
+    // Si hay más de un intento en el histórico, pintar la barra de navegación entre intentos
+    if (history.length > 1 && historyBar && historyButtons) {
+      historyBar.style.display = 'block';
+      if (historySummary) {
+        historySummary.textContent = `${history.length} intentos registrados para este alumno`;
       }
+      historyButtons.innerHTML = history.map((att: any, idx: number) => {
+        const isLatest = idx === 0;
+        const attNum = att.attemptNumber || (history.length - idx);
+        return `
+          <button
+            type="button"
+            class="btn-attempt-selector"
+            data-attempt-index="${idx}"
+            style="background:${isLatest ? 'var(--rust)' : '#FFF'}; color:${isLatest ? '#FFF' : 'var(--ink)'}; border:1.5px solid var(--ink); padding:4px 10px; font-family:var(--mono); font-size:11px; font-weight:800; cursor:pointer; box-shadow:1px 1px 0 var(--ink);"
+          >
+            Intento #${attNum} (${att.score ?? '--'}/10) ${isLatest ? '★' : ''}
+          </button>
+        `;
+      }).join('');
+
+      historyButtons.querySelectorAll('.btn-attempt-selector').forEach((btn: any) => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.getAttribute('data-attempt-index') || '0', 10);
+          const selected = history[idx];
+          historyButtons.querySelectorAll('.btn-attempt-selector').forEach((b: any) => {
+            b.style.background = '#FFF';
+            b.style.color = 'var(--ink)';
+          });
+          btn.style.background = 'var(--rust)';
+          btn.style.color = '#FFF';
+          renderAttemptDetails(selected, selected.attemptNumber || (history.length - idx));
+        });
+      });
+    } else if (historyBar) {
+      historyBar.style.display = 'none';
     }
+
+    // Render inicial con el intento más relevante o el token raíz
+    const initialData = (history.length > 0) ? history[0] : token;
+    renderAttemptDetails(initialData, history.length || 1);
 
     modal.style.display = 'flex';
   }

@@ -151,6 +151,33 @@ export const POST: APIRoute = async ({ request }) => {
       .in('status', ['pending', 'in_progress'])
       .order('assigned_at', { ascending: false });
 
+    // 3.1 Consultar historial de prácticas completadas anteriormente por el estudiante
+    const { data: pastCompletedTokens } = await admin
+      .from('lab_tokens')
+      .select('*')
+      .eq('student_id', userProfile.id)
+      .eq('status', 'completed')
+      .order('completed_at', { ascending: false });
+
+    const historyPayload = (pastCompletedTokens || []).map((tok: any, idx: number) => {
+      let feedback: any = {};
+      try {
+        if (tok.feedback_text) feedback = JSON.parse(tok.feedback_text);
+      } catch (_) {}
+      return {
+        tokenId: tok.token_id,
+        attemptNumber: (pastCompletedTokens?.length || 0) - idx,
+        score: feedback.score ?? (tok.tasks_completed > 0 ? tok.tasks_completed : 0),
+        percentage: feedback.percentage ?? 0,
+        timeSpentSeconds: tok.time_spent_seconds || feedback.timeSpentSeconds || 0,
+        completedAt: tok.completed_at || feedback.completedAt,
+        device: feedback.device || tok.play_mode || 'PC',
+        tasksCompleted: tok.tasks_completed || feedback.tasksCompleted || 0,
+        totalTasks: (feedback.missions?.length) || (tok.tasks_completed + tok.tasks_missing) || 14,
+        missions: feedback.missions || []
+      };
+    });
+
     let activeLabPayload: any = null;
 
     if (!tokErr && activeTokens && activeTokens.length > 0) {
@@ -177,7 +204,8 @@ export const POST: APIRoute = async ({ request }) => {
         status: currentToken.status, // 'pending' | 'in_progress'
         platformMatch,
         startedAt: currentToken.started_at,
-        missions: (labData as any)?.missions || []
+        missions: (labData as any)?.missions || [],
+        attemptNumber: historyPayload.length + 1,
       };
     }
 
@@ -197,10 +225,14 @@ export const POST: APIRoute = async ({ request }) => {
       },
       hasActiveLab: Boolean(activeLabPayload),
       activeLab: activeLabPayload,
+      hasHistory: historyPayload.length > 0,
+      totalCompletedAttempts: historyPayload.length,
+      currentAttemptNumber: historyPayload.length + (activeLabPayload ? 1 : 0),
+      history: historyPayload,
       message: mustChangePassword
         ? `Bienvenido ${userProfile.name}. Primer inicio de sesión detectado: debes asignar tu contraseña definitiva para continuar.`
         : (activeLabPayload
-            ? `Bienvenido ${userProfile.name}. Tienes 1 práctica activa lista para comenzar.`
+            ? `Bienvenido ${userProfile.name}. Tienes 1 práctica activa lista para comenzar (Intento #${historyPayload.length + 1}).`
             : `Bienvenido ${userProfile.name}. No tienes prácticas pendientes en este momento.`),
     }), {
       status: 200,

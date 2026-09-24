@@ -106,15 +106,48 @@ export const GET: APIRoute = async ({ request }) => {
 
       if (error) throw error;
 
-      // Deduplicar para retornar el token más reciente por estudiante y laboratorio
-      const deduplicated: any[] = [];
-      const seen = new Set<string>();
+      // Agrupar por estudiante y lab: el más reciente es el activo/principal y los anteriores son el histórico
+      const tokensByStudentLab = new Map<string, any[]>();
       for (const tok of (data || [])) {
         const key = `${tok.student_id}_${tok.lab_id}`;
-        if (!seen.has(key)) {
-          seen.add(key);
-          deduplicated.push(tok);
+        if (!tokensByStudentLab.has(key)) {
+          tokensByStudentLab.set(key, []);
         }
+        tokensByStudentLab.get(key)!.push(tok);
+      }
+
+      const deduplicated: any[] = [];
+      for (const [, group] of tokensByStudentLab.entries()) {
+        const primary = { ...group[0] };
+        
+        // Historial completo de todos los intentos del alumno ordenados por fecha
+        const historyAttempts = group
+          .filter((t: any) => t.status === 'completed' || t.tasks_completed > 0)
+          .map((t: any, idx: number) => {
+            let feedback: any = {};
+            try {
+              if (t.feedback_text) feedback = JSON.parse(t.feedback_text);
+            } catch (_) {}
+            return {
+              id: t.id,
+              tokenId: t.token_id,
+              attemptNumber: group.length - idx,
+              status: t.status,
+              tasksCompleted: t.tasks_completed,
+              tasksMissing: t.tasks_missing,
+              timeSpentSeconds: t.time_spent_seconds,
+              assignedAt: t.assigned_at,
+              completedAt: t.completed_at,
+              score: feedback?.score ?? (t.tasks_completed > 0 ? t.tasks_completed : 0),
+              percentage: feedback?.percentage ?? 0,
+              feedback,
+              playMode: t.play_mode,
+            };
+          });
+
+        primary.totalAttempts = group.length;
+        primary.attemptHistory = historyAttempts;
+        deduplicated.push(primary);
       }
 
       return new Response(JSON.stringify({ ok: true, tokens: deduplicated }), {
@@ -710,45 +743,87 @@ export const POST: APIRoute = async ({ request }) => {
         });
       }
 
-      // Buscar el token por id o token_id
-      const { data: targetToken } = await supabase
+      // Buscar el token completo existente por id o token_id
+      const { data: targetToken, error: searchErr } = await supabase
         .from('lab_tokens')
-        .select('id, student:users!student_id(name)')
-        .or(`id.eq."${tokenId}",token_id.eq."${tokenId}"`)
-        .maybeSingle();
-
-      const targetId = targetToken?.id || tokenId;
-      const newTokenId = crypto.randomUUID();
-
-      const { data: updated, error: refErr } = await supabase
-        .from('lab_tokens')
-        .update({
-          token_id: newTokenId,
-          status: 'pending',
-          tasks_completed: 0,
-          tasks_missing: 0,
-          time_spent_seconds: 0,
-          completed_at: null,
-          feedback_text: null,
-          assigned_at: new Date().toISOString(),
-        })
-        .eq('id', targetId)
         .select(`
           *,
           student:users!student_id(id, name, email, avatar_url, job_title),
           lab:virtual_labs(id, name)
         `)
+        .or(`id.eq."${tokenId}",token_id.eq."${tokenId}"`)
         .maybeSingle();
 
-      if (refErr) throw refErr;
+      if (searchErr || !targetToken) {
+        return new Response(JSON.stringify({ ok: false, error: 'Token no encontrado.' }), {
+          status: 404, headers: { 'Content-Type': 'application/json' },
+        });
+      }
 
-      const studentName = targetToken?.student?.name || updated?.student?.name || 'el estudiante';
+      const newTokenId = crypto.randomUUID();
+      let activeTokenResult: any = null;
+
+      // ── PROTECCIÓN Y AUDITORÍA DE HISTORIAL ─────────────────────────
+      // Si el intento ya fue completado (o tiene progreso previo), NUNCA SE SOBREESCRIBE.
+      // Se conserva la fila completada intacta y se INSERTA una nueva fila para el nuevo intento.
+      if (targetToken.status === 'completed' || targetToken.tasks_completed > 0) {
+        const { data: inserted, error: insErr } = await supabase
+          .from('lab_tokens')
+          .insert({
+            lab_id: targetToken.lab_id,
+            course_id: targetToken.course_id,
+            student_id: targetToken.student_id,
+            teacher_id: auth.user.id,
+            token_id: newTokenId,
+            status: 'pending',
+            play_mode: targetToken.play_mode || 'PC',
+            tasks_completed: 0,
+            tasks_missing: 0,
+            time_spent_seconds: 0,
+            assigned_at: new Date().toISOString(),
+          })
+          .select(`
+            *,
+            student:users!student_id(id, name, email, avatar_url, job_title),
+            lab:virtual_labs(id, name)
+          `)
+          .single();
+
+        if (insErr) throw insErr;
+        activeTokenResult = inserted;
+      } else {
+        // Si el token aún estaba 'pending' y nunca se inició, solo renovamos su token_id
+        const { data: updated, error: refErr } = await supabase
+          .from('lab_tokens')
+          .update({
+            token_id: newTokenId,
+            status: 'pending',
+            tasks_completed: 0,
+            tasks_missing: 0,
+            time_spent_seconds: 0,
+            completed_at: null,
+            feedback_text: null,
+            assigned_at: new Date().toISOString(),
+          })
+          .eq('id', targetToken.id)
+          .select(`
+            *,
+            student:users!student_id(id, name, email, avatar_url, job_title),
+            lab:virtual_labs(id, name)
+          `)
+          .maybeSingle();
+
+        if (refErr) throw refErr;
+        activeTokenResult = updated;
+      }
+
+      const studentName = targetToken?.student?.name || activeTokenResult?.student?.name || 'el estudiante';
 
       return new Response(JSON.stringify({
         ok: true,
-        message: `Token reactivado con éxito para ${studentName}. Nuevo intento habilitado en su portal.`,
+        message: `Token reactivado con éxito para ${studentName}. Nuevo intento habilitado en su portal sin borrar el historial anterior.`,
         newTokenId,
-        token: updated,
+        token: activeTokenResult,
       }), {
         status: 200, headers: { 'Content-Type': 'application/json' },
       });
